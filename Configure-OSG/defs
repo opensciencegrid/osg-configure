@@ -1,0 +1,23 @@
+#
+# Package specific information
+#
+CONFIGURE_OSG_REVISION = [*, *, 27, Bug fixes]
+
+
+#
+# Tarball to make
+#
+TOPDIR=osg
+TARBALL_FILE=configure_osg-$(VDT_VERSION).tar.gz
+
+
+#
+# Pre and post steps for this package
+#
+POST_BUILD_SCRIPT = ./copy-ini-files.pl
+
+
+#
+# Platform information
+#
+UNSUPPORTED_PLATFORMS =

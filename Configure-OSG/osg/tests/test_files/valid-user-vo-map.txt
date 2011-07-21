@@ -1,0 +1,84 @@
+#User-VO map
+# #comment line, format of each regular line line: account VO
+# Next 2 lines with VO names, same order, all lowercase, with case (lines starting with #voi, #VOc)
+#voi osg LIGO cdf compbiogrid des DOSAR dzero dzero engage fermilab fmri geant4 glow gpn grase gridex gugrid i2u2 mariachi mis nanohub nwicg ops osgedu sdss star usatlas usatlas usatlas usatlas usatlas usatlas usatlas usatlas uscms uscms uscms uscms uscms uscms uscms uscms
+#VOc OSG LIGO CDF CompBioGrid DES DOSAR DZERO DZERO Engage FermiLab fMRI GEANT4 GLOW gpn GRASE GRIDEX GUGrid I2U2 MARIACHI MIS NANOHUB NWICG ops OSGEDU SDSS STAR usatlas usatlas usatlas usatlas usatlas usatlas usatlas usatlas uscms uscms uscms uscms uscms uscms uscms uscms
+#---- accounts for vo: osg ----#
+osg osg
+#---- accounts for vo: LIGO ----#
+ligo LIGO
+#---- accounts for vo: cdf ----#
+cdf cdf
+#---- accounts for vo: compbiogrid ----#
+compbiogrid compbiogrid
+#---- accounts for vo: des ----#
+des des
+#---- accounts for vo: dosar-admin ----#
+dosar DOSAR
+#---- accounts for vo: dzeroservice-voms ----#
+sam dzero
+#---- accounts for vo: dzerouser-voms ----#
+samgrid dzero
+#---- accounts for vo: engage ----#
+engage engage
+#---- accounts for vo: fermilab ----#
+fermilab fermilab
+#---- accounts for vo: fmri ----#
+fmri fmri
+#---- accounts for vo: geant4 ----#
+geant4 geant4
+#---- accounts for vo: glow ----#
+glow glow
+#---- accounts for vo: gpn ----#
+gpn gpn
+#---- accounts for vo: grase ----#
+grase grase
+#---- accounts for vo: gridex ----#
+gridex gridex
+#---- accounts for vo: gugrid ----#
+gugrid gugrid
+#---- accounts for vo: i2u2 ----#
+i2u2 i2u2
+#---- accounts for vo: mariachi ----#
+mariachi mariachi
+#---- accounts for vo: mis ----#
+mis mis
+#---- accounts for vo: nanohub ----#
+nanohub nanohub
+#---- accounts for vo: nwicg ----#
+nwicg nwicg
+#---- accounts for vo: ops ----#
+ops ops
+#---- accounts for vo: osgedu ----#
+osgedu osgedu
+#---- accounts for vo: sdss ----#
+sdss sdss
+#---- accounts for vo: star ----#
+star star
+#---- accounts for vo: newUsatlasProd ----#
+usatlas1 usatlas
+#---- accounts for vo: oldUsatlasProd ----#
+#---- accounts for vo: newUsatlasSoft ----#
+usatlas2 usatlas
+#---- accounts for vo: oldUsatlasSoft ----#
+#---- accounts for vo: newUsatlas ----#
+usatlas3 usatlas
+#---- accounts for vo: oldUsatlas ----#
+#---- accounts for vo: newAtlas ----#
+usatlas4 usatlas
+#---- accounts for vo: oldAtlas ----#
+#---- accounts for vo: cmsuser ----#
+uscms01 uscms
+#---- accounts for vo: cmsuser-null ----#
+#---- accounts for vo: uscmsfrontier ----#
+#---- accounts for vo: uscmsphedex ----#
+#---- accounts for vo: uscmsprod ----#
+#---- accounts for vo: uscmssoft ----#
+#---- accounts for vo: uscmst2admin ----#
+#---- accounts for vo: uscmsuser ----#
+test1 supervo.local
+#---- accounts for vo: accelerator ----#
+fnal_acc accelerator
+#---- accounts for vo: theory ----#
+fnal_thy theory
+

@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<service id="main-service"
+         ServiceDescription="cemonitor service"
+	 InterfaceVersion="1.0"
+	 ServiceVersion="1.0"
+         sslkeyfile="/etc/grid-security/http/httpkey.pem"
+         sslcertfile="/etc/grid-security/http/httpcert.pem"
+         sslkeypasswd=""
+         sslCAfiles="/opt/itb/globus/TRUSTED_CA/*.0"
+         sslCRLfiles="/opt/itb/globus/TRUSTED_CA/*.r0"
+         maxSubscriptionExpirationTime_hours="200"
+         notificationTimeout_sec="120"
+         backendLocation="/opt/itb/glite/var/cemonitor"
+	 confProvider="org.glite.ce.commonj.jndi.provider.fscachedprovider.CEGeneralDirContextFactory"
+         subscriptionRegistryConfProvider="org.glite.ce.commonj.jndi.provider.fscachedprovider.CEGeneralDirContextFactory">
+
+<!--
+  <authzchain name="chain-1">
+    <plugin name="gridmappdp"
+            classname="org.glite.ce.commonj.authz.GridMapServicePDP">
+      <parameter name="gridMapFile"
+                 value="/etc/grid-security/grid-mapfile" />
+    </plugin>
+
+    <plugin name="vomspdp"
+            classname="org.glite.ce.commonj.authz.VomsServicePDP">
+      <parameter name="gridMapFile"
+                 value="/etc/grid-security/grid-mapfile" />
+    </plugin>
+
+  </authzchain>
+-->
+
+<!-- Actions and queryprocessors -->
+<!-- You shouldn't need to change anything here -->
+
+  <action id="1"
+          name="SendNotification"
+          type="action"
+          jarpath="file:/opt/itb/tomcat/v55/webapps/ce-monitor/actions/glite-ce-monitor-SendNotificationAction.jar">
+<!--
+    <property name="TTLCEinfo" value="300" />
+    <property name="supportedDialectsList" value="RAW,LDIF,ISM_LDIF,ISM_LDIF_GLUE_1.2,OLD_CLASSAD,NEW_CLASSAD,ISM_CLASSAD,ISM_CLASSAD_GLUE_1.2"/>   
+-->
+  </action>
+
+  <action id="2"
+          name="DoNotSendNotification"
+          type="action"
+          jarpath="file:/opt/itb/tomcat/v55/webapps/ce-monitor/actions/glite-ce-monitor-DoNotSendNotificationAction.jar">
+<!--
+    <property name="supportedDialectsList" value="RAW,LDIF,ISM_LDIF,ISM_LDIF_GLUE_1.2,OLD_CLASSAD,NEW_CLASSAD,ISM_CLASSAD,ISM_CLASSAD_GLUE_1.2"/>   
+-->
+  </action>
+
+
+  <action id="3"
+          name="SendExpiredNotification"
+          type="action"
+          jarpath="file:/opt/itb/tomcat/v55/webapps/ce-monitor/actions/glite-ce-monitor-SendExpiredNotificationAction.jar">
+<!--
+    <property name="supportedDialectsList" value="RAW,LDIF,ISM_LDIF,ISM_LDIF_GLUE_1.2,OLD_CLASSAD,NEW_CLASSAD,ISM_CLASSAD,ISM_CLASSAD_GLUE_1.2"/>
+-->
+  </action>
+
+
+  <queryprocessor id="processor-1"
+          name="ClassAd"
+          type="queryprocessor"
+          jarpath="file:/opt/itb/tomcat/v55/webapps/ce-monitor/query_processors/glite-ce-monitor-ClassAdProcessor.jar" />
+
+  <queryprocessor id="processor-2"
+          name="RegEx"
+          type="queryprocessor"
+          jarpath="file:/opt/itb/tomcat/v55/webapps/ce-monitor/query_processors/glite-ce-monitor-RegExProcessor.jar" />
+
+
+<!-- Sensors -->
+<!-- Uncomment/comment the sensors you want to enable/disable -->
+<!-- See http://grid.pd.infn.it/cemon/field.php?n=Main.ExistingCEMonSensors --> 
+  <!--sensor id="sensor-ice"
+          name="ICE Job Sensor"
+          type="ICE"
+          jarpath="file:/opt/itb/glite/share/java/glite-ce-job-plugin-ice.jar">
+    <property name="executionDelay" value="60" />
+    <property name="creamScratchURI" value="/opt/itb/glite/var/cream" />
+    <property name="providerFactory" value="org.glite.ce.commonj.jndi.provider.fscachedprovider.CEGeneralDirContextFactory" />
+    <property name="pushMode" value="true" />
+    <property name="expiration" value="30" />
+  </sensor-->
+  <!-- sensor id="sensor-job-cream"
+          name="CREAM Job Sensor"
+          type="CREAM_JOBS"
+          jarpath="file:/opt/itb/glite/share/java/glite-ce-job-plugin.jar">
+    <property name="executionDelay" value="60" />
+    <property name="pushMode" value="false" />
+    <property name="expiration" value="10" />
+    <property name="purgeAllEventsOnStartup" value="true"/>
+  </sensor -->
+  <!--sensor id="sensor-ce"
+          name="CE Sensor"
+          type="CE_MONITOR"
+          jarpath="file:/opt/itb/glite/share/java/glite-ce-ce-plugin.jar">
+    <property name="executionDelay" value="60" />
+    <property name="scriptURI" value="/opt/itb/glite/etc/glite-ce-ce-plugin/glite-ce-info" />
+    <property name="multiple_attributes" value="GlueChunkKey,GlueForeignKey,GlueServiceName,GlueServiceVersion,GlueServiceEndpoint,GlueServiceStatusInfo,GlueServiceSemantics,GlueServiceOwner,GlueServiceDataValue,GlueSiteName,GlueSiteSponsor,GlueSiteOtherInfo,GlueCEAccessControlBaseRule,GlueClusterService,GlueHostApplicationSoftwareRunTimeEnvironment,GlueHostLocalFileSystemClient,GlueHostRemoteFileSystemServer,GlueCESEBindGroupSEUniqueID,GlueSEHostingSL,GlueSEArchitecture,GlueSEType,GlueSEAccessProtocolSupportedSecurity,GlueSEAccessProtocolCapability,GlueSEControlProtocolCapability,GlueSLServiceGlueSLLocalFileSystemClient,GlueSAAccessControlBaseRule" />
+    <property name="purgeAllEventsOnStartup" value="true"/>
+  </sensor-->
+
+  <sensor id="sensor-osg-ce"
+          name="OSG CE Sensor"
+          type="OSG_CE"
+          jarpath="file:/opt/itb/glite/share/java/glite-ce-osg-ce-plugin.jar">
+    <property name="executionDelay" value="600" />
+    <property name="scriptURI" value="/opt/itb/glite/etc/glite-ce-ce-plugin/glite-ce-info" />
+    <property name="not_supported_attributes" value="GlueSiteDescription,GlueSiteLocation,GlueSiteWeb,GlueSiteSponsor,GlueSiteOtherInfo,GlueForeignKey,GlueChunkKey,createTimestamp,GlueCESEBindCEUniqueID,GlueCESEBindCEAccesspoint,GlueCESEBindGroupCEUniqueID,GlueCESEBindSEUniqueID,GlueCESEBindGroupSEUniqueID,entryTtl,modifyTimestamp,dn,ObjectClass" />
+    <property name="multiple_values_attributes"
+         value="GlueSiteSponsor,GlueSiteOtherInfo,GlueServiceAccessControlRule,GlueChunkKey,
+                GlueForeignKey,GlueCEAccessControlBaseRule,
+                GlueHostApplicationSoftwareRunTimeEnvironment,GlueCESEBindGroupSEUniqueID,
+                GlueSEHostingSL,GlueSEAccessProtocolSupportedSecurity,GlueSLService,
+                GlueSLLocalFileSystemClient,GlueSAAccessControlBaseRule,GlueSoftwareLocalID,
+                GlueSoftwareName,GlueSoftwareVersion,GlueSoftwareInstalledRoot,
+                GlueSoftwareEnvironmentSetup,GlueSoftwareModuleName,GlueSoftwareDataParams,
+                GlueSEAccessProtocolLocalID,GlueSEAccessProtocolMaxStreams,
+                GlueSEAccessProtocolType,GlueSEAccessProtocolVersion,
+                GlueSEAccessProtocolCapability,GlueSEAccessProtocolEndpoint,
+                GlueSEControlProtocolLocalID,GlueSEControlProtocolEndpoint,
+                GlueSEControlProtocolType,GlueSEControlProtocolVersion,
+                GlueSEControlProtocolCapability,GlueVOInfoAccessControlBaseRule,
+                GlueCEAccessControlBaseRuleOriginal,GlueCECapability,GlueSACapability" />
+    <property name="purgeAllEventsOnStartup" value="true"/>
+  </sensor>
+
+<!-- sensor id="sensor-gridice" 
+      name="GridICE Sensor"
+      type="org.gridice.extended"  
+      jarpath="file:/opt/itb/glite/share/java/glite-ce-gridice-plugin.jar">  
+      <parameter name="executionDelay" value="60" />  
+      <parameter name="scriptURI" value="pathname_of_gridice_script" />  
+    <property name="purgeAllEventsOnStartup" value="true"/>
+   </sensor -->
+
+
+   
+<!-- Predefined subscriptions -->
+
+  <!-- subscription id="subscription-1"
+                monitorConsumerURL="URL_of_the_CE_Monitor_Client"
+                sslprotocol="SSLv3"
+                retryCount="-1">
+    <topic name="CE_MONITOR">
+      <dialect name="ISM_CLASSAD" />
+    </topic>
+    <policy rate="600">
+      <query queryLanguage="ClassAd"><![CDATA[GlueCEStateWaitingJobs<2]]></query>
+      <action name="SendNotification" doActionWhenQueryIs="true" />
+      <action name="SendExpiredNotification" doActionWhenQueryIs="false" />
+    </policy>
+  </subscription -->
+
+   <!-- Installed by the VDT -->
+   <subscription id="subscription-https___osg-ress-4_fnal_gov_8443_ig_services_CEInfoCollector-OSG_CE-OLD_CLASSAD"
+         monitorConsumerURL="https://osg-ress-4.fnal.gov:8443/ig/services/CEInfoCollector"
+         sslprotocol="SSLv3"
+         retryCount="-1">
+      <topic name="OSG_CE">
+         <dialect name="OLD_CLASSAD" />
+      </topic>
+      <policy rate="600">
+         <query queryLanguage="ClassAd"><![CDATA[GlueCEStateWaitingJobs<2]]></query>
+         <action name="SendNotification" doActionWhenQueryIs="true" />
+         <action name="SendExpiredNotification" doActionWhenQueryIs="false" />
+      </policy>
+   </subscription>
+   <!-- Installed by the VDT -->
+   <subscription id="subscription-http___is-itb_grid_iu_edu_14001-OSG_CE-RAW"
+         monitorConsumerURL="http://is-itb.grid.iu.edu:14001"
+         sslprotocol="SSLv3"
+         retryCount="-1">
+      <topic name="OSG_CE">
+         <dialect name="RAW" />
+      </topic>
+      <policy rate="300">
+      </policy>
+   </subscription>
+</service>

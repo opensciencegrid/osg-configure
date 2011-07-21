@@ -1,0 +1,21 @@
+#User-VO map
+# #comment line, format of each regular line line: account VO
+# Next 2 lines with VO names, same order, all lowercase, with case (lines starting with #voi, #VOc)
+#voi osg LIGO cdf compbiogrid des DOSAR dzero dzero engage fermilab fmri geant4 glow gpn grase gridex gugrid i2u2 mariachi mis nanohub nwicg ops osgedu sdss star usatlas usatlas usatlas usatlas usatlas usatlas usatlas usatlas uscms uscms uscms uscms uscms uscms uscms uscms
+#VOc OSG LIGO CDF CompBioGrid DES DOSAR DZERO DZERO Engage FermiLab fMRI GEANT4 GLOW gpn GRASE GRIDEX GUGrid I2U2 MARIACHI MIS NANOHUB NWICG ops OSGEDU SDSS STAR usatlas usatlas usatlas usatlas usatlas usatlas usatlas usatlas uscms uscms uscms uscms uscms uscms uscms uscms
+#---- accounts for vo: osg ----#
+osg osg
+#---- accounts for vo: LIGO ----#
+ligo LIGO
+#---- accounts for vo: cdf ----#
+cdf cdf
+#---- accounts for vo: compbiogrid ----#
+compbiogrid compbiogrid
+#---- accounts for vo: des ----#
+des des
+#---- accounts for vo: dosar-admin ----#
+dosar DOSAR
+#---- accounts for vo: dzeroservice-voms ----#
+sam dzero
+fdjkf394f023
+sam= 34f3
