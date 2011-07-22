@@ -430,12 +430,12 @@ def main():
   
   configure_module = None
   if options.mode == VERIFY:
-		normal_exit_message = "Verification completed, exiting..."
-	elif options.mode == LIST:
-		normal_exit_message = "List modules completed, exiting..."
+	  normal_exit_message = "Verification completed, exiting..."
+  elif options.mode == LIST:
+    normal_exit_message = "List modules completed, exiting..."
       
     
-	configuration_file = os.path.join(CONFIG_DIRECTORY, 'config.ini')
+  configuration_file = os.path.join(CONFIG_DIRECTORY, 'config.ini')
     
   # setup logging
   try:
@@ -467,13 +467,14 @@ def main():
       # configure settings
       #configure_system(configuration_file, config_directory, modules, 
       #                 logger, configure_module)
+      pass
     elif options.mode == VERIFY:
       # verify settings
       verify_system(configuration_file, modules, logger)
     elif options.mode == LIST: 
       list_modules(modules, logger)
     else:
-      parser.print_usage())
+      parser.print_usage()
       error_exit("Must specify either -c, -v, or -l")
   except SystemExit:
     # needed since SystemExit inherits from Exception
