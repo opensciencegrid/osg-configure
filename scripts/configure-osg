@@ -1,57 +1,21 @@
 #!/usr/bin/python
 
-import os, sys, getopt, time, ConfigParser, StringIO, re, atexit, shutil
+import os, sys, optparse, time, ConfigParser, StringIO, re, atexit, shutil, logging
 
-try:
-	from configure_osg.modules import exceptions
-	from configure_osg.modules import utilities
-except ImportError:
-	sys.exit("Required modules missing, did you source setup.sh?")
+from configure_osg.modules import exceptions
+from configure_osg.modules import utilities
 
-
-
-py23 = sys.version_info[0] == 2 and sys.version_info[1] >= 3
-
-class FakeLogger:
-  """
-  Super simple logger for python installs which don't have the logging
-  package.
-  """
-  def __init__(self, loglevel="info"):
-    self.loglevel = loglevel  
-
-  def debug(self, msg, *args):
-    if self.loglevel == "debug":                       
-      print >> sys.stderr, "configure-osg: DEBUG    %s" %  msg  
- 
-  def info(self, msg, *args):
-    print >> sys.stderr, "configure-osg: INFO     %s" % msg
-    print >> sys.stderr, msg
- 
-  def warning(self, msg, *args):
-    print >> sys.stderr, "configure-osg: WARNING  %s" % msg
- 
-  def critical(self, msg, *args):
-    print >> sys.stderr, "configure-osg: CRITICAL %s" % msg
- 
-  def error(self, msg, *args):
-    print >> sys.stderr, "configure-osg: ERROR    %s" % msg  
- 
-  def exception(self, msg, *args):
-    print >> sys.stderr, "configure-osg: UNEXPECTED EXCEPTION  %s" % msg 
-       
-if py23:
-  import logging
 
 
 
 ############################# Constant Definitions ############################
 
-  
+VERSION = '0.0.2'
 CONFIGURE = 1
 VERIFY = 2
 LIST = 4
-config_location = os.path.join('osg', 'etc', 'osg-configuration.ini')
+CONFIG_DIRECTORY = '/etc/osg'
+LOG_FILE = '/var/log/osg/configure-osg.log'
 job_environment_attributes = ['OSG_LOCATION',  
                               'GLOBUS_LOCATION', 
                               'OSG_SITE_NAME', 
@@ -84,8 +48,6 @@ job_environment_attributes = ['OSG_LOCATION',
 # should is a local site attribute, osg attribute or gip attribute
 attributes = {}
 
-# if true verification is not required to configure system
-force = False
 
 
 ############################# Function Definitions ############################
@@ -116,29 +78,12 @@ def error_exit(msg, exception=None):
 def normal_exit(msg):
     fl = FakeLogger()
     real_normal_exit(fl, message=msg)
- 
-def vdt_finish():
-  """End vdt installation"""  
-  os.system("/bin/echo '########## [configure-osg] completed' >> %s/vdt-install.log" \
-            % utilities.get_vdt_location())
-
-def set_python_path():
-  """Set up python import path to include the directory that the 
-  application is running from
-  """
-  script_dir = os.path.split(os.path.realpath(sys.argv[0]))[0]
-  sys.path.append(script_dir)
-  
+   
 def get_configuration_modules(vdt_location, logger):
   """Instantiate and return modules in configure_modules directory"""  
   try:
-    start_dir = os.path.split(os.path.realpath(sys.argv[0]))[0]
-    modules = os.listdir(os.path.join(utilities.get_vdt_location(),
-                                      "osg",
-                                      "lib",
-                                      "python",
-                                      "configure_osg",
-                                      "configure_modules"))
+		module_dirs = os.path.split(os.path.dirname(utilities.__file__))[0]
+		modules = os.listdir(os.path.join(module_dirs, "configure_modules"))
   except OSError, exception:
     error_exit("Can't get configuration modules, exiting...", exception)
     
@@ -153,37 +98,13 @@ def get_configuration_modules(vdt_location, logger):
       objects.append(getattr(module_ref, module_ref.__all__[0])(logger=logger))
   return objects
 
-def usage():
-  """Print usage information"""
-  sys.stderr.write("%s -h -c -v -l -d -o "  % sys.argv[0])
-  sys.stderr.write("[output-directory] -m [module]\n")
-  sys.stderr.write("Usage: \n")
-  sys.stderr.write("-h help\n")
-  sys.stderr.write("-d output debug messages to the log (applicable with ")
-  sys.stderr.write("any other option)\n")
-  sys.stderr.write("\n")
-  sys.stderr.write("To configure an installation, use the -c option and any ")
-  sys.stderr.write("of the options below:\n")
-  sys.stderr.write("-m module to configure (this option will try to configure ")
-  sys.stderr.write("only the specified module).  This is optional.\n")
-  sys.stderr.write("\n") 
-  sys.stderr.write("To verify a configuration file, use the -v option\n")
-  sys.stderr.write("\n") 
-  sys.stderr.write("To list configuration modules available and get information ")
-  sys.stderr.write("about modules, use the -l option\n")
   
 def read_config_file(configuration_file, case_sensitive=False):
   """Read configuration file and return ConfigParse object for file"""
-  # instantiate ConfigParser or SafeConfigParser (if running under 
-  # python 2.4+) object, if case_sensitive is true then return a case 
-  # sensitive parser
-  if sys.version_info[0] >= 2 and sys.version_info[1] >= 4:
-    config = ConfigParser.SafeConfigParser()
-    local_config = ConfigParser.SafeConfigParser()
-  else:
-    config = ConfigParser.ConfigParser()
-
+  config = ConfigParser.SafeConfigParser()
+  local_config = ConfigParser.SafeConfigParser()
   
+	# if case_sensitive is true then return a case sensitive parser
   if case_sensitive:    
     config.optionxform = str
     
@@ -215,10 +136,7 @@ def save_config(configuration_file, logger):
   """
   Save configuration file to vdt location for gip to read and for future reference
   """
-  backup_path = os.path.join(utilities.get_vdt_location(),
-                             'osg',
-                             'etc',
-                             'configs')
+  backup_path = os.path.join(CONFIG_DIRECTORY, 'configs')
   if not os.path.exists(backup_path):
     os.mkdir(backup_path)
   os.chmod(backup_path, 0755)
@@ -244,8 +162,7 @@ def save_config(configuration_file, logger):
   
   
 
-def write_attributes(output_directory,
-                     attributes,
+def write_attributes(attributes,
                      local_site_attributes,
                      job_environment_attributes):
   """Write out attributes to osg config files in output_directory"""
@@ -253,7 +170,7 @@ def write_attributes(output_directory,
   # This does not write gip attributes since that needs to be done in the 
   # gip configure method in order for configure_gip to work
   try:
-    filename = os.path.join(output_directory, "osg-attributes.conf")
+    filename = os.path.join(CONFIG_DIRECTORY, "osg-attributes.conf")
     utilities.write_attribute_file(filename, attributes)
   except IOError, exception:
     error_exit("Error writing attributes to osg-attributes.conf", exception)
@@ -261,7 +178,7 @@ def write_attributes(output_directory,
     
   # write out osg-local-job-environment.conf
   try:
-    filename = os.path.join(output_directory, "osg-local-job-environment.conf")
+    filename = os.path.join(CONFIG_DIRECTORY, "osg-local-job-environment.conf")
     utilities.write_attribute_file(filename, local_site_attributes)
   except IOError, exception:
     error_exit("Error writing attributes to osg-local-job-attributes.conf", exception)
@@ -269,7 +186,7 @@ def write_attributes(output_directory,
 
   # write out osg-job-environment.conf
   try:
-    filename = os.path.join(output_directory, "osg-job-environment.conf")
+    filename = os.path.join(CONFIG_DIRECTORY, "osg-job-environment.conf")
     temp = {}
     for key in job_environment_attributes:
       try:
@@ -282,12 +199,11 @@ def write_attributes(output_directory,
 
     
 def configure_system(configuration_file, output_directory, modules, 
-                     logger, configure_module = None):
+                     logger, configure_module = None, force = False):
   """Read configuration files and try to configure the osg system"""
-
+	
   if not modules:
     error_exit("No modules found, exiting")
-
   if not utilities.valid_location(output_directory):
     error_exit("Output directory %s not present" % output_directory)
   if not utilities.valid_file(configuration_file):
@@ -470,127 +386,94 @@ def main():
   mode = None
   configure_mode = None
   
-  if py23:
-    log_level = logging.INFO
-  else:                          
-    log_level = "info"           
+  parser = optparse.OptionParser(usage='Usage: %prog [options] arg1 arg2', version='%prog ' + VERSION)
+  parser.add_option('-d',
+										'--debug',
+										action='store_true',
+										dest='debug',
+										default=False,
+										help='Output debugging information')
+  parser.add_option('-v',
+										'--verify',
+										action='store_const',
+										const=VERIFY,
+										dest='mode',
+										help='Verify configuration and output an errors present')
+  parser.add_option('-c',
+										'--configure',
+										action='store_const',
+										const=CONFIGURE,
+										dest='mode',
+										help='Configure osg software')
+  parser.add_option('-l',
+										'--list',
+										action='store_const',
+										const=LIST,
+										dest='mode',
+										help='List configuration modules present')
+  parser.add_option('-m',
+										'--module',
+										action='store',
+										dest='module',
+										help='Indicate module to configure')
+  parser.add_option('-f',
+										'--force',
+										action='store_true',
+										dest='force',
+										default=False,
+										help='Force configuration despite any errors present')
+  (options, args) = parser.parse_args()
+  log_level = logging.INFO
+
+  if options.debug == True:
+		log_level = logging.DEBUG
   
-  # include application path in list of directories that python checks
-  set_python_path()
-  
-  # get $VDT_LOCATION from environment
-  try:
-    vdt_location = utilities.get_vdt_location()
-  except exceptions.ApplicationError:
-    sys.stderr.write("VDT_LOCATION not set, please run setup.sh before trying ")
-    sys.stderr.write("to configure your install.\n")
-    sys.exit(1)
-  
-  # log information to vdt-install.log
-  
-  os.system("/bin/echo '##########' >> %s/vdt-install.log" % vdt_location)
-  os.system("/bin/echo '# configure-osg.py invoked at %s' >> %s/vdt-install.log" % (time.ctime(), vdt_location))
-  os.system("/bin/echo '##########' >> %s/vdt-install.log" % vdt_location)
-  atexit.register(vdt_finish)
-  
-  try:
-    opts, args = getopt.getopt(sys.argv[1:], 'lhdf:D:cvem:', ['force'])
-  except getopt.GetoptError:
-    usage()
-    sys.stderr.write("Can't parse commandline arguments\n")
-    sys.exit(1)
-  
-  config_directory = None
   configure_module = None
-  for opt,parameter in opts:
-    if opt == "-d": 
-      if py23:
-        log_level = logging.DEBUG
-      else:            
-        log_level = "debug"
-    elif opt == "-h":
-      usage()
-      sys.exit(0)
-    elif opt == "-D":
-      config_directory = parameter
-    elif opt == "-c":
-      if mode is None:
-        mode = CONFIGURE
-      else:
-        usage()
-        sys.exit(1)
-    elif opt == "-v":
-      if mode is None:
-        mode = VERIFY
-        normal_exit_message = "Verification completed, exiting..."
-      else:
-        usage()
-        sys.exit(1)
-    elif opt == "-l":
-      if mode is None:
-        mode = LIST
-        normal_exit_message = "List modules completed, exiting..."
-      else:
-        usage()
-        sys.exit(1)
-    elif opt == "-m":
-      configure_module = parameter.lower()
-    elif opt == '--force':
-      force = True 
+  if options.mode == VERIFY:
+		normal_exit_message = "Verification completed, exiting..."
+	elif options.mode == LIST:
+		normal_exit_message = "List modules completed, exiting..."
       
     
-    configuration_file = os.path.join(utilities.get_vdt_location(),
-                                      'osg',
-                                      'etc',
-                                      'config.ini')
-    config_directory = os.path.join(utilities.get_vdt_location(),
-                                    'osg',
-                                    'etc')
-    sys.stdout.write("Using %s for configuration information\n" % 
-                     configuration_file )
+	configuration_file = os.path.join(CONFIG_DIRECTORY, 'config.ini')
     
   # setup logging
   try:
-    if py23:
-      logger = logging.getLogger('configure-osg')
-      formatter = logging.Formatter('### %(asctime)s configure-osg %(levelname)s %(message)s')
-      handler = logging.FileHandler("%s/vdt-install.log" % (vdt_location), 'a')
-      logger.setLevel(log_level)
-      handler.setFormatter(formatter)
-      logger.addHandler(handler)
-      console = logging.StreamHandler()
-      console.setLevel(logging.ERROR)
-      formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
-      console.setFormatter(formatter)
-      logger.addHandler(console)
-        
-      error_exit = lambda mesg=error_exit_message, exception=None: real_error_exit(logger, mesg, exception)    
-      normal_exit = lambda mesg=normal_exit_message: real_normal_exit(logger, mesg)
+    logger = logging.getLogger('configure-osg')
+    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+    handler = logging.FileHandler(LOG_FILE, 'a')
+    logger.setLevel(log_level)
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    console = logging.StreamHandler()
+    console.setLevel(logging.ERROR)
+    formatter = logging.Formatter('%(levelname)-8s %(message)s')
+    console.setFormatter(formatter)
+    logger.addHandler(console)
       
-    else:
-      logger = FakeLogger(log_level)
-      error_exit = lambda mesg=error_exit_message, exception=None: real_error_exit(logger, mesg, exception)
-      normal_exit = lambda mesg=normal_exit_message: real_normal_exit(logger, mesg)
+    error_exit = lambda mesg=error_exit_message, exception=None: real_error_exit(logger, mesg, exception)    
+    normal_exit = lambda mesg=normal_exit_message: real_normal_exit(logger, mesg)
+      
       
   except IOError:
-    sys.stderr.write("Can't open vdt-install.log for logging, exiting...\n")
+    sys.stderr.write("Can't open %s for logging, exiting...\n" % LOG_FILE)
     sys.exit(1)
   
   try:
     # get a list of configuration modules
     modules = get_configuration_modules(vdt_location, logger)
     
-    if mode == CONFIGURE:
+    if options.mode == CONFIGURE:
       # configure settings
-      configure_system(configuration_file, config_directory, modules, 
-                       logger, configure_module)
-    elif mode == VERIFY:
+      #configure_system(configuration_file, config_directory, modules, 
+      #                 logger, configure_module)
+    elif options.mode == VERIFY:
       # verify settings
       verify_system(configuration_file, modules, logger)
-    elif mode == LIST: 
+    elif options.mode == LIST: 
       list_modules(modules, logger)
     else:
-      usage()
+      parser.print_usage())
       error_exit("Must specify either -c, -v, or -l")
   except SystemExit:
     # needed since SystemExit inherits from Exception
