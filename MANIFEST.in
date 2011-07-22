@@ -1,4 +1,5 @@
 include README
 recursive-include scripts *
+recursive-include config *
 recursive-include tests *
-recursive-include configure-osg *
+recursive-include configure_osg *
