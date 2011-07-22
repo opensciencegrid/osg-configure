@@ -79,7 +79,7 @@ def normal_exit(msg):
     fl = FakeLogger()
     real_normal_exit(fl, message=msg)
    
-def get_configuration_modules(vdt_location, logger):
+def get_configuration_modules(logger):
   """Instantiate and return modules in configure_modules directory"""  
   try:
     module_dirs = os.path.split(os.path.dirname(utilities.__file__))[0]
@@ -461,7 +461,7 @@ def main():
   
   try:
     # get a list of configuration modules
-    modules = get_configuration_modules(vdt_location, logger)
+    modules = get_configuration_modules(logger)
     
     if options.mode == CONFIGURE:
       # configure settings
