@@ -16,26 +16,26 @@ VERIFY = 2
 LIST = 4
 CONFIG_DIRECTORY = '/etc/osg'
 LOG_FILE = '/var/log/osg/configure-osg.log'
-job_environment_attributes = ['OSG_LOCATION',  
-                              'GLOBUS_LOCATION', 
-                              'OSG_SITE_NAME', 
-                              'GRID3_SITE_NAME', 
-                              'OSG_HOSTNAME', 
-                              'OSG_GRID', 
-                              'GRID3_BASE_DIR', 
-                              'OSG_APP', 
-                              'GRID3_APP_DIR', 
-                              'OSG_DATA', 
-                              'GRID3_DATA_DIR', 
-                              'GRID3_TMP_DIR', 
-                              'OSG_WN_TMP', 
-                              'GRID3_TMP_WN_DIR', 
-                              'OSG_STORAGE_ELEMENT', 
-                              'OSG_DEFAULT_SE', 
-                              'OSG_SITE_READ', 
-                              'OSG_SITE_WRITE', 
-                              'OSG_SQUID_LOCATION', 
-                              'OSG_JOB_CONTACT', 
+job_environment_attributes = ['OSG_LOCATION',
+                              'GLOBUS_LOCATION',
+                              'OSG_SITE_NAME',
+                              'GRID3_SITE_NAME',
+                              'OSG_HOSTNAME',
+                              'OSG_GRID',
+                              'GRID3_BASE_DIR',
+                              'OSG_APP',
+                              'GRID3_APP_DIR',
+                              'OSG_DATA',
+                              'GRID3_DATA_DIR',
+                              'GRID3_TMP_DIR',
+                              'OSG_WN_TMP',
+                              'GRID3_TMP_WN_DIR',
+                              'OSG_STORAGE_ELEMENT',
+                              'OSG_DEFAULT_SE',
+                              'OSG_SITE_READ',
+                              'OSG_SITE_WRITE',
+                              'OSG_SQUID_LOCATION',
+                              'OSG_JOB_CONTACT',
                               'OSG_GLEXEC_LOCATION']
 
 
@@ -53,14 +53,14 @@ attributes = {}
 ############################# Function Definitions ############################
 
   
-def real_error_exit(logger, message="Critical error occurred, exiting", exception = None):
+def real_error_exit(logger, message="Critical error occurred, exiting", exception=None):
   """Function to do all the cleanup and exit if an error occurs"""  
   logger.critical(message)
   if exception is not None:
     logger.critical("Exception: %s" % (exception))
   sys.stderr.write("%s\n" % message)
   sys.stderr.write("You may be able to get more details rerunning configure-osg with the -d option " \
-									 "and/or by examining %s\n" % (os.path.join(utilities.get_vdt_location(), 'vdt-install.log')))
+                   "and/or by examining %s\n" % (os.path.join(utilities.get_vdt_location(), 'vdt-install.log')))
   sys.exit(1)
 
 def real_normal_exit(logger, message="Configuration completed, exiting..."):
@@ -82,8 +82,8 @@ def normal_exit(msg):
 def get_configuration_modules(vdt_location, logger):
   """Instantiate and return modules in configure_modules directory"""  
   try:
-		module_dirs = os.path.split(os.path.dirname(utilities.__file__))[0]
-		modules = os.listdir(os.path.join(module_dirs, "configure_modules"))
+    module_dirs = os.path.split(os.path.dirname(utilities.__file__))[0]
+    modules = os.listdir(os.path.join(module_dirs, "configure_modules"))
   except OSError, exception:
     error_exit("Can't get configuration modules, exiting...", exception)
     
@@ -91,7 +91,7 @@ def get_configuration_modules(vdt_location, logger):
   for module in modules:      
     if module.split(".")[-1] == "py" and module != "__init__.py":
       module_name = module.split(".")[0]
-      module_ref = __import__('configure_osg.configure_modules.' + module_name, 
+      module_ref = __import__('configure_osg.configure_modules.' + module_name,
                               globals(),
                               locals(),
                               [''])
@@ -104,7 +104,7 @@ def read_config_file(configuration_file, case_sensitive=False):
   config = ConfigParser.SafeConfigParser()
   local_config = ConfigParser.SafeConfigParser()
   
-	# if case_sensitive is true then return a case sensitive parser
+  # if case_sensitive is true then return a case sensitive parser
   if case_sensitive:    
     config.optionxform = str
     
@@ -198,10 +198,10 @@ def write_attributes(attributes,
     error_exit("Error writing attributes to osg-job-environment.conf", exception)
 
     
-def configure_system(configuration_file, output_directory, modules, 
-                     logger, configure_module = None, force = False):
+def configure_system(configuration_file, output_directory, modules,
+                     logger, configure_module=None, force=False):
   """Read configuration files and try to configure the osg system"""
-	
+  
   if not modules:
     error_exit("No modules found, exiting")
   if not utilities.valid_location(output_directory):
@@ -212,7 +212,7 @@ def configure_system(configuration_file, output_directory, modules,
   config = read_config_file(configuration_file)
 
   if not utilities.ce_config(config):
-		logger.warning("No job managers enabled, assuming this is not a CE")
+    logger.warning("No job managers enabled, assuming this is not a CE")
 
   for module in modules:
     try:
@@ -225,7 +225,7 @@ def configure_system(configuration_file, output_directory, modules,
     except exceptions.SettingError, exception:
       error_exit("Error in %s while parsing configuration" % \
                  (module.__class__.__name__),
-                 exception )
+                 exception)
 #    except ConfigParser.InterpolationSyntaxError, exception:
 #      error_exit("Error while parsing configuration, check your variables for " +
 #                 "a missing s after the paranthesis")
@@ -286,8 +286,8 @@ def configure_system(configuration_file, output_directory, modules,
     # no need to write out attribute files on non-ce installations
     return
   
-  write_attributes(output_directory, 
-                   attributes, 
+  write_attributes(output_directory,
+                   attributes,
                    local_attributes,
                    job_environment_attributes)
 
@@ -313,7 +313,7 @@ def verify_system(configuration_file, modules, logger):
         module.parseConfiguration(config)
     except exceptions.SettingError, exception:
       error_exit("Error in %s while parsing configuration" % (module.__class__.__name__),
-                 exception )
+                 exception)
 #    except ConfigParser.InterpolationSyntaxError, exception:
 #      error_exit("Error while parsing configuration, check your variables for " +
 #                 "a missing s after the paranthesis")
@@ -388,49 +388,49 @@ def main():
   
   parser = optparse.OptionParser(usage='Usage: %prog [options] arg1 arg2', version='%prog ' + VERSION)
   parser.add_option('-d',
-										'--debug',
-										action='store_true',
-										dest='debug',
-										default=False,
-										help='Output debugging information')
+                    '--debug',
+                    action='store_true',
+                    dest='debug',
+                    default=False,
+                    help='Output debugging information')
   parser.add_option('-v',
-										'--verify',
-										action='store_const',
-										const=VERIFY,
-										dest='mode',
-										help='Verify configuration and output an errors present')
+                    '--verify',
+                    action='store_const',
+                    const=VERIFY,
+                    dest='mode',
+                    help='Verify configuration and output an errors present')
   parser.add_option('-c',
-										'--configure',
-										action='store_const',
-										const=CONFIGURE,
-										dest='mode',
-										help='Configure osg software')
+                    '--configure',
+                    action='store_const',
+                    const=CONFIGURE,
+                    dest='mode',
+                    help='Configure osg software')
   parser.add_option('-l',
-										'--list',
-										action='store_const',
-										const=LIST,
-										dest='mode',
-										help='List configuration modules present')
+                    '--list',
+                    action='store_const',
+                    const=LIST,
+                    dest='mode',
+                    help='List configuration modules present')
   parser.add_option('-m',
-										'--module',
-										action='store',
-										dest='module',
-										help='Indicate module to configure')
+                    '--module',
+                    action='store',
+                    dest='module',
+                    help='Indicate module to configure')
   parser.add_option('-f',
-										'--force',
-										action='store_true',
-										dest='force',
-										default=False,
-										help='Force configuration despite any errors present')
+                    '--force',
+                    action='store_true',
+                    dest='force',
+                    default=False,
+                    help='Force configuration despite any errors present')
   (options, args) = parser.parse_args()
   log_level = logging.INFO
 
   if options.debug == True:
-		log_level = logging.DEBUG
+    log_level = logging.DEBUG
   
   configure_module = None
   if options.mode == VERIFY:
-	  normal_exit_message = "Verification completed, exiting..."
+    normal_exit_message = "Verification completed, exiting..."
   elif options.mode == LIST:
     normal_exit_message = "List modules completed, exiting..."
       
@@ -451,8 +451,8 @@ def main():
     console.setFormatter(formatter)
     logger.addHandler(console)
       
-    error_exit = lambda mesg=error_exit_message, exception=None: real_error_exit(logger, mesg, exception)    
-    normal_exit = lambda mesg=normal_exit_message: real_normal_exit(logger, mesg)
+    error_exit = lambda mesg = error_exit_message, exception = None: real_error_exit(logger, mesg, exception)    
+    normal_exit = lambda mesg = normal_exit_message: real_normal_exit(logger, mesg)
       
       
   except IOError:
