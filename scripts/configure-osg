@@ -60,7 +60,7 @@ def real_error_exit(logger, message="Critical error occurred, exiting", exceptio
     logger.critical("Exception: %s" % (exception))
   sys.stderr.write("%s\n" % message)
   sys.stderr.write("You may be able to get more details rerunning configure-osg with the -d option " \
-                   "and/or by examining %s\n" % (os.path.join(utilities.get_vdt_location(), 'vdt-install.log')))
+                   "and/or by examining %s\n" % (LOG_FILE))
   sys.exit(1)
 
 def real_normal_exit(logger, message="Configuration completed, exiting..."):
