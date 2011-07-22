@@ -6,7 +6,7 @@ setup(name='osg-configure',
       author='Suchandra Thapa',
       author_email='sthapa@ci.uchicago.edu',
       url='http://www.opensciencegrid.org',
-      packages=['configure-osg'],
+      packages=['configure-osg', 'configure-osg.modules', 'configure-osg.configure_modules'],      
       scripts=['scripts/configure-osg'],
-      data_files=['config', 'etc/osg']
+      #data_files=[('config', ['/etc/osg'])]
       )
