@@ -19,16 +19,13 @@ class CemonConfiguration(BaseConfiguration):
   miscellaneous services
   """
   
+  CEMON_CONFIG_FILE = "/etc/glite/cemonitor-config.xml"
   def __init__(self, *args, **kwargs):
     # pylint: disable-msg=W0142
     super(CemonConfiguration, self).__init__(*args, **kwargs)
     self.logger.debug("CemonConfiguration.__init__ started")
     # file location for xml file with cemon subscriptions
-    self.__cemon_configuration_file = os.path.join(utilities.get_vdt_location(),
-                                                   'glite',
-                                                   'etc',
-                                                   'glite-ce-monitor',
-                                                   'cemonitor-config.xml')
+    self.__cemon_configuration_file = os.path.join(self.CEMON_CONFIG_FILE)
     self.config_section = 'Cemon'
     self.__mappings = {'ress_servers' : 'ress_servers',
                        'bdii_servers' : 'bdii_servers'}
@@ -101,7 +98,12 @@ class CemonConfiguration(BaseConfiguration):
     if self.ignored:
       self.logger.warning("%s configuration ignored" % self.config_section)
       return True
-    
+
+    # disable configuration for now
+    self.logger.debug("Not enabled")
+    self.logger.debug("CemonConfiguration.configure completed")
+    return True
+        
     if not self.enabled:
       self.logger.debug("Not enabled")
       self.logger.debug("CemonConfiguration.configure completed")
@@ -163,15 +165,6 @@ class CemonConfiguration(BaseConfiguration):
     self.logger.debug("CemonConfiguration.checkAttributes completed")
     return valid
 
-# pylint: disable-msg=W0613
-  def generateConfigFile(self, attribute_list, config_file):
-    """Take a list of (key, value) tuples in attribute_list and add the 
-    appropriate configuration options to the config file"""
-    # Cemon doesn't have any specific configuration
-    self.logger.debug("CemonConfiguration.generateConfigFile started")
-    self.logger.debug("CemonConfiguration.generateConfigFile completed") 
-    return config_file
-  
   def moduleName(self):
     """Return a string with the name of the module"""
     return "CEMon"

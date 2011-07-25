@@ -2,7 +2,8 @@
 
 """ Module to hold various utility functions """
 
-import re, socket, os, types, pwd, sys, popen2, glob, ConfigParser, tempfile
+import re, socket, os, types, pwd, sys, glob, ConfigParser
+import tempfile, subprocess   
 
 from configure_osg.modules import exceptions
 
@@ -18,7 +19,6 @@ __all__ = ['valid_domain',
            'valid_ini_file',
            'using_prima',
            'using_xacml_protocol',
-           'get_vdt_location',
            'get_vos',
            'duplicate_sections', 
            'run_vdt_configure',
@@ -35,12 +35,9 @@ __all__ = ['valid_domain',
            'fetch_crl',
            'get_option',
            'ce_config']
-
-SUBPROCESS_AVAILABLE = False
-if sys.version_info[0] == 2 and sys.version_info[1] >= 4:
-  import subprocess
-  SUBPROCESS_AVAILABLE = True
   
+CONFIG_DIRECTORY = "/etc/osg"
+
 def valid_domain(host, resolve=False):
   """Check to see if the string passed in is a valid domain"""
   if len(host) == 0:
@@ -159,13 +156,6 @@ def get_gums_host():
   
   return None
   
-def get_vdt_location():
-  """get location of the vdt install"""
-  if 'VDT_LOCATION' in os.environ:
-    return os.path.normpath(os.environ['VDT_LOCATION'])
-  else:
-    raise exceptions.ApplicationError("VDT_LOCATION not defined") 
-    
 def run_vdt_configure(arguments = None):
   """Run a configuration script from vdt and return exit status"""
   if arguments is None:
@@ -281,10 +271,8 @@ def get_vos(user_vo_file):
 
   if (user_vo_file is None or 
       not os.path.isfile(user_vo_file)):
-    user_vo_file = os.path.join(get_vdt_location(), 
-                                'osg',
-                                'etc', 
-                                'osg-user-vo-map.txt')
+    user_vo_file = os.path.join(os.path.join(CONFIG_DIRECTORY, 
+                                             'osg-user-vo-map.txt'))
   if not os.path.isfile(user_vo_file):
     return []
   file_buffer = open(os.path.expandvars(user_vo_file), 'r')
@@ -393,11 +381,7 @@ def enable_service(service_name):
   
   if service_name == None or service_name == "":
     return False
-  vdt_control_path = os.path.join(get_vdt_location(),
-                                  'vdt',
-                                  'sbin',
-                                  'vdt-control')
-  return run_script([vdt_control_path, '--enable', service_name])
+  return run_script(['/sbin/service', '--on', service_name])
 
 
 def disable_service(service_name):
@@ -407,11 +391,7 @@ def disable_service(service_name):
   
   if service_name == None or service_name == "":
     return False
-  vdt_control_path = os.path.join(get_vdt_location(),
-                                  'vdt',
-                                  'sbin',
-                                  'vdt-control')
-  return run_script([vdt_control_path, '--disable', service_name])
+  return run_script(['/sbin/service', '--disable', service_name])
 
 def service_enabled(service_name):
   """
@@ -419,21 +399,11 @@ def service_enabled(service_name):
   """
   if service_name == None or service_name == "":
     return False
-  vdt_control_path = os.path.join(get_vdt_location(),
-                                  'vdt',
-                                  'sbin',
-                                  'vdt-control')
-  if SUBPROCESS_AVAILABLE:
-    process = subprocess.Popen([vdt_control_path, '--list', service_name], 
-                               stdout=subprocess.PIPE)
-    output = process.communicate()[0]
-    if process.returncode != 0:
-      return False
-    
-  else:
-    cmd = "%s --list %s" % (vdt_control_path, service_name)
-    output = popen2.popen2(cmd)[0].read()
-    
+  process = subprocess.Popen(['/sbin/service', '--list', service_name], 
+                             stdout=subprocess.PIPE)
+  output = process.communicate()[0]
+  if process.returncode != 0:
+    return False  
 
   match = re.search(service_name + '\s*\|.*\|\s*([a-z ]*)$', output)
   if match:
@@ -453,9 +423,8 @@ def configure_service(script = "", arguments = None):
   if arguments == None or script == "":
     return False
   
-  vdt_script_path = os.path.join(get_vdt_location(),
-                                 'vdt',
-                                 'setup',
+  vdt_script_path = os.path.join('usr',
+                                 'bin',
                                  script)
   return run_script([vdt_script_path] + arguments)
 
@@ -464,23 +433,19 @@ def create_map_file(using_gums = False):
   Check and create a mapfile if needed
   """
 
-  map_file = os.path.join(get_vdt_location(),
-                          'osg',
-                          'etc',
+  map_file = os.path.join(CONFIG_DIRECTORY,
                           'osg-user-vo-map.txt')
   result = True
   try:
     if valid_user_vo_file(map_file):
       return result
     if using_gums:
-      gums_script = os.path.join(get_vdt_location(),
-                                 'gums',
-                                 'scripts',
+      gums_script = os.path.join('usr',
+                                 'bin',
                                  'gums-host-cron')
     else:
-      gums_script = os.path.join(get_vdt_location(),
-                                 'edg',
-                                 'sbin',
+      gums_script = os.path.join('usr'
+                                 'bin',
                                  'edg-mkgridmap')
       
     sys.stdout.write("Running %s, this process may take some time " % gums_script +
@@ -507,11 +472,8 @@ def fetch_crl():
         sys.stdout.flush()
         return True
       
-    crl_path = os.path.join(get_vdt_location(),
-                            'fetch-crl',
-                            'share',
-                            'doc',
-                            'fetch-crl-*',
+    crl_path = os.path.join('usr',
+                            'bin',
                             'fetch-crl.cron')
                  
     if len(glob.glob(crl_path)) > 0:
@@ -535,18 +497,10 @@ def run_script(script):
   if not valid_executable(script[0]):
     return False
 
-  if SUBPROCESS_AVAILABLE:
-    process = subprocess.Popen(script)
-    process.communicate()
-    if process.returncode != 0:
-      return False
-  else:
-    process = popen2.Popen4(script)
-    status = process.wait()
-    # the top 2 bytes of the returned value has the exit code 
-    returncode = status >> 8
-    if returncode != 0:
-      return False
+  process = subprocess.Popen(script)
+  process.communicate()
+  if process.returncode != 0:
+    return False
     
   return True          
 

@@ -2,22 +2,16 @@
 
 import os, imp, sys, unittest, ConfigParser, logging
 
-# setup system library path
-if "CONFIGURE_OSG_LOCATION" in os.environ:
-    pathname = os.path.join(os.environ['CONFIGURE_OSG_LOCATION'], 'bin')
-else:
-    if "VDT_LOCATION" in os.environ:
-        pathname = os.path.join(os.environ['VDT_LOCATION'], 'osg', 'bin')
-        if not os.path.exists(os.path.join(pathname, 'configure-osg')):
-          pathname = '../lib/python/'
-    else:
-      pathname = '../lib/python/'
-          
-sys.path.append(pathname)
-
+# setup system library path if it's not there at present
+try:
+  from configure_osg.modules import utilities
+except ImportError:
+  pathname = '../'
+  sys.path.append(pathname)
+  from configure_osg.modules import utilities
 
 from configure_osg.modules import exceptions
-from configure_osg.modules import utilities
+
 
 from configure_osg.configure_modules import storage
 
@@ -103,92 +97,6 @@ class TestLocalSettings(unittest.TestCase):
                                             attributes[var],
                                             variables[var]))
     
-
-
-  def testAttributeGeneration1(self):
-    """
-    Test the creation of a config file given attributes
-    """
-    
-    config_file = os.path.abspath("./configs/storage/storage1.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-
-    settings = storage.StorageConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
-
-    attributes = settings.getAttributes()    
-    new_config = ConfigParser.SafeConfigParser()
-    settings.generateConfigFile(attributes.items(), new_config)
-    section_name = 'Storage'
-    self.failUnless(new_config.has_section(section_name), 
-                    "%s section not created in config file" % section_name)
-    
-    options = {'se_available' : 'True',
-               'default_se' : 'test.domain.org',
-               'grid_dir' : './configs/storage1',
-               'app_dir' : './configs/storage2',
-               'data_dir' : './configs/storage3',
-               'worker_node_temp' : './configs/storage4',
-               'site_read' : './configs/storage5',
-               'site_write' : './configs/storage6'}
-    for option in options:      
-      self.failUnless(new_config.has_option(section_name, option), 
-                      "Option %s missing" % option)
-      self.failUnlessEqual(new_config.get(section_name, option), 
-                           options[option], 
-                           "Wrong value obtained for %s, expected %s, got %s" %
-                           (option,
-                            options[option],
-                            new_config.get(section_name, option)))
-                            
-    
-  def testAttributeGeneration2(self):
-    """
-    Test the creation of a config file given attributes
-    """
-    
-    config_file = os.path.abspath("./configs/storage/storage2.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-
-    settings = storage.StorageConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
-
-    attributes = settings.getAttributes()    
-    new_config = ConfigParser.SafeConfigParser()
-    settings.generateConfigFile(attributes.items(), new_config)
-    section_name = 'Storage'
-    self.failUnless(new_config.has_section(section_name), 
-                    "%s section not created in config file" % section_name)
-    
-    options = {'se_available' : 'False',
-               'default_se' : 'test.domain.org',
-               'grid_dir' : './configs/storage1',
-               'app_dir' : './configs/storage2',
-               'data_dir' : './configs/storage3',
-               'worker_node_temp' : './configs/storage4',
-               'site_read' : './configs/storage5',
-               'site_write' : './configs/storage6'}
-    for option in options:      
-      self.failUnless(new_config.has_option(section_name, option), 
-                      "Option %s missing" % option)
-      self.failUnlessEqual(new_config.get(section_name, option), 
-                           options[option], 
-                           "Wrong value obtained for %s, expected %s, got %s" %
-                           (option,
-                            options[option],
-                            new_config.get(section_name, option)))
-                                                        
-
   def testMissingAttribute(self):
     """
     Test the checkAttributes function 

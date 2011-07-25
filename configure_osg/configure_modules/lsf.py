@@ -144,7 +144,12 @@ class LSFConfiguration(JobManagerConfiguration):
 
   def configure(self, attributes):
     """Configure installation using attributes"""
-    self.logger.debug('LSFConfiguration.configure started')    
+    self.logger.debug('LSFConfiguration.configure started')
+    # disable configuration for now
+    self.logger.debug('LSF not enabled, returning True')    
+    self.logger.debug('LSFConfiguration.configure completed')    
+    return True
+        
     if not self.enabled:
       self.logger.debug('LSF not enabled, returning True')    
       self.logger.debug('LSFConfiguration.configure completed')    
@@ -175,46 +180,6 @@ class LSFConfiguration(JobManagerConfiguration):
     self.logger.debug('LSFConfiguration.configure started')    
     return True
   
-  def generateConfigFile(self, attribute_list, config_file):
-    """Take a list of (key, value) tuples in attribute_list and add the 
-    appropriate configuration options to the config file"""
-    # generate reverse mapping so that we can create the appropriate options
-    self.logger.debug("LSFConfiguration.generateConfigFile started")
-    reverse_mapping = {}
-    for key in self.__mappings:
-      reverse_mapping[self.__mappings[key]] = key
-      
-    if not config_file.has_section(self.config_section):
-      self.logger.debug("Adding %s section to configuration file" % self.config_section)
-      config_file.add_section(self.config_section)
-      
-    for (key, value) in attribute_list:
-      if key in reverse_mapping:
-        self.logger.debug("Found %s in reverse mapping with value %s" % (key, value))
-        self.logger.debug("Mapped to %s" % reverse_mapping[key])
-        config_file.set(self.config_section, reverse_mapping[key], value)
-      if key == "OSG_JOB_MANAGER" and value.lower() != "lsf":
-        self.logger.debug('LSF not job manager, removing LSF section')
-        config_file.remove_section(self.config_section)
-        self.logger.debug("LSFConfiguration.generateConfigFile completed")    
-        return config_file
-
-    if  not config_file.has_option(self.config_section, 'lsf_location'):
-      # no settings for this job manager, delete section
-      # this is needed since all job managers will see various settings and add it
-      self.logger.debug('LSF not enabled, removing LSF section')
-      config_file.remove_section(self.config_section)
-    else:
-      config_file.set(self.config_section, 'enabled', 'True')
-      if (config_file.has_option(self.config_section, 'wsgram') and
-          config_file.get(self.config_section, 'wsgram').upper() == 'N'):
-        config_file.set(self.config_section, 'wsgram', 'False')
-      else:
-        config_file.set(self.config_section, 'wsgram', 'True')
-    
-    self.logger.debug("LSFConfiguration.generateConfigFile completed")    
-    return config_file
-    
   def moduleName(self):
     """Return a string with the name of the module"""
     return "LSF"

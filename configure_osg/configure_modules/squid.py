@@ -146,6 +146,11 @@ class SquidConfiguration(BaseConfiguration):
     """Configure installation using attributes"""
     self.logger.debug('SquidConfiguration.configure started')
 
+    # disable configuration for now
+    self.logger.debug('squid not enabled')
+    self.logger.debug('SquidConfiguration.configure completed')
+    return True
+    
     if not self.enabled:
       self.logger.debug('squid not enabled')
       self.logger.debug('SquidConfiguration.configure completed')
@@ -179,43 +184,6 @@ class SquidConfiguration(BaseConfiguration):
         raise exceptions.ConfigureError("Error configuring squid")
     self.logger.debug('SquidConfiguration.configure completed')
     return True     
-
-  def generateConfigFile(self, attribute_list, config_file):
-    """Take a list of (key, value) tuples in attribute_list and add the 
-    appropriate configuration options to the config file"""
-    
-    self.logger.debug("SquidConfiguration.generateConfigFile started")
-    # generate reverse mapping so that we can create the appropriate options
-    reverse_mapping = {}
-    for key in self.__mappings:
-      reverse_mapping[self.__mappings[key]] = key
-      
-    if not config_file.has_section(self.config_section):
-      self.logger.debug("Adding %s section to configuration file" % self.config_section)
-      config_file.add_section(self.config_section)
-      
-    for (key, value) in attribute_list:
-      if key in reverse_mapping:
-        self.logger.debug("Found %s in reverse mapping with value %s" % (key, value))
-        self.logger.debug("Mapped to %s" % reverse_mapping[key])
-        config_file.set(self.config_section, reverse_mapping[key], value)
-        
-    if (config_file.has_option(self.config_section, 'location') and
-        config_file.get(self.config_section, 'location').upper() == 'UNAVAILABLE'):
-      config_file.set(self.config_section, 'enabled', 'False')
-    elif not config_file.has_option(self.config_section, 'location'):
-      config_file.set(self.config_section, 'enabled', 'False')
-    else:
-      config_file.set(self.config_section, 'enabled', 'True')
-    
-    if config_file.getboolean(self.config_section, 'enabled'):
-      self.logger.debug('Not enabled, setting all options to UNAVAILABLE')
-      for key in self.__mappings:
-        if not config_file.has_option(self.config_section, key):
-          config_file.set(self.config_section, 'enabled', 'UNAVAILABLE')
-    
-    self.logger.debug("SquidConfiguration.generateConfigFile completed")    
-    return config_file   
 
   def moduleName(self):
     """Return a string with the name of the module"""

@@ -211,6 +211,11 @@ class BestmanConfiguration(BaseConfiguration):
   def configure(self, attributes):
     """Configure installation using attributes"""
     self.logger.debug('BestmanConfiguration.configure started')    
+    
+    # disable configure for now
+    self.logger.debug('Bestman not enabled')    
+    return True
+    
     if not self.__enabled:
       self.logger.debug('Bestman not enabled')    
       return True
@@ -252,14 +257,6 @@ class BestmanConfiguration(BaseConfiguration):
     self.logger.debug('BestmanConfiguration.configure completed')    
     return True
   
-  def generateConfigFile(self, attribute_list, config_file):
-    """Take a list of (key, value) tuples in attribute_list and add the 
-    appropriate configuration options to the config file"""
-    # generate reverse mapping so that we can create the appropriate options
-    self.logger.debug("BestmanConfiguration.generateConfigFile started")
-    self.logger.debug("BestmanConfiguration.generateConfigFile completed")    
-    return config_file
-
   def moduleName(self):
     """
     Return a string with the name of the module

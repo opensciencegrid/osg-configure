@@ -22,16 +22,10 @@ class InstallLocations(BaseConfiguration):
                        'globus': 'GLOBUS_LOCATION',
                        'user_vo_map': 'OSG_USER_VO_MAP',
                        'gridftp_log': 'OSG_GRIDFTP_LOG'}
-    self.__defaults = {'osg' : utilities.get_vdt_location()}
-    self.__defaults['user_vo_map'] = os.path.join(self.__defaults['osg'], 
-                                                  'osg', 
-                                                  'etc', 
-                                                  'osg-user-vo-map.txt')
-    self.__defaults['globus'] = os.path.join(self.__defaults['osg'], 'globus')
-    self.__defaults['gridftp_log'] = os.path.join(self.__defaults['globus'], 
-                                                  'var',
-                                                  'log',
-                                                  'gridftp.log')
+    self.__defaults = {'osg' : '/etc/osg',
+                       'user_vo_map' : '/etc/osg/osg-user-vo-map.txt',
+                       'gridftp_log' : '/var/log/gridftp/gridftp.log',
+                       'globus' : '/'}
     self.config_section = 'Install Locations'
     self.__optional = ['osg', 
                        'globus',
@@ -104,29 +98,6 @@ class InstallLocations(BaseConfiguration):
     self.logger.debug('InstallLocations.checkAttributes completed')        
     return attributes_ok 
 
-  def generateConfigFile(self, attribute_list, config_file):
-    """Take a list of (key, value) tuples in attribute_list and add the 
-    appropriate configuration options to the config file"""
-
-    self.logger.debug('InstallLocations.generateConfigFile completed')        
-    # generate reverse mapping so that we can create the appropriate options
-    reverse_mapping = {}
-    for key in self.__mappings:
-      reverse_mapping[self.__mappings[key]] = key
-      
-    if not config_file.has_section(self.config_section):
-      self.logger.debug("Adding %s section to configuration file" % self.config_section)
-      config_file.add_section(self.config_section)
-      
-    for (key, value) in attribute_list:
-      if key in reverse_mapping:
-        self.logger.debug("Found %s in reverse mapping with value %s" % (key, value))
-        self.logger.debug("Mapped to %s" % reverse_mapping[key])
-        config_file.set(self.config_section, reverse_mapping[key], value)
-    
-    self.logger.debug('InstallLocations.generateConfigFile completed')        
-    return config_file
-
   def configure(self, attributes):
     """
     Setup basic osg/vdt services
@@ -135,18 +106,6 @@ class InstallLocations(BaseConfiguration):
     self.logger.debug("InstallLocations.configure started")
     status = True
     
-    # TODO: move to misc services and give an option
-    if not utilities.valid_file(os.path.join(utilities.get_vdt_location(),
-                                             'vdt',
-                                             'setup',
-                                             'configure_vdt_logrotate')):
-      return status
-    
-    self.logger.debug("Enabling log rotation service")
-    if not utilities.enable_service('vdt-rotate-logs'):
-      self.logger.error("Error while enabling vdt-rotate-logs")
-      raise exceptions.ConfigureError("Error enabling vdt-rotate-logs") 
-
     self.logger.debug("InstallLocations.configure completed")    
     return status
 

@@ -10,7 +10,7 @@ from configure_osg.modules import utilities
 
 ############################# Constant Definitions ############################
 
-VERSION = '0.0.2'
+VERSION = '0.0.4'
 CONFIGURE = 1
 VERIFY = 2
 LIST = 4
@@ -60,7 +60,7 @@ def real_error_exit(logger, message="Critical error occurred, exiting", exceptio
     logger.critical("Exception: %s" % (exception))
   sys.stderr.write("%s\n" % message)
   sys.stderr.write("You may be able to get more details rerunning configure-osg with the -d option " \
-                   "and/or by examining %s\n" % (os.path.join(utilities.get_vdt_location(), 'vdt-install.log')))
+                   "and/or by examining %s\n" % (LOG_FILE))
   sys.exit(1)
 
 def real_normal_exit(logger, message="Configuration completed, exiting..."):
@@ -71,15 +71,17 @@ def real_normal_exit(logger, message="Configuration completed, exiting..."):
  
 # The next two functions are redefined in the main() function once the logger
 # has been set up
-def error_exit(msg, exception=None):
-    fl = FakeLogger()
-    real_error_exit(fl, message=msg, exception=exception)
+def error_exit(msg, exception=None):    
+  sys.stderr.write("%s\n" % msg)
+  sys.stderr.write("You may be able to get more details rerunning configure-osg with the -d option " \
+                   "and/or by examining %s\n" % (LOG_FILE))
+  sys.exit(1)
 
-def normal_exit(msg):
-    fl = FakeLogger()
-    real_normal_exit(fl, message=msg)
+def normal_exit(msg):    
+  sys.stdout.write("%s\n" % msg)
+  sys.exit(0)
    
-def get_configuration_modules(vdt_location, logger):
+def get_configuration_modules(logger):
   """Instantiate and return modules in configure_modules directory"""  
   try:
     module_dirs = os.path.split(os.path.dirname(utilities.__file__))[0]
@@ -461,7 +463,7 @@ def main():
   
   try:
     # get a list of configuration modules
-    modules = get_configuration_modules(vdt_location, logger)
+    modules = get_configuration_modules(logger)
     
     if options.mode == CONFIGURE:
       # configure settings
