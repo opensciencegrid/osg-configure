@@ -83,9 +83,8 @@ config.ini file."""
                        # of replicating it here but that is not currently easy.
                        'gratia_collector' : 'rsv.grid.iu.edu:8880',
                        'rsv_nagios_send_nesca' : False,
-                       'rsv_nagios_conf_file' : os.path.join(utilities.get_vdt_location(),
-                                                             'osg-rsv',
-                                                             'etc',
+                       'rsv_nagios_conf_file' : os.path.join('etc',
+                                                             'rsv',
                                                              'rsv-nagios.conf')}
     self.__optional = ['gratia_probes',
                        'ce_hosts',

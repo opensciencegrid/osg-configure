@@ -2,22 +2,16 @@
 
 import os, imp, sys, unittest, ConfigParser, logging
 
-# setup system library path
-if "CONFIGURE_OSG_LOCATION" in os.environ:
-    pathname = os.path.join(os.environ['CONFIGURE_OSG_LOCATION'], 'bin')
-else:
-    if "VDT_LOCATION" in os.environ:
-        pathname = os.path.join(os.environ['VDT_LOCATION'], 'osg', 'bin')
-        if not os.path.exists(os.path.join(pathname, 'configure-osg')):
-          pathname = '../lib/python/'
-    else:
-      pathname = '../lib/python/'
-          
-sys.path.append(pathname)
-
+# setup system library path if it's not there at present
+try:
+  from configure_osg.modules import utilities
+except ImportError:
+  pathname = '../'
+  sys.path.append(pathname)
+  from configure_osg.modules import utilities
 
 from configure_osg.modules import exceptions
-from configure_osg.modules import utilities
+
 
 from configure_osg.configure_modules import storage
 

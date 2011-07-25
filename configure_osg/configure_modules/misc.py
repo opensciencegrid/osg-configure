@@ -45,10 +45,7 @@ class MiscConfiguration(BaseConfiguration):
     self.__option_types = {'cleanup_age_in_days' : types.IntType}
     self.__enabled = False
     self.__ce_configuration = False
-    self.__defaults['user-vo-map-file'] = os.path.join(utilities.get_vdt_location(),
-                                                       'osg',
-                                                       'etc',
-                                                       'osg-user-vo-map.txt')
+    self.__defaults['user-vo-map-file'] = '/etc/osg/osg-user-vo-map.txt'
     self.config_section = "Misc Services"
     self.logger.debug('MiscConfiguration.__init__ completed')
     
@@ -449,10 +446,7 @@ class MiscConfiguration(BaseConfiguration):
     Create webpage creation if certain conditions are met
     """
     
-    setup_args = [os.path.join(utilities.get_vdt_location(), 
-                               'osg',
-                               'bin',
-                               'setup-osg-portal')]
+    setup_args = [os.path.join('/usr/bin/setup-osg-portal')]
     if not utilities.run_vdt_configure(setup_args):
       error_mesg = "Got error while running setup-osg-portal, exiting..."
       self.logger.error(error_mesg)
