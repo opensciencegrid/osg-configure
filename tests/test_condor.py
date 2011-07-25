@@ -254,72 +254,7 @@ class TestCondor(unittest.TestCase):
                          '/usr/local/condor/etc/condor_config', 
                          'Wrong value obtained for OSG_CONDOR_CONFIG')
 
-  def testAttributeGeneration1(self):
-    """
-    Test the creation of a config file given attributes
-    """
-    
-    config_file = os.path.abspath("./configs/condor/condor1.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-
-    os.environ['VDT_LOCATION'] = '/opt/osg'
-    settings = condor.CondorConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
-
-    attributes = settings.getAttributes()
-    new_config = ConfigParser.SafeConfigParser()
-    settings.generateConfigFile(attributes.items(), new_config)
-    section_name = 'Condor'
-    self.failUnless(new_config.has_section(section_name), 
-                    "%s section not created in config file" % section_name)
-    
-    options = {'enabled' : 'True',
-               'job_contact' : 'my.domain.com/jobmanager-condor',
-               'util_contact' : 'my.domain.com/jobmanager',
-               'wsgram' : 'True',               
-               'condor_location' : '/opt/condor',
-               'condor_config' : '/etc/condor/condor_config'}
-    for option in options:      
-      self.failUnless(new_config.has_option(section_name, option), 
-                      "Option %s missing" % option)
-      self.failUnlessEqual(new_config.get(section_name, option), 
-                           options[option], 
-                           "Wrong value obtained for %s, expected %s, got %s" %
-                           (option,
-                            options[option],
-                            new_config.get(section_name, option)))
-                            
-    
-  def testAttributeGeneration2(self):
-    """
-    Test the creation of a config file given attributes
-    """
-    
-    config_file = os.path.abspath("./configs/condor/condor_disabled.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-
-    os.environ['VDT_LOCATION'] = '/opt/osg'
-    settings = condor.CondorConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
-
-    attributes = settings.getAttributes()    
-    new_config = ConfigParser.SafeConfigParser()
-    settings.generateConfigFile(attributes.items(), new_config)
-    section_name = 'Condor'
-    self.failIf(new_config.has_section(section_name), 
-                "%s section created in config file" % section_name)
-    
-                            
+                           
   def testMissingCondorLocation(self):
     """
     Test the checkAttributes function to see if it catches missing condor location

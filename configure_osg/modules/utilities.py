@@ -472,11 +472,8 @@ def fetch_crl():
         sys.stdout.flush()
         return True
       
-    crl_path = os.path.join(get_vdt_location(),
-                            'fetch-crl',
-                            'share',
-                            'doc',
-                            'fetch-crl-*',
+    crl_path = os.path.join('usr',
+                            'bin',
                             'fetch-crl.cron')
                  
     if len(glob.glob(crl_path)) > 0:

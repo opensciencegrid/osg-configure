@@ -98,7 +98,12 @@ class CemonConfiguration(BaseConfiguration):
     if self.ignored:
       self.logger.warning("%s configuration ignored" % self.config_section)
       return True
-    
+
+    # disable configuration for now
+    self.logger.debug("Not enabled")
+    self.logger.debug("CemonConfiguration.configure completed")
+    return True
+        
     if not self.enabled:
       self.logger.debug("Not enabled")
       self.logger.debug("CemonConfiguration.configure completed")
@@ -160,15 +165,6 @@ class CemonConfiguration(BaseConfiguration):
     self.logger.debug("CemonConfiguration.checkAttributes completed")
     return valid
 
-# pylint: disable-msg=W0613
-  def generateConfigFile(self, attribute_list, config_file):
-    """Take a list of (key, value) tuples in attribute_list and add the 
-    appropriate configuration options to the config file"""
-    # Cemon doesn't have any specific configuration
-    self.logger.debug("CemonConfiguration.generateConfigFile started")
-    self.logger.debug("CemonConfiguration.generateConfigFile completed") 
-    return config_file
-  
   def moduleName(self):
     """Return a string with the name of the module"""
     return "CEMon"

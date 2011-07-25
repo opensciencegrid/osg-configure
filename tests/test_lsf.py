@@ -102,72 +102,7 @@ class TestLSF(unittest.TestCase):
     self.failUnlessEqual(len(attributes), 0, 
                          "Ignored configuration should have no attributes")
 
-
-  def testAttributeGeneration1(self):
-    """
-    Test the creation of a config file given attributes
-    """
-    
-    config_file = os.path.abspath("./configs/lsf/lsf1.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-
-    os.environ['VDT_LOCATION'] = '/opt/osg'
-    settings = lsf.LSFConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
-
-    attributes = settings.getAttributes()    
-    new_config = ConfigParser.SafeConfigParser()
-    settings.generateConfigFile(attributes.items(), new_config)
-    section_name = 'LSF'
-    self.failUnless(new_config.has_section(section_name), 
-                    "%s section not created in config file" % section_name)
-    
-    options = {'enabled' : 'True',
-               'job_contact' : 'my.domain.com/jobmanager-lsf',
-               'util_contact' : 'my.domain.com/jobmanager',
-               'wsgram' : 'True',               
-               'lsf_location' : '/opt/lsf'}
-    for option in options:      
-      self.failUnless(new_config.has_option(section_name, option), 
-                      "Option %s missing" % option)
-      self.failUnlessEqual(new_config.get(section_name, option), 
-                           options[option], 
-                           "Wrong value obtained for %s, expected %s, got %s" %
-                           (option,
-                            options[option],
-                            new_config.get(section_name, option)))
-                            
-    
-  def testAttributeGeneration2(self):
-    """
-    Test the creation of a config file given attributes
-    """
-    
-    config_file = os.path.abspath("./configs/lsf/lsf_disabled.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-
-    os.environ['VDT_LOCATION'] = '/opt/osg'
-    settings = lsf.LSFConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
-
-    attributes = settings.getAttributes()    
-    new_config = ConfigParser.SafeConfigParser()
-    settings.generateConfigFile(attributes.items(), new_config)
-    section_name = 'LSF'
-    self.failIf(new_config.has_section(section_name), 
-                "%s section created in config file" % section_name)
-    
-                            
+                           
   def testMissingLSFLocation(self):
     """
     Test the checkAttributes function to see if it catches missing LSF location

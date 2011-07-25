@@ -7,9 +7,6 @@ import sys
 
 __all__ = ['LocalSettings']
 
-python23 = sys.version_info[0] == 2 and sys.version_info[1] >= 3
-
-
 class LocalSettings(BaseConfiguration):
   """Class to handle site specific local settings"""
 
@@ -44,21 +41,12 @@ class LocalSettings(BaseConfiguration):
     # variables from default section appear, so we need to cross reference
     # the ini defaults and then skip the variable if it also appears in the 
     # defaults section  
-    if python23:
-      for (name, value) in configuration.items(section_name):
-        self.logger.debug("Found %s key with value %s" % (name, value))    
-        if name in configuration.defaults():
-          self.logger.debug("%s is a default, skipping" % (name))
-          continue 
-        self.attributes[name] = value
-    else:
-      for name in configuration.options(section_name):
-        value = configuration.get(section_name, name)
-        self.logger.debug("Found %s key with value %s" % (name, value))    
-        if name in configuration.defaults():
-          self.logger.debug("%s is a default, skipping" % (name))
-          continue 
-        self.attributes[name] = value
+    for (name, value) in configuration.items(section_name):
+      self.logger.debug("Found %s key with value %s" % (name, value))    
+      if name in configuration.defaults():
+        self.logger.debug("%s is a default, skipping" % (name))
+        continue 
+      self.attributes[name] = value
     self.logger.debug('LocalSettings.parseConfiguration completed')    
   
   def moduleName(self):

@@ -10,7 +10,7 @@ from configure_osg.modules import utilities
 
 ############################# Constant Definitions ############################
 
-VERSION = '0.0.3'
+VERSION = '0.0.4'
 CONFIGURE = 1
 VERIFY = 2
 LIST = 4

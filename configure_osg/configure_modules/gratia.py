@@ -105,7 +105,12 @@ in your config.ini file."""
       self.logger.warning("%s configuration ignored" % self.config_section)
       self.logger.debug("GratiaConfiguration.configure completed")
       return True
-    
+
+    # disable configuration for now
+    self.logger.debug("Not enabled")
+    self.logger.debug("GratiaConfiguration.configure completed")
+    return True
+        
     # disable all gratia services
     # if gratia is enabled, probes will get enabled below
     self.__disable_services()
@@ -199,15 +204,6 @@ in your config.ini file."""
     status = self.__check_servers()
     self.logger.debug("GratiaConfiguration.checkAttributes completed")
     return status
-
-  def generateConfigFile(self, attribute_list, config_file):
-    """Take a list of (key, value) tuples in attribute_list and add the 
-    appropriate configuration options to the config file"""
-    # pylint: disable-msg=W0613
-    # Gratia doesn't have any specific configuration
-    self.logger.debug("GratiaConfiguration.generateConfigFile started")
-    self.logger.debug("GratiaConfiguration.generateConfigFile completed")    
-    return config_file
 
   def __subscriptionPresent(self, probe_file, probe_host):
     """

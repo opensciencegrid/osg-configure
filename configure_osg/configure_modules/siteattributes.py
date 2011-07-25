@@ -240,29 +240,6 @@ class SiteAttributes(BaseConfiguration):
     self.logger.debug('SiteAttributes.checkAttributes completed')
     return attributes_ok 
   
-  def generateConfigFile(self, attribute_list, config_file):
-    """Take a list of (key, value) tuples in attribute_list and add the 
-    appropriate configuration options to the config file"""
-
-    self.logger.debug("SiteAttributes.generateConfigFile started")
-    # generate reverse mapping so that we can create the appropriate options
-    reverse_mapping = {}
-    for key in self.__mappings:
-      reverse_mapping[self.__mappings[key]] = key
-      
-    if not config_file.has_section(self.config_section):
-      self.logger.debug("Adding %s section to configuration file" % self.config_section)
-      config_file.add_section(self.config_section)
-      
-    for (key, value) in attribute_list:
-      if key in reverse_mapping and key.isupper():
-        self.logger.debug("Found %s in reverse mapping with value %s" % (key, value))
-        self.logger.debug("Mapped to %s" % reverse_mapping[key])
-        config_file.set(self.config_section, reverse_mapping[key], value)
-    
-    self.logger.debug("SiteAttributes.generateConfigFile completed")    
-    return config_file
-  
   def moduleName(self):
     """Return a string with the name of the module"""
     return "SiteInformation"

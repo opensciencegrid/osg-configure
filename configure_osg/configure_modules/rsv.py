@@ -285,6 +285,11 @@ config.ini file."""
       self.logger.debug('RsvConfiguration.configure completed') 
       return True
 
+    # disable configuration for now
+    self.logger.debug('Not enabled, returning True')
+    self.logger.debug('RsvConfiguration.configure completed') 
+    return True
+    
     if not self.enabled:
       self.logger.debug('Not enabled, returning True')
       self.logger.debug('RsvConfiguration.configure completed') 
@@ -356,15 +361,6 @@ config.ini file."""
     self.logger.debug('RsvConfiguration.getAttributes started')    
     self.logger.debug('RsvConfiguration.getAttributes completed')    
     return {}
-
-# pylint: disable-msg=W0613
-  def generateConfigFile(self, attribute_list, config_file):
-    """Take a list of (key, value) tuples in attribute_list and add the 
-    appropriate configuration options to the config file"""
-    # generate reverse mapping so that we can create the appropriate options
-    self.logger.debug('RsvConfiguration.generateConfigFile started')    
-    self.logger.debug('RsvConfiguration.generateConfigFile completed')    
-    return config_file
 
     
   def moduleName(self):
