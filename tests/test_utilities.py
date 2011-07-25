@@ -2,20 +2,16 @@
 
 import os, imp, sys, unittest, ConfigParser, types
 
-# setup system library path
-if "CONFIGURE_OSG_LOCATION" in os.environ:
-    pathname = os.path.join(os.environ['CONFIGURE_OSG_LOCATION'], 'bin')
-else:
-    if "VDT_LOCATION" in os.environ:
-        pathname = os.path.join(os.environ['VDT_LOCATION'], 'osg', 'bin')
-        if not os.path.exists(os.path.join(pathname, 'configure-osg')):
-          pathname = '../lib/python'
-    else:
-      pathname = '../lib/python'
-          
-sys.path.append(pathname)
+# setup system library path if it's not there at present
+try:
+  from configure_osg.modules import exceptions
+except ImportError:
+  pathname = '../'
+  sys.path.append(pathname)
+  from configure_osg.modules import exceptions
 
-pathname = os.path.join('../bin', 'configure-osg')
+
+pathname = os.path.join('../scripts', 'configure-osg')
 
 try:
     has_configure_osg = False
@@ -126,22 +122,6 @@ class TestUtilities(unittest.TestCase):
       del os.environ['VDT_GUMS_HOST']
         
 
-    def test_vdt_location(self):
-      """
-      Check to see if get_vdt_location works
-      """
-
-      vdt_location = os.path.abspath('.')
-
-      os.environ['VDT_LOCATION'] = vdt_location
-      self.failUnlessEqual(utilities.get_vdt_location(), 
-                           vdt_location, 
-                           "VDT_LOCATION not found from environment")        
-      del os.environ['VDT_LOCATION']
-
-      self.failUnlessRaises(exceptions.ApplicationError, utilities.get_vdt_location)
-
-      
     def test_get_elements(self):
       """
       Check to make sure that get_elements properly gets information 

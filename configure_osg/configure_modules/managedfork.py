@@ -28,7 +28,7 @@ class ManagedForkConfiguration(BaseConfiguration):
     self.__optional = ['condor_location', 
                        'condor_config',
                        'accept_limited']
-    condor_location = os.path.join(utilities.get_vdt_location(), 'condor')
+    condor_location = os.environ.get('CONDOR_LOCATION', '/usr')
     self.__defaults = {'condor_location' : condor_location,
                        'accept_limited' : 'False'}
     
@@ -118,8 +118,7 @@ class ManagedForkConfiguration(BaseConfiguration):
 
     self.logger.debug('ManagedForkConfiguration.configure started')
 
-    vdt_location = utilities.get_vdt_location()
-    configure_globus = os.path.join(vdt_location, "vdt", "setup", "configure_globus_gatekeeper")
+    configure_globus = os.path.join("/usr/sbin/configure_globus_gatekeeper")
     if not os.path.exists(configure_globus):
       self.logger.debug("Configuration script '%s' does not exist.  Not applying globus-gatekeeper configuration in managedfork.py" % configure_globus)
       return True
@@ -153,11 +152,6 @@ class ManagedForkConfiguration(BaseConfiguration):
       self.logger.error("Error while making managed fork the default jobmanager")
       raise exceptions.ConfigureError("Error configuring Managed Fork")    
 
-    if utilities.get_condor_location().startswith(vdt_location):
-      self.logger.debug('Enabling condor for ManagedFork')
-      if not utilities.enable_service('condor'):
-        self.logger.error("Error while enabling condor")
-        raise exceptions.ConfigureError("Error configuring Managed Fork")    
     self.logger.debug('ManagedForkConfiguration.configure completed')
     return True
   

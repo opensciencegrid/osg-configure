@@ -19,16 +19,13 @@ class CemonConfiguration(BaseConfiguration):
   miscellaneous services
   """
   
+  CEMON_CONFIG_FILE = "/etc/glite/cemonitor-config.xml"
   def __init__(self, *args, **kwargs):
     # pylint: disable-msg=W0142
     super(CemonConfiguration, self).__init__(*args, **kwargs)
     self.logger.debug("CemonConfiguration.__init__ started")
     # file location for xml file with cemon subscriptions
-    self.__cemon_configuration_file = os.path.join(utilities.get_vdt_location(),
-                                                   'glite',
-                                                   'etc',
-                                                   'glite-ce-monitor',
-                                                   'cemonitor-config.xml')
+    self.__cemon_configuration_file = os.path.join(self.CEMON_CONFIG_FILE)
     self.config_section = 'Cemon'
     self.__mappings = {'ress_servers' : 'ress_servers',
                        'bdii_servers' : 'bdii_servers'}

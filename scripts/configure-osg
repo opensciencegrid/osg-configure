@@ -71,13 +71,15 @@ def real_normal_exit(logger, message="Configuration completed, exiting..."):
  
 # The next two functions are redefined in the main() function once the logger
 # has been set up
-def error_exit(msg, exception=None):
-    fl = FakeLogger()
-    real_error_exit(fl, message=msg, exception=exception)
+def error_exit(msg, exception=None):    
+  sys.stderr.write("%s\n" % msg)
+  sys.stderr.write("You may be able to get more details rerunning configure-osg with the -d option " \
+                   "and/or by examining %s\n" % (LOG_FILE))
+  sys.exit(1)
 
-def normal_exit(msg):
-    fl = FakeLogger()
-    real_normal_exit(fl, message=msg)
+def normal_exit(msg):    
+  sys.stdout.write("%s\n" % msg)
+  sys.exit(0)
    
 def get_configuration_modules(logger):
   """Instantiate and return modules in configure_modules directory"""  
