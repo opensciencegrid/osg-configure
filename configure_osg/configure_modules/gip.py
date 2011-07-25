@@ -375,7 +375,7 @@ class GipConfiguration(BaseConfiguration):
     self.logger.debug('GipConfiguration.configure started')
 
     # disable for now
-    self.logger.debug("glite directory (%s) does not exist.  Skipping GIP configuration." % glite_dir)
+    self.logger.debug("Skipping GIP configuration.")
     return
 
     glite_dir = os.path.join(utilities.get_vdt_location(),

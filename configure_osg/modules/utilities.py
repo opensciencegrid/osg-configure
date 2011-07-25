@@ -216,7 +216,7 @@ def write_attribute_file(filename=None, attributes=None):
   file_handle.write("#---------- the config.ini [Local Settings] section, " \
                     "as documented here:\n")
   file_handle.write("#---------- https://twiki.grid.iu.edu/bin/view/Release"\
-                    "Documentation/ConfigurationFileLocalSettings")
+                    "Documentation/ConfigurationFileLocalSettings\n")
   file_handle.write("#---  variables -----\n")
   file_handle.write(variable_string)
   file_handle.write("#--- export variables -----\n")
