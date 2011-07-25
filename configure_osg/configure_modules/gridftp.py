@@ -145,6 +145,11 @@ class GridFTPConfiguration(BaseConfiguration):
       self.logger.debug('GridFTPConfiguration.configure completed')
       return True
 
+    # disable configuration for now
+    self.logger.debug('GridFTP not enabled')
+    self.logger.debug('GridFTPConfiguration.configure completed')
+    return True
+    
     if not self.enabled:
       self.logger.debug('GridFTP not enabled')
       self.logger.debug('GridFTPConfiguration.configure completed')

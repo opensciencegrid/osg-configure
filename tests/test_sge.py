@@ -2,22 +2,16 @@
 
 import os, imp, sys, unittest, ConfigParser, logging
 
-# setup system library path
-if "CONFIGURE_OSG_LOCATION" in os.environ:
-    pathname = os.path.join(os.environ['CONFIGURE_OSG_LOCATION'], 'bin')
-else:
-    if "VDT_LOCATION" in os.environ:
-        pathname = os.path.join(os.environ['VDT_LOCATION'], 'osg', 'bin')
-        if not os.path.exists(os.path.join(pathname, 'configure-osg')):
-          pathname = '../lib/python/'
-    else:
-      pathname = '../lib/python/'
-          
-sys.path.append(pathname)
-
+# setup system library path if it's not there at present
+try:
+  from configure_osg.modules import utilities
+except ImportError:
+  pathname = '../'
+  sys.path.append(pathname)
+  from configure_osg.modules import utilities
 
 from configure_osg.modules import exceptions
-from configure_osg.modules import utilities
+
 
 from configure_osg.configure_modules import sge
 
@@ -110,70 +104,6 @@ class TestSGE(unittest.TestCase):
     self.failUnlessEqual(len(attributes), 0, 
                          "Ignored configuration should have no attributes")
 
-
-  def testAttributeGeneration1(self):
-    """
-    Test the creation of a config file given attributes
-    """
-    
-    config_file = os.path.abspath("./configs/sge/sge1.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-
-    os.environ['VDT_LOCATION'] = '/opt/osg'
-    settings = sge.SGEConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
-
-    attributes = settings.getAttributes()    
-    new_config = ConfigParser.SafeConfigParser()
-    settings.generateConfigFile(attributes.items(), new_config)
-    section_name = 'SGE'
-    self.failUnless(new_config.has_section(section_name), 
-                    "%s section not created in config file" % section_name)
-    
-    options = {'enabled' : 'True',
-               'job_contact' : 'my.domain.com/jobmanager-sge',
-               'util_contact' : 'my.domain.com/jobmanager',
-               'wsgram' : 'True',               
-               'sge_root' : './test_files'}
-    for option in options:      
-      self.failUnless(new_config.has_option(section_name, option), 
-                      "Option %s missing" % option)
-      self.failUnlessEqual(new_config.get(section_name, option), 
-                           options[option], 
-                           "Wrong value obtained for %s, expected %s, got %s" %
-                           (option,
-                            options[option],
-                            new_config.get(section_name, option)))
-                            
-    
-  def testAttributeGeneration2(self):
-    """
-    Test the creation of a config file given attributes
-    """
-    
-    config_file = os.path.abspath("./configs/sge/sge_disabled.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-
-    os.environ['VDT_LOCATION'] = '/opt/osg'
-    settings = sge.SGEConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
-
-    attributes = settings.getAttributes()    
-    new_config = ConfigParser.SafeConfigParser()
-    settings.generateConfigFile(attributes.items(), new_config)
-    section_name = 'SGE'
-    self.failIf(new_config.has_section(section_name), 
-                "%s section created in config file" % section_name)
     
   def testMissingAttribute(self):
     """

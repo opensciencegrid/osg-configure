@@ -2,22 +2,16 @@
 
 import os, imp, sys, unittest, ConfigParser, logging
 
-# setup system library path
-if "CONFIGURE_OSG_LOCATION" in os.environ:
-    pathname = os.path.join(os.environ['CONFIGURE_OSG_LOCATION'], 'bin')
-else:
-    if "VDT_LOCATION" in os.environ:
-        pathname = os.path.join(os.environ['VDT_LOCATION'], 'osg', 'bin')
-        if not os.path.exists(os.path.join(pathname, 'configure-osg')):
-          pathname = '../lib/python/'
-    else:
-      pathname = '../lib/python/'
-          
-sys.path.append(pathname)
-
+# setup system library path if it's not there at present
+try:
+  from configure_osg.modules import utilities
+except ImportError:
+  pathname = '../'
+  sys.path.append(pathname)
+  from configure_osg.modules import utilities
 
 from configure_osg.modules import exceptions
-from configure_osg.modules import utilities
+
 
 from configure_osg.configure_modules import monalisa
 
@@ -216,124 +210,6 @@ class TestLocalSettings(unittest.TestCase):
                     'Attribute auto_update missing')
     self.failUnlessEqual(attributes['auto_update'], 'N', 
                          'Wrong value obtained for auto_update')
-
-  def testAttributeGeneration1(self):
-    """
-    Test the creation of a config file given attributes
-    """
-    
-    config_file = os.path.abspath("./configs/monalisa/monalisa1.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-
-    settings = monalisa.MonalisaConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
-
-    attributes = settings.getAttributes()    
-    new_config = ConfigParser.SafeConfigParser()
-    settings.generateConfigFile(attributes.items(), new_config)
-    section_name = 'MonaLisa'
-    self.failUnless(new_config.has_section(section_name), 
-                    "%s section not created in config file" % section_name)
-    
-    options = {'enabled' : 'True',
-               'use_vo_modules' : 'True',
-               'ganglia_support' : 'True',
-               'ganglia_host' : 'ganglia.host.org',
-               'ganglia_port' : '1234',
-               'monitor_group' : 'monalisa_group',
-               'auto_update' : 'True',
-               'user' : 'monalisa_user' }
-    for option in options:      
-      self.failUnless(new_config.has_option(section_name, option), 
-                      "Option %s missing" % option)
-      self.failUnlessEqual(new_config.get(section_name, option), 
-                           options[option], 
-                           "Wrong value obtained for %s, expected %s, got %s" %
-                           (option,
-                            options[option],
-                            new_config.get(section_name, option)))
-                            
-    
-  def testAttributeGeneration2(self):
-    """
-    Test the creation of a config file given attributes
-    """
-    
-    config_file = os.path.abspath("./configs/monalisa/monalisa2.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-
-    settings = monalisa.MonalisaConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
-
-    attributes = settings.getAttributes()    
-    new_config = ConfigParser.SafeConfigParser()
-    settings.generateConfigFile(attributes.items(), new_config)
-    section_name = 'MonaLisa'
-    self.failUnless(new_config.has_section(section_name), 
-                    "%s section not created in config file" % section_name)
-    
-    options = {'enabled' : 'True',
-               'use_vo_modules' : 'False',
-               'ganglia_support' : 'False',
-               'ganglia_host' : 'ganglia.host.org',
-               'ganglia_port' : '1234',
-               'monitor_group' : 'monalisa_group',
-               'auto_update' : 'False',
-               'user' : 'monalisa_user' }
-    for option in options:      
-      self.failUnless(new_config.has_option(section_name, option), 
-                      "Option %s missing" % option)
-      self.failUnlessEqual(new_config.get(section_name, option), 
-                           options[option], 
-                           "Wrong value obtained for %s, expected %s, got %s" %
-                           (option,
-                            options[option],
-                            new_config.get(section_name, option)))
-                            
-  def testAttributeGeneration3(self):
-    """
-    Test the creation of a config file given attributes
-    """
-    
-    config_file = os.path.abspath("./configs/monalisa/monalisa_disabled.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-
-    settings = monalisa.MonalisaConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
-
-    attributes = settings.getAttributes()    
-    new_config = ConfigParser.SafeConfigParser()
-    settings.generateConfigFile(attributes.items(), new_config)
-    section_name = 'MonaLisa'
-    self.failUnless(new_config.has_section(section_name), 
-                    "%s section not created in config file" % section_name)
-    
-    options = {'enabled' : 'False'}
-    for option in options:      
-      self.failUnless(new_config.has_option(section_name, option), 
-                      "Option %s missing" % option)
-      self.failUnlessEqual(new_config.get(section_name, option), 
-                           options[option], 
-                           "Wrong value obtained for %s, expected %s, got %s" %
-                           (option,
-                            options[option],
-                            new_config.get(section_name, option)))
-                            
 
   def testAttributeCheck(self):
     """

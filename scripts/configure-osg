@@ -10,7 +10,7 @@ from configure_osg.modules import utilities
 
 ############################# Constant Definitions ############################
 
-VERSION = '0.0.2'
+VERSION = '0.0.4'
 CONFIGURE = 1
 VERIFY = 2
 LIST = 4
@@ -60,7 +60,7 @@ def real_error_exit(logger, message="Critical error occurred, exiting", exceptio
     logger.critical("Exception: %s" % (exception))
   sys.stderr.write("%s\n" % message)
   sys.stderr.write("You may be able to get more details rerunning configure-osg with the -d option " \
-                   "and/or by examining %s\n" % (os.path.join(utilities.get_vdt_location(), 'vdt-install.log')))
+                   "and/or by examining %s\n" % (LOG_FILE))
   sys.exit(1)
 
 def real_normal_exit(logger, message="Configuration completed, exiting..."):
@@ -71,15 +71,17 @@ def real_normal_exit(logger, message="Configuration completed, exiting..."):
  
 # The next two functions are redefined in the main() function once the logger
 # has been set up
-def error_exit(msg, exception=None):
-    fl = FakeLogger()
-    real_error_exit(fl, message=msg, exception=exception)
+def error_exit(msg, exception=None):    
+  sys.stderr.write("%s\n" % msg)
+  sys.stderr.write("You may be able to get more details rerunning configure-osg with the -d option " \
+                   "and/or by examining %s\n" % (LOG_FILE))
+  sys.exit(1)
 
-def normal_exit(msg):
-    fl = FakeLogger()
-    real_normal_exit(fl, message=msg)
+def normal_exit(msg):    
+  sys.stdout.write("%s\n" % msg)
+  sys.exit(0)
    
-def get_configuration_modules(vdt_location, logger):
+def get_configuration_modules(logger):
   """Instantiate and return modules in configure_modules directory"""  
   try:
     module_dirs = os.path.split(os.path.dirname(utilities.__file__))[0]
@@ -198,14 +200,14 @@ def write_attributes(attributes,
     error_exit("Error writing attributes to osg-job-environment.conf", exception)
 
     
-def configure_system(configuration_file, output_directory, modules,
+def configure_system(configuration_file, modules,
                      logger, configure_module=None, force=False):
   """Read configuration files and try to configure the osg system"""
   
   if not modules:
     error_exit("No modules found, exiting")
-  if not utilities.valid_location(output_directory):
-    error_exit("Output directory %s not present" % output_directory)
+  if not utilities.valid_location(CONFIG_DIRECTORY):
+    error_exit("Output directory %s not present" % CONFIG_DIRECTORY)
   if not utilities.valid_file(configuration_file):
     error_exit("Configuration file %s does not exist" % configuration_file)
 
@@ -286,8 +288,7 @@ def configure_system(configuration_file, output_directory, modules,
     # no need to write out attribute files on non-ce installations
     return
   
-  write_attributes(output_directory,
-                   attributes,
+  write_attributes(attributes,
                    local_attributes,
                    job_environment_attributes)
 
@@ -461,12 +462,12 @@ def main():
   
   try:
     # get a list of configuration modules
-    modules = get_configuration_modules(vdt_location, logger)
+    modules = get_configuration_modules(logger)
     
     if options.mode == CONFIGURE:
       # configure settings
-      #configure_system(configuration_file, config_directory, modules, 
-      #                 logger, configure_module)
+      configure_system(configuration_file, modules, 
+                       logger, configure_module)
       pass
     elif options.mode == VERIFY:
       # verify settings

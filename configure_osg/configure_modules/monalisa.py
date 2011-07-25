@@ -163,6 +163,11 @@ class MonalisaConfiguration(BaseConfiguration):
     """Configure installation using attributes"""
     self.logger.debug('MonalisaConfiguration.configure started')
     
+    # disable configuration for now
+    self.logger.debug('Not enabled, exiting.')
+    self.logger.debug('MonalisaConfiguration.configure completed')
+    return True
+    
     if not self.enabled:
       self.logger.debug('Not enabled, exiting.')
       self.logger.debug('MonalisaConfiguration.configure completed')
@@ -238,38 +243,6 @@ class MonalisaConfiguration(BaseConfiguration):
     self.logger.debug('MonalisaConfiguration.configure completed')
     return True
   
-  def generateConfigFile(self, attribute_list, config_file):
-    """Take a list of (key, value) tuples in attribute_list and add the 
-    appropriate configuration options to the config file"""
-    # generate reverse mapping so that we can create the appropriate options
-    self.logger.debug("MonalisaConfiguration.generateConfigFile started")    
-    reverse_mapping = {}
-    for key in self.__mappings:
-      reverse_mapping[self.__mappings[key]] = key
-      
-    if not config_file.has_section(self.config_section):
-      self.logger.debug("Adding %s section to configuration file" % self.config_section)
-      config_file.add_section(self.config_section)
-      
-    for (key, value) in attribute_list:
-      if key in reverse_mapping:
-        if value.upper() == 'Y':
-          self.logger.debug("Found %s in reverse mapping with value True" % (key))
-          self.logger.debug("Mapped to %s" % reverse_mapping[key])
-          config_file.set(self.config_section, reverse_mapping[key], 'True')
-        elif value.upper() == 'N':
-          self.logger.debug("Found %s in reverse mapping with value False" % (key))
-          self.logger.debug("Mapped to %s" % reverse_mapping[key])
-          config_file.set(self.config_section, reverse_mapping[key], 'False')
-        else:
-          self.logger.debug("Found %s in reverse mapping with value %s" % (key, value))
-          self.logger.debug("Mapped to %s" % reverse_mapping[key])
-          config_file.set(self.config_section, reverse_mapping[key], value)
-          
-    self.logger.debug("MonalisaConfiguration.generateConfigFile completed")    
-    return config_file
-
-
   def moduleName(self):
     """Return a string with the name of the module"""
     return "MonaLisa"

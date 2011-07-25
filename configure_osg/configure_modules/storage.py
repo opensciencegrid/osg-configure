@@ -91,39 +91,6 @@ class StorageConfiguration(BaseConfiguration):
     self.logger.debug('StorageConfiguration.checkAttributes completed')    
     return attributes_ok 
 
-  def generateConfigFile(self, attribute_list, config_file):
-    """Take a list of (key, value) tuples in attribute_list and add the 
-    appropriate configuration options to the config file"""
-
-    self.logger.debug("StorageConfiguration.generateConfigFile started")
-    # generate reverse mapping so that we can create the appropriate options
-    reverse_mapping = {}
-    for key in self.__mappings:
-      reverse_mapping[self.__mappings[key]] = key
-      
-    if not config_file.has_section(self.config_section):
-      self.logger.debug("Adding %s section to configuration file" % self.config_section)
-      config_file.add_section(self.config_section)
-      
-    for (key, value) in attribute_list:
-      if key in reverse_mapping:
-        if value.upper() == 'Y':
-          self.logger.debug("Found %s in reverse mapping with value True" % (key))
-          self.logger.debug("Mapped to %s" % reverse_mapping[key])
-          config_file.set(self.config_section, reverse_mapping[key], 'True')
-        elif value.upper() == 'N':
-          self.logger.debug("Found %s in reverse mapping with value False" % (key))
-          self.logger.debug("Mapped to %s" % reverse_mapping[key])
-          config_file.set(self.config_section, reverse_mapping[key], 'False')
-        else:
-          self.logger.debug("Found %s in reverse mapping with value %s" % (key, value))
-          self.logger.debug("Mapped to %s" % reverse_mapping[key])
-          config_file.set(self.config_section, reverse_mapping[key], value)
-    
-    self.logger.debug("StorageConfiguration.generateConfigFile completed")    
-    return config_file
-
-# pylint: disable-msg=W0613
   def configure(self, attributes):
     """Configure storage locations for ce usage"""
 
@@ -139,10 +106,8 @@ class StorageConfiguration(BaseConfiguration):
                                   'etc',
                                   'grid3-locations.txt')
     if not utilities.valid_file(grid3_location):
-      grid3_source = os.path.join(utilities.get_vdt_location(),
+      grid3_source = os.path.join('etc',
                                   'osg',
-                                  'etc',
-                                  'locations',
                                   'grid3-locations.txt')
       if not utilities.valid_file(grid3_source):
         status = False
@@ -164,16 +129,6 @@ class StorageConfiguration(BaseConfiguration):
         self.logger.warning("Can't set permissions on grid3-location file at %s" % \
                             (grid3_location))
   
-    self.logger.debug("Enabling mysql service")
-    if not utilities.enable_service('mysql5'):
-      self.logger.error("Error while enabling mysql5")
-      raise exceptions.ConfigureError("Error configuring mysql5") 
-
-    self.logger.debug("Enabling gsiftp service")
-    if not utilities.enable_service('gsiftp'):
-      self.logger.error("Error while enabling gsiftp")
-      raise exceptions.ConfigureError("Error configuring gsiftp") 
-    
     self.logger.debug("StorageConfiguration.configure completed")    
     return status
 
