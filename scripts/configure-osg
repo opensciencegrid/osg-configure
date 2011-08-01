@@ -15,6 +15,7 @@ CONFIGURE = 1
 VERIFY = 2
 LIST = 4
 CONFIG_DIRECTORY = '/etc/osg'
+OUTPUT_DIRECTORY = '/var/lib/osg'
 LOG_FILE = '/var/log/osg/configure-osg.log'
 job_environment_attributes = ['OSG_LOCATION',
                               'GLOBUS_LOCATION',
@@ -172,7 +173,7 @@ def write_attributes(attributes,
   # This does not write gip attributes since that needs to be done in the 
   # gip configure method in order for configure_gip to work
   try:
-    filename = os.path.join(CONFIG_DIRECTORY, "osg-attributes.conf")
+    filename = os.path.join(OUTPUT_DIRECTORY, "osg-attributes.conf")
     utilities.write_attribute_file(filename, attributes)
   except IOError, exception:
     error_exit("Error writing attributes to osg-attributes.conf", exception)
@@ -180,7 +181,7 @@ def write_attributes(attributes,
     
   # write out osg-local-job-environment.conf
   try:
-    filename = os.path.join(CONFIG_DIRECTORY, "osg-local-job-environment.conf")
+    filename = os.path.join(OUTPUT_DIRECTORY, "osg-local-job-environment.conf")
     utilities.write_attribute_file(filename, local_site_attributes)
   except IOError, exception:
     error_exit("Error writing attributes to osg-local-job-attributes.conf", exception)
@@ -188,7 +189,7 @@ def write_attributes(attributes,
 
   # write out osg-job-environment.conf
   try:
-    filename = os.path.join(CONFIG_DIRECTORY, "osg-job-environment.conf")
+    filename = os.path.join(OUTPUT_DIRECTORY, "osg-job-environment.conf")
     temp = {}
     for key in job_environment_attributes:
       try:
