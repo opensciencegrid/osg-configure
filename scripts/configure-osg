@@ -10,7 +10,7 @@ from configure_osg.modules import utilities
 
 ############################# Constant Definitions ############################
 
-VERSION = '0.5.1'
+VERSION = '0.5.2'
 CONFIGURE = 1
 VERIFY = 2
 LIST = 4
@@ -427,6 +427,9 @@ def main():
   (options, args) = parser.parse_args()
   log_level = logging.INFO
 
+  if os.getuid() != 0:
+    error_exit("You must be root when running %s" % sys.argv[0])
+    
   if options.debug == True:
     log_level = logging.DEBUG
   
@@ -459,7 +462,7 @@ def main():
       
   except IOError:
     sys.stderr.write("Can't open %s for logging, exiting...\n" % LOG_FILE)
-    sys.exit(1)
+    sys.exit(1)  
   
   try:
     # get a list of configuration modules
