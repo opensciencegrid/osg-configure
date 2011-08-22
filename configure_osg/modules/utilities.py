@@ -7,20 +7,9 @@ import tempfile, subprocess
 
 from configure_osg.modules import exceptions
 
-__all__ = ['valid_domain', 
-           'valid_email', 
-           'valid_location', 
-           'valid_file',
-           'valid_user',
-           'valid_user_vo_file',
-           'valid_vo_name',
-           'valid_boolean',
-           'valid_executable',
-           'valid_ini_file',
-           'using_prima',
+__all__ = ['using_prima',
            'using_xacml_protocol',
            'get_vos',
-           'duplicate_sections', 
            'run_vdt_configure',
            'enable_service',
            'disable_service',
@@ -33,66 +22,10 @@ __all__ = ['valid_domain',
            'get_gums_host',
            'create_map_file',
            'fetch_crl',
-           'get_option',
            'ce_config']
   
 CONFIG_DIRECTORY = "/etc/osg"
 
-def valid_domain(host, resolve=False):
-  """Check to see if the string passed in is a valid domain"""
-  if len(host) == 0:
-    return False
-  match = re.match('^[a-zA-Z0-9\-]+(?:\.[a-zA-Z0-9\-]+)+$', 
-                   host)
-  if not match:
-    return False
-  elif match and not resolve:
-    return True
-  
-  try:
-    socket.gethostbyname(host)
-  except socket.herror:
-    return False
-  except socket.gaierror:
-    return False
-  return True
-
-def valid_email(address):
-  """Check an email address and make sure that it fits the correct format"""
-  if len(address) == 0:
-    return False
-  match = re.match('(?:[a-zA-Z\-_+0-9.]+)@([a-zA-Z0-9_\-]+(?:\.[a-zA-Z0-9_\-]+)+)', 
-                   address)
-  if not match:
-    return False
-  return True
-
-def valid_location(location):
-  """Returns True if location points to an existing directory or file"""
-  if os.path.exists(location):
-    return os.path.isdir(location) or os.path.isfile(location)
-  
-  return False 
-
-def valid_file(location):
-  """Returns True if location points to an existing file"""
-  if os.path.exists(location):
-    return os.path.isfile(location)
-  
-  return False 
-
-def valid_user(username):
-  """
-  Returns True if the username given is a valid username on the system
-  """
-  try:
-    if pwd.getpwnam(username):
-      return True
-  except KeyError:
-    # getpwnam returns a key error if entry isn't present
-    return False
-  
-  return False 
   
 def using_prima():
   """
@@ -293,87 +226,6 @@ def get_vos(user_vo_file):
       pass
   return vo_list
 
-
-def duplicate_sections_exist(config_file):
-  """
-  Check a config file to make sure that it does not have any duplicate 
-  sections.
-  """
-  if config_file == "" or config_file is None:
-    return False
-  
-  file_contents = open(config_file, 'r').read()
-  sections = {}
-  for line in file_contents.splitlines():
-    temp = line.strip()
-    match = re.search('^\s*\[(.*)\]', temp)
-    if match:
-      section = match.group(1).lower()      
-      if section in sections:
-        sys.stderr.write("Section %s duplicated" % section)
-        return True
-      else:
-        sections[section] = True
-  return False
-
-
-
-def valid_user_vo_file(map_file = None, return_invalid_lines = False):
-  """
-  Check an osg-user-vo-file and make sure that it's valid.
-  """
-  if map_file is None or map_file == "":
-    if return_invalid_lines:
-      return (False, [])
-    else:
-      return False
-  
-  if not valid_file(map_file):
-    if return_invalid_lines:
-      return (False, [])
-    else:
-      return False
-
-  if os.path.getsize(map_file) == 0:
-    if return_invalid_lines:
-      return (False, [])
-    else:
-      return False
-  
-  valid = True
-  comment = re.compile('^\s*#')
-  java = re.compile('(java|exception)', re.I)
-  account_regex = re.compile('^[a-z0-9-._]+$', re.IGNORECASE) 
-  invalid_lines = []
-  for line in [x.strip() for x in open(map_file)]:
-    if line == "":
-      # skip blank lines
-      continue
-    
-    if java.search(line):
-      # found java exception
-      invalid_lines.append(line)
-      valid = False
-      continue
-
-    if not comment.match(line):
-      if len(line.strip().split(' ')) != 2:
-        invalid_lines.append(line)
-        valid = False
-        continue
-        
-      (account, vo) = line.strip().split(' ')
-      if not (account_regex.match(account) and valid_vo_name(vo)):
-        # not a comment or entry
-        invalid_lines.append(line)
-        valid = False
-        continue
-      
-  if return_invalid_lines:    
-    return (valid, invalid_lines)
-  else:
-    return valid
-
 def enable_service(service_name):
   """
   Run vdt-control to enable specified service.
@@ -504,32 +356,6 @@ def run_script(script):
     
   return True          
 
-def valid_boolean(config, section, option):
-  """
-  Check an option to make sure that it's a valid boolean option
-  """
-  try:
-    if not config.has_option(section, option):
-      return False
-    config.getboolean(section, option)
-    return True
-  except ValueError:
-    return False
-    
-  
-def valid_executable(file_name):
-  """
-  Check to make sure that a file is present and a valid executable
-  """
-  
-  
-  try:
-    if (not valid_file(file_name) or 
-        not os.access(file_name, os.X_OK)):
-      return False    
-  except IOError:
-    return False    
-  return True
 
 def get_condor_location(default_location = None):
   """
@@ -564,152 +390,3 @@ def get_condor_config(default_config = None):
     return os.path.join(get_condor_location(),
                         'etc',
                         'condor_config')
-
-def get_option(config,
-               section,
-               option,
-               optional_settings = None, 
-               defaults = None,
-               option_type = types.StringType):
-  """
-  Get an option from a config file with optional defaults and mandatory 
-  options.
-  
-  config should be a ConfigParser object
-  section should be the ini section the option is located in
-  option should be the option name
-  option_type should be an optional variable indicating the type of the option
-  optional_settings should be a list of options that don't have to be given
-  defaults is  a dictionary of option : value pairs giving default values for 
-    options
-  """
-  
-  if optional_settings is None:
-    optional_settings = []
-    
-  if defaults is None:
-    defaults = {}
-  
-  if option == None or option == "":
-    raise exceptions.SettingError('No option passed to get_option')
-
-  if config.has_option(section, option):
-    try:
-      # if option is blank and there's a default for the option
-      # return the default
-      if blank(config.get(section, option)):
-        if option in defaults:
-          return defaults[option] 
-      if (option_type is None or
-          option_type is types.StringType):
-        return config.get(section, option).strip()
-      elif option_type is types.BooleanType:
-        return config.getboolean(section, option)
-      elif option_type is types.IntType:
-        return config.getint(section, option)
-      elif option_type is types.FloatType:
-        return config.getfloat(section, option)      
-    except ValueError:
-      error_mesg = "%s  in %s section is of the wrong type" % (option, section)
-      raise exceptions.SettingError(error_mesg)
-  
-  if option in defaults:
-    return defaults[option]
-  elif option in optional_settings:
-    return None
-  else:
-    err_mesg = "Can't get value for %s in %s section" % (option, section)
-    raise exceptions.SettingError(err_mesg)
-
-def valid_ini_file(filename):
-  """
-  Check an ini file to make sure that it's conforms to our requirements
-  E.g. no repeated sections, no newlines in options
-  
-  returns True/False
-  """
-  
-  if filename == "" or filename is None:
-    return False
-  
-  if duplicate_sections_exist(filename):
-    return False
-  
-  config_file = os.path.abspath(filename)
-  configuration = ConfigParser.ConfigParser()
-  configuration.read(config_file)
-  
-  sections = configuration.sections()
-  try:
-    for section in sections:
-      for option in configuration.options(section):
-        value = configuration.get(section, option)
-        if "\n" in value:
-          error_line = value.split('\n')[1]
-          sys.stderr.write("INI syntax error in section %s: " % section)
-          sys.stderr.write("The following line starts with a space: %s" % error_line)
-          sys.stderr.write("Please removing the leading space")
-          return False
-  except ValueError:
-    sys.stderr.write("syntax error in section %s with option %s" % (section, option))
-    return False
-        
-  return True
-
-def ce_config(configuration):
-  """
-  Check the configuration file and enable this module if the configuration
-  is for a ce.
-  
-  A configuration is for a ce if it enables one of the jobmanager 
-  sections
-  """
-  
-  jobmanagers = ['PBS', 'Condor', 'SGE', 'LSF']
-  for jobmanager in jobmanagers:
-    if (configuration.has_section(jobmanager) and
-        configuration.has_option(jobmanager, 'enabled') and 
-        configuration.getboolean(jobmanager, 'enabled')):
-      return True
-  
-  return False
-  
-def valid_vo_name(vo_name):
-  """
-  Check to see if a vo_name is valid 
-  VO names should follow the guidelines as outlined at
-  https://forge.ggf.org/sf/wiki/do/viewPage/projects.gin/wiki/GINVONaming
-  basically RFC 1034 section 3.5 dictates the formatting (e.g. vo name
-  should be a valid dns name)
-  
-  returns True / False
-  """
-  
-  if vo_name is None:
-    return False
-
-  if valid_domain(vo_name):
-    return True
-  
-  name_re = re.compile('[a-z0-9-]+', re.IGNORECASE)
-  if name_re.match(vo_name):
-    return True
-  
-  return False
-
-def config_template(config_file):
-  """
-  Check to see if the config file specified in config_ini is the template file.
-  config_file should be a ConfigParser instance
-  
-  returns True / False
-  """
-  
-  if not config_file.has_section('Site Information'):
-    return False
-  
-  if (not config_file.has_option('Site Information', 'email') or
-      config_file.get('Site Information', 'email') == 'foo@my.domain'):
-    return True
-
-  return False

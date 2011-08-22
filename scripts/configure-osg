@@ -4,8 +4,8 @@ import os, sys, optparse, time, ConfigParser, StringIO, re, atexit, shutil, logg
 
 from configure_osg.modules import exceptions
 from configure_osg.modules import utilities
-
-
+from configure_osg.modules import configfile
+from configure_osg.modules import validation
 
 
 ############################# Constant Definitions ############################
@@ -102,38 +102,6 @@ def get_configuration_modules(logger):
   return objects
 
   
-def read_config_file(configuration_file, case_sensitive=False):
-  """Read configuration file and return ConfigParse object for file"""
-  config = ConfigParser.SafeConfigParser()
-  local_config = ConfigParser.SafeConfigParser()
-  
-  # if case_sensitive is true then return a case sensitive parser
-  if case_sensitive:    
-    config.optionxform = str
-    
-  # read configuration file
-  try:
-    real_fp = open(configuration_file, 'r')
-    string_fp = StringIO.StringIO(real_fp.read())    
-    config.readfp(string_fp)
-    if not utilities.valid_ini_file(configuration_file):
-      error_mesg = "Invalid ini file, one or more sections are duplicated "
-      error_mesg += "or a line with a setting starts with whitespace, "
-      error_mesg += "exiting..."
-      error_exit(error_mesg)
-    if utilities.config_template(config):
-      error_mesg = "config.ini file appears to be the default template file, "
-      error_mesg += "please make sure that it has been properly filled out. "
-      error_mesg += "Exiting..."
-      error_exit(error_mesg)      
-  except OSError, exception:
-    error_exit("Can't read configuration file", exception)  
-  except IOError, exception:
-    error_exit("Can't read configuration file", exception)
-  except ConfigParser.ParsingError, exception:
-    error_exit("Can't parse configuration file", exception)
-  
-  return config
 
 def save_config(configuration_file, logger):
   """
@@ -168,7 +136,14 @@ def save_config(configuration_file, logger):
 def write_attributes(attributes,
                      local_site_attributes,
                      job_environment_attributes):
-  """Write out attributes to osg config files in output_directory"""
+  """
+  Write out attributes to osg config files in output_directory
+
+  Keyword arguments:
+  attributes -- osg attributes
+  local_site_attributes -- local site attributes from ini file
+  job_environment_attributes -- attributes for the job environment
+  """
   # write out osg-attributes.conf
   # This does not write gip attributes since that needs to be done in the 
   # gip configure method in order for configure_gip to work
@@ -201,26 +176,35 @@ def write_attributes(attributes,
     error_exit("Error writing attributes to osg-job-environment.conf", exception)
 
     
-def configure_system(configuration_file, modules,
-                     logger, configure_module=None, force=False):
-  """Read configuration files and try to configure the osg system"""
+def configure_system(modules, logger, configure_module=None, force=False):
+  """
+  Read configuration files and try to configure the osg system
+  
+  Keyword arguments:
+  modules -- list of module objects installed 
+  logger -- logger instance to log messages to
+  configure_module -- if not None, the specific module to configure
+  force -- if True, force configuration even if verification fails
+  """
   
   if not modules:
     error_exit("No modules found, exiting")
-  if not utilities.valid_location(CONFIG_DIRECTORY):
+  if not validation.valid_location(CONFIG_DIRECTORY):
     error_exit("Output directory %s not present" % CONFIG_DIRECTORY)
-  if not utilities.valid_file(configuration_file):
-    error_exit("Configuration file %s does not exist" % configuration_file)
 
-  config = read_config_file(configuration_file)
+  try:
+    config = configfiles.read_config_files()
+  except IOError, e:
+    error_exit("Can't read configuration files: %s" % e)
 
-  if not utilities.ce_config(config):
+  if not configfile.ce_config(config):
     logger.warning("No job managers enabled, assuming this is not a CE")
 
   for module in modules:
     try:
       if  module.__class__.__name__ == 'LocalSettings':
-        local_config = read_config_file(configuration_file, True)
+        # Need to preserve case for variables being set in the environment
+        local_config = configfile.read_config_files(case_sensitive = True)
         module.parseConfiguration(local_config)
         continue
       else:
@@ -293,22 +277,27 @@ def configure_system(configuration_file, modules,
                    local_attributes,
                    job_environment_attributes)
 
-def verify_system(configuration_file, modules, logger):
-  """Read configuration files and try to verify the configuration 
+def verify_system(modules, logger):
+  """
+  Read configuration files and try to verify the configuration 
   to make sure that it's sane and points to valid information
+  
+  Keyword arguments:
+  modules -- list of module objects to verify 
+  logger -- logger instance to log messages to
   """
   if modules == []:
     error_exit("No modules found, exiting")
 
-  if not utilities.valid_file(configuration_file):
-    error_exit("Configuration file %s does not exist" % configuration_file)
-  
-  config = read_config_file(configuration_file)
+  try:
+    config = configfiles.read_config_files()
+  except IOError, e:
+    error_exit("Can't read configuration files: %s" % e)
   
   for module in modules:
     try:
       if  module.__class__.__name__ == 'LocalSettings':
-        local_config = read_config_file(configuration_file, True)
+        local_config = configfile.read_config_files(case_sensitive = True)
         module.parseConfiguration(local_config)
         continue
       else:
@@ -344,7 +333,12 @@ def verify_system(configuration_file, modules, logger):
   normal_exit("Configuration verified successfully")
 
 def list_modules(modules, logger):
-  """Print out a list of all modules available on the system
+  """
+  Print out a list of all modules available on the system
+
+  Keyword arguments:
+  modules -- list of module objects installed 
+  logger -- logger instance to log messages to
   """
   if modules == []:
     error_exit("No modules found, exiting")
@@ -361,15 +355,24 @@ def list_modules(modules, logger):
   normal_exit("Modules listed successfully")
   
     
-def check_configuration(modules, configuration_file, attributes, logger):
-  """Read a configuration file and check it to make sure that it will work"""
+def check_configuration(modules, attributes, logger):
+  """
+  Read a configuration file and check it to make sure that it will work
+
+  Keyword arguments:
+  modules -- list of module objects to check 
+  logger -- logger instance to log messages to
+  """
   # get a list of configuration modules
   
   if modules == []:
     logger.warning("No configuration modules found")
     return False
 
-  config = read_config_file(configuration_file)
+  try:
+    config = configfiles.read_config_files()
+  except IOError, e:
+    error_exit("Can't read configuration files: %s" % e)
 
   status = True
   for module in modules:

@@ -6,6 +6,8 @@ import os, sys, ConfigParser
 
 from configure_osg.modules import exceptions
 from configure_osg.modules import utilities
+from configure_osg.modules import validation
+from configure_osg.modules import configfile
 from configure_osg.modules.configurationbase import BaseConfiguration
 
 __all__ = ['GratiaConfiguration']
@@ -55,7 +57,7 @@ in your config.ini file."""
     self.checkConfig(configuration)
 
     if (not configuration.has_section(self.config_section) and
-        utilities.ce_config(configuration)):
+        configfile.ce_config(configuration)):
       self.logger.debug('On CE and no Gratia section, auto-configuring gratia')    
       self.__auto_configure(configuration)
       self.logger.debug('GratiaConfiguration.parseConfiguration completed')    
@@ -71,7 +73,7 @@ in your config.ini file."""
       return True
       
     # set the appropriate defaults if we're on a CE
-    if utilities.ce_config(configuration):
+    if configfile.ce_config(configuration):
       if configuration.has_option('Site Information', 'group'):
         group = configuration.get('Site Information', 'group')
       if group == 'OSG':
@@ -81,11 +83,11 @@ in your config.ini file."""
 
     for setting in self.__mappings:
       self.logger.debug("Getting value for %s" % setting)
-      temp = utilities.get_option(configuration, 
-                                  self.config_section, 
-                                  setting,
-                                  optional_settings = self.__optional,
-                                  defaults = self.__defaults)
+      temp = configfile.get_option(configuration, 
+                                   self.config_section, 
+                                   setting,
+                                   optional_settings = self.__optional,
+                                   defaults = self.__defaults)
       self.attributes[setting] = temp
       self.logger.debug("Got %s" % temp)
     
@@ -280,7 +282,7 @@ in your config.ini file."""
         sys.stdout.write(self.metric_probe_deprecation + "\n")
         self.logger.warning(self.metric_probe_deprecation)
       server = self.enabled_probe_settings[probe].split(':')[0]
-      if not utilities.valid_domain(server, True):
+      if not validation.valid_domain(server, True):
         err_mesg = "The server specified for probe %s does not " % probe
         err_mesg += "resolve: %s" % server
         self.logger.error(err_mesg)
