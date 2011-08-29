@@ -6,6 +6,8 @@ import os
 
 from configure_osg.modules import exceptions
 from configure_osg.modules import utilities
+from configure_osg.modules import configfile
+from configure_osg.modules import validation
 from configure_osg.modules.configurationbase import BaseConfiguration
 
 __all__ = ['InstallLocations']
@@ -58,11 +60,11 @@ class InstallLocations(BaseConfiguration):
     
     for setting in self.__mappings:
       self.logger.debug("Getting value for %s" % setting)
-      temp = utilities.get_option(configuration, 
-                                  self.config_section, 
-                                  setting, 
-                                  optional_settings = self.__optional,
-                                  defaults = self.__defaults)
+      temp = configfile.get_option(configuration, 
+                                   self.config_section, 
+                                   setting, 
+                                   optional_settings = self.__optional,
+                                   defaults = self.__defaults)
       self.attributes[self.__mappings[setting]] = temp
       self.logger.debug("Got %s" % temp)      
         
@@ -89,7 +91,7 @@ class InstallLocations(BaseConfiguration):
     for location in self.__mappings:
       if location == 'user_vo_map':
         continue
-      if not utilities.valid_location(self.attributes[self.__mappings[location]]):
+      if not validation.valid_location(self.attributes[self.__mappings[location]]):
         attributes_ok = False
         self.logger.error("In %s section:" % self.config_section)
         self.logger.error("%s points to non-existent location: %s" % 

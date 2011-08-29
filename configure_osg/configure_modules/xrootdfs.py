@@ -8,6 +8,8 @@ Module to handle attributes related to the bestman configuration
 import re, ConfigParser
 
 from configure_osg.modules import utilities
+from configure_osg.modules import configfile
+from configure_osg.modules import validation
 from configure_osg.modules import exceptions
 from configure_osg.modules.configurationbase import BaseConfiguration
 
@@ -49,9 +51,9 @@ class XrootdFSConfiguration(BaseConfiguration):
        
     for setting in self.__mappings:
       self.logger.debug("Getting value for %s" % setting)
-      temp = utilities.get_option(configuration, 
-                                  self.config_section, 
-                                  setting)
+      temp = configfile.get_option(configuration, 
+                                   self.config_section, 
+                                   setting)
       self.attributes[self.__mappings[setting]] = temp
       self.logger.debug("Got %s" % temp)
 
@@ -92,14 +94,14 @@ class XrootdFSConfiguration(BaseConfiguration):
         raise exceptions.SettingError("Missing setting for %s in % section" %
                                       (setting, self.config_section))
 
-    if not utilities.valid_user(self.attributes['user']):
+    if not validation.valid_user(self.attributes['user']):
       attributes_ok = False
       self.logger.error("In %s section:" % self.config_section)
       self.logger.error("user does not give a valid user: %s" % 
                         (self.attributes['user']))
       
     
-    if not utilities.valid_domain(self.attributes['redirector_host'], True):
+    if not validation.valid_domain(self.attributes['redirector_host'], True):
       attributes_ok = False
       self.logger.error("In %s section:" % self.config_section)
       err_msg = "redirector_host should point to a valid domain "
@@ -111,7 +113,7 @@ class XrootdFSConfiguration(BaseConfiguration):
       self.logger.error("In %s section:" % self.config_section)
       self.logger.error("redirector_storage_cache must be specified")
 
-    if not utilities.valid_location(self.attributes['mount_point']):
+    if not validation.valid_location(self.attributes['mount_point']):
       attributes_ok = False
       self.logger.error("In %s section:" % self.config_section)
       err_msg = "mount_point should point to a valid location "

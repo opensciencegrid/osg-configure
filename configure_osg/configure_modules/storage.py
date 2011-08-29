@@ -6,6 +6,8 @@ import os, shutil, stat
 
 from configure_osg.modules import exceptions
 from configure_osg.modules import utilities
+from configure_osg.modules import configfile
+from configure_osg.modules import validation
 from configure_osg.modules.configurationbase import BaseConfiguration
 
 __all__ = ['StorageConfiguration']
@@ -42,7 +44,7 @@ class StorageConfiguration(BaseConfiguration):
     self.checkConfig(configuration)
 
     if (not configuration.has_section(self.config_section) or
-        not utilities.ce_config(configuration)):
+        not configfile.ce_config(configuration)):
       self.enabled = False
       self.logger.debug("%s section not in config file" % self.config_section)    
       self.logger.debug('StorageConfiguration.parseAttributes completed')    
@@ -52,10 +54,10 @@ class StorageConfiguration(BaseConfiguration):
       
     for setting in self.__mappings:
       self.logger.debug("Getting value for %s" % setting)        
-      temp = utilities.get_option(configuration, 
-                                  self.config_section, 
-                                  setting, 
-                                  self.__optional)
+      temp = configfile.get_option(configuration, 
+                                   self.config_section, 
+                                   setting, 
+                                   self.__optional)
       self.attributes[self.__mappings[setting]] = temp
       self.logger.debug("Got %s" % temp)
 
@@ -105,11 +107,11 @@ class StorageConfiguration(BaseConfiguration):
     grid3_location = os.path.join(self.attributes[self.__mappings['app_dir']],
                                   'etc',
                                   'grid3-locations.txt')
-    if not utilities.valid_file(grid3_location):
+    if not validation.valid_file(grid3_location):
       grid3_source = os.path.join('etc',
                                   'osg',
                                   'grid3-locations.txt')
-      if not utilities.valid_file(grid3_source):
+      if not validation.valid_file(grid3_source):
         status = False
         self.logger.warning("Can't get grid3-location file at %s" % (grid3_source))
         self.logger.warning("You will need to manually create one at %s" %  (grid3_location))
@@ -152,12 +154,12 @@ class StorageConfiguration(BaseConfiguration):
     APP_DIR must exist and have a etc directory with 1777 permissions for success.
     """
     try:
-      if not utilities.valid_location(app_dir) or not os.path.isdir(app_dir):
+      if not validation.valid_location(app_dir) or not os.path.isdir(app_dir):
         self.logger.error("OSG_APP directory not present: %s" % app_dir)
         return False
       
       etc_dir = os.path.join(app_dir, "etc")
-      if not utilities.valid_location(etc_dir) or not os.path.isdir(etc_dir):
+      if not validation.valid_location(etc_dir) or not os.path.isdir(etc_dir):
         self.logger.error("$OSG_APP/etc directory not present: %s" % etc_dir)
         return False
     

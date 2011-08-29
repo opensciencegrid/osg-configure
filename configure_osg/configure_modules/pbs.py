@@ -6,6 +6,8 @@ configuration """
 import ConfigParser, os
 
 from configure_osg.modules import utilities
+from configure_osg.modules import configfile
+from configure_osg.modules import validation
 from configure_osg.modules import exceptions
 from configure_osg.modules.jobmanagerbase import JobManagerConfiguration
 
@@ -47,9 +49,9 @@ class PBSConfiguration(JobManagerConfiguration):
     self.attributes['OSG_JOB_MANAGER'] = 'PBS'
     for setting in self.__mappings:
       self.logger.debug("Getting value for %s" % setting)        
-      temp = utilities.get_option(configuration, 
-                                  self.config_section, 
-                                  setting)
+      temp = configfile.get_option(configuration, 
+                                   self.config_section, 
+                                   setting)
       self.attributes[self.__mappings[setting]] = temp
       self.logger.debug("Got %s" % temp)
 
@@ -113,7 +115,7 @@ class PBSConfiguration(JobManagerConfiguration):
                                       (setting, self.config_section))
 
     # make sure locations exist
-    if not utilities.valid_location(self.attributes[self.__mappings['pbs_location']]):
+    if not validation.valid_location(self.attributes[self.__mappings['pbs_location']]):
       attributes_ok = False
       self.logger.warning("%s points to non-existent location: %s" % 
                           ('pbs_location',

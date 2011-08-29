@@ -6,6 +6,7 @@ import re, os, pwd
 from configure_osg.modules import exceptions
 from configure_osg.modules.configurationbase import BaseConfiguration
 from configure_osg.modules import utilities
+from configure_osg.modules import configfile
 
 __all__ = ['GipConfiguration']
 
@@ -185,7 +186,7 @@ class GipConfiguration(BaseConfiguration):
     """
     self.logger.debug('GipConfiguration.parseConfiguration started')
 
-    if not utilities.ce_config(configuration):
+    if not configfile.ce_config(configuration):
       self.logger.debug('Not a CE configuration, disabling GIP')
       self.logger.debug('GipConfiguration.parseConfiguration completed')
       self.enabled = False

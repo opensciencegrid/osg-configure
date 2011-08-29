@@ -8,6 +8,8 @@ Module to handle attributes related to the bestman configuration
 import ConfigParser
 
 from configure_osg.modules import utilities
+from configure_osg.modules import configfile
+from configure_osg.modules import validation
 from configure_osg.modules import exceptions
 from configure_osg.modules.configurationbase import BaseConfiguration
 
@@ -56,11 +58,11 @@ class GridFTPConfiguration(BaseConfiguration):
        
     for setting in self.__settings:
       self.logger.debug("Getting value for %s" % setting)
-      temp = utilities.get_option(configuration, 
-                                  self.config_section, 
-                                  setting, 
-                                  self.__optional, 
-                                  self.__defaults)
+      temp = configfile.get_option(configuration, 
+                                   self.config_section, 
+                                   setting, 
+                                   self.__optional, 
+                                   self.__defaults)
       self.attributes[setting] = temp
       self.logger.debug("Got %s" % temp)
     # check and warn if unknown options found 
@@ -113,7 +115,7 @@ class GridFTPConfiguration(BaseConfiguration):
     
     if self.attributes['mode'] == 'xrootd':
       self.logger.debug('Checking xrootd options, since xrootd is enabled')
-      if not utilities.valid_domain(self.attributes['redirector'], True):
+      if not validation.valid_domain(self.attributes['redirector'], True):
         attributes_ok = False
         self.logger.error("In %s section:" % self.config_section)
         err_msg = "redirector should point to a valid domain "

@@ -42,25 +42,6 @@ class TestUtilities(unittest.TestCase):
       del os.environ['VDT_GUMS_HOST']
         
 
-    def test_get_elements(self):
-      """
-      Check to make sure that get_elements properly gets information 
-      from xml files
-      """
-      
-      xml_file = 'test_files/subscriptions.xml'
-      self.failUnlessEqual(utilities.get_elements('foo', xml_file), 
-                           [], 
-                           'Got invalid elements')
-      subscriptions = utilities.get_elements('subscription', xml_file)
-      self.failUnlessEqual(len(subscriptions), 
-                           2, 
-                           'Got wrong number of elements')
-      tag_names = [x.tagName for x in subscriptions]
-      self.failUnlessEqual(['subscription', 'subscription'], 
-                           tag_names, 
-                           'Got wrong elements')
-      
     def test_write_attribute_file(self):
       """
       Check to make sure that write_attribute_file writes out files properly
@@ -154,111 +135,6 @@ class TestUtilities(unittest.TestCase):
                            ['osg', 'LIGO', 'cdf'], 
                            "Correct vos not found")
       
-    def test_get_option(self):
-      """
-      Test functionality of get_option function
-      """
-      # check to see if exception is raised if option is not present
-      config = ConfigParser.ConfigParser()
-      section = 'Test'
-      config.add_section(section)
-      option = 'foo'
-      
-      # do missing options get flagged
-      self.failUnlessRaises(exceptions.SettingError, 
-                            utilities.get_option,
-                            config = config,
-                            section = section,
-                            option = 'missing')
-      optional_settings = [option]
-      
-      # do optional settings get handled correctly if they are missing
-      self.failUnlessEqual(None, 
-                           utilities.get_option(config, 
-                                                section, 
-                                                option, 
-                                                optional_settings), 
-                           'Raised exception for missing optional setting')
-      defaults = { option : 'test'}
-      # make sure defaults get used 
-      self.failUnlessEqual('test', 
-                           utilities.get_option(config, 
-                                                section, 
-                                                option, 
-                                                optional_settings,
-                                                defaults), 
-                           'Raised exception for missing optional setting')
-      # get integer option
-      config.set(section, option, '1')
-      self.failUnlessEqual(1, 
-                           utilities.get_option(config, 
-                                                section, 
-                                                option, 
-                                                optional_settings,
-                                                defaults,
-                                                types.IntType), 
-                           'Should have gotten an integer equal to 1 back')
-      
-      # get float option
-      config.set(section, option, '1.23e5')
-      self.failUnlessAlmostEqual(1.23e5, 
-                                 utilities.get_option(config, 
-                                                      section, 
-                                                      option, 
-                                                      optional_settings,
-                                                      defaults,
-                                                      types.FloatType),
-                                 7,
-                                 'Should have gotten a float equal to 1.23e5 back')
-
-      # check errors when wrong type specified
-      self.failUnlessRaises(exceptions.SettingError, 
-                            utilities.get_option,
-                            config = config,
-                            section = section,
-                            option = option,
-                            defaults = defaults,
-                            option_type = types.IntType)
-
-      # get boolean option 
-      config.set(section, option, 'False')
-      self.failUnlessEqual(False, 
-                           utilities.get_option(config, 
-                                                section, 
-                                                option, 
-                                                optional_settings,
-                                                defaults,
-                                                types.BooleanType), 
-                           'Should have gotten False back')
-      # check errors when wrong type specified
-      self.failUnlessRaises(exceptions.SettingError, 
-                            utilities.get_option,
-                            config = config,
-                            section = section,
-                            option = option,
-                            defaults = defaults,
-                            option_type = types.IntType)
-      
-      # check errors when wrong type specified
-      config.set(section, option, 'abc')
-      self.failUnlessRaises(exceptions.SettingError, 
-                            utilities.get_option,
-                            config = config,
-                            section = section,
-                            option = option,
-                            defaults = defaults,
-                            option_type = types.BooleanType)
-
-      # check to make sure that default gets set when setting is set to 
-      # blank/UNAVAILABLE
-      config.set(section, option, 'UNAVAILABLE')
-      self.failUnlessEqual('test', 
-                           utilities.get_option(config, 
-                                                section, 
-                                                option, 
-                                                optional_settings,
-                                                defaults), 
-                           'Should have gotten a value of test back')
 
 
 if __name__ == '__main__':

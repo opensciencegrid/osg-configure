@@ -2,7 +2,7 @@
 
 """ Module to handle attributes and configuration for Gratia """
 
-import os, sys, ConfigParser
+import os, sys, ConfigParser, re, tempfile
 
 from configure_osg.modules import exceptions
 from configure_osg.modules import utilities
@@ -108,14 +108,9 @@ in your config.ini file."""
       self.logger.debug("GratiaConfiguration.configure completed")
       return True
 
-    # disable configuration for now
-    self.logger.debug("Not enabled")
-    self.logger.debug("GratiaConfiguration.configure completed")
-    return True
-        
     # disable all gratia services
     # if gratia is enabled, probes will get enabled below
-    self.__disable_services()
+    #    self.__disable_services()
     if not self.enabled:
       self.logger.debug("Not enabled")
       self.logger.debug("GratiaConfiguration.configure completed")
@@ -132,6 +127,13 @@ in your config.ini file."""
       else:
         self.attributes['resource'] = attributes['OSG_SITE_NAME']
          
+    if ('OSG_HOSTNAME' not in attributes):
+      self.logger.error('Hostname of this machine not specified.  Please ' \
+                        'give this in the host_name option in the Site ' \
+                        'Information section' )
+      return False
+    
+    hostname = attributes['OSG_HOSTNAME']
     probe_list = self.getInstalledProbes()
     for probe in probe_list:
       if probe in self.__job_managers:
@@ -147,25 +149,9 @@ in your config.ini file."""
       self.__makeSubscription(probe, 
                               probe_list[probe], 
                               probe_host, 
-                              self.attributes['resource'])
+                              self.attributes['resource'],
+                              hostname)
 
-
-    self.logger.debug("Enabling gratia services")
-    # enable the job manager services if needed
-    if 'jobmanager' in self.enabled_probe_settings:
-      for probe in [ x for x in probe_list if x in self.__job_managers]:
-        service = "gratia-%s" % probe      
-        if not utilities.enable_service(service):
-          self.logger.error("Error while enabling %s" % service)
-          raise exceptions.ConfigureError("Error configuring gratia")
-    
-    # check and enable the gridftp probe if needed
-    if 'gridftp' in self.enabled_probe_settings:
-      self.logger.debug('Enabling gratia transfer probes')
-      if not utilities.enable_service('gratia-gridftp-transfer'):
-        self.logger.error("Error while enabling gratia gridftp probes")
-        raise exceptions.ConfigureError("Error enabling gratia gridftp probes")    
-       
 
     self.logger.debug("GratiaConfiguration.configure completed")
     return True
@@ -175,18 +161,20 @@ in your config.ini file."""
     """Check for probes that have been installed and return a list of these probes installed"""
     
     probes = {}
-    probe_list = os.listdir(os.path.join(utilities.get_vdt_location(),
-                                         'gratia',
-                                         'probe'))
+    probe_list = os.listdir('/etc/gratia/')
     for probe in probe_list:
       if probe.lower() == 'common':
         # the common directory isn't a probe
         continue
-      probes[probe] = os.path.join(utilities.get_vdt_location(),
-                                   'gratia',
-                                   'probe',
+      elif probe.lower() == 'pbs-lsf':
+        probes['pbs'] = '/etc/gratia/pbs-lsf/ProbeConfig'
+        probes['lsf'] = '/etc/gratia/pbs-lsf/ProbeConfig'
+        continue
+        
+      probes[probe] = os.path.join('/etc/gratia',
                                    probe,
-                                   'ProbeConfig')      
+                                   'ProbeConfig')
+            
     return probes
 
   # pylint: disable-msg=W0613  
@@ -227,7 +215,7 @@ in your config.ini file."""
     self.logger.debug("GratiaConfiguration.__subscriptionPresent completed")
     return False
   
-  def __makeSubscription(self, probe, probe_file, probe_host, site):
+  def __makeSubscription(self, probe, probe_file, probe_host, site, hostname):
     """
     Check to see if a given probe has the correct subscription and if not 
     make it.
@@ -242,21 +230,35 @@ in your config.ini file."""
     
     if probe == 'gridftp':
       probe = 'gridftp-transfer'
-      
-    arguments = ['--probe-cron',
-                 '--force-probe-config',                 
-                 '--site-name', 
-                 site, 
-                 '--report-to', 
-                 probe_host, 
-                 '--probe', 
-                 probe]
-
-      
-    self.logger.info("Running configure_gratia with: %s" % (" ".join(arguments)))
-    if not utilities.configure_service('configure_gratia', arguments):
-      self.logger.error("Error while configuring gratia")
+    
+    try:  
+      buffer = open(probe_file).read()
+      buffer = re.sub(r'(\s*)ProbeName\s*=.*',
+                      r'\1ProbeName="' + "%s:%s" % (probe, hostname) + '"',
+                      buffer,
+                      1)
+      buffer = re.sub(r'(\s*)SiteName\s*=.*',
+                      r'\1SiteName="' + site + '"',
+                      buffer,
+                      1)
+      buffer = re.sub(r'(\s*)EnableProbe\s*=.*',
+                      r'\1EnableProbe="1"',
+                      buffer,
+                      1)
+      for x in ['SSLHost', 'SOAPHost', 'SSLRegistrationHost', 'CollectorHost']:
+        buffer = re.sub(r'(\s*)' + x + '\s*=.*',
+                        r'\1' + x + '="' + probe_host + '"',
+                        buffer,
+                        1)  
+        
+      (fh, filename) = tempfile.mkstemp(dir=os.path.dirname(probe_file))
+      os.write(fh, buffer)
+      os.close(fh)
+      os.rename(filename, probe_file)
+    except IOError, OSError:
+      self.logger.error("Error while configuring gratia probes")
       raise exceptions.ConfigureError("Error configuring gratia")
+
     self.logger.debug("GratiaConfiguration.__makeSubscription completed")
     return True
     

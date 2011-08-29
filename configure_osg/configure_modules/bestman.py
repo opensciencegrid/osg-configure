@@ -7,6 +7,8 @@ Module to handle attributes related to the bestman configuration
 import re, ConfigParser, types
 
 from configure_osg.modules import utilities
+from configure_osg.modules import configfile
+from configure_osg.modules import validation
 from configure_osg.modules import exceptions
 from configure_osg.modules.configurationbase import BaseConfiguration
 
@@ -98,12 +100,12 @@ class BestmanConfiguration(BaseConfiguration):
         option_type = self.option_types[setting]
       else:
         option_type = types.StringType
-      temp = utilities.get_option(configuration, 
-                                  self.config_section, 
-                                  setting, 
-                                  self.__optional, 
-                                  self.__defaults,
-                                  option_type)
+      temp = configfile.get_option(configuration, 
+                                   self.config_section, 
+                                   setting, 
+                                   self.__optional, 
+                                   self.__defaults,
+                                   option_type)
       self.attributes[setting] = temp
       self.logger.debug("Got %s" % temp)  
 
@@ -119,7 +121,7 @@ class BestmanConfiguration(BaseConfiguration):
     # Check to see if xrootdfs is enabled
     if (configuration.has_section('XrootdFS') and
         configuration.has_option('XrootdFS', 'enabled') and
-        utilities.valid_boolean(configuration, 'XrootdFS', 'enabled')):
+        validation.valid_boolean(configuration, 'XrootdFS', 'enabled')):
       self.__using_xrootdfs = configuration.getboolean('XrootdFS', 'enabled')
       
     # check and warn if unknown options found 
@@ -143,14 +145,14 @@ class BestmanConfiguration(BaseConfiguration):
     attributes_ok = True
 
     # make sure locations exist
-    if not utilities.valid_file(self.attributes['certificate_file']):
+    if not validation.valid_file(self.attributes['certificate_file']):
       attributes_ok = False
       self.logger.error("In %s section:" % self.config_section)
       self.logger.error("%s points to non-existent location: %s" % 
                         ('key_file',
                          self.attributes['certificate_file']))
 
-    if not utilities.valid_file(self.attributes['key_file']):
+    if not validation.valid_file(self.attributes['key_file']):
       attributes_ok = False
       self.logger.error("In %s section:" % self.config_section)
       self.logger.error("%s points to non-existent location: %s" % 
@@ -158,7 +160,7 @@ class BestmanConfiguration(BaseConfiguration):
                          self.attributes['key_file']))
 
     if self.__using_gums:
-      if not utilities.valid_domain(self.__gums_host, True):
+      if not validation.valid_domain(self.__gums_host, True):
         attributes_ok = False
         self.logger.error("In Misc Services section:")
         self.logger.error("%s points to host that is not resolvable: %s" % 
@@ -299,7 +301,7 @@ class BestmanConfiguration(BaseConfiguration):
         valid = False
         
       host = server[9:].split(':')[0]      
-      if not utilities.valid_domain(host, False):
+      if not validation.valid_domain(host, False):
         self.logger.error("In %s section:" % self.config_section)
         error = "-%s- is not a valid domain in "  % host 
         error += "transfer_servers setting"

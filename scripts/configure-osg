@@ -103,35 +103,6 @@ def get_configuration_modules(logger):
 
   
 
-def save_config(configuration_file, logger):
-  """
-  Save configuration file to vdt location for gip to read and for future reference
-  """
-  backup_path = os.path.join(CONFIG_DIRECTORY, 'configs')
-  if not os.path.exists(backup_path):
-    os.mkdir(backup_path)
-  os.chmod(backup_path, 0755)
-   
-  time_info = time.gmtime()
-  
-  backup_file = '%04d%02d%02d-%02d%02d%02d-config.ini' % (time_info[0],
-                                                          time_info[1],
-                                                          time_info[2],
-                                                          time_info[3],
-                                                          time_info[4],
-                                                          time_info[5])
-  backup_file = os.path.join(backup_path, backup_file)
-  link_file = os.path.join(backup_path, 'current-config.ini')
-  try:
-    shutil.copy(configuration_file, backup_file)
-    if os.path.exists(link_file):
-      os.remove(link_file)
-    os.symlink(backup_file, link_file)
-  except Exception, ex:
-    error_exit("Can't make copy of current config (%s)")
-  
-  
-  
 
 def write_attributes(attributes,
                      local_site_attributes,
@@ -193,7 +164,7 @@ def configure_system(modules, logger, configure_module=None, force=False):
     error_exit("Output directory %s not present" % CONFIG_DIRECTORY)
 
   try:
-    config = configfiles.read_config_files()
+    config = configfile.read_config_files()
   except IOError, e:
     error_exit("Can't read configuration files: %s" % e)
 
@@ -245,7 +216,7 @@ def configure_system(modules, logger, configure_module=None, force=False):
   attributes.update(legacyConfig.getAttributes())
       
   
-  if not check_configuration(modules, configuration_file, attributes, logger):
+  if not check_configuration(modules, attributes, logger):
     if force:
       logger.warn("Invalid attributes found but forcing configuration.")
       sys.stderr.write("Invalid attributes found but forcing configuration.\n")
@@ -268,8 +239,7 @@ def configure_system(modules, logger, configure_module=None, force=False):
     # need to configure monalisa after job managers
     monalisaConfig.configure(attributes)
 
-  save_config(configuration_file, logger)
-  if not utilities.ce_config(config):
+  if not configfile.ce_config(config):
     # no need to write out attribute files on non-ce installations
     return
   
@@ -290,7 +260,7 @@ def verify_system(modules, logger):
     error_exit("No modules found, exiting")
 
   try:
-    config = configfiles.read_config_files()
+    config = configfile.read_config_files()
   except IOError, e:
     error_exit("Can't read configuration files: %s" % e)
   
@@ -328,7 +298,7 @@ def verify_system(modules, logger):
   legacyConfig.configure(attributes)
   attributes.update(legacyConfig.getAttributes())
       
-  if not check_configuration(modules, configuration_file, attributes, logger):
+  if not check_configuration(modules, attributes, logger):
     error_exit("Invalid attributes found, exiting")
   normal_exit("Configuration verified successfully")
 
@@ -370,7 +340,7 @@ def check_configuration(modules, attributes, logger):
     return False
 
   try:
-    config = configfiles.read_config_files()
+    config = configfile.read_config_files()
   except IOError, e:
     error_exit("Can't read configuration files: %s" % e)
 
@@ -442,9 +412,7 @@ def main():
   elif options.mode == LIST:
     normal_exit_message = "List modules completed, exiting..."
       
-    
-  configuration_file = os.path.join(CONFIG_DIRECTORY, 'config.ini')
-    
+        
   # setup logging
   try:
     logger = logging.getLogger('configure-osg')
@@ -473,12 +441,11 @@ def main():
     
     if options.mode == CONFIGURE:
       # configure settings
-      configure_system(configuration_file, modules, 
-                       logger, configure_module)
+      configure_system(modules, logger, configure_module)
       pass
     elif options.mode == VERIFY:
       # verify settings
-      verify_system(configuration_file, modules, logger)
+      verify_system(modules, logger)
     elif options.mode == LIST: 
       list_modules(modules, logger)
     else:

@@ -6,6 +6,8 @@ import ConfigParser, os
 
 from configure_osg.modules import exceptions
 from configure_osg.modules import utilities
+from configure_osg.modules import configfile
+from configure_osg.modules import validation
 from configure_osg.modules.configurationbase import BaseConfiguration
 
 __all__ = ['SquidConfiguration']
@@ -50,9 +52,9 @@ class SquidConfiguration(BaseConfiguration):
 
     for setting in self.__mappings:
       self.logger.debug("Getting value for %s" % setting)
-      temp = utilities.get_option(configuration, 
-                                  self.config_section, 
-                                  setting)
+      temp = configfile.get_option(configuration, 
+                                   self.config_section, 
+                                   setting)
       self.attributes[self.__mappings[setting]] = temp
       self.logger.debug("Got %s" % temp)
     
@@ -99,15 +101,15 @@ class SquidConfiguration(BaseConfiguration):
         raise exceptions.SettingError("Missing setting for %s in %s section" %
                                       (setting, self.config_section)) 
     if (self.__local_dir is not None and
-        not utilities.valid_location(self.__local_dir)):
+        not validation.valid_location(self.__local_dir)):
       self.logger.error("In %s section" % self.config_section)
       self.logger.error("Value given in location does not exist: %s" % 
                           self.attributes[self.__mappings['location']])
       attributes_ok = False
     (hostname, port) = self.attributes[self.__mappings['location']].split(':')
-    if not utilities.valid_domain(hostname, True):
+    if not validation.valid_domain(hostname, True):
       self.logger.error("In %s section, problem with hostname setting" % self.config_section)
-      self.logger.error("Can't invalid hostname for squid location: %s" % \
+      self.logger.error("Invalid hostname for squid location: %s" % \
                         self.attributes[self.__mappings['location']])
       attributes_ok = False
     try:

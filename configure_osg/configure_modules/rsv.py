@@ -10,6 +10,8 @@ import ConfigParser
 
 from configure_osg.modules import exceptions
 from configure_osg.modules import utilities
+from configure_osg.modules import validation
+from configure_osg.modules import configfile
 from configure_osg.modules.configurationbase import BaseConfiguration
 
 __all__ = ['RsvConfiguration']
@@ -105,11 +107,11 @@ class RsvConfiguration(BaseConfiguration):
 
     for setting in self.__mappings:
       self.logger.debug("Getting value for %s" % setting)
-      temp = utilities.get_option(configuration, 
-                                  self.config_section, 
-                                  setting, 
-                                  self.__optional, 
-                                  self.__defaults)
+      temp = configfile.get_option(configuration, 
+                                   self.config_section, 
+                                   setting, 
+                                   self.__optional, 
+                                   self.__defaults)
       self.attributes[self.__mappings[setting]] = temp
       self.logger.debug("Got %s" % temp)      
 
@@ -118,9 +120,11 @@ class RsvConfiguration(BaseConfiguration):
     for option in self.__booleans:
       if not configuration.has_option(self.config_section, option):
         continue
-
-      if not utilities.valid_boolean(configuration, self.config_section, option):
-        mesg = "In %s section, %s needs to be set to True or False" % (self.config_section, option)
+      if not validation.valid_boolean(configuration, 
+                                      self.config_section, 
+                                      option):
+        mesg = "In %s section, %s needs to be set to True or False" \
+                          % (self.config_section, option)
         self.logger.error(mesg)
         raise exceptions.ConfigureError(mesg)
 
@@ -176,9 +180,10 @@ class RsvConfiguration(BaseConfiguration):
       self.logger.debug('Ignored, returning True')
       self.logger.debug('RsvConfiguration.checkAttributes completed')    
       return attributes_ok
-
-    attributes_ok &= self.__check_auth_settings()
-
+      
+    attributes_ok = attributes_ok & self.__check_auth_settings()
+        
+    
     # check hosts
     attributes_ok &= self.__validate_host_list(self.__ce_hosts, "ce_hosts")
     attributes_ok &= self.__validate_host_list(self.__gums_hosts, "gums_hosts")
@@ -280,7 +285,6 @@ class RsvConfiguration(BaseConfiguration):
     """
     Check gridftp settings and make sure they are valid
     """
-
     status_check = self.__validate_host_list(self.__gridftp_hosts, "gridftp_hosts")
 
     if utilities.blank(self.attributes[self.__mappings['gridftp_dir']]):
@@ -318,13 +322,13 @@ class RsvConfiguration(BaseConfiguration):
 
     if self.attributes[self.__mappings['service_cert']]:
       value = self.attributes[self.__mappings['service_cert']]
-      if utilities.blank(value) or not utilities.valid_file(value):
+      if utilities.blank(value) or not validation.valid_file(value):
         self.logger.warning("In %s section" % self.config_section)
         self.logger.warning("service_cert must point to an existing file: %s" % value)
         check_value = False
 
       value = self.attributes[self.__mappings['service_key']]
-      if utilities.blank(value) or not utilities.valid_file(value):
+      if utilities.blank(value) or not validation.valid_file(value):
         self.logger.error("In %s section" % self.config_section)
         self.logger.error("service_key must point to an existing file: %s" % value)
         check_value = False
@@ -336,7 +340,7 @@ class RsvConfiguration(BaseConfiguration):
         check_value = False
 
       value = os.path.dirname(self.attributes[self.__mappings['service_proxy']])
-      if not utilities.valid_location(value):
+      if not validation.valid_location(value):
         self.logger.error("In %s section" % self.config_section)
         self.logger.error("service_proxy must be located in a valid directory: %s" % value)
         check_value = False
@@ -344,7 +348,7 @@ class RsvConfiguration(BaseConfiguration):
     else:
       # if not using a service certificate, make sure that the proxy file exists
       value = self.attributes[self.__mappings['user_proxy']]
-      if utilities.blank(value) or not utilities.valid_file(value):
+      if utilities.blank(value) or not validation.valid_file(value):
         self.logger.error("In %s section" % self.config_section)
         self.logger.error("user_proxy does not point to an existing file: %s" % value)
         check_value = False
@@ -453,31 +457,31 @@ class RsvConfiguration(BaseConfiguration):
     return True
 
 
-"""
-    srm_dirs = []
-    for value in self.attributes[self.__mappings['srm_dir']].split(','):
-      srm_dirs.append(value.strip())
 
-    if len(self.__srm_hosts) != len(srm_dirs):
-      self.logger.error("When enabling SRM metrics you must specify the same number of entries in the srm_dir variable as you have in the srm_hosts section.  There are %i host entries and %i srm_dir entries." % (len(self.__srm_hosts), len(srm_dirs)))
-      raise exceptions.ConfigureError("Failed to configure RSV")
+#    srm_dirs = []
+#    for value in self.attributes[self.__mappings['srm_dir']].split(','):
+#      srm_dirs.append(value.strip())
+#
+#    if len(self.__srm_hosts) != len(srm_dirs):
+#      self.logger.error("When enabling SRM metrics you must specify the same number of entries in the srm_dir variable as you have in the srm_hosts section.  There are %i host entries and %i srm_dir entries." % (len(self.__srm_hosts), len(srm_dirs)))
+#      raise exceptions.ConfigureError("Failed to configure RSV")
+#
+#    arguments.append('--srm-dir')
+#    arguments.append(",".join(srm_dirs))
+#
+#    if (self.__mappings['srm_webservice_path'] in self.attributes and
+#        not utilities.blank(self.attributes[self.__mappings['srm_webservice_path']])):
+#      srm_ws_paths = []
+#      for value in self.attributes[self.__mappings['srm_webservice_path']].split(','):
+#        srm_ws_paths.append(value.strip())
+#
+#      if len(self.__srm_hosts) != len(srm_ws_paths):
+#        self.logger.error("If you set srm_webservice_path when enabling SRM metrics you must specify the same number of entries in the srm_webservice_path variable as you have in the srm_hosts section.  There are %i host entries and %i srm_webservice_path entries." % (len(self.__srm_hosts), len(srm_ws_paths)))
+#        raise exceptions.ConfigureError("Failed to configure RSV")
+#
+#      arguments.append('--srm-webservice-path')
+#      arguments.append(",".join(srm_ws_paths))
 
-    arguments.append('--srm-dir')
-    arguments.append(",".join(srm_dirs))
-
-    if (self.__mappings['srm_webservice_path'] in self.attributes and
-        not utilities.blank(self.attributes[self.__mappings['srm_webservice_path']])):
-      srm_ws_paths = []
-      for value in self.attributes[self.__mappings['srm_webservice_path']].split(','):
-        srm_ws_paths.append(value.strip())
-
-      if len(self.__srm_hosts) != len(srm_ws_paths):
-        self.logger.error("If you set srm_webservice_path when enabling SRM metrics you must specify the same number of entries in the srm_webservice_path variable as you have in the srm_hosts section.  There are %i host entries and %i srm_webservice_path entries." % (len(self.__srm_hosts), len(srm_ws_paths)))
-        raise exceptions.ConfigureError("Failed to configure RSV")
-
-      arguments.append('--srm-webservice-path')
-      arguments.append(",".join(srm_ws_paths))
-"""
 
 
   def __map_gratia_probe(self, gratia_type):
@@ -583,7 +587,7 @@ class RsvConfiguration(BaseConfiguration):
         hostname = host
         port = False
 
-      if not utilities.valid_domain(host):
+      if not validation.valid_domain(host):
         self.logger.error("Invalid domain in [%s].%s: %s" % (self.config_section, setting, host))
         ret = False
 
@@ -705,7 +709,8 @@ class RsvConfiguration(BaseConfiguration):
     return
 
   def split_2d_list(self, list):
-    """ Split a comma/whitespace separated list of list of items.
+    """ 
+    Split a comma/whitespace separated list of list of items.
     Each list needs to be enclosed in parentheses and separated by whitespace and/or a comma.
     Parentheses are optional if only one list is supplied.
     

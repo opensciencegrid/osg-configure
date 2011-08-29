@@ -5,6 +5,7 @@
 from configure_osg.modules.configurationbase import BaseConfiguration
 from configure_osg.modules import exceptions
 from configure_osg.modules import utilities
+from configure_osg.modules import validation
 
 
 __all__ = ['JobManagerConfiguration']
@@ -26,7 +27,7 @@ class JobManagerConfiguration(BaseConfiguration):
     as GLOBUS_LOCATION in the environment )    
     """
     
-    if utilities.valid_user('globus'):
+    if validation.valid_user('globus'):
       # globus is the default user if present
       user = 'globus'
     else:
@@ -94,11 +95,11 @@ class JobManagerConfiguration(BaseConfiguration):
       try:
         # test to make sure port is an integer
         int(port)
-        return utilities.valid_domain(host)
+        return validation.valid_domain(host)
       except ValueError:
         return False
     else:
-      return utilities.valid_domain(host_part)
+      return validation.valid_domain(host_part)
 
     return True
   

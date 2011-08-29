@@ -5,6 +5,8 @@
 import re, socket
 
 from configure_osg.modules import utilities
+from configure_osg.modules import configfile
+from configure_osg.modules import validation
 from configure_osg.modules.configurationbase import BaseConfiguration
 
 __all__ = ['SiteAttributes']
@@ -56,11 +58,11 @@ class SiteAttributes(BaseConfiguration):
     
     for setting in self.__mappings:
       self.logger.debug("Getting value for %s" % setting)
-      temp = utilities.get_option(configuration, 
-                                  self.config_section, 
-                                  setting,
-                                  defaults = self.__defaults,
-                                  optional_settings = self.__optional_settings)
+      temp = configfile.get_option(configuration, 
+                                   self.config_section, 
+                                   setting,
+                                   defaults = self.__defaults,
+                                   optional_settings = self.__optional_settings)
       self.attributes[self.__mappings[setting]] = temp
       self.logger.debug("Got %s" % temp)
  
@@ -117,7 +119,7 @@ class SiteAttributes(BaseConfiguration):
       attributes_ok = False
     
     # OSG_HOSTNAME must be a valid dns name, check this by getting it's ip adddress
-    if not utilities.valid_domain(self.attributes['OSG_HOSTNAME'], True):
+    if not validation.valid_domain(self.attributes['OSG_HOSTNAME'], True):
       self.logger.error("In %s section, hostname %s can't be resolved" % \
                         (self.config_section, self.attributes['OSG_HOSTNAME']))
       attributes_ok = False
@@ -160,7 +162,7 @@ class SiteAttributes(BaseConfiguration):
     # resolvable    
     match = re.match('(?:[a-zA-Z\-_+0-9.]+)@([a-zA-Z0-9_\-]+(?:\.[a-zA-Z0-9_\-]+)+)', 
                      self.attributes['OSG_CONTACT_EMAIL'])
-    if not utilities.valid_email(self.attributes['OSG_CONTACT_EMAIL']):
+    if not validation.valid_email(self.attributes['OSG_CONTACT_EMAIL']):
       self.logger.warning("In %s section, problem with email setting" % self.config_section)
       self.logger.warning("Invalid email address in site information: %s" % 
                       self.attributes['OSG_CONTACT_EMAIL'])

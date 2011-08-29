@@ -8,6 +8,8 @@ import os, ConfigParser, re, urlparse
 
 from configure_osg.modules import exceptions
 from configure_osg.modules import utilities
+from configure_osg.modules import configfile
+from configure_osg.modules import validation
 from configure_osg.modules.configurationbase import BaseConfiguration
 
 __all__ = ['CemonConfiguration']
@@ -55,7 +57,7 @@ class CemonConfiguration(BaseConfiguration):
     self.checkConfig(configuration)
 
     if (not configuration.has_section(self.config_section) and 
-        utilities.ce_config(configuration)):
+        configfile.ce_config(configuration)):
       self.logger.debug('Section missing and on a ce, autoconfiguring')
       self.__auto_configure(configuration)
       self.logger.debug('CemonConfiguration.parseConfiguration completed')
@@ -70,7 +72,7 @@ class CemonConfiguration(BaseConfiguration):
       self.logger.debug('Cemon.parseConfiguration completed')
       return True
        
-    if utilities.ce_config(configuration):
+    if configfile.ce_config(configuration):
       if configuration.has_option('Site Information', 'group'):
         group = configuration.get('Site Information', 'group')
       if group == 'OSG':
@@ -80,10 +82,10 @@ class CemonConfiguration(BaseConfiguration):
         
     for setting in self.__mappings:
       self.logger.debug("Getting value for %s" % setting)
-      temp = utilities.get_option(configuration, 
-                                  self.config_section, 
-                                  setting,
-                                  defaults = self.__defaults)
+      temp = configfile.get_option(configuration, 
+                                   self.config_section, 
+                                   setting,
+                                   defaults = self.__defaults)
       self.attributes[setting] = temp
       self.logger.debug("Got %s" % temp)
     
@@ -227,7 +229,7 @@ class CemonConfiguration(BaseConfiguration):
     server = result[1]
     if ':' in server:
       server = server.split(':')[0]
-    if not utilities.valid_domain(server, True):
+    if not validation.valid_domain(server, True):
       self.logger.error("Host in subscription does " \
                         "not resolve: %s" % server)
       valid = False

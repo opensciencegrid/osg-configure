@@ -8,6 +8,8 @@ Module to handle attributes related to the bestman configuration
 import re, ConfigParser
 
 from configure_osg.modules import utilities
+from configure_osg.modules import configfile
+from configure_osg.modules import validation
 from configure_osg.modules import exceptions
 from configure_osg.modules.configurationbase import BaseConfiguration
 
@@ -53,10 +55,10 @@ class XrootdConfiguration(BaseConfiguration):
        
     for setting in self.__mappings:
       self.logger.debug("Getting value for %s" % setting)
-      temp = utilities.get_option(configuration, 
-                                  self.config_section, 
-                                  setting, 
-                                  self.__optional)
+      temp = configfile.get_option(configuration, 
+                                   self.config_section, 
+                                   setting, 
+                                   self.__optional)
       self.attributes[self.__mappings[setting]] = temp
       self.logger.debug("Got %s" % temp)
 
@@ -99,7 +101,7 @@ class XrootdConfiguration(BaseConfiguration):
         raise exceptions.SettingError("Missing setting for %s in % section" %
                                       (setting, self.config_section))
 
-    if not utilities.valid_user(self.attributes['user']):
+    if not validation.valid_user(self.attributes['user']):
       attributes_ok = False
       self.logger.error("In %s section:" % self.config_section)
       self.logger.error("user does not give a valid user: %s" % 
@@ -114,7 +116,7 @@ class XrootdConfiguration(BaseConfiguration):
       self.logger.error(err_msg)
 
     if self.attributes['mode'] == 'data':
-      if not utilities.valid_domain(self.attributes['redirector_host'], True):
+      if not validation.valid_domain(self.attributes['redirector_host'], True):
         attributes_ok = False
         self.logger.error("In %s section:" % self.config_section)
         err_msg = "redirector_host should point to a valid domain "
@@ -132,14 +134,14 @@ class XrootdConfiguration(BaseConfiguration):
         self.logger.error("redirector_storage_cache must be specified")
 
     else:
-      if not utilities.valid_location(self.attributes['redirector_storage_path']):
+      if not validation.valid_location(self.attributes['redirector_storage_path']):
         attributes_ok = False
         self.logger.error("In %s section:" % self.config_section)
         err_msg = "redirector_storage_path should point to a valid location "
         err_msg += "got %s instead" % (self.attributes['redirector_storage_path'])
         self.logger.error(err_msg)
         
-      if not utilities.valid_location(self.attributes['redirector_storage_cache']):
+      if not validation.valid_location(self.attributes['redirector_storage_cache']):
         attributes_ok = False
         self.logger.error("In %s section:" % self.config_section)
         err_msg = "redirector_storage_cache should point to a valid location "

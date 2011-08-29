@@ -6,6 +6,8 @@ jobmanager configuration """
 import os, ConfigParser
 
 from configure_osg.modules import utilities
+from configure_osg.modules import validation
+from configure_osg.modules import configfile
 from configure_osg.modules import exceptions
 from configure_osg.modules.jobmanagerbase import JobManagerConfiguration
 
@@ -56,11 +58,11 @@ class CondorConfiguration(JobManagerConfiguration):
 
     for setting in self.__mappings:
       self.logger.debug("Getting value for %s" % setting)
-      temp = utilities.get_option(configuration, 
-                                  self.config_section, 
-                                  setting, 
-                                  self.__optional, 
-                                  self.__defaults)
+      temp = configfile.get_option(configuration, 
+                                   self.config_section, 
+                                   setting, 
+                                   self.__optional, 
+                                   self.__defaults)
       self.attributes[self.__mappings[setting]] = temp
       self.logger.debug("Got %s" % temp)  
 
@@ -141,14 +143,14 @@ class CondorConfiguration(JobManagerConfiguration):
 
     # make sure locations exist
     self.logger.debug('checking condor_location')
-    if not utilities.valid_location(self.attributes[self.__mappings['condor_location']]):
+    if not validation.valid_location(self.attributes[self.__mappings['condor_location']]):
       attributes_ok = False
       self.logger.error("%s points to non-existent location: %s" % 
                         ('condor_location',
                          self.attributes[self.__mappings['condor_location']]))
 
     self.logger.debug('checking condor_config')
-    if not utilities.valid_file(self.attributes[self.__mappings['condor_config']]):
+    if not validation.valid_file(self.attributes[self.__mappings['condor_config']]):
       attributes_ok = False
       self.logger.error("%s points to non-existent location: %s" % 
                         ('condor_config',

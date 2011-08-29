@@ -22,7 +22,6 @@ try:
     has_configure_osg = True
 except:
     raise
-    pass
 
 from configure_osg.configure_modules import gip, localsettings
 from configure_osg.configure_modules import localsettings

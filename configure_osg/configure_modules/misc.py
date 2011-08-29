@@ -6,6 +6,8 @@ import os, sys, types
 
 from configure_osg.modules import exceptions
 from configure_osg.modules import utilities
+from configure_osg.modules import configfile
+from configure_osg.modules import validation
 from configure_osg.modules.configurationbase import BaseConfiguration
 
 __all__ = ['MiscConfiguration']
@@ -64,15 +66,15 @@ class MiscConfiguration(BaseConfiguration):
       return
     
     self.__enabled = True
-    self.__ce_configuration = utilities.ce_config(configuration)
+    self.__ce_configuration = configfile.ce_config(configuration)
     
     for setting in self.__mappings:
       self.logger.debug("Getting value for %s" % setting)        
-      temp = utilities.get_option(configuration, 
-                                  self.config_section, 
-                                  setting, 
-                                  self.__optional, 
-                                  self.__defaults)
+      temp = configfile.get_option(configuration, 
+                                   self.config_section, 
+                                   setting, 
+                                   self.__optional, 
+                                   self.__defaults)
       self.attributes[self.__mappings[setting]] = temp
       self.logger.debug("Got %s" % temp)
 
@@ -82,7 +84,7 @@ class MiscConfiguration(BaseConfiguration):
       if not configuration.has_option(self.config_section, option):
         continue        
 
-      if not utilities.valid_boolean(configuration, 
+      if not validation.valid_boolean(configuration, 
                                      self.config_section, 
                                      option):
         mesg = "In %s section, %s needs to be set to True or False" \
@@ -175,7 +177,7 @@ class MiscConfiguration(BaseConfiguration):
                           "VDT_GUMS_HOST variable")
         attributes_ok = False
             
-      if not utilities.valid_domain(self.attributes[self.__mappings['gums_host']]):
+      if not validation.valid_domain(self.attributes[self.__mappings['gums_host']]):
         self.logger.error("Gums host is not a valid domain")
         attributes_ok = False
    
@@ -244,10 +246,10 @@ class MiscConfiguration(BaseConfiguration):
                                       "in Misc Services")
       
     if (not utilities.blank(self.attributes['authorization_method']) and
-        not utilities.valid_user_vo_file(self.__defaults['user-vo-map-file'])):
+        not validation.valid_user_vo_file(self.__defaults['user-vo-map-file'])):
       self.logger.debug("Trying to create osg-user-vo-map.txt file")
       result = utilities.create_map_file(using_prima) 
-      (temp, invalid_lines) = utilities.valid_user_vo_file(self.__defaults['user-vo-map-file'],
+      (temp, invalid_lines) = validation.valid_user_vo_file(self.__defaults['user-vo-map-file'],
                                                            True)
       result = result and temp
       if not result:

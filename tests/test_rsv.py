@@ -63,7 +63,7 @@ class TestRSVSettings(unittest.TestCase):
                  'rsv_proxy_out_file' : '/tmp/rsvproxy.tmp',
                  'proxy_file' : 'UNAVAILABLE',
                  'enable_gratia' : True,
-                 'setup_rsv_nagios' : True,
+                 'enable_nagios' : True,
                  'rsv_nagios_conf_file' : './configs/rsv/rsv1.ini',
                  'setup_for_apache' : True}
     for var in variables:      
@@ -111,7 +111,7 @@ class TestRSVSettings(unittest.TestCase):
                  'rsv_proxy_out_file' : '/tmp/rsvproxy.tmp',
                  'proxy_file' : './configs/rsv/rsv2.ini',
                  'enable_gratia' : False,
-                 'setup_rsv_nagios' : False,
+                 'enable_nagios' : False,
                  'rsv_nagios_conf_file' : './configs/rsv/rsv1.ini',
                  'setup_for_apache' : False}
     for var in variables:
@@ -158,7 +158,7 @@ class TestRSVSettings(unittest.TestCase):
                  'rsv_proxy_out_file' : '/tmp/rsvproxy.tmp',
                  'proxy_file' : 'UNAVAILABLE',
                  'enable_gratia' : True,
-                 'setup_rsv_nagios' : True,
+                 'enable_nagios' : True,
                  'rsv_nagios_conf_file' : './configs/rsv/rsv1.ini',
                  'setup_for_apache' : True}
     for var in variables:
@@ -233,11 +233,7 @@ class TestRSVSettings(unittest.TestCase):
     os.environ['VDT_LOCATION'] = os.getcwd()
     mandatory = ['use_service_cert',
                  'enable_gratia',
-                 'enable_ce_probes',
-                 'enable_gridftp_probes',
-                 'enable_gums_probes',
-                 'enable_srm_probes',
-                 'setup_rsv_nagios']
+                 'enable_nagios']
     for option in mandatory:
       config_file = os.path.abspath("./configs/rsv/rsv1.ini")
       configuration = ConfigParser.SafeConfigParser()

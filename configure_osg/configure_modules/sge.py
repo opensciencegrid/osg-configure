@@ -5,6 +5,8 @@
 import ConfigParser, os
 
 from configure_osg.modules import utilities
+from configure_osg.modules import configfile
+from configure_osg.modules import validation
 from configure_osg.modules import exceptions
 from configure_osg.modules.jobmanagerbase import JobManagerConfiguration
 
@@ -46,9 +48,9 @@ class SGEConfiguration(JobManagerConfiguration):
     self.attributes['OSG_JOB_MANAGER'] = 'SGE'
     for setting in self.__mappings:
       self.logger.debug("Getting value for %s" % setting)
-      temp = utilities.get_option(configuration, 
-                                  self.config_section, 
-                                  setting)
+      temp = configfile.get_option(configuration, 
+                                   self.config_section, 
+                                   setting)
       self.attributes[self.__mappings[setting]] = temp
       self.logger.debug("Got %s" % temp)
         
@@ -116,7 +118,7 @@ class SGEConfiguration(JobManagerConfiguration):
                                       (setting, self.config_section))
 
     # make sure locations exist
-    if not utilities.valid_location(self.attributes[self.__mappings['sge_root']]):
+    if not validation.valid_location(self.attributes[self.__mappings['sge_root']]):
       attributes_ok = False
       self.logger.error("In %s section" % self.config_section)
       self.logger.error("%s points to non-existent location: %s" % 
@@ -128,7 +130,7 @@ class SGEConfiguration(JobManagerConfiguration):
                                  'common', 
                                  'settings.sh')
     
-    if not utilities.valid_file(settings_file):
+    if not validation.valid_file(settings_file):
       attributes_ok = False
       self.logger.error("In %s section" % self.config_section)
       self.logger.error("$SGE_ROOT/$SGE_CELL/common/settings.sh points to " \

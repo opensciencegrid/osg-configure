@@ -5,6 +5,8 @@ and setup """
 
 from configure_osg.modules import exceptions
 from configure_osg.modules import utilities
+from configure_osg.modules import configfile
+from configure_osg.modules import validation
 from configure_osg.modules.configurationbase import BaseConfiguration
 
 __all__ = ['MonalisaConfiguration']
@@ -65,11 +67,11 @@ class MonalisaConfiguration(BaseConfiguration):
 
     for setting in self.__mappings:
       self.logger.debug("Getting value for %s" % setting)
-      temp = utilities.get_option(configuration, 
-                                  self.config_section, 
-                                  setting, 
-                                  self.__optional, 
-                                  self.__defaults)
+      temp = configfile.get_option(configuration, 
+                                   self.config_section, 
+                                   setting, 
+                                   self.__optional, 
+                                   self.__defaults)
       self.attributes[self.__mappings[setting]] = temp
       self.logger.debug("Got %s" % temp)
 
@@ -83,7 +85,7 @@ class MonalisaConfiguration(BaseConfiguration):
           utilities.blank(configuration.get(self.config_section,
                                             option))):
         continue
-      if not utilities.valid_boolean(configuration, 
+      if not validation.valid_boolean(configuration, 
                                      self.config_section, 
                                      option):
         mesg = "In %s section, %s needs to be set to True or False" \
@@ -145,7 +147,7 @@ class MonalisaConfiguration(BaseConfiguration):
       attributes_ok = False
       
     if self.attributes[self.__mappings['ganglia_support']] == 'Y':
-      if not utilities.valid_domain(self.attributes[self.__mappings['ganglia_host']]):
+      if not validation.valid_domain(self.attributes[self.__mappings['ganglia_host']]):
         self.logger.error("ganglia_host setting is not a valid host/domain")
         attributes_ok = False
 

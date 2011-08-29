@@ -3,9 +3,10 @@
 """ Module to hold various utility functions """
 
 import re, socket, os, types, pwd, sys, glob, ConfigParser
-import tempfile, subprocess   
+import tempfile, subprocess
 
 from configure_osg.modules import exceptions
+from configure_osg.modules import validation
 
 __all__ = ['using_prima',
            'using_xacml_protocol',
@@ -32,8 +33,8 @@ def using_prima():
   Function to check whether prima callouts are setup
   """
   
-  if (not valid_file('/etc/grid-security/gsi-authz.conf') or
-      not valid_file('/etc/grid-security/prima-authz.conf')):
+  if (not validation.valid_file('/etc/grid-security/gsi-authz.conf') or
+      not validation.valid_file('/etc/grid-security/prima-authz.conf')):
     return False
     
   gsi_set = False
@@ -289,7 +290,7 @@ def create_map_file(using_gums = False):
                           'osg-user-vo-map.txt')
   result = True
   try:
-    if valid_user_vo_file(map_file):
+    if validation.valid_user_vo_file(map_file):
       return result
     if using_gums:
       gums_script = os.path.join('usr',
@@ -346,7 +347,7 @@ def run_script(script):
   return False otherwise
   """
   
-  if not valid_executable(script[0]):
+  if not validation.valid_executable(script[0]):
     return False
 
   process = subprocess.Popen(script)

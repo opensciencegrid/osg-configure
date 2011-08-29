@@ -7,6 +7,7 @@ import os
 import ConfigParser
 
 from configure_osg.modules import utilities
+from configure_osg.modules import configfile
 from configure_osg.modules import exceptions
 from configure_osg.modules.configurationbase import BaseConfiguration
 
@@ -56,11 +57,11 @@ class ManagedForkConfiguration(BaseConfiguration):
        
     for setting in self.__mappings:
       self.logger.debug("Getting value for %s" % setting)
-      temp = utilities.get_option(configuration, 
-                                  self.config_section, 
-                                  setting, 
-                                  self.__optional, 
-                                  self.__defaults)
+      temp = configfile.get_option(configuration, 
+                                   self.config_section, 
+                                   setting, 
+                                   self.__optional, 
+                                   self.__defaults)
       self.attributes[self.__mappings[setting]] = temp
       self.logger.debug("Got %s" % temp)
        
