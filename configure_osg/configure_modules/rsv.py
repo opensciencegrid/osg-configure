@@ -191,6 +191,7 @@ class RsvConfiguration(BaseConfiguration):
     self.logger.debug('RsvConfiguration.checkAttributes completed')    
     return attributes_ok 
 
+
   def configure(self, attributes):
     """Configure installation using attributes"""
     self.logger.debug('RsvConfiguration.configure started')    
@@ -206,8 +207,7 @@ class RsvConfiguration(BaseConfiguration):
       return True
 
     # Reset always?
-
-    # Log rotation?
+    # TODO - reset here
 
     # Put proxy information into rsv.ini
     if not self.__configure_cert_info():
@@ -218,27 +218,29 @@ class RsvConfiguration(BaseConfiguration):
       return False
 
     # Enable metrics
-    #if not self.__configure_ce_metrics():
-    #  return False
+    if not self.__configure_ce_metrics():
+      return False
 
-    # ...
+    if not self.__configure_gums_metrics():
+      return False
+
+    if not self.__configure_gridftp_metrics():
+      return False
 
     if not self.__configure_gratia_metrics():
       return False
 
+    if not self.__configure_srm_metrics():
+      return False
+
+    #if self.attributes[self.__mappings['enable_local_probes']]:
+    #  arguments.append('--local-metrics')
+
     # Setup Apache?  I think this is done in the RPM
 
     gratia_collector = self.attributes[self.__mappings['gratia_collector']]
-    arguments.append('--gratia-collector')
-    arguments.append(gratia_collector)
-
-    if self.attributes[self.__mappings['enable_local_probes']]:
-      arguments.append('--local-metrics')
-
-    arguments.extend(self.__get_gridftp_options())
-    arguments.extend(self.__get_gums_options())
-
-    arguments.extend(self.__get_srm_options())
+    #arguments.append('--gratia-collector')
+    #arguments.append(gratia_collector)
 
     self.logger.info("Running configure_rsv with: %s" % (" ".join(arguments)))
 
@@ -349,19 +351,109 @@ class RsvConfiguration(BaseConfiguration):
 
     return check_value
 
-  def __get_srm_options(self):
+
+  def __get_metrics_by_type(self, type):
+    """ Examine meta info and return the metrics that are enabled by default for the defined type """
+
+    metrics = []
+    
+    for metric in self.__meta.sections():
+      if re.search(" env$", metric):
+        continue
+
+      if self.__meta.has_option(metric, "service-type"):
+        if self.__meta.get(metric, "service-type") == type:
+          if self.__meta.has_option(metric, "enable-by-default"):
+            if self.__meta.get(metric, "enable-by-default") == "true":
+              metrics.append(metric)
+
+    return metrics
+
+
+  def __enable_metrics(self, host, metrics):
+    """ Given a host and array of metrics, enable them via rsv-control """
+    
+    if not utilities.run_script([self.rsv_control, "--enable", "--host", host, " ".join(metrics)]):
+      self.logger.error("ERROR: Attempt to run rsv-control failed")
+      return False
+
+    return True
+
+  def __configure_ce_metrics(self):
     """
-    Return arguments used for configuring srm probes
+    Enable appropriate CE metrics
     """
 
-    arguments = []
-    if not self.attributes[self.__mappings['enable_srm_probes']]:
-      return []
+    if not self.__ce_hosts:
+      self.logger.debug("No ce_hosts defined.  Not configuring CE metrics")
+      return True
 
-    arguments.append('--srm-metrics')
-    arguments.append('--srm-uri')
-    arguments.append(",".join(self.__srm_hosts))        
+    ce_metrics = self.__get_metrics_by_type("OSG-CE")
 
+    for ce in self.__ce_hosts:
+      self.logger.debug("Enabling CE metrics for host '%s'" % ce)
+      if not self.__enable_metrics(ce, ce_metrics):
+        return False
+
+    return True
+
+
+  def __configure_gridftp_metrics(self):
+    """ Enable GridFTP metrics for each GridFTP host declared    """
+
+    if not self.__gridftp_hosts:
+      self.logger.debug("No gridftp_hosts defined.  Not configuring GridFTP metrics")
+      return True
+
+    gridftp_metrics = self.__get_metrics_by_type("OSG-GridFTP")
+
+    for gridftp_host in self.__gridftp_hosts:
+      self.logger.debug("Enabling GridFTP metrics for host '%s'" % gridftp_host)
+      if not self.__enable_metrics(gridftp_host, gridftp_metrics):
+        return False
+
+     #       self.attributes[self.__mappings['gridftp_dir']]]
+     # TODO - set the gridftp_dir in the conf file
+
+    return True
+
+
+
+  def __configure_gums_metrics(self):
+    """ Enable GUMS metrics for each GUMS host declared """
+
+    if not self.__gums_hosts:
+      self.logger.debug("No gums_hosts defined.  Not configuring GUMS metrics")
+      return True
+
+    gums_metrics = self.__get_metrics_by_type("OSG-GUMS")
+
+    for gums_host in self.__gums_hosts:
+      self.logger.debug("Enabling GUMS metrics for host '%s'" % gums_host)
+      if not self.__enable_metrics(gums_host, gums_metrics):
+        return False
+
+    return True
+
+
+  def __configure_srm_metrics(self):
+    """ Enable SRM metric """
+
+    if not self.__srm_hosts:
+      self.logger.debug("No srm_hosts defined.  Not configuring SRM metrics")
+      return True
+
+    srm_metrics = self.__get_metrics_by_type("OSG-SRM")
+
+    for srm_host in self.__srm_hosts:
+      self.logger.debug("Enabling SRM metrics for host '%s'" % srm_host)
+      if not self.__enable_metrics(srm_host, srm_metrics):
+        return False
+
+    return True
+
+
+"""
     srm_dirs = []
     for value in self.attributes[self.__mappings['srm_dir']].split(','):
       srm_dirs.append(value.strip())
@@ -385,47 +477,7 @@ class RsvConfiguration(BaseConfiguration):
 
       arguments.append('--srm-webservice-path')
       arguments.append(",".join(srm_ws_paths))
-
-    return arguments
-
-
-  def __get_gridftp_options(self):
-    """
-    Return arguments for configuring gridftp rsv options
-    """
-
-    if not self.attributes[self.__mappings['enable_gridftp_probes']]:
-      return []
-
-    return ['--gridftp-metrics',
-            '--gridftp-uri',
-            ",".join(self.__gridftp_hosts),        
-            '--gridftp-dir',
-            self.attributes[self.__mappings['gridftp_dir']]]
-
-  def __get_ce_options(self):
-    """
-    Return arguments for configuring ce rsv options
-    """
-
-    if not self.attributes[self.__mappings['enable_ce_probes']]:
-      return []
-
-    return ['--ce-metrics',
-            '--ce-uri',
-            ",".join(self.__ce_hosts)]        
-
-  def __get_gums_options(self):
-    """
-    Return arguments for configuring rsv gums probes
-    """
-
-    if not self.attributes[self.__mappings['enable_gums_probes']]:
-      return []
-
-    return ['--gums-metrics',
-            '--gums-uri',
-            ",".join(self.__gums_hosts)]
+"""
 
 
   def __map_gratia_probe(self, gratia_type):
@@ -443,7 +495,7 @@ class RsvConfiguration(BaseConfiguration):
           self.logger.debug("Gratia map -> %s = %s" % (match.group(1), probe))
 
     # Now that we have the mapping, simply return the appropriate type.
-    # This is the onyl code that should execute every time after the data structure is loaded.
+    # This is the only code that should execute every time after the data structure is loaded.
     if gratia_type in self.__gratia_probe_map:
       return self.__gratia_probe_map[gratia_type]
     else:
@@ -502,15 +554,16 @@ class RsvConfiguration(BaseConfiguration):
     i = 0
     for ce in self.__ce_hosts:
       gratia = None
-      # If there is only one Gratia entry then we will use it for all defined CE hosts
+
+      # There will either be a Gratia definition for each host, or else a single Gratia
+      # definition which we will use across all hosts.
       if num_gratia == 1:
         gratia = self.__gratia_probes_2d[0]
       else:
         gratia = self.__gratia_probes_2d[i]
         i += 1
 
-      if not utilities.run_script([self.rsv_control, "--enable", "--host", ce, " ".join(gratia)]):
-        self.logger.error("ERROR: Attempt to run command failed.  Command:\n\t%s" % cmd)
+      if not self.__enable_metrics(ce, gratia):
         return False
 
     return True
@@ -697,7 +750,7 @@ class RsvConfiguration(BaseConfiguration):
     
       # Remove what we just matched so that we get the next chunk on the next iteration
       match_length = len(match.group(0))
-      new_list = new_list[match_length:]
+      list = list[match_length:]
 
     # We shouldn't reach here, but just in case...
     return array
