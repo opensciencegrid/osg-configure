@@ -75,6 +75,7 @@ class RsvConfiguration(BaseConfiguration):
     self.__gums_hosts = []
     self.__srm_hosts = []
     self.__gratia_probes_2d = []
+    self.__gratia_probe_map = {}
     self.__enable_rsv_downloads = False
     self.__meta = ConfigParser.RawConfigParser()
     self.config_section = "RSV"
@@ -111,7 +112,6 @@ class RsvConfiguration(BaseConfiguration):
                                   self.__defaults)
       self.attributes[self.__mappings[setting]] = temp
       self.logger.debug("Got %s" % temp)      
-
 
     # set boolean options
     self.logger.debug("Setting boolean options")    
@@ -163,6 +163,10 @@ class RsvConfiguration(BaseConfiguration):
     self.logger.debug('RsvConfiguration.checkAttributes started')
     attributes_ok = True
 
+    # Slurp in all the meta files which will tell us what type of metrics
+    # we have and if they are enabled by default.
+    self.load_rsv_meta_files()
+
     if not self.enabled:
       self.logger.debug('Not enabled, returning True')
       self.logger.debug('RsvConfiguration.checkAttributes completed')    
@@ -196,19 +200,10 @@ class RsvConfiguration(BaseConfiguration):
       self.logger.debug('RsvConfiguration.configure completed') 
       return True
 
-    # disable configuration for now
-    self.logger.debug('Not enabled, returning True')
-    self.logger.debug('RsvConfiguration.configure completed')
-    return True
-
     if not self.enabled:
       self.logger.debug('Not enabled, returning True')
       self.logger.debug('RsvConfiguration.configure completed') 
       return True
-
-    # Slurp in all the meta files which will tell us what type of metrics
-    # we have and if they are enabled by default.
-    self.load_rsv_meta_files()
 
     # Reset always?
 
@@ -432,28 +427,55 @@ class RsvConfiguration(BaseConfiguration):
             '--gums-uri',
             ",".join(self.__gums_hosts)]
 
+
+  def __map_gratia_probe(self, gratia_type):
+
+    # The first time through we will populate the map.  It will be cached as a
+    # data member in this class so that we don't have to do this each time
+    if not self.__gratia_probe_map:
+      for probe in self.__meta.sections():
+        if re.search(" env$", probe):
+          continue
+
+        match = re.search("\.gratia\.(\S+)$", probe)
+        if match:
+          self.__gratia_probe_map[match.group(1)] = probe
+          self.logger.debug("Gratia map -> %s = %s" % (match.group(1), probe))
+
+    # Now that we have the mapping, simply return the appropriate type.
+    # This is the onyl code that should execute every time after the data structure is loaded.
+    if gratia_type in self.__gratia_probe_map:
+      return self.__gratia_probe_map[gratia_type]
+    else:
+      return None
+
+
   def __check_gratia_settings(self):
     """ Check to see if gratia settings are valid """
 
-    valid_probes = ['condor',
-                    'gridftp-transfer',
-                    'hadoop-transfer',
-                    'lsf',
-                    'metric',
-                    'pbs',
-                    'sge']
+    tmp_2d = []
 
+    # While checking the Gratia settings we will translate them to a list of
+    # the actual probes to enable.
     status_check = True
     for list in self.__gratia_probes_2d:
-      for probe in list:
-        if probe not in valid_probes:
+      tmp = []
+      for type in list:
+        probe = self.__map_gratia_probe(type)
+        if probe:
+          tmp.append(probe)
+        else:
           status_check = False
           err_mesg =  "In %s section, gratia_probes setting:" % self.config_section
-          err_mesg += "Probe %s is not a valid probe, " % probe
-          err_mesg += "valid probes consist of %s" % " ".join(valid_probes)
+          err_mesg += "Probe %s is not a valid probe, " % type
           self.logger.error(err_mesg)
 
+      tmp_2d.append(tmp)
+
+    self.__gratia_probes_2d = tmp_2d
+
     return status_check
+
 
   def __configure_gratia_metrics(self):
     """
@@ -486,7 +508,7 @@ class RsvConfiguration(BaseConfiguration):
       else:
         gratia = self.__gratia_probes_2d[i]
         i += 1
-      
+
       if not utilities.run_script([self.rsv_control, "--enable", "--host", ce, " ".join(gratia)]):
         self.logger.error("ERROR: Attempt to run command failed.  Command:\n\t%s" % cmd)
         return False
@@ -500,7 +522,7 @@ class RsvConfiguration(BaseConfiguration):
     for host in hosts:
       if host == "UNAVAILABLE":
         continue
-      
+
       # Strip off the port
       if ':' in host:
         (hostname, port) = host.split(':')
@@ -647,7 +669,7 @@ class RsvConfiguration(BaseConfiguration):
 
     if not list:
       return [[]]
-
+          
     original_list = list
 
     # If there are no parentheses then just treat this like a normal comma-separated list
