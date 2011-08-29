@@ -180,9 +180,8 @@ class RsvConfiguration(BaseConfiguration):
       self.logger.debug('Ignored, returning True')
       self.logger.debug('RsvConfiguration.checkAttributes completed')    
       return attributes_ok
-      
-    attributes_ok = attributes_ok & self.__check_auth_settings()
-        
+
+    attributes_ok &= self.__check_auth_settings()
     
     # check hosts
     attributes_ok &= self.__validate_host_list(self.__ce_hosts, "ce_hosts")
@@ -212,7 +211,8 @@ class RsvConfiguration(BaseConfiguration):
       return True
 
     # Reset always?
-    # TODO - reset here
+    if not self.__reset_configuration():
+      return False
 
     # Put proxy information into rsv.ini
     if not self.__configure_cert_info():
@@ -235,23 +235,17 @@ class RsvConfiguration(BaseConfiguration):
     if not self.__configure_gratia_metrics():
       return False
 
-    if not self.__configure_srm_metrics():
+    if not self.__configure_local_metrics():
       return False
 
-    #if self.attributes[self.__mappings['enable_local_probes']]:
-    #  arguments.append('--local-metrics')
+    if not self.__configure_srm_metrics():
+      return False
 
     # Setup Apache?  I think this is done in the RPM
 
     gratia_collector = self.attributes[self.__mappings['gratia_collector']]
     #arguments.append('--gratia-collector')
     #arguments.append(gratia_collector)
-
-    self.logger.info("Running configure_rsv with: %s" % (" ".join(arguments)))
-
-    if not utilities.configure_service('configure_rsv', arguments):
-      self.logger.error("Error while configuring RSV")
-      raise exceptions.ConfigureError("Error configuring RSV")
 
     self.logger.debug('Enabling condor-cron service')
     if not utilities.enable_service('condor-cron'):
@@ -282,9 +276,7 @@ class RsvConfiguration(BaseConfiguration):
 
 
   def __check_gridftp_settings(self):
-    """
-    Check gridftp settings and make sure they are valid
-    """
+    """ Check gridftp settings and make sure they are valid """
     status_check = self.__validate_host_list(self.__gridftp_hosts, "gridftp_hosts")
 
     if utilities.blank(self.attributes[self.__mappings['gridftp_dir']]):
@@ -356,6 +348,26 @@ class RsvConfiguration(BaseConfiguration):
     return check_value
 
 
+  def __reset_configuration(self):
+    """ Reset all metrics and consumers to disabled """
+
+    self.logger.debug("Resetting all metrics and consumers to disabled")
+
+    parent_dir = os.path.join('/', 'etc', 'rsv')
+    for file in os.listdir(parent_dir):
+      if not re.search('\.conf$', file):
+        continue
+
+      if file == "rsv.conf" or file == "rsv-nagios.conf":
+        continue
+
+      path = os.path.join(parent_dir, file)
+      self.logger.debug("Removing %s as part of reset" % path)
+      os.unlink(path)
+      
+    return True    
+
+
   def __get_metrics_by_type(self, type):
     """ Examine meta info and return the metrics that are enabled by default for the defined type """
 
@@ -376,9 +388,14 @@ class RsvConfiguration(BaseConfiguration):
 
   def __enable_metrics(self, host, metrics):
     """ Given a host and array of metrics, enable them via rsv-control """
+
+    if not metrics:
+      return True
     
     if not utilities.run_script([self.rsv_control, "--enable", "--host", host, " ".join(metrics)]):
-      self.logger.error("ERROR: Attempt to run rsv-control failed")
+      self.logger.error("ERROR: Attempt to enable metrics via rsv-control failed")
+      self.logger.error("Host: %s" % host)
+      self.logger.error("Metrics: %s" % " ".join(metrics))
       return False
 
     return True
@@ -409,16 +426,29 @@ class RsvConfiguration(BaseConfiguration):
       self.logger.debug("No gridftp_hosts defined.  Not configuring GridFTP metrics")
       return True
 
+    gridftp_dirs = split_list(self.attributes[self.__mappings['gridftp_dir']])
+    if len(self.__gridftp_hosts) != len(gridftp_dirs) and len(gridftp_dirs) != 1:
+      self.logger.error("RSV.gridftp_dir is set incorrectly.  When enabling GridFTP metrics you must specify either exactly 1 entry, or the same number of entries in the gridftp_dir variable as you have in the gridftp_hosts section.  There are %i host entries and %i gridftp_dir entries." % (len(self.__gridftp_hosts), len(gridftp_dirs)))
+      raise exceptions.ConfigureError("Failed to configure RSV")
+
     gridftp_metrics = self.__get_metrics_by_type("OSG-GridFTP")
 
+    count = 0
     for gridftp_host in self.__gridftp_hosts:
       self.logger.debug("Enabling GridFTP metrics for host '%s'" % gridftp_host)
       if not self.__enable_metrics(gridftp_host, gridftp_metrics):
         return False
 
-     #       self.attributes[self.__mappings['gridftp_dir']]]
-     # TODO - set the gridftp_dir in the conf file
+      dir = None
+      if len(gridftp_dirs) == 1:
+        dir = gridftp_dirs[0]
+      else:
+        dir = gridftp_dirs[count]
 
+      self.__add_metric_config_value(gridftp_host, gridftp_metrics, "gridftp-destination-dir", dir)
+
+      count += 1
+             
     return True
 
 
@@ -432,11 +462,31 @@ class RsvConfiguration(BaseConfiguration):
 
     gums_metrics = self.__get_metrics_by_type("OSG-GUMS")
 
+    if not gums_metrics:
+      self.logger.debug("No current GUMS metrics.  No configuration to do at this time.")
+      return True
+
     for gums_host in self.__gums_hosts:
       self.logger.debug("Enabling GUMS metrics for host '%s'" % gums_host)
       if not self.__enable_metrics(gums_host, gums_metrics):
         return False
 
+    return True
+
+
+  def __configure_local_metrics(self):
+    """ Enable appropriate local metrics """
+
+    if not self.attributes[self.__mappings['enable_local_probes']]:
+      self.logger.debug("Local probes disabled.")
+      return True
+
+    local_metrics = self.__get_metrics_by_type("OSG-Local-Monitor")
+
+    self.logger.debug("Enabling local metrics for host '%s'" % utilities.get_hostname())
+    if not self.__enable_metrics(utilities.get_hostname(), local_metrics):
+      return False
+    
     return True
 
 
@@ -447,42 +497,63 @@ class RsvConfiguration(BaseConfiguration):
       self.logger.debug("No srm_hosts defined.  Not configuring SRM metrics")
       return True
 
-    srm_metrics = self.__get_metrics_by_type("OSG-SRM")
+    # Do some checking on the values.  perhaps this should be in the validate section?
+    srm_dirs = split_list(self.attributes[self.__mappings['srm_dir']])
+    if len(self.__srm_hosts) != len(srm_dirs):
+      self.logger.error("When enabling SRM metrics you must specify the same number of entries in the srm_dir variable as you have in the srm_hosts section.  There are %i host entries and %i srm_dir entries." % (len(self.__srm_hosts), len(srm_dirs)))
+      raise exceptions.ConfigureError("Failed to configure RSV")
 
+    srm_ws_paths = []
+    if (self.__mappings['srm_webservice_path'] in self.attributes and
+        not utilities.blank(self.attributes[self.__mappings['srm_webservice_path']])):
+      srm_ws_paths = split_list(self.attributes[self.__mappings['srm_webservice_path']])
+
+      if len(self.__srm_hosts) != len(srm_ws_paths):
+        self.logger.error("If you set srm_webservice_path when enabling SRM metrics you must specify the same number of entries in the srm_webservice_path variable as you have in the srm_hosts section.  There are %i host entries and %i srm_webservice_path entries." % (len(self.__srm_hosts), len(srm_ws_paths)))
+        raise exceptions.ConfigureError("Failed to configure RSV")
+
+    # Now time to do the actual configuration
+    srm_metrics = self.__get_metrics_by_type("OSG-SRM")
+    count = 0
     for srm_host in self.__srm_hosts:
       self.logger.debug("Enabling SRM metrics for host '%s'" % srm_host)
       if not self.__enable_metrics(srm_host, srm_metrics):
         return False
 
+      self.__add_metric_config_value(srm_host, srm_metrics, "srm-destination-dir", srm_dirs[count])
+      if srm_ws_paths:
+        self.__add_metric_config_value(srm_host, srm_metrics, "srm-webservice-path", srm_ws_paths[count])
+
+      count += 1
+      
     return True
 
 
+  def __add_metric_config_value(self, host, metrics, knob, value):
+    """ Open a host specific metric file and add a value """
 
-#    srm_dirs = []
-#    for value in self.attributes[self.__mappings['srm_dir']].split(','):
-#      srm_dirs.append(value.strip())
-#
-#    if len(self.__srm_hosts) != len(srm_dirs):
-#      self.logger.error("When enabling SRM metrics you must specify the same number of entries in the srm_dir variable as you have in the srm_hosts section.  There are %i host entries and %i srm_dir entries." % (len(self.__srm_hosts), len(srm_dirs)))
-#      raise exceptions.ConfigureError("Failed to configure RSV")
-#
-#    arguments.append('--srm-dir')
-#    arguments.append(",".join(srm_dirs))
-#
-#    if (self.__mappings['srm_webservice_path'] in self.attributes and
-#        not utilities.blank(self.attributes[self.__mappings['srm_webservice_path']])):
-#      srm_ws_paths = []
-#      for value in self.attributes[self.__mappings['srm_webservice_path']].split(','):
-#        srm_ws_paths.append(value.strip())
-#
-#      if len(self.__srm_hosts) != len(srm_ws_paths):
-#        self.logger.error("If you set srm_webservice_path when enabling SRM metrics you must specify the same number of entries in the srm_webservice_path variable as you have in the srm_hosts section.  There are %i host entries and %i srm_webservice_path entries." % (len(self.__srm_hosts), len(srm_ws_paths)))
-#        raise exceptions.ConfigureError("Failed to configure RSV")
-#
-#      arguments.append('--srm-webservice-path')
-#      arguments.append(",".join(srm_ws_paths))
+    parent_dir = os.path.join('/', 'etc', 'rsv', 'metrics', host)
+    if not os.path.exists(parent_dir):
+      os.mkdir(parent_dir, 0755)
+      os.chown(parent_dir, 0, 0)
 
+    for metric in metrics:
+      conf_file = os.path.join(parent_dir, "%s.conf" % metric)
+      config = ConfigParser.RawConfigParser()
+      if os.path.exists(conf_file):
+        config.read(conf_file)
 
+      section = "%s args" % metric
+      if not config.has_section(section):
+        config.add_section(section)
+
+      config.set(section, knob, value)
+
+      config_fp = open(conf_file, 'w')
+      config.write(config_fp)
+      config_fp.close()
+
+    return
 
   def __map_gratia_probe(self, gratia_type):
 
@@ -577,9 +648,6 @@ class RsvConfiguration(BaseConfiguration):
     """ Validate a list of hosts """
     ret = True
     for host in hosts:
-      if host == "UNAVAILABLE":
-        continue
-
       # Strip off the port
       if ':' in host:
         (hostname, port) = host.split(':')
@@ -650,6 +718,7 @@ class RsvConfiguration(BaseConfiguration):
       consumers.append("nagios-consumer")
       self.__configure_nagios_files()
 
+    # TODO
     # Rotate logs
     # /var/log/rsv/consumers/$consumer.log
     # "$VDT_LOCATION/osg-rsv/logs/consumers/$consumer.output"
@@ -763,6 +832,11 @@ class RsvConfiguration(BaseConfiguration):
 
 def split_list(list):
   """ Split a comma separated list of items """
+
+  # Special case - when the list just contains UNAVAILABLE we want to ignore it
+  if list == "UNAVAILABLE":
+    return []
+  
   items = []
   for entry in list.split(','):
     items.append(entry.strip())
