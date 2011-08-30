@@ -77,7 +77,7 @@ class RsvConfiguration(BaseConfiguration):
     self.__gums_hosts = []
     self.__srm_hosts = []
     self.__gratia_probes_2d = []
-    self.__gratia_probe_map = {}
+    self.__gratia_metric_map = {}
     self.__enable_rsv_downloads = False
     self.__meta = ConfigParser.RawConfigParser()
     self.config_section = "RSV"
@@ -243,9 +243,8 @@ class RsvConfiguration(BaseConfiguration):
 
     # Setup Apache?  I think this is done in the RPM
 
-    gratia_collector = self.attributes[self.__mappings['gratia_collector']]
-    #arguments.append('--gratia-collector')
-    #arguments.append(gratia_collector)
+    # Fix the Gratia ProbeConfig file to point at the appropriate collector
+    self.__set_gratia_collector(self.attributes[self.__mappings['gratia_collector']])
 
     self.logger.debug('Enabling condor-cron service')
     if not utilities.enable_service('condor-cron'):
@@ -368,7 +367,7 @@ class RsvConfiguration(BaseConfiguration):
     return True    
 
 
-  def __get_metrics_by_type(self, type):
+  def __get_metrics_by_type(self, type, enabled=True):
     """ Examine meta info and return the metrics that are enabled by default for the defined type """
 
     metrics = []
@@ -379,9 +378,12 @@ class RsvConfiguration(BaseConfiguration):
 
       if self.__meta.has_option(metric, "service-type"):
         if self.__meta.get(metric, "service-type") == type:
-          if self.__meta.has_option(metric, "enable-by-default"):
-            if self.__meta.get(metric, "enable-by-default") == "true":
-              metrics.append(metric)
+          if not enabled:
+            metrics.append(metric)
+          else:
+            if self.__meta.has_option(metric, "enable-by-default"):
+              if self.__meta.get(metric, "enable-by-default") == "true":
+                metrics.append(metric)
 
     return metrics
 
@@ -555,24 +557,22 @@ class RsvConfiguration(BaseConfiguration):
 
     return
 
-  def __map_gratia_probe(self, gratia_type):
+  def __map_gratia_metric(self, gratia_type):
 
     # The first time through we will populate the map.  It will be cached as a
     # data member in this class so that we don't have to do this each time
-    if not self.__gratia_probe_map:
-      for probe in self.__meta.sections():
-        if re.search(" env$", probe):
-          continue
-
-        match = re.search("\.gratia\.(\S+)$", probe)
+    if not self.__gratia_metric_map:
+      ce_metrics = self.__get_metrics_by_type("OSG-CE", enabled=False)
+      for metric in ce_metrics:
+        match = re.search("\.gratia\.(\S+)$", metric)
         if match:
-          self.__gratia_probe_map[match.group(1)] = probe
-          self.logger.debug("Gratia map -> %s = %s" % (match.group(1), probe))
+          self.__gratia_metric_map[match.group(1)] = metric
+          self.logger.debug("Gratia map -> %s = %s" % (match.group(1), metric))
 
     # Now that we have the mapping, simply return the appropriate type.
     # This is the only code that should execute every time after the data structure is loaded.
-    if gratia_type in self.__gratia_probe_map:
-      return self.__gratia_probe_map[gratia_type]
+    if gratia_type in self.__gratia_metric_map:
+      return self.__gratia_metric_map[gratia_type]
     else:
       return None
 
@@ -588,9 +588,9 @@ class RsvConfiguration(BaseConfiguration):
     for list in self.__gratia_probes_2d:
       tmp = []
       for type in list:
-        probe = self.__map_gratia_probe(type)
-        if probe:
-          tmp.append(probe)
+        metric = self.__map_gratia_metric(type)
+        if metric:
+          tmp.append(metric)
         else:
           status_check = False
           err_mesg =  "In %s section, gratia_probes setting:" % self.config_section
@@ -828,6 +828,30 @@ class RsvConfiguration(BaseConfiguration):
 
     # We shouldn't reach here, but just in case...
     return array
+
+
+  def __set_gratia_collector(self, collector):
+    """ Put the appropriate collector URL into the ProbeConfig file """
+
+    if not self.attributes[self.__mappings['enable_gratia']]:
+      self.logger.debug("Not configuring Gratia collector because enable_gratia is not true")
+      return True
+
+    probe_conf = os.path.join('/', 'usr', 'share', 'gratia', 'metric', 'ProbeConfig')
+
+    self.logger.debug("Putting collector '%s' into Gratia conf file '%s'" % (collector, probe_conf))
+
+    conf = open(probe_conf).read()
+
+    conf = re.sub("CollectorHost=\".+\"", "CollectorHost=\"%s\"" % collector, conf)
+    conf = re.sub("SSLHost=\".+\"", "CollectorHost=\"%s\"" % collector, conf)
+    conf = re.sub("SSLRegistrationHost=\".+\"", "CollectorHost=\"%s\"" % collector, conf)
+
+    config_fp = open(probe_conf, 'w')
+    config_fp.write(conf)
+    config_fp.close()
+
+    return True
 
 
 def split_list(list):
