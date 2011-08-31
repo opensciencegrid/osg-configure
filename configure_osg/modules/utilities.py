@@ -234,7 +234,7 @@ def enable_service(service_name):
   
   if service_name == None or service_name == "":
     return False
-  return run_script(['/sbin/service', '--on', service_name])
+  return run_script(['/sbin/service', service_name, 'start'])
 
 
 def disable_service(service_name):
@@ -244,7 +244,7 @@ def disable_service(service_name):
   
   if service_name == None or service_name == "":
     return False
-  return run_script(['/sbin/service', '--disable', service_name])
+  return run_script(['/sbin/service', service_name, 'stop'])
 
 def service_enabled(service_name):
   """
