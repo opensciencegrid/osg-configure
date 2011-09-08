@@ -5,15 +5,15 @@ import os, imp, sys, unittest, ConfigParser, logging
 
 # setup system library path if it's not there at present
 try:
-  from configure_osg.modules import utilities
+  from osg_configure.modules import utilities
 except ImportError:
   pathname = '../'
   sys.path.append(pathname)
-  from configure_osg.modules import utilities
+  from osg_configure.modules import utilities
 
-from configure_osg.modules import exceptions
+from osg_configure.modules import exceptions
 
-from configure_osg.configure_modules import bestman
+from osg_configure.configure_modules import bestman
 
 global_logger = logging.getLogger('test bestman configuration')
 console = logging.StreamHandler()

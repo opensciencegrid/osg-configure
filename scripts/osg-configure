@@ -2,35 +2,30 @@
 
 import os, sys, optparse, time, ConfigParser, StringIO, re, atexit, shutil, logging
 
-from configure_osg.modules import exceptions
-from configure_osg.modules import utilities
-from configure_osg.modules import configfile
-from configure_osg.modules import validation
+from osg_configure.modules import exceptions
+from osg_configure.modules import utilities
+from osg_configure.modules import configfile
+from osg_configure.modules import validation
 
 
 ############################# Constant Definitions ############################
 
-VERSION = '0.5.2'
+VERSION = '0.5.3'
 CONFIGURE = 1
 VERIFY = 2
 LIST = 4
+QUERY = 5
 CONFIG_DIRECTORY = '/etc/osg'
 OUTPUT_DIRECTORY = '/var/lib/osg'
 LOG_FILE = '/var/log/osg/configure-osg.log'
 job_environment_attributes = ['OSG_LOCATION',
                               'GLOBUS_LOCATION',
                               'OSG_SITE_NAME',
-                              'GRID3_SITE_NAME',
                               'OSG_HOSTNAME',
                               'OSG_GRID',
-                              'GRID3_BASE_DIR',
                               'OSG_APP',
-                              'GRID3_APP_DIR',
                               'OSG_DATA',
-                              'GRID3_DATA_DIR',
-                              'GRID3_TMP_DIR',
                               'OSG_WN_TMP',
-                              'GRID3_TMP_WN_DIR',
                               'OSG_STORAGE_ELEMENT',
                               'OSG_DEFAULT_SE',
                               'OSG_SITE_READ',
@@ -38,6 +33,13 @@ job_environment_attributes = ['OSG_LOCATION',
                               'OSG_SQUID_LOCATION',
                               'OSG_JOB_CONTACT',
                               'OSG_GLEXEC_LOCATION']
+# commented out since GRID3 variables are deprecated
+#                              'GRID3_BASE_DIR',
+#                              'GRID3_SITE_NAME',
+#                              'GRID3_APP_DIR',
+#                              'GRID3_DATA_DIR',
+#                              'GRID3_TMP_DIR',
+#                              'GRID3_TMP_WN_DIR']
 
 
 ############################# Global Variables ############################
@@ -94,7 +96,7 @@ def get_configuration_modules(logger):
   for module in modules:      
     if module.split(".")[-1] == "py" and module != "__init__.py":
       module_name = module.split(".")[0]
-      module_ref = __import__('configure_osg.configure_modules.' + module_name,
+      module_ref = __import__('osg_configure.configure_modules.' + module_name,
                               globals(),
                               locals(),
                               [''])
@@ -118,11 +120,12 @@ def write_attributes(attributes,
   # write out osg-attributes.conf
   # This does not write gip attributes since that needs to be done in the 
   # gip configure method in order for configure_gip to work
-  try:
-    filename = os.path.join(OUTPUT_DIRECTORY, "osg-attributes.conf")
-    utilities.write_attribute_file(filename, attributes)
-  except IOError, exception:
-    error_exit("Error writing attributes to osg-attributes.conf", exception)
+  # commented out per SOFTWARE-133
+#  try:
+#    filename = os.path.join(OUTPUT_DIRECTORY, "osg-attributes.conf")
+#    utilities.write_attribute_file(filename, attributes)
+#  except IOError, exception:
+#    error_exit("Error writing attributes to osg-attributes.conf", exception)
      
     
   # write out osg-local-job-environment.conf
@@ -203,7 +206,9 @@ def configure_system(modules, logger, configure_module=None, force=False):
       # need to configuration LegacyConfiguration after other modules
       # since it derives it's settings from other modules
       # and uses the attributes dictionary for this
-      legacyConfig = module
+#      legacyConfig = module
+      # commented out per SOFTWARE-133
+      continue
     elif module.__class__.__name__ == 'MonalisaConfiguration':
       # need to configuration MonaLisaConfiguration after other modules
       # since it derives it's settings from other modules
@@ -246,6 +251,69 @@ def configure_system(modules, logger, configure_module=None, force=False):
   write_attributes(attributes,
                    local_attributes,
                    job_environment_attributes)
+
+def query_option(modules, logger, option=None):
+  """
+  Read configuration files and try to verify the configuration 
+  to make sure that it's sane and points to valid information
+  
+  Arguments:
+  modules -- list of module objects to verify 
+  logger -- logger instance to log messages to
+  option -- the option to search for given as section.option, 
+            if section is omitted then
+  """
+  if modules == []:
+    error_exit("No modules found, exiting")
+
+  if option is None:
+    error_exit('No option given, exiting')
+    
+  try:
+    config = configfile.read_config_files()
+  except IOError, e:
+    error_exit("Can't read configuration files: %s" % e)
+  
+  for module in modules:
+    try:
+      if  module.__class__.__name__ == 'LocalSettings':
+        local_config = configfile.read_config_files(case_sensitive = True)
+        module.parseConfiguration(local_config)
+        continue
+      else:
+        module.parseConfiguration(config)
+    except exceptions.SettingError, exception:
+      error_exit("Error in %s while parsing configuration" % (module.__class__.__name__),
+                 exception)
+#    except ConfigParser.InterpolationSyntaxError, exception:
+#      error_exit("Error while parsing configuration, check your variables for " +
+#                 "a missing s after the paranthesis")
+    except ConfigParser.ParsingError, exception:
+      error_exit("Error while parsing configuration: %s" % exception)
+      
+  attributes = {}
+  local_attributes = {}
+  legacyConfig = None
+  for module in modules:
+    if  module.__class__.__name__ == 'LocalSettings':
+      local_attributes.update(module.getAttributes())
+    if module.__class__.__name__ == 'LegacyConfiguration':
+      # need to configuration LegacyConfiguration after other modules
+      # since it derives it's settings from other modules
+      # and uses the attributes dictionary for this
+      #legacyConfig = module
+      #Commented out per SOFTWARE-133
+      continue
+    else:
+      attributes.update(module.getAttributes())
+
+  legacyConfig.configure(attributes)
+  attributes.update(legacyConfig.getAttributes())
+      
+  if not check_configuration(modules, attributes, logger):
+    error_exit("Invalid attributes found, exiting")
+  normal_exit("Configuration verified successfully")
+
 
 def verify_system(modules, logger):
   """
@@ -291,7 +359,9 @@ def verify_system(modules, logger):
       # need to configuration LegacyConfiguration after other modules
       # since it derives it's settings from other modules
       # and uses the attributes dictionary for this
-      legacyConfig = module
+      #legacyConfig = module
+      #Commented out per SOFTWARE-133
+      continue
     else:
       attributes.update(module.getAttributes())
 
@@ -386,6 +456,18 @@ def main():
                     const=LIST,
                     dest='mode',
                     help='List configuration modules present')
+  parser.add_option('-q',
+                    '--query',
+                    action='store_const',
+                    const=QUERY,
+                    dest='mode',
+                    help='Query to see where a particular option is defined')
+  parser.add_option('-o',
+                    '--option',
+                    action='store',
+                    dest='option',
+                    help='Specify option to query, formatted as section.option ' +
+                          'with the section portion being optional')
   parser.add_option('-m',
                     '--module',
                     action='store',
@@ -448,6 +530,8 @@ def main():
       verify_system(modules, logger)
     elif options.mode == LIST: 
       list_modules(modules, logger)
+    elif options.mode == QUERY:
+      query_option(modules, logger, option = options.option)
     else:
       parser.print_usage()
       error_exit("Must specify either -c, -v, or -l")

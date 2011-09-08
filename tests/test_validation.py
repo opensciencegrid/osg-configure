@@ -4,11 +4,11 @@ import os, imp, sys, unittest, ConfigParser, types
 
 # setup system library path if it's not there at present
 try:
-  from configure_osg.modules import exceptions
+  from osg_configure.modules import exceptions
 except ImportError:
   pathname = '../'
   sys.path.append(pathname)
-  from configure_osg.modules import exceptions
+  from osg_configure.modules import exceptions
 
 
 pathname = os.path.join('../scripts', 'configure-osg')
@@ -21,8 +21,8 @@ try:
 except:
     raise
 
-from configure_osg.modules import exceptions
-from configure_osg.modules import validation
+from osg_configure.modules import exceptions
+from osg_configure.modules import validation
 
 class TestValidation(unittest.TestCase):
 

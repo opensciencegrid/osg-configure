@@ -9,7 +9,7 @@ setup(name='osg-configure',
       author='Suchandra Thapa',
       author_email='sthapa@ci.uchicago.edu',
       url='http://www.opensciencegrid.org',
-      packages=['configure_osg', 'configure_osg.modules', 'configure_osg.configure_modules'],      
-      scripts=['scripts/configure-osg'],
+      packages=['osg_configure', 'osg_configure.modules', 'osg_configure.configure_modules'],      
+      scripts=['scripts/osg_configure'],
       data_files=[('/etc/osg/config.d', config_files),]
       )
