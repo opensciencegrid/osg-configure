@@ -117,7 +117,7 @@ class PBSConfiguration(JobManagerConfiguration):
     # make sure locations exist
     if not validation.valid_location(self.attributes[self.__mappings['pbs_location']]):
       attributes_ok = False
-      self.logger.warning("%s points to non-existent location: %s" % 
+      self.logger.error("%s points to non-existent location: %s" % 
                           ('pbs_location',
                            self.attributes[self.__mappings['pbs_location']]))
 

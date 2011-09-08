@@ -17,7 +17,7 @@ LIST = 4
 QUERY = 5
 CONFIG_DIRECTORY = '/etc/osg'
 OUTPUT_DIRECTORY = '/var/lib/osg'
-LOG_FILE = '/var/log/osg/configure-osg.log'
+LOG_FILE = '/var/log/osg/osg-configure.log'
 job_environment_attributes = ['OSG_LOCATION',
                               'GLOBUS_LOCATION',
                               'OSG_SITE_NAME',
@@ -62,8 +62,8 @@ def real_error_exit(logger, message="Critical error occurred, exiting", exceptio
   if exception is not None:
     logger.critical("Exception: %s" % (exception))
   sys.stderr.write("%s\n" % message)
-  sys.stderr.write("You may be able to get more details rerunning configure-osg with the -d option " \
-                   "and/or by examining %s\n" % (LOG_FILE))
+  sys.stderr.write("You may be able to get more details rerunning %s with the -d " \
+                   "option and/or by examining %s\n" % (sys.argv[0], LOG_FILE))
   sys.exit(1)
 
 def real_normal_exit(logger, message="Configuration completed, exiting..."):
@@ -76,8 +76,8 @@ def real_normal_exit(logger, message="Configuration completed, exiting..."):
 # has been set up
 def error_exit(msg, exception=None):    
   sys.stderr.write("%s\n" % msg)
-  sys.stderr.write("You may be able to get more details rerunning configure-osg with the -d option " \
-                   "and/or by examining %s\n" % (LOG_FILE))
+  sys.stderr.write("You may be able to get more details rerunning %s with " \
+                   "the -d option and/or by examining %s\n" % (sys.argv[0], LOG_FILE))
   sys.exit(1)
 
 def normal_exit(msg):    
@@ -195,7 +195,8 @@ def configure_system(modules, logger, configure_module=None, force=False):
     
   attributes = {}
   local_attributes = {}
-  legacyConfig = None
+  # Commented out per SOFTWARE-133
+  # legacyConfig = None
   monalisaConfig = None
   localConfig = None
   for module in modules:
@@ -217,8 +218,9 @@ def configure_system(modules, logger, configure_module=None, force=False):
     else:
       attributes.update(module.getAttributes())
 
-  legacyConfig.configure(attributes)
-  attributes.update(legacyConfig.getAttributes())
+  # Commented out per SOFTWARE-133
+  # legacyConfig.configure(attributes)
+  # attributes.update(legacyConfig.getAttributes())
       
   
   if not check_configuration(modules, attributes, logger):
@@ -254,14 +256,13 @@ def configure_system(modules, logger, configure_module=None, force=False):
 
 def query_option(modules, logger, option=None):
   """
-  Read configuration files and try to verify the configuration 
-  to make sure that it's sane and points to valid information
+  Read configuration files and get the file a given option is defined in
   
   Arguments:
   modules -- list of module objects to verify 
   logger -- logger instance to log messages to
   option -- the option to search for given as section.option, 
-            if section is omitted then
+            if section is omitted then, the each section is searched
   """
   if modules == []:
     error_exit("No modules found, exiting")
@@ -274,45 +275,56 @@ def query_option(modules, logger, option=None):
   except IOError, e:
     error_exit("Can't read configuration files: %s" % e)
   
-  for module in modules:
-    try:
-      if  module.__class__.__name__ == 'LocalSettings':
-        local_config = configfile.read_config_files(case_sensitive = True)
-        module.parseConfiguration(local_config)
-        continue
-      else:
-        module.parseConfiguration(config)
-    except exceptions.SettingError, exception:
-      error_exit("Error in %s while parsing configuration" % (module.__class__.__name__),
-                 exception)
-#    except ConfigParser.InterpolationSyntaxError, exception:
-#      error_exit("Error while parsing configuration, check your variables for " +
-#                 "a missing s after the paranthesis")
-    except ConfigParser.ParsingError, exception:
-      error_exit("Error while parsing configuration: %s" % exception)
-      
-  attributes = {}
-  local_attributes = {}
-  legacyConfig = None
-  for module in modules:
-    if  module.__class__.__name__ == 'LocalSettings':
-      local_attributes.update(module.getAttributes())
-    if module.__class__.__name__ == 'LegacyConfiguration':
-      # need to configuration LegacyConfiguration after other modules
-      # since it derives it's settings from other modules
-      # and uses the attributes dictionary for this
-      #legacyConfig = module
-      #Commented out per SOFTWARE-133
-      continue
+  if '.' in option:
+    (section, option_name) = option.split('.')
+    if config.has_option(section, option_name):
+      option_value = config.get(section, option_name)
     else:
-      attributes.update(module.getAttributes())
-
-  legacyConfig.configure(attributes)
-  attributes.update(legacyConfig.getAttributes())
+      option_value = ''
+    location = configfile.get_option_location(option_name, section)
+    if location is None:
+      sys.stdout.write("%s not found in section %s\n" % (option_name, section))
+      normal_exit("Query completed")
+    sys.stdout.write("%s %s %s %s\n" % ('Option'.ljust(20),
+                                        'Section'.ljust(20),
+                                        'Value'.ljust(30),
+                                        'File'.ljust(30)))
+    sys.stdout.write("%s %s %s %s\n" % (''.ljust(20, '-'),
+                                        ''.ljust(20, '-'),
+                                        ''.ljust(30, '-'),
+                                        ''.ljust(30, '-'))) 
+    sys.stdout.write("%s %s %s %s\n" % (option_name.ljust(20),
+                                        section.ljust(20),
+                                        option_value.ljust(30),
+                                        location.ljust(30)))
+    normal_exit("Query completed")
+    
+  section = None
+  option_name = option
+  # check all sections for option
+  sys.stdout.write("%s %s %s %s\n" % ('Option'.ljust(20),
+                                      'Section'.ljust(20),
+                                      'Value'.ljust(30),
+                                      'File'.ljust(30)))
+  sys.stdout.write("%s %s %s %s\n" % (''.ljust(20, '-'),
+                                      ''.ljust(20, '-'),
+                                      ''.ljust(30, '-'),
+                                      ''.ljust(30, '-')))
+  for section_name in config.sections():
+    location = configfile.get_option_location(option_name, section_name)
+    if location is None:
+      continue
+    if config.has_option(section_name, option_name):
+      option_value = config.get(section_name, option_name)
+    else:
+      option_value = ''
+    sys.stdout.write("%s %s %s %s\n" % (option_name.ljust(20),
+                                        section_name.ljust(20),
+                                        option_value.ljust(30),
+                                        location.ljust(30)))
+  normal_exit("Query completed")
+        
       
-  if not check_configuration(modules, attributes, logger):
-    error_exit("Invalid attributes found, exiting")
-  normal_exit("Configuration verified successfully")
 
 
 def verify_system(modules, logger):
@@ -351,7 +363,8 @@ def verify_system(modules, logger):
       
   attributes = {}
   local_attributes = {}
-  legacyConfig = None
+  # Commented out per SOFTWARE-133
+  # legacyConfig = None
   for module in modules:
     if  module.__class__.__name__ == 'LocalSettings':
       local_attributes.update(module.getAttributes())
@@ -365,8 +378,9 @@ def verify_system(modules, logger):
     else:
       attributes.update(module.getAttributes())
 
-  legacyConfig.configure(attributes)
-  attributes.update(legacyConfig.getAttributes())
+  # Commented out per SOFTWARE-133
+  # legacyConfig.configure(attributes)
+  # attributes.update(legacyConfig.getAttributes())
       
   if not check_configuration(modules, attributes, logger):
     error_exit("Invalid attributes found, exiting")
@@ -497,7 +511,7 @@ def main():
         
   # setup logging
   try:
-    logger = logging.getLogger('configure-osg')
+    logger = logging.getLogger('osg-configure')
     formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
     handler = logging.FileHandler(LOG_FILE, 'a')
     logger.setLevel(log_level)
@@ -542,7 +556,7 @@ def main():
     sys.stderr.write("Please contact the developer, an unknown error occurred\n")
     error_exit("Unknown exception encountered while running: %s" % e)  
   
-  normal_exit("Configure-osg completed successfully")
+  normal_exit("%s completed successfully" % (sys.argv[0],))
   
   
 if __name__ == '__main__':

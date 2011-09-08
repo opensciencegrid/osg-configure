@@ -110,7 +110,6 @@ class SGEConfiguration(JobManagerConfiguration):
       self.logger.debug('SGEConfiguration.checkAttributes completed')    
       return attributes_ok
 
-    attributes_ok = True
     # Make sure all settings are present
     for setting in self.__mappings:
       if self.__mappings[setting] not in self.attributes:
@@ -139,14 +138,14 @@ class SGEConfiguration(JobManagerConfiguration):
     if not self.validContact(self.attributes[self.__mappings['job_contact']], 
                              'sge'):
       attributes_ok = False
-      self.logger.warning("%s is not a valid job contact: %s" % 
+      self.logger.error("%s is not a valid job contact: %s" % 
                           ('job_contact',
                            self.attributes[self.__mappings['job_contact']]))
       
     if not self.validContact(self.attributes[self.__mappings['util_contact']], 
                              'sge'):
       attributes_ok = False
-      self.logger.warning("%s is not a valid util contact: %s" % 
+      self.logger.error("%s is not a valid util contact: %s" % 
                           ('util_contact',
                            self.attributes[self.__mappings['util_contact']]))      
       

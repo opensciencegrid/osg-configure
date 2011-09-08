@@ -84,9 +84,9 @@ class StorageConfiguration(BaseConfiguration):
 
     # make sure locations exist
     if not self.__check_app_dir(self.attributes[self.__mappings['app_dir']]):
-      self.logger.warn("app_dir does not meet requirements: %s" % \
+      self.logger.error("app_dir does not meet requirements: %s" % \
                         self.attributes[self.__mappings['app_dir']])
-      self.logger.warn("The app_dir directory should exist and have permissions "
+      self.logger.error("The app_dir directory should exist and have permissions "
                        "of 1777 or 777 on OSG installations.")
       attributes_ok = False
     

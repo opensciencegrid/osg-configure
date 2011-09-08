@@ -101,7 +101,7 @@ class SiteAttributes(BaseConfiguration):
     # Make sure all settings are present
     for setting in self.__mappings:
       if self.__mappings[setting] not in self.attributes:
-        self.logger.warning("Missing setting for %s", self.__mappings[setting])
+        self.logger.error("Missing setting for %s", self.__mappings[setting])
         attributes_ok = False
         
     # OSG_GROUP must be either OSG or OSG-ITB
@@ -163,9 +163,9 @@ class SiteAttributes(BaseConfiguration):
     match = re.match('(?:[a-zA-Z\-_+0-9.]+)@([a-zA-Z0-9_\-]+(?:\.[a-zA-Z0-9_\-]+)+)', 
                      self.attributes['OSG_CONTACT_EMAIL'])
     if not validation.valid_email(self.attributes['OSG_CONTACT_EMAIL']):
-      self.logger.warning("In %s section, problem with email setting" % self.config_section)
-      self.logger.warning("Invalid email address in site information: %s" % 
-                      self.attributes['OSG_CONTACT_EMAIL'])
+      self.logger.error("In %s section, problem with email setting" % self.config_section)
+      self.logger.error("Invalid email address in site information: %s" % 
+                        self.attributes['OSG_CONTACT_EMAIL'])
       attributes_ok = False
     else:
       try:

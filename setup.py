@@ -10,6 +10,6 @@ setup(name='osg-configure',
       author_email='sthapa@ci.uchicago.edu',
       url='http://www.opensciencegrid.org',
       packages=['osg_configure', 'osg_configure.modules', 'osg_configure.configure_modules'],      
-      scripts=['scripts/osg_configure'],
+      scripts=['scripts/osg-configure'],
       data_files=[('/etc/osg/config.d', config_files),]
       )
