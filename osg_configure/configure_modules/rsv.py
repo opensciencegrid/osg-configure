@@ -8,11 +8,11 @@ import pwd
 import sys
 import ConfigParser
 
-from osg_configure.modules import exceptions
-from osg_configure.modules import utilities
-from osg_configure.modules import validation
-from osg_configure.modules import configfile
-from osg_configure.modules.configurationbase import BaseConfiguration
+from configure_osg.modules import exceptions
+from configure_osg.modules import utilities
+from configure_osg.modules import validation
+from configure_osg.modules import configfile
+from configure_osg.modules.configurationbase import BaseConfiguration
 
 __all__ = ['RsvConfiguration']
 
@@ -167,10 +167,6 @@ class RsvConfiguration(BaseConfiguration):
     self.logger.debug('RsvConfiguration.checkAttributes started')
     attributes_ok = True
 
-    # Slurp in all the meta files which will tell us what type of metrics
-    # we have and if they are enabled by default.
-    self.load_rsv_meta_files()
-
     if not self.enabled:
       self.logger.debug('Not enabled, returning True')
       self.logger.debug('RsvConfiguration.checkAttributes completed')    
@@ -180,6 +176,10 @@ class RsvConfiguration(BaseConfiguration):
       self.logger.debug('Ignored, returning True')
       self.logger.debug('RsvConfiguration.checkAttributes completed')    
       return attributes_ok
+
+    # Slurp in all the meta files which will tell us what type of metrics
+    # we have and if they are enabled by default.
+    self.load_rsv_meta_files()
 
     attributes_ok &= self.__check_auth_settings()
     
@@ -769,6 +769,10 @@ class RsvConfiguration(BaseConfiguration):
     """ All the RSV meta files are in INI format.  Pull them in so that we know what
     metrics to enable """
 
+    if not os.path.exists(self.rsv_meta_dir):
+      self.logger.warning("In RSV configuration, meta dir (%s) does not exist." % self.rsv_meta_dir)
+      return
+      
     files = os.listdir(self.rsv_meta_dir)
 
     for file in files:
