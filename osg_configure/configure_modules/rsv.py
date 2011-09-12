@@ -8,11 +8,11 @@ import pwd
 import sys
 import ConfigParser
 
-from configure_osg.modules import exceptions
-from configure_osg.modules import utilities
-from configure_osg.modules import validation
-from configure_osg.modules import configfile
-from configure_osg.modules.configurationbase import BaseConfiguration
+from osg_configure.modules import exceptions
+from osg_configure.modules import utilities
+from osg_configure.modules import validation
+from osg_configure.modules import configfile
+from osg_configure.modules.configurationbase import BaseConfiguration
 
 __all__ = ['RsvConfiguration']
 
