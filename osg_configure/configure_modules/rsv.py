@@ -848,8 +848,8 @@ class RsvConfiguration(BaseConfiguration):
     conf = open(probe_conf).read()
 
     conf = re.sub("CollectorHost=\".+\"", "CollectorHost=\"%s\"" % collector, conf)
-    conf = re.sub("SSLHost=\".+\"", "CollectorHost=\"%s\"" % collector, conf)
-    conf = re.sub("SSLRegistrationHost=\".+\"", "CollectorHost=\"%s\"" % collector, conf)
+    conf = re.sub("SSLHost=\".+\"", "SSLHost=\"%s\"" % collector, conf)
+    conf = re.sub("SSLRegistrationHost=\".+\"", "SSLRegistrationHost=\"%s\"" % collector, conf)
 
     config_fp = open(probe_conf, 'w')
     config_fp.write(conf)
