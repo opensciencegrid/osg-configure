@@ -44,7 +44,7 @@ class RsvConfiguration(BaseConfiguration):
     self.__defaults = {'enable_local_probes' : True,
                        'gratia_probes' : None,
                        'ce_hosts' : utilities.get_hostname(),
-                       'gridftp_hosts': utilities.get_hostname(),
+                       'gridftp_hosts': None,
                        'gridftp_dir': '/tmp',
                        'gums_hosts' : utilities.get_hostname(),
                        'service_cert' : '/etc/grid-security/rsvcert.pem',
@@ -147,7 +147,7 @@ class RsvConfiguration(BaseConfiguration):
     self.__srm_hosts = split_list(self.attributes[self.__mappings['srm_hosts']])
 
     # If the gridftp hosts are not defined then they default to the CE hosts
-    if self.__mappings['gridftp_hosts'] in self.attributes:
+    if self.__mappings['gridftp_hosts'] in self.attributes and self.attributes[self.__mappings['gridftp_hosts']]:
       self.__gridftp_hosts = split_list(self.attributes[self.__mappings['gridftp_hosts']])
     else:
       self.__gridftp_hosts = self.__ce_hosts
@@ -447,7 +447,7 @@ class RsvConfiguration(BaseConfiguration):
       else:
         dir = gridftp_dirs[count]
 
-      self.__add_metric_config_value(gridftp_host, gridftp_metrics, "gridftp-destination-dir", dir)
+      self.__add_metric_config_value(gridftp_host, gridftp_metrics, "destination-dir", dir)
 
       count += 1
              
