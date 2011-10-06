@@ -4,7 +4,7 @@ import glob
 config_files = glob.glob('config/*.ini')
 
 setup(name='osg-configure',
-      version='0.5.8',
+      version='0.5.9',
       description='Package for configure-osg and associated scripts',
       author='Suchandra Thapa',
       author_email='sthapa@ci.uchicago.edu',
