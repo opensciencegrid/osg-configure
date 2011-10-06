@@ -163,23 +163,6 @@ class PBSConfiguration(JobManagerConfiguration):
       return True
       
 
-    self.logger.debug("Enabling gatekeeper service")
-    if not utilities.enable_service('globus-gatekeeper'):
-      self.logger.error("Error while enabling globus-gatekeeper")
-      raise exceptions.ConfigureError("Error configuring globus-gatekeeper") 
-
-    if self.attributes[self.__mappings['wsgram']] == 'Y':
-      self.logger.debug("Enabling ws-gram")
-      if not utilities.enable_service('globus-ws'):
-        self.logger.error("Error while enabling globus-ws")
-        raise exceptions.ConfigureError("Error configuring globus-gatekeeper")
-      self.writeSudoExample(os.path.join(attributes['OSG_LOCATION'],
-                                         'osg',
-                                         'etc',
-                                         'sudo-example.txt'),
-                            attributes['GLOBUS_LOCATION'],
-                            self.__using_prima)
-      
     self.logger.debug('PBSConfiguration.configure completed')    
     return True
   

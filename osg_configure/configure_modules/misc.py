@@ -206,11 +206,6 @@ class MiscConfiguration(BaseConfiguration):
       if not utilities.configure_service('configure_ca_cert_updater', arguments):
         self.logger.error("Error while configuring ca certs updater")
         raise exceptions.ConfigureError("Error configuring ca certs updater")
-
-      self.logger.debug("Enabling fetch-crl service")
-      if not utilities.enable_service('fetch-crl'):
-        self.logger.error("Error while enabling fetch-crl")
-        raise exceptions.ConfigureError("Error configuring fetch crl service") 
       
       # run fetch-crl script
       if not utilities.fetch_crl():
@@ -218,12 +213,6 @@ class MiscConfiguration(BaseConfiguration):
         self.logger.error(error_mesg)
         raise exceptions.ConfigureError(error_mesg) 
         
-
-      self.logger.debug("Enabling vdt-update-certs service")
-      if not utilities.enable_service('vdt-update-certs'):
-        self.logger.error("Error while enabling vdt-update-certs")
-        raise exceptions.ConfigureError("Error configuring vdt cert updater")
-     
 
     if self.attributes['authorization_method'] == 'gridmap':
       self.__enable_gridmap()
@@ -317,15 +306,7 @@ class MiscConfiguration(BaseConfiguration):
       self.logger.error("Error while configuring gums-host-cron")
       raise exceptions.ConfigureError("Error configuring gums-host-cron")
 
-    self.logger.debug("Enabling gums host cron service")
-    if not utilities.enable_service('gums-host-cron'):
-      self.logger.error("Error while enabling gums-host-cron")
-      raise exceptions.ConfigureError("Error enabling gums-host-cron")
 
-    self.logger.debug("Disabling edg-mkgridmap service")
-    if not utilities.disable_service('edg-mkgridmap'):
-      self.logger.error("Error while disabling edg-mkgridmap")
-      raise exceptions.ConfigureError("Error disabling edg-mkgridmap")
 
     if self.__ce_configuration:    
       arguments = ['--enable', '--gums-server', self.attributes['gums_host']]
@@ -351,16 +332,6 @@ class MiscConfiguration(BaseConfiguration):
       self.logger.error("Error while configuring gums-host-cron")
       raise exceptions.ConfigureError("Error configuring gums-host-cron")
 
-    self.logger.debug("Enabling gums host cron service")
-    if not utilities.enable_service('gums-host-cron'):
-      self.logger.error("Error while enabling gums-host-cron")
-      raise exceptions.ConfigureError("Error enabling gums-host-cron")
-
-    self.logger.debug("Disabling edg-mkgridmap service")
-    if not utilities.disable_service('edg-mkgridmap'):
-      self.logger.error("Error while disabling edg-mkgridmap")
-      raise exceptions.ConfigureError("Error disabling edg-mkgridmap")
-
     if self.__ce_configuration:
       arguments = ['--enable', '--gums-server', self.attributes['gums_host'], '--xacml']
       self.logger.info("Running configure_prima_gt4 with: %s" % (" ".join(arguments)))
@@ -379,16 +350,6 @@ class MiscConfiguration(BaseConfiguration):
       self.logger.error("Error while configuring edg_make_gridmap")
       raise exceptions.ConfigureError("Error configuring edg-mkgridmap service")
     
-    self.logger.debug("Enabling edg-mkgridmap service")
-    if not utilities.enable_service('edg-mkgridmap'):
-      self.logger.error("Error while enabling edg-mkgridmap")
-      raise exceptions.ConfigureError("Error enabling edg-mkgridmap")
-    
-    self.logger.debug("Disabling gums host cron service")
-    if not utilities.disable_service('gums-host-cron'):
-      self.logger.error("Error while disabling gums-host-cron")
-      raise exceptions.ConfigureError("Error disabling gums-host-cron")
-
     arguments = ['--disable']
     self.logger.info("Running configure_prima_gt4 with: %s" % (" ".join(arguments)))
     if not utilities.configure_service('configure_prima_gt4', arguments):

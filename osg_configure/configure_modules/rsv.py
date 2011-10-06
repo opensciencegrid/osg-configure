@@ -246,10 +246,6 @@ class RsvConfiguration(BaseConfiguration):
     # Fix the Gratia ProbeConfig file to point at the appropriate collector
     self.__set_gratia_collector(self.attributes[self.__mappings['gratia_collector']])
 
-    self.logger.debug('Enabling condor-cron service')
-    if not utilities.enable_service('condor-cron'):
-      self.logger.error("Error while enabling condor-cron")
-      raise exceptions.ConfigureError("Error configuring rsv")    
     self.logger.debug('RsvConfiguration.configure completed')
     return True
 

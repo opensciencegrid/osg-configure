@@ -128,14 +128,6 @@ class CemonConfiguration(BaseConfiguration):
       self.configureSubscriptions(subscription = subscription, dialect = dialect)
 
 
-    if not utilities.enable_service('tomcat-55'):
-      self.logger.error("Error while enabling tomcat")
-      raise exceptions.ConfigureError("Error configuring cemon")
-    self.logger.debug("Enabling apache service")
-    if not utilities.enable_service('apache'):
-      self.logger.error("Error while enabling apache")
-      raise exceptions.ConfigureError("Error enabling apache") 
-
     self.logger.debug("CemonConfiguration.configure completed")
     return True
 

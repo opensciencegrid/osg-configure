@@ -227,25 +227,6 @@ def get_vos(user_vo_file):
       pass
   return vo_list
 
-def enable_service(service_name):
-  """
-  Run vdt-control to enable specified service.
-  """
-  
-  if service_name == None or service_name == "":
-    return False
-  return run_script(['/sbin/service', service_name, 'start'])
-
-
-def disable_service(service_name):
-  """
-  Run vdt-control to enable specified service.
-  """
-  
-  if service_name == None or service_name == "":
-    return False
-  return run_script(['/sbin/service', service_name, 'stop'])
-
 def service_enabled(service_name):
   """
   Check to see if a service is enabled

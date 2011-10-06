@@ -157,10 +157,6 @@ class XrootdFSConfiguration(BaseConfiguration):
       self.logger.error("Error configuring xrootdfs")
       raise exceptions.ConfigureError("Error configuring XrootdFS")    
 
-    self.logger.debug('Enabling XrootdFS')
-    if not utilities.enable_service('xrootdfs'):
-      self.logger.error("Error while enabling xrootdfs")
-      raise exceptions.ConfigureError("Error configuring XrootdFS")    
     self.logger.debug('XrootdFSConfiguration.configure completed')    
     return True
   

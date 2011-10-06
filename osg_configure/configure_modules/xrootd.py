@@ -210,10 +210,6 @@ class XrootdConfiguration(BaseConfiguration):
       self.logger.error("Error configuring xrootd")
       raise exceptions.ConfigureError("Error configuring Xrootd")    
 
-    self.logger.debug('Enabling Xrootd')
-    if not utilities.enable_service('xrootd'):
-      self.logger.error("Error while enabling xrootd")
-      raise exceptions.ConfigureError("Error configuring Xrootd")    
     self.logger.debug('XrootdConfiguration.configure completed')    
     return True
   

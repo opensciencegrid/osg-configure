@@ -252,10 +252,6 @@ class BestmanConfiguration(BaseConfiguration):
       self.logger.error("Error configuring bestman")
       raise exceptions.ConfigureError("Error configuring Bestman")    
 
-    self.logger.debug('Enabling Bestman')
-    if not utilities.enable_service('bestman'):
-      self.logger.error("Error while enabling condor")
-      raise exceptions.ConfigureError("Error configuring Bestman")    
     self.logger.debug('BestmanConfiguration.configure completed')    
     return True
   

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os, imp, sys, unittest
+import os, imp, sys, unittest, ConfigParser, logging
 
 # setup system library path if it's not there at present
 try:
@@ -12,20 +12,27 @@ except ImportError:
 
 from osg_configure.modules import exceptions
 
-pathname = os.path.join('..', 'bin', 'configure-osg')
+pathname = os.path.join('../scripts', 'osg-configure')
 pathname = os.path.abspath(pathname)
+
+global_logger = logging.getLogger('test gip configuration')
+console = logging.StreamHandler()
+console.setLevel(logging.ERROR)
+global_logger.addHandler(console)
 
 try:
     has_configure_osg = False
     fp = open(pathname, 'r')
-    configure_osg = imp.load_module('configure-osg', fp, pathname, ('', '', 1))
+    configure_osg = imp.load_module('osg-configure', fp, pathname, ('', '', 1))
     has_configure_osg = True
 except:
     raise
 
 from osg_configure.configure_modules import gip, localsettings
 from osg_configure.configure_modules import localsettings
+
 from osg_configure.modules import exceptions
+from osg_configure.modules import configfile
 
 class TestConfigureOsg(unittest.TestCase):
 
@@ -43,8 +50,9 @@ class TestConfigureOsg(unittest.TestCase):
         """
         did_fail = False
         try:
-            cp = osg_configure.read_config_file("configs/gip/red-missing-sc.ini")
-            gip_config = gip.GipConfiguration(logger=osg_configure.FakeLogger())
+            cp = ConfigParser.SafeConfigParser()
+            cp.read("configs/gip/red-missing-sc.ini")
+            gip_config = gip.GipConfiguration(logger=global_logger)
             gip_config.parseConfiguration(cp)
         except exceptions.SettingError:
             did_fail = True
@@ -57,8 +65,9 @@ class TestConfigureOsg(unittest.TestCase):
         """
         did_fail = False
         try:
-            cp = osg_configure.read_config_file("configs/gip/red-missing-se.ini")
-            gip_config = gip.GipConfiguration(logger=osg_configure.FakeLogger())
+            cp = ConfigParser.SafeConfigParser()
+            cp.read("configs/gip/red-missing-se.ini")
+            gip_config = gip.GipConfiguration(logger=global_logger)
             gip_config.parseConfiguration(cp)
         except exceptions.SettingError:
             did_fail = True
@@ -71,8 +80,9 @@ class TestConfigureOsg(unittest.TestCase):
         """
         did_fail = False
         try:
-            cp = osg_configure.read_config_file("configs/gip/red-missing-se2.ini")
-            gip_config = gip.GipConfiguration(logger=osg_configure.FakeLogger())
+            cp = ConfigParser.SafeConfigParser()
+            cp.read("configs/gip/red-missing-se2.ini")
+            gip_config = gip.GipConfiguration(logger=global_logger)
             gip_config.parseConfiguration(cp)
         except exceptions.SettingError:
             did_fail = True
@@ -84,8 +94,9 @@ class TestConfigureOsg(unittest.TestCase):
         """
         did_fail = False
         try:
-            cp = osg_configure.read_config_file("configs/gip/changeme_section.ini")
-            gip_config = gip.GipConfiguration(logger=osg_configure.FakeLogger())
+            cp = ConfigParser.SafeConfigParser()
+            cp.read("configs/gip/changeme_section.ini")
+            gip_config = gip.GipConfiguration(logger=global_logger)
             gip_config.parseConfiguration(cp)
         except exceptions.SettingError:
             did_fail = True
@@ -97,8 +108,9 @@ class TestConfigureOsg(unittest.TestCase):
         """
         did_fail = False
         try:
-            cp = osg_configure.read_config_file("configs/gip/changeme_section_bad.ini")
-            gip_config = gip.GipConfiguration(logger=osg_configure.FakeLogger())
+            cp = ConfigParser.SafeConfigParser()
+            cp.read("configs/gip/changeme_section_bad.ini")
+            gip_config = gip.GipConfiguration(logger=global_logger)
             gip_config.parseConfiguration(cp)
         except exceptions.SettingError:
             did_fail = True
@@ -111,8 +123,9 @@ class TestConfigureOsg(unittest.TestCase):
         """
         did_fail = False
         try:
-            cp = osg_configure.read_config_file("configs/gip/changeme_section_bad2.ini")
-            gip_config = gip.GipConfiguration(logger=osg_configure.FakeLogger())
+            cp = ConfigParser.SafeConfigParser()
+            cp.read("configs/gip/changeme_section_bad2.ini")
+            gip_config = gip.GipConfiguration(logger=global_logger)
             gip_config.parseConfiguration(cp)
         except exceptions.SettingError:
             did_fail = True
@@ -125,8 +138,9 @@ class TestConfigureOsg(unittest.TestCase):
         """
         did_fail = False
         try:
-            cp = osg_configure.read_config_file("configs/gip/changeme_section_sc.ini")
-            gip_config = gip.GipConfiguration(logger=osg_configure.FakeLogger())
+            cp = ConfigParser.SafeConfigParser()
+            cp.read("configs/gip/changeme_section_sc.ini")
+            gip_config = gip.GipConfiguration(logger=global_logger)
             gip_config.parseConfiguration(cp)
         except exceptions.SettingError:
             did_fail = True
@@ -139,8 +153,9 @@ class TestConfigureOsg(unittest.TestCase):
         """
         did_fail = False
         try:
-            cp = osg_configure.read_config_file("configs/gip/changeme_section_bad3.ini")
-            gip_config = gip.GipConfiguration(logger=osg_configure.FakeLogger())
+            cp = ConfigParser.SafeConfigParser()
+            cp.read("configs/gip/changeme_section_bad3.ini")
+            gip_config = gip.GipConfiguration(logger=global_logger)
             gip_config.parseConfiguration(cp)
         except exceptions.SettingError:
             did_fail = True
@@ -152,9 +167,10 @@ class TestConfigureOsg(unittest.TestCase):
         """
         did_fail = False
         try:
-            cp = osg_configure.read_config_file("configs/gip/" \
+            cp = ConfigParser.SafeConfigParser()
+            cp.read("configs/gip/" \
                 "red-missing-attributes.ini")
-            gip_config = gip.GipConfiguration(logger=osg_configure.FakeLogger())
+            gip_config = gip.GipConfiguration(logger=global_logger)
             gip_config.parseConfiguration(cp)
         except exceptions.SettingError:
             did_fail = True
@@ -164,33 +180,38 @@ class TestConfigureOsg(unittest.TestCase):
         """
         Make sure that we can correctly parse an old-style GIP config.
         """
-        cp = osg_configure.read_config_file("configs/gip/red-old-gip-config.ini")
-        gip_config = gip.GipConfiguration(logger=osg_configure.FakeLogger())
+        cp = ConfigParser.SafeConfigParser()
+        cp.read("configs/gip/red-old-gip-config.ini")
+        gip_config = gip.GipConfiguration(logger=global_logger)
         gip_config.parseConfiguration(cp)
 
     def test_new_config(self):
         """
         Make sure that we can correctly parse a correct new-style GIP config.
         """
-        cp = osg_configure.read_config_file("configs/gip/red-new-gip-config.ini")
-        gip_config = gip.GipConfiguration(logger=osg_configure.FakeLogger())
+        cp = ConfigParser.SafeConfigParser()
+        cp.read("configs/gip/red-new-gip-config.ini")
+        gip_config = gip.GipConfiguration(logger=global_logger)
         gip_config.parseConfiguration(cp)
 
     def test_doherty(self):
         """
         Make sure that we can correctly parse a correct new-style GIP config.
         """
-        cp = osg_configure.read_config_file("configs/gip/doherty.ini")
-        gip_config = gip.GipConfiguration(logger=osg_configure.FakeLogger())
+        cp = ConfigParser.SafeConfigParser()
+        cp.read("configs/gip/doherty.ini")
+        gip_config = gip.GipConfiguration(logger=global_logger)
         gip_config.parseConfiguration(cp)
 
     def test_local_settings(self):
         """
         Test to see if the local settings parsing works.
         """
-        cp = osg_configure.read_config_file("configs/gip/local_settings.ini", True)        
+        cp = ConfigParser.SafeConfigParser()
+        cp.optionxform = str
+        cp.read("configs/gip/local_settings.ini")        
         local_settings = localsettings.LocalSettings(logger = \
-                                                     osg_configure.FakeLogger())
+                                                     global_logger)
         local_settings.parseConfiguration(cp)
         attributes = local_settings.getAttributes()
         self.failUnless('default' not in attributes,
@@ -214,40 +235,48 @@ class TestConfigureOsg(unittest.TestCase):
         """
         Make sure the allowed VOs is filtered properly.
         """
-        cp = osg_configure.read_config_file("configs/gip/allowed_vos.ini", True)
-        gip_config = gip.GipConfiguration(logger=osg_configure.FakeLogger())
+        cp = ConfigParser.SafeConfigParser()
+        cp.read("configs/gip/allowed_vos.ini")
+        gip_config = gip.GipConfiguration(logger=global_logger)
         gip_config.parseConfiguration(cp)
 
     def test_allowed_jobmanagers(self):
         """
         Make sure the allowed VOs is filtered properly.
         """
-        cp = osg_configure.read_config_file("configs/gip/allowed_jobmanager1.ini", True)
-        gip_config = gip.GipConfiguration(logger=osg_configure.FakeLogger())
+        cp = ConfigParser.SafeConfigParser()
+        cp.read("configs/gip/allowed_jobmanager1.ini")
+        gip_config = gip.GipConfiguration(logger=global_logger)
         gip_config.parseConfiguration(cp)
 
-        cp = osg_configure.read_config_file("configs/gip/allowed_jobmanager2.ini", True)
-        gip_config = gip.GipConfiguration(logger=osg_configure.FakeLogger())
+        cp = ConfigParser.SafeConfigParser()
+        cp.read("configs/gip/allowed_jobmanager2.ini")
+        gip_config = gip.GipConfiguration(logger=global_logger)
         gip_config.parseConfiguration(cp)
 
-        cp = osg_configure.read_config_file("configs/gip/allowed_jobmanager3.ini", True)
-        gip_config = gip.GipConfiguration(logger=osg_configure.FakeLogger())
+        cp = ConfigParser.SafeConfigParser()
+        cp.read("configs/gip/allowed_jobmanager3.ini")
+        gip_config = gip.GipConfiguration(logger=global_logger)
         gip_config.parseConfiguration(cp)
 
-        cp = osg_configure.read_config_file("configs/gip/allowed_jobmanager4.ini", True)
-        gip_config = gip.GipConfiguration(logger=osg_configure.FakeLogger())
+        cp = ConfigParser.SafeConfigParser()
+        cp.read("configs/gip/allowed_jobmanager4.ini")
+        gip_config = gip.GipConfiguration(logger=global_logger)
         gip_config.parseConfiguration(cp)
 
-        cp = osg_configure.read_config_file("configs/gip/allowed_jobmanager5.ini", True)
-        gip_config = gip.GipConfiguration(logger=osg_configure.FakeLogger())
+        cp = ConfigParser.SafeConfigParser()
+        cp.read("configs/gip/allowed_jobmanager5.ini")
+        gip_config = gip.GipConfiguration(logger=global_logger)
         gip_config.parseConfiguration(cp)
 
-        cp = osg_configure.read_config_file("configs/gip/allowed_jobmanager6.ini", True)
-        gip_config = gip.GipConfiguration(logger=osg_configure.FakeLogger())
+        cp = ConfigParser.SafeConfigParser()
+        cp.read("configs/gip/allowed_jobmanager6.ini")
+        gip_config = gip.GipConfiguration(logger=global_logger)
         gip_config.parseConfiguration(cp)
 
-        cp = osg_configure.read_config_file("configs/gip/invalid_jobmanager1.ini", True)
-        gip_config = gip.GipConfiguration(logger=osg_configure.FakeLogger())
+        cp = ConfigParser.SafeConfigParser()
+        cp.read("configs/gip/invalid_jobmanager1.ini")
+        gip_config = gip.GipConfiguration(logger=global_logger)
         self.failUnlessRaises(exceptions.SettingError, 
                               gip_config.parseConfiguration, 
                               configuration = cp)
@@ -259,8 +288,9 @@ class TestConfigureOsg(unittest.TestCase):
         """
         did_fail = False
         try:
-            cp = osg_configure.read_config_file("configs/gip/mount_point.ini")
-            gip_config = gip.GipConfiguration(logger=osg_configure.FakeLogger())
+            cp = ConfigParser.SafeConfigParser()
+            cp.read("configs/gip/mount_point.ini")
+            gip_config = gip.GipConfiguration(logger=global_logger)
             gip_config.checkSE(cp, "SE Valid")
         except exceptions.SettingError:
             did_fail = True
@@ -273,8 +303,9 @@ class TestConfigureOsg(unittest.TestCase):
         """
         did_fail = False
         try:
-            cp = osg_configure.read_config_file("configs/gip/mount_point.ini")
-            gip_config = gip.GipConfiguration(logger=osg_configure.FakeLogger())
+            cp = ConfigParser.SafeConfigParser()
+            cp.read("configs/gip/mount_point.ini")
+            gip_config = gip.GipConfiguration(logger=global_logger)
             gip_config.checkSE(cp, "SE Wrong len")
         except exceptions.SettingError:
             did_fail = True
@@ -286,8 +317,9 @@ class TestConfigureOsg(unittest.TestCase):
         """
         did_fail = False
         try:
-            cp = osg_configure.read_config_file("configs/gip/mount_point.ini")
-            gip_config = gip.GipConfiguration(logger=osg_configure.FakeLogger())
+            cp = ConfigParser.SafeConfigParser()
+            cp.read("configs/gip/mount_point.ini")
+            gip_config = gip.GipConfiguration(logger=global_logger)
             gip_config.checkSE(cp, "SE Invalid Path 1")
         except exceptions.SettingError:
             did_fail = True
@@ -299,8 +331,9 @@ class TestConfigureOsg(unittest.TestCase):
         """
         did_fail = False
         try:
-            cp = osg_configure.read_config_file("configs/gip/mount_point.ini")
-            gip_config = gip.GipConfiguration(logger=osg_configure.FakeLogger())
+            cp = ConfigParser.SafeConfigParser()
+            cp.read("configs/gip/mount_point.ini")
+            gip_config = gip.GipConfiguration(logger=global_logger)
             gip_config.checkSE(cp, "SE Invalid Path 2")
         except exceptions.SettingError:
             did_fail = True
@@ -311,8 +344,9 @@ class TestConfigureOsg(unittest.TestCase):
         Make sure a valid HEPSPEC value is accepted.
         """
         did_fail = False
-        cp = osg_configure.read_config_file("configs/gip/sc_samples.ini")
-        gip_config = gip.GipConfiguration(logger=osg_configure.FakeLogger())
+        cp = ConfigParser.SafeConfigParser()
+        cp.read("configs/gip/sc_samples.ini")
+        gip_config = gip.GipConfiguration(logger=global_logger)
         try:
             gip_config.checkSC(cp, "Subcluster Valid")
         except exceptions.SettingError:
@@ -324,8 +358,9 @@ class TestConfigureOsg(unittest.TestCase):
         Make sure a invalid HEPSPEC value causes an error..
         """
         did_fail = False
-        cp = osg_configure.read_config_file("configs/gip/sc_samples.ini")
-        gip_config = gip.GipConfiguration(logger=osg_configure.FakeLogger())
+        cp = ConfigParser.SafeConfigParser()
+        cp.read("configs/gip/sc_samples.ini")
+        gip_config = gip.GipConfiguration(logger=global_logger)
         try:
             gip_config.checkSC(cp, "Subcluster Bad HEPSPEC")
         except exceptions.SettingError:

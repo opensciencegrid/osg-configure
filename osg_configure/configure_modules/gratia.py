@@ -110,7 +110,6 @@ in your config.ini file."""
 
     # disable all gratia services
     # if gratia is enabled, probes will get enabled below
-    #    self.__disable_services()
     if not self.enabled:
       self.logger.debug("Not enabled")
       self.logger.debug("GratiaConfiguration.configure completed")
@@ -357,16 +356,4 @@ in your config.ini file."""
     
     return True
 
-  def __disable_services(self):
-    """
-    Disable gratia services
-    """
-    
-    self.logger.debug("GratiaConfiguration.__disable_services started")
-    for probe in self.__job_managers:
-      service_name = "gratia-%s" % probe
-      if utilities.service_enabled(service_name):
-        self.logger.debug("Disabling %s" % service_name)
-        utilities.disable_service(service_name)
-    self.logger.debug("GratiaConfiguration.__disable_services completed")
     

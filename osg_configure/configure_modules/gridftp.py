@@ -173,12 +173,6 @@ class GridFTPConfiguration(BaseConfiguration):
       self.logger.error("Error configuring gridftp")
       raise exceptions.ConfigureError("Error configuring GridFTP")    
 
-    self.logger.debug('Enabling GridFTP')
-    if not utilities.enable_service('gsiftp'):
-      self.logger.error("Error while enabling gridftp")
-      raise exceptions.ConfigureError("Error configuring GridFTP")
-    
-          
     self.logger.debug('GridFTPConfiguration.configure completed')
     return True
   

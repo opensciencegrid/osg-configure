@@ -11,7 +11,7 @@ except ImportError:
   from osg_configure.modules import exceptions
 
 
-pathname = os.path.join('../scripts', 'configure-osg')
+pathname = os.path.join('../scripts', 'osg-configure')
 
 try:
     has_configure_osg = False
