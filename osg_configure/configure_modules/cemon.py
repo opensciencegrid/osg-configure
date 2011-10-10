@@ -225,7 +225,7 @@ class CemonConfiguration(BaseConfiguration):
 
     # Add in the subscription information
     add = '''
-  <!-- Installed by the VDT -->
+  <!-- Installed by osg-configure -->
   <subscription id="%s"
         monitorConsumerURL="%s"
         sslprotocol="SSLv3"
