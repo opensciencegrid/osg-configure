@@ -3,8 +3,7 @@
 """ Module to handle attributes related to the Managed Fork jobmanager configuration """
 
 
-import os
-import ConfigParser
+import os, tempfile, ConfigParser
 
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile
@@ -12,6 +11,8 @@ from osg_configure.modules import exceptions
 from osg_configure.modules.configurationbase import BaseConfiguration
 
 __all__ = ['ManagedForkConfiguration']
+
+MANAGED_FORK_CONFIG_FILE = '/etc/grid-services/available/jobmanager-managedfork'
 
 class ManagedForkConfiguration(BaseConfiguration):
   """Class to handle attributes related to managedfork job 
@@ -30,7 +31,9 @@ class ManagedForkConfiguration(BaseConfiguration):
                        'condor_config',
                        'accept_limited']
     condor_location = os.environ.get('CONDOR_LOCATION', '/usr')
+    condor_config = os.environ.get('CONDOR_CONFIG', '/etc/condor')
     self.__defaults = {'condor_location' : condor_location,
+                       'condor_config' : condor_config,
                        'accept_limited' : 'False'}
     
     self.config_section = "Managed Fork"
@@ -118,17 +121,14 @@ class ManagedForkConfiguration(BaseConfiguration):
     """Configure installation using attributes"""
 
     self.logger.debug('ManagedForkConfiguration.configure started')
-
-    # diable configuration for now
-    self.logger.warning("ManagedFork disabled")
-    self.logger.debug('ManagedForkConfiguration.configure completed')
-    return True
     
-    configure_globus = os.path.join("/usr/sbin/configure_globus_gatekeeper")
-    if not os.path.exists(configure_globus):
-      self.logger.debug("Configuration script '%s' does not exist.  Not applying globus-gatekeeper configuration in managedfork.py" % configure_globus)
+    if self.ignored:
+      # this needs to go before the self.enabled check to prevent any changes
+      # in the configuration
+      self.logger.warning("%s configuration ignored" % self.config_section)
+      self.logger.debug('ManagedForkConfiguration.configure completed')
       return True
-    
+
     if not self.enabled:
       self.logger.debug('ManagedFork not enabled')
       self.logger.debug('Configuring gatekeeper to use regular fork service')
@@ -136,27 +136,40 @@ class ManagedForkConfiguration(BaseConfiguration):
       self.logger.debug('ManagedForkConfiguration.configure completed')
       return True
 
-    if self.ignored:
-      self.logger.warning("%s configuration ignored" % self.config_section)
-      self.logger.debug('ManagedForkConfiguration.configure completed')
-      return True
 
     self.logger.debug("Setting managed fork to be the default jobmanager")
-    arguments = ['--managed-fork', 'y']
-    if utilities.service_enabled('globus-gatekeeper'):
-      arguments = ['--managed-fork', 'y', '--server', 'y']
+    if not os.path.exists():
+      err_mesg = "Globus jobmanager-managedfork configuration not present, " \
+                 "is it installed?\n"
+      self.logger.error(err_mesg)
+      self.logger.debug('ManagedForkConfiguration.configure completed')
+      return False
 
+    os.unlink('/etc/grid-services/jobmanager')
+    os.link(MANAGED_FORK_CONFIG_FILE, '/etc/grid-services/jobmanager')
+    
     # The accept_limited argument was added for Steve Timm.  We are not adding
     # it to the default config.ini template because we do not think it is
     # useful to a wider audience.
     # See VDT RT ticket 7757 for more information.
     if self.attributes[self.__mappings['accept_limited']].upper() == "TRUE":
-      arguments.append("--accept-limited")
+      buffer = open(MANAGED_FORK_CONFIG_FILE).read()
+      if 'accept_limited' not in buffer:
+        buffer = 'accept_limited' + buffer
+        try:
+          (config_file, temp_name) = tempfile.mkstemp(dir=os.path.dirname(MANAGED_FORK_CONFIG_FILE))
+          try:
+            os.write(config_file, buffer)
+            os.close(config_file)
+            os.rename(temp_name, MANAGED_FORK_CONFIG_FILE)
+          finally:
+            os.close(config_file)
+            os.unlink(temp_name)
+        except:
+          self.logger.error('Error writing to managed fork configuration')
+          self.logger.debug('ManagedForkConfiguration.configure completed')
+          return False
 
-    if not utilities.configure_service('configure_globus_gatekeeper', 
-                                       arguments):
-      self.logger.error("Error while making managed fork the default jobmanager")
-      raise exceptions.ConfigureError("Error configuring Managed Fork")    
 
     self.logger.debug('ManagedForkConfiguration.configure completed')
     return True
@@ -179,13 +192,14 @@ class ManagedForkConfiguration(BaseConfiguration):
     """
     self.logger.debug("ManagedForkConfiguration.__disable_service started")
 
-    self.logger.debug("Setting managed fork to be the default jobmanager")
-    arguments = ['--managed-fork', 'n']
-    if utilities.service_enabled('globus-gatekeeper'):
-      arguments = ['--managed-fork', 'n', '--server', 'y']
-    if not utilities.configure_service('configure_globus_gatekeeper', 
-                                       arguments):
-      self.logger.error("Error changing to the regular fork manager")
-      raise exceptions.ConfigureError("Error disabling Managed Fork")    
+    self.logger.debug("Setting regular fork manager to be the default jobmanager")
+    if not os.path.exists('/etc/grid-services/jobmanager-fork'):
+      self.logger.error("Can't find fork jobmanager configuration," +
+                        " leaving managed fork enabled")
+      self.logger.debug("ManagedForkConfiguration.__disable_service completed")
+      return False
+    
+    os.unlink('/etc/grid-services/jobmanager')
+    os.link('/etc/grid-services/jobmanager-fork', '/etc/grid-services/jobmanager')
     
     self.logger.debug("ManagedForkConfiguration.__disable_service completed")

@@ -114,52 +114,8 @@ class TestCondor(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
-    # test getting defaults from vdtsetup variables
-    # check getting values from VDTSETUP variables
-    os.environ['VDTSETUP_CONDOR_LOCATION'] = '/my/condor'
-    os.environ['VDTSETUP_CONDOR_CONFIG'] = '/my/condor/etc/condor_config'
-    os.environ['VDT_LOCATION'] = '/opt/osg'
-    settings = condor.CondorConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
-
-    attributes = settings.getAttributes()
-    self.failUnless(attributes.has_key('OSG_CONDOR_LOCATION'), 
-                    'Attribute OSG_CONDOR_LOCATION missing')
-    self.failUnlessEqual(attributes['OSG_CONDOR_LOCATION'], '/my/condor', 
-                         'Wrong value obtained for OSG_CONDOR_LOCATION')
-  
-    self.failUnless(attributes.has_key('OSG_CONDOR_CONFIG'), 
-                    'Attribute OSG_CONDOR_CONFIG missing')
-    self.failUnlessEqual(attributes['OSG_CONDOR_CONFIG'], 
-                         '/my/condor/etc/condor_config', 
-                         'Wrong value obtained for OSG_CONDOR_CONFIG')
-
-    # does condor_config get calculated properly if 
-    # vdtsetup_condor_config is missing?
-    del os.environ['VDTSETUP_CONDOR_CONFIG']      
-    settings = condor.CondorConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
-
-    attributes = settings.getAttributes()
-    self.failUnless(attributes.has_key('OSG_CONDOR_LOCATION'), 
-                    'Attribute OSG_CONDOR_LOCATION missing')
-    self.failUnlessEqual(attributes['OSG_CONDOR_LOCATION'], '/my/condor', 
-                         'Wrong value obtained for OSG_CONDOR_LOCATION')
-  
-    self.failUnless(attributes.has_key('OSG_CONDOR_CONFIG'), 
-                    'Attribute OSG_CONDOR_CONFIG missing')
-    self.failUnlessEqual(attributes['OSG_CONDOR_CONFIG'], 
-                         '/my/condor/etc/condor_config', 
-                         'Wrong value obtained for OSG_CONDOR_CONFIG')
 
     # check to see if we can get values from condor_* variables
-    del os.environ['VDTSETUP_CONDOR_LOCATION']
     os.environ['CONDOR_LOCATION'] = '/my/condor'
     os.environ['CONDOR_CONFIG'] = '/my/condor/etc/condor_config'
     settings = condor.CondorConfiguration(logger=global_logger)
@@ -209,7 +165,6 @@ class TestCondor(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
     os.environ['CONDOR_LOCATION'] = '/my/condor1'
-    os.environ['VDTSETUP_CONDOR_LOCATION'] = '/my/condor2'
     settings = condor.CondorConfiguration(logger=global_logger)
     try:
       settings.parseConfiguration(configuration)
@@ -234,7 +189,6 @@ class TestCondor(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
     os.environ['CONDOR_LOCATION'] = '/my/condor1'
-    os.environ['VDTSETUP_CONDOR_LOCATION'] = '/my/condor2'
     settings = condor.CondorConfiguration(logger=global_logger)
     try:
       settings.parseConfiguration(configuration)

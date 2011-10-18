@@ -28,6 +28,7 @@ class StorageConfiguration(BaseConfiguration):
                        'worker_node_temp': 'OSG_WN_TMP',
                        'site_read': 'OSG_SITE_READ',
                        'site_write': 'OSG_SITE_WRITE'}
+    self.__defaults = {'grid_dir' : '/etc/osg/wn-client'}
     self.__optional = ['default_se', 
                        'grid_dir',
                        'site_read',

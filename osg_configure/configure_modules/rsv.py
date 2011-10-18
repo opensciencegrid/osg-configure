@@ -310,8 +310,8 @@ class RsvConfiguration(BaseConfiguration):
     if self.attributes[self.__mappings['service_cert']]:
       value = self.attributes[self.__mappings['service_cert']]
       if utilities.blank(value) or not validation.valid_file(value):
-        self.logger.warning("In %s section" % self.config_section)
-        self.logger.warning("service_cert must point to an existing file: %s" % value)
+        self.logger.error("In %s section" % self.config_section)
+        self.logger.error("service_cert must point to an existing file: %s" % value)
         check_value = False
 
       value = self.attributes[self.__mappings['service_key']]

@@ -25,8 +25,8 @@ class InstallLocations(BaseConfiguration):
                        'user_vo_map': 'OSG_USER_VO_MAP',
                        'gridftp_log': 'OSG_GRIDFTP_LOG'}
     self.__defaults = {'osg' : '/etc/osg',
-                       'user_vo_map' : '/etc/osg/osg-user-vo-map.txt',
-                       'gridftp_log' : '/var/log/gridftp/gridftp.log',
+                       'user_vo_map' : '/var/lib/osg/user-vo-map',
+                       'gridftp_log' : '/var/log/gridftp.log',
                        'globus' : '/'}
     self.config_section = 'Install Locations'
     self.__optional = ['osg', 

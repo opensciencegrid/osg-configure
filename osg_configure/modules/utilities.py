@@ -339,35 +339,29 @@ def run_script(script):
   return True          
 
 
-def get_condor_location(default_location = None):
+def get_condor_location(default_location = '/usr'):
   """
   Check environment variables to try to get condor location preferring 
   VDTSET_CONDOR_LOCATION over CONDOR_LOCATION
   """
 
-  if not blank(default_location):
-    return default_location
-  if 'VDTSETUP_CONDOR_LOCATION' in os.environ:
-    return os.path.normpath(os.environ['VDTSETUP_CONDOR_LOCATION'])
-  elif 'CONDOR_LOCATION' in os.environ:
+  if 'CONDOR_LOCATION' in os.environ:
     return os.path.normpath(os.environ['CONDOR_LOCATION'])  
+  elif not blank(default_location):
+    return default_location
   else:
     return ""
 
-def get_condor_config(default_config = None):
+def get_condor_config(default_config = '/etc/condor'):
   """
   Check environment variables to try to get condor config preferring 
   VDTSET_CONDOR_CONFIG over CONDOR_CONFIG
   """
   
-  if not blank(default_config):
-    return default_config
-  if 'VDTSETUP_CONDOR_CONFIG' in os.environ:
-    return os.path.normpath(os.environ['VDTSETUP_CONDOR_CONFIG'])
-  elif 'CONDOR_CONFIG' in os.environ:
+  if 'CONDOR_CONFIG' in os.environ:
     return os.path.normpath(os.environ['CONDOR_CONFIG'])
-  elif (get_condor_location() == ''):
-    return ''  
+  elif not blank(default_config):
+    return os.path.normpath(default_config)
   else:
     return os.path.join(get_condor_location(),
                         'etc',
