@@ -11,10 +11,8 @@ from osg_configure.modules import validation
 __all__ = ['using_prima',
            'using_xacml_protocol',
            'get_vos',
-           'run_vdt_configure',
            'enable_service',
            'disable_service',
-           'configure_service',   
            'service_enabled',    
            'get_elements',
            'get_hostname',
@@ -89,13 +87,7 @@ def get_gums_host():
     return (host, port)
   
   return None
-  
-def run_vdt_configure(arguments = None):
-  """Run a configuration script from vdt and return exit status"""
-  if arguments is None:
-    return False
-  return run_script(arguments)
-    
+      
 def get_elements(element=None, filename=None):
   """Get values for selected element from xml file specified in filename"""
   if filename is None or element is None:
@@ -250,18 +242,6 @@ def service_enabled(service_name):
   else:
     return False 
   
-def configure_service(script = "", arguments = None):
-  """
-  Run vdt configuration scripts with the given arguments
-  """
-  if arguments == None or script == "":
-    return False
-  
-  vdt_script_path = os.path.join('usr',
-                                 'bin',
-                                 script)
-  return run_script([vdt_script_path] + arguments)
-
 def create_map_file(using_gums = False):
   """
   Check and create a mapfile if needed
@@ -324,8 +304,12 @@ def fetch_crl():
 
 def run_script(script):
   """
-  Run a script and return True if it executes successfully (exit code 0)
-  return False otherwise
+  Arguments:
+  script - a string or a list of arguments to run formatted while 
+           the args argument to subprocess.Popen
+  
+  Returns:
+  True if script runs successfully, False otherwise
   """
   
   if not validation.valid_executable(script[0]):

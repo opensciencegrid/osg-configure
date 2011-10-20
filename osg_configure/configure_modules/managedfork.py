@@ -145,8 +145,6 @@ class ManagedForkConfiguration(BaseConfiguration):
       self.logger.debug('ManagedForkConfiguration.configure completed')
       return False
 
-    os.unlink('/etc/grid-services/jobmanager')
-    os.link(MANAGED_FORK_CONFIG_FILE, '/etc/grid-services/jobmanager')
     
     # The accept_limited argument was added for Steve Timm.  We are not adding
     # it to the default config.ini template because we do not think it is
@@ -170,6 +168,14 @@ class ManagedForkConfiguration(BaseConfiguration):
           self.logger.debug('ManagedForkConfiguration.configure completed')
           return False
 
+    result = utilities.run_script(['/usr/sbin/globus-gatekeeper-admin',
+                                   '-e',
+                                   'jobmanager-managedfork',
+                                   '-n',
+                                   'jobmanager'])
+    if not result:
+      self.logger.error("Could not set the jobmanager-managedfork to the default jobmanager")
+      return False
 
     self.logger.debug('ManagedForkConfiguration.configure completed')
     return True
@@ -193,13 +199,14 @@ class ManagedForkConfiguration(BaseConfiguration):
     self.logger.debug("ManagedForkConfiguration.__disable_service started")
 
     self.logger.debug("Setting regular fork manager to be the default jobmanager")
-    if not os.path.exists('/etc/grid-services/jobmanager-fork'):
-      self.logger.error("Can't find fork jobmanager configuration," +
-                        " leaving managed fork enabled")
-      self.logger.debug("ManagedForkConfiguration.__disable_service completed")
+    result = utilities.run_script(['/usr/sbin/globus-gatekeeper-admin',
+                                   '-e',
+                                   'jobmanager-fork-poll',
+                                   '-n',
+                                   'jobmanager'])
+    if not result:
+      self.logger.error("Could not set the jobmanager-fork-poll to the default jobmanager")
       return False
-    
-    os.unlink('/etc/grid-services/jobmanager')
-    os.link('/etc/grid-services/jobmanager-fork', '/etc/grid-services/jobmanager')
+
     
     self.logger.debug("ManagedForkConfiguration.__disable_service completed")
