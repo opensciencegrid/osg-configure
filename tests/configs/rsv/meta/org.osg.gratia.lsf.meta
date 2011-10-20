@@ -1,0 +1,11 @@
+[org.osg.gratia.lsf]
+default-cron-interval = 52 * * * *
+
+execute = grid
+transfer-files = /usr/libexec/rsv/probes/RSVMetric.pm
+service-type = OSG-CE
+output-format = brief
+enable-by-default = false
+
+
+[org.osg.gratia.lsf env]

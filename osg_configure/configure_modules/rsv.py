@@ -288,14 +288,25 @@ class RsvConfiguration(BaseConfiguration):
     check_value = True
 
     # Do not allow both the service cert settings and proxy settings
-    if ((self.attributes[self.__mappings['service_cert']] or
-         self.attributes[self.__mappings['service_key']]  or
-         self.attributes[self.__mappings['service_proxy']])
-        and
-        (self.attributes[self.__mappings['user_proxy']])):
+    # first create some helper variables
+    blank_service_vals = (utilities.blank(self.attributes[self.__mappings['service_cert']]) and
+                          utilities.blank(self.attributes[self.__mappings['service_key']]) and
+                          utilities.blank(self.attributes[self.__mappings['service_proxy']]))
+    default_service_vals = (self.attributes[self.__mappings['service_cert']] == 
+                            self.__defaults['service_cert'])
+    default_service_vals &= (self.attributes[self.__mappings['service_key']] == 
+                             self.__defaults['service_key'])
+    default_service_vals &= (self.attributes[self.__mappings['service_proxy']] == 
+                             self.__defaults['service_proxy'])
+    blank_user_proxy = utilities.blank(self.attributes[self.__mappings['user_proxy']])
+    if (not  blank_user_proxy and default_service_vals):
+      self.logger.warning("In %s section" % self.config_section)
+      self.logger.warning('User proxy specified and service_cert, service_key, service_proxy at default values, assuming user_proxy takes precedence')
+    elif not (blank_user_proxy or (blank_service_vals or blank_service_vals)):
       self.logger.error("In %s section" % self.config_section)
       self.logger.error("You cannot specify user_proxy with any of (service_cert, service_key, service_proxy).  They are mutually exclusive options.")
       check_value = False
+            
 
     # Make sure that either a service cert or user cert is selected
     if not ((self.attributes[self.__mappings['service_cert']] and
@@ -307,7 +318,14 @@ class RsvConfiguration(BaseConfiguration):
       self.logger.error("You must specify either service_cert/service_key/service_proxy *or* user_proxy in order to provide credentials for RSV to run jobs")
       check_value = False
 
-    if self.attributes[self.__mappings['service_cert']]:
+    if not blank_user_proxy:
+      # if not using a service certificate, make sure that the proxy file exists
+      value = self.attributes[self.__mappings['user_proxy']]
+      if utilities.blank(value) or not validation.valid_file(value):
+        self.logger.error("In %s section" % self.config_section)
+        self.logger.error("user_proxy does not point to an existing file: %s" % value)
+        check_value = False      
+    else:
       value = self.attributes[self.__mappings['service_cert']]
       if utilities.blank(value) or not validation.valid_file(value):
         self.logger.error("In %s section" % self.config_section)
@@ -330,14 +348,6 @@ class RsvConfiguration(BaseConfiguration):
       if not validation.valid_location(value):
         self.logger.error("In %s section" % self.config_section)
         self.logger.error("service_proxy must be located in a valid directory: %s" % value)
-        check_value = False
-
-    else:
-      # if not using a service certificate, make sure that the proxy file exists
-      value = self.attributes[self.__mappings['user_proxy']]
-      if utilities.blank(value) or not validation.valid_file(value):
-        self.logger.error("In %s section" % self.config_section)
-        self.logger.error("user_proxy does not point to an existing file: %s" % value)
         check_value = False
 
     return check_value
@@ -650,8 +660,7 @@ class RsvConfiguration(BaseConfiguration):
       else:
         hostname = host
         port = False
-
-      if not validation.valid_domain(host):
+      if not validation.valid_domain(hostname):
         self.logger.error("Invalid domain in [%s].%s: %s" % (self.config_section, setting, host))
         ret = False
 

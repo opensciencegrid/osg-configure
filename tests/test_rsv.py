@@ -21,7 +21,7 @@ console = logging.StreamHandler()
 console.setLevel(logging.ERROR)
 global_logger.addHandler(console)
 
-
+RSV_META_DIR = './configs/rsv/meta'
 
 class TestRSVSettings(unittest.TestCase):
   """
@@ -38,34 +38,26 @@ class TestRSVSettings(unittest.TestCase):
     configuration.read(config_file)
 
     settings = rsv.RsvConfiguration(logger=global_logger)
+    settings.rsv_meta_dir = RSV_META_DIR 
     try:
       settings.parseConfiguration(configuration)
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e) 
 
     attributes = settings.attributes
-    variables = {'rsv_user' : 'daemon',
-                 'gratia_probes' : 'pbs,metric,managedfork', 
-                 'enable_ce_probes' : True,
+    variables = {'gratia_probes' : 'pbs,metric,condor', 
                  'ce_hosts' : 'my.host.com',
-                 'enable_gridftp_probes' : True,
                  'gridftp_hosts' : 'my.host.com',
                  'gridftp_dir' : '/tmp',
-                 'enable_gums_probes' : True,
                  'gums_hosts' : 'my.host.com',
-                 'enable_srm_probes' : True,
-                 'srm_hosts' : 'my.host.com:60443',
+                 'srm_hosts' : 'test.com:60443',
                  'srm_dir' : '/srm/dir',
                  'srm_webservice_path' : 'srm/v2/server',
-                 'use_service_cert' : True,
-                 'rsv_cert_file' : './configs/rsv/rsv1.ini',
-                 'rsv_cert_key' : './configs/rsv/rsv1.ini',
-                 'rsv_proxy_out_file' : '/tmp/rsvproxy.tmp',
-                 'proxy_file' : 'UNAVAILABLE',
+                 'service_cert' : './configs/rsv/rsv1.ini',
+                 'service_key' : './configs/rsv/rsv1.ini',
+                 'service_proxy' : '/tmp/rsvproxy',
                  'enable_gratia' : True,
-                 'enable_nagios' : True,
-                 'rsv_nagios_conf_file' : './configs/rsv/rsv1.ini',
-                 'setup_for_apache' : True}
+                 'enable_nagios' : True}
     for var in variables:      
       self.failUnless(attributes.has_key(var), 
                       "Attribute %s missing" % var)
@@ -86,34 +78,26 @@ class TestRSVSettings(unittest.TestCase):
     configuration.read(config_file)
 
     settings = rsv.RsvConfiguration(logger=global_logger)
+    settings.rsv_meta_dir = RSV_META_DIR 
     try:
       settings.parseConfiguration(configuration)
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e) 
 
     attributes = settings.attributes
-    variables = {'rsv_user' : 'daemon',
-                 'gratia_probes' : None, 
-                 'enable_ce_probes' : False,
+    variables = {'gratia_probes' : None, 
                  'ce_hosts' : 'my.host.com, my2.host.com',
-                 'enable_gridftp_probes' : False,
                  'gridftp_hosts' : 'my.host.com, my2.host.com',
                  'gridftp_dir' : '/tmp',
-                 'enable_gums_probes' : False,
                  'gums_hosts' : 'my.host.com, my2.host.com',
-                 'enable_srm_probes' : False,
                  'srm_hosts' : 'my.host.com, my2.host.com',
                  'srm_dir' : '/srm/dir',
                  'srm_webservice_path' : 'srm/v2/server',
-                 'use_service_cert' : False,
-                 'rsv_cert_file' : './configs/rsv/rsv1.ini',
-                 'rsv_cert_key' : './configs/rsv/rsv1.ini',
-                 'rsv_proxy_out_file' : '/tmp/rsvproxy.tmp',
-                 'proxy_file' : './configs/rsv/rsv2.ini',
+                 'service_cert' : './configs/rsv/rsv1.ini',
+                 'service_key' : './configs/rsv/rsv1.ini',
+                 'service_proxy' : '/tmp/rsvproxy',
                  'enable_gratia' : False,
-                 'enable_nagios' : False,
-                 'rsv_nagios_conf_file' : './configs/rsv/rsv1.ini',
-                 'setup_for_apache' : False}
+                 'enable_nagios' : False}
     for var in variables:
       self.failUnless(attributes.has_key(var), 
                       "Attribute %s missing" % var)
@@ -134,33 +118,25 @@ class TestRSVSettings(unittest.TestCase):
     configuration.read(config_file)
 
     settings = rsv.RsvConfiguration(logger=global_logger)
+    settings.rsv_meta_dir = RSV_META_DIR 
     try:
       settings.parseConfiguration(configuration)
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e) 
 
     attributes = settings.attributes
-    variables = {'rsv_user' : 'daemon',
-                 'enable_ce_probes' : True,
-                 'ce_hosts' : 'host1.site.com, host2.site.com',
-                 'enable_gridftp_probes' : True,
+    variables = {'ce_hosts' : 'host1.site.com, host2.site.com',
                  'gridftp_hosts' : 'host3.site.com, host4.site.com',
                  'gridftp_dir' : '/tmp',
-                 'enable_gums_probes' : True,
                  'gums_hosts' : 'host8.site.com, host9.site.com',
-                 'enable_srm_probes' : True,
                  'srm_hosts' : 'host5.site.com, host6.site.com, host7.site.com:1234',
                  'srm_dir' : '/srm/dir',
                  'srm_webservice_path' : 'srm/v2/server',
-                 'use_service_cert' : True,
-                 'rsv_cert_file' : './configs/rsv/rsv1.ini',
-                 'rsv_cert_key' : './configs/rsv/rsv1.ini',
-                 'rsv_proxy_out_file' : '/tmp/rsvproxy.tmp',
-                 'proxy_file' : 'UNAVAILABLE',
+                 'service_cert' : './configs/rsv/rsv1.ini',
+                 'service_key' : './configs/rsv/rsv1.ini',
+                 'service_proxy' : '/tmp/rsvproxy',
                  'enable_gratia' : True,
-                 'enable_nagios' : True,
-                 'rsv_nagios_conf_file' : './configs/rsv/rsv1.ini',
-                 'setup_for_apache' : True}
+                 'enable_nagios' : True}
     for var in variables:
       self.failUnless(attributes.has_key(var), 
                       "Attribute %s missing" % var)
@@ -182,8 +158,8 @@ class TestRSVSettings(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     settings = rsv.RsvConfiguration(logger=global_logger)
+    settings.rsv_meta_dir = RSV_META_DIR 
     try:
       settings.parseConfiguration(configuration)
     except Exception, e:
@@ -202,8 +178,8 @@ class TestRSVSettings(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     settings = rsv.RsvConfiguration(logger=global_logger)
+    settings.rsv_meta_dir = RSV_META_DIR 
     try:
       settings.parseConfiguration(configuration)
     except Exception, e:
@@ -219,20 +195,18 @@ class TestRSVSettings(unittest.TestCase):
     Test the parsing when attributes are missing, should get exceptions
     """
 
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     config_file = os.path.abspath("./configs/rsv/rsv2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
     settings = rsv.RsvConfiguration(logger=global_logger)
+    settings.rsv_meta_dir = RSV_META_DIR 
     try:
       settings.parseConfiguration(configuration)
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e)        
 
-    os.environ['VDT_LOCATION'] = os.getcwd()
-    mandatory = ['use_service_cert',
-                 'enable_gratia',
+    mandatory = ['enable_gratia',
                  'enable_nagios']
     for option in mandatory:
       config_file = os.path.abspath("./configs/rsv/rsv1.ini")
@@ -241,6 +215,7 @@ class TestRSVSettings(unittest.TestCase):
       configuration.remove_option('RSV', option)
 
       settings = rsv.RsvConfiguration(logger=global_logger)
+      settings.rsv_meta_dir = RSV_META_DIR 
       self.failUnlessRaises(exceptions.SettingError, 
                             settings.parseConfiguration, 
                             configuration)
@@ -251,13 +226,13 @@ class TestRSVSettings(unittest.TestCase):
     """
     
     
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     config_file = os.path.abspath("./configs/rsv/" \
                                   "invalid_key.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
   
     settings = rsv.RsvConfiguration(logger=global_logger)
+    settings.rsv_meta_dir = RSV_META_DIR 
     try:
       settings.parseConfiguration(configuration)
     except Exception, e:
@@ -272,13 +247,13 @@ class TestRSVSettings(unittest.TestCase):
     Test the checkAttributes with a missing rsv key file
     """
     
-    os.environ['VDT_LOCATION'] = '/opt/osg'    
     config_file = os.path.abspath("./configs/rsv/" \
                                   "missing_key.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
   
     settings = rsv.RsvConfiguration(logger=global_logger)
+    settings.rsv_meta_dir = RSV_META_DIR 
     try:
       settings.parseConfiguration(configuration)
     except Exception, e:
@@ -293,13 +268,13 @@ class TestRSVSettings(unittest.TestCase):
     Test the checkAttributes with invalid cert file
     """
     
-    os.environ['VDT_LOCATION'] = '/opt/osg'    
     config_file = os.path.abspath("./configs/rsv/" \
                                   "invalid_cert.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
   
     settings = rsv.RsvConfiguration(logger=global_logger)
+    settings.rsv_meta_dir = RSV_META_DIR 
     try:
       settings.parseConfiguration(configuration)
     except Exception, e:
@@ -314,13 +289,13 @@ class TestRSVSettings(unittest.TestCase):
     Test the checkAttributes with a missing rsv cert file
     """
     
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     config_file = os.path.abspath("./configs/rsv/" \
                                   "missing_cert.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
   
     settings = rsv.RsvConfiguration(logger=global_logger)
+    settings.rsv_meta_dir = RSV_META_DIR 
     try:
       settings.parseConfiguration(configuration)
     except Exception, e:
@@ -342,6 +317,7 @@ class TestRSVSettings(unittest.TestCase):
     configuration.read(config_file)
   
     settings = rsv.RsvConfiguration(logger=global_logger)
+    settings.rsv_meta_dir = RSV_META_DIR 
     try:
       settings.parseConfiguration(configuration)
     except Exception, e:
@@ -356,13 +332,13 @@ class TestRSVSettings(unittest.TestCase):
     Test the checkAttributes with a missing proxy cert file
     """
         
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     config_file = os.path.abspath("./configs/rsv/" \
                                   "missing_proxy.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
   
     settings = rsv.RsvConfiguration(logger=global_logger)
+    settings.rsv_meta_dir = RSV_META_DIR 
     try:
       settings.parseConfiguration(configuration)
     except Exception, e:
@@ -377,13 +353,13 @@ class TestRSVSettings(unittest.TestCase):
     Test the checkAttributes with invalid gratia probes
     """
     
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     config_file = os.path.abspath("./configs/rsv/" \
                                   "invalid_gratia1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
   
     settings = rsv.RsvConfiguration(logger=global_logger)
+    settings.rsv_meta_dir = RSV_META_DIR 
     try:
       settings.parseConfiguration(configuration)
     except Exception, e:
@@ -399,6 +375,7 @@ class TestRSVSettings(unittest.TestCase):
     configuration.read(config_file)
   
     settings = rsv.RsvConfiguration(logger=global_logger)
+    settings.rsv_meta_dir = RSV_META_DIR 
     try:
       settings.parseConfiguration(configuration)
     except Exception, e:
@@ -413,13 +390,13 @@ class TestRSVSettings(unittest.TestCase):
     Test the checkAttributes with invalid ce host
     """
     
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     config_file = os.path.abspath("./configs/rsv/" \
                                   "invalid_ce_host.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
   
     settings = rsv.RsvConfiguration(logger=global_logger)
+    settings.rsv_meta_dir = RSV_META_DIR 
     try:
       settings.parseConfiguration(configuration)
     except Exception, e:
@@ -434,13 +411,13 @@ class TestRSVSettings(unittest.TestCase):
     Test the checkAttributes with invalid gums host
     """
     
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     config_file = os.path.abspath("./configs/rsv/" \
                                   "invalid_gums_host.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
   
     settings = rsv.RsvConfiguration(logger=global_logger)
+    settings.rsv_meta_dir = RSV_META_DIR 
     try:
       settings.parseConfiguration(configuration)
     except Exception, e:
@@ -455,13 +432,13 @@ class TestRSVSettings(unittest.TestCase):
     Test the checkAttributes with invalid gridftp host
     """
     
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     config_file = os.path.abspath("./configs/rsv/" \
                                   "invalid_gridftp_host.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
   
     settings = rsv.RsvConfiguration(logger=global_logger)
+    settings.rsv_meta_dir = RSV_META_DIR 
     try:
       settings.parseConfiguration(configuration)
     except Exception, e:
@@ -476,13 +453,13 @@ class TestRSVSettings(unittest.TestCase):
     Test the checkAttributes with invalid srm host
     """
     
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     config_file = os.path.abspath("./configs/rsv/" \
                                   "invalid_srm_host.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
   
     settings = rsv.RsvConfiguration(logger=global_logger)
+    settings.rsv_meta_dir = RSV_META_DIR 
     try:
       settings.parseConfiguration(configuration)
     except Exception, e:
@@ -496,13 +473,12 @@ class TestRSVSettings(unittest.TestCase):
     """
     Test the checkAttributes function to see if it works on valid settings
     """
-    os.environ['VDT_LOCATION'] = os.getcwd()
 
     config_file = os.path.abspath("./configs/rsv/rsv1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
-
     settings = rsv.RsvConfiguration(logger=global_logger)
+    settings.rsv_meta_dir = RSV_META_DIR 
     try:
       settings.parseConfiguration(configuration)
     except Exception, e:
@@ -516,13 +492,12 @@ class TestRSVSettings(unittest.TestCase):
     """
     Test the checkAttributes function to see if it works on valid settings
     """
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/rsv/rsv2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
     settings = rsv.RsvConfiguration(logger=global_logger)
+    settings.rsv_meta_dir = RSV_META_DIR     
     try:
       settings.parseConfiguration(configuration)
     except Exception, e:
@@ -530,7 +505,7 @@ class TestRSVSettings(unittest.TestCase):
  
     attributes = settings.getAttributes()
     self.failUnless(settings.checkAttributes(attributes), 
-                    "Correct configuration incorrectly flagged as missing")
+                    "Correct configuration incorrectly flagged as incorrect")
 
 if __name__ == '__main__':
     unittest.main()
