@@ -138,7 +138,7 @@ class ManagedForkConfiguration(BaseConfiguration):
 
 
     self.logger.debug("Setting managed fork to be the default jobmanager")
-    if not os.path.exists():
+    if not os.path.exists(MANAGED_FORK_CONFIG_FILE):
       err_mesg = "Globus jobmanager-managedfork configuration not present, " \
                  "is it installed?\n"
       self.logger.error(err_mesg)
