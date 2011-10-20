@@ -153,7 +153,7 @@ class ManagedForkConfiguration(BaseConfiguration):
     if self.attributes[self.__mappings['accept_limited']].upper() == "TRUE":
       buffer = open(MANAGED_FORK_CONFIG_FILE).read()
       if 'accept_limited' not in buffer:
-        buffer = 'accept_limited' + buffer
+        buffer = 'accept_limited,' + buffer
         try:
           (config_file, temp_name) = tempfile.mkstemp(dir=os.path.dirname(MANAGED_FORK_CONFIG_FILE))
           try:
