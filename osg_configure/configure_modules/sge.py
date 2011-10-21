@@ -12,6 +12,8 @@ from osg_configure.modules.jobmanagerbase import JobManagerConfiguration
 
 __all__ = ['SGEConfiguration']
 
+SGE_CONFIG_FILE = '/etc/grid-services/available/jobmanager-sge'
+
 class SGEConfiguration(JobManagerConfiguration):
   """Class to handle attributes related to sge job manager configuration"""
 
@@ -24,7 +26,10 @@ class SGEConfiguration(JobManagerConfiguration):
                        'sge_cell': 'OSG_SGE_CELL',
                        'job_contact': 'OSG_JOB_CONTACT',
                        'util_contact': 'OSG_UTIL_CONTACT',
-                       'wsgram': 'OSG_WS_GRAM'}
+                       'accept_limited': 'accept_limited'}
+    self.__optional = ['accept_limited']
+    self.__defaults = {'accept_limited' : 'False'}
+    
     self.config_section = "SGE"
     self.logger.debug('SGEConfiguration.__init__ completed')    
       
@@ -50,7 +55,10 @@ class SGEConfiguration(JobManagerConfiguration):
       self.logger.debug("Getting value for %s" % setting)
       temp = configfile.get_option(configuration, 
                                    self.config_section, 
-                                   setting)
+                                   setting,
+                                   self.__optional, 
+                                   self.__defaults)
+                                   
       self.attributes[self.__mappings[setting]] = temp
       self.logger.debug("Got %s" % temp)
         
@@ -63,11 +71,6 @@ class SGEConfiguration(JobManagerConfiguration):
     else:
       self.attributes['OSG_JOB_MANAGER_HOME'] = 'UNAVAILABLE'
       self.attributes['OSG_SGE_LOCATION'] = 'UNAVAILABLE'
-    if configuration.getboolean(self.config_section, 'wsgram'):
-      self.attributes[self.__mappings['wsgram']] = 'Y'
-    else:
-      self.attributes[self.__mappings['wsgram']] = 'N'      
-   
     # check and warn if unknown options found 
     temp = utilities.get_set_membership(configuration.options(self.config_section),
                                         self.__mappings,
@@ -149,11 +152,6 @@ class SGEConfiguration(JobManagerConfiguration):
                           ('util_contact',
                            self.attributes[self.__mappings['util_contact']]))      
       
-    if self.attributes[self.__mappings['wsgram']] not in ('Y', 'N'):
-      attributes_ok = False
-      self.logger.error("In %s section" % self.config_section)
-      self.logger.error("%s is not set correctly, it should be True or False")
-
     self.logger.debug('SGEConfiguration.checkAttributes completed')    
     return attributes_ok 
   
@@ -161,11 +159,6 @@ class SGEConfiguration(JobManagerConfiguration):
     """Configure installation using attributes"""
     self.logger.debug('SGEConfiguration.configure started')
 
-    # disable configuration for now
-    self.logger.debug('SGE not enabled, returning True')    
-    self.logger.debug('SGEConfiguration.configure completed')    
-    return True
-        
     if not self.enabled:
       self.logger.debug('SGE not enabled, returning True')    
       self.logger.debug('SGEConfiguration.configure completed')    
@@ -175,6 +168,21 @@ class SGEConfiguration(JobManagerConfiguration):
       self.logger.warning("%s configuration ignored" % self.config_section)
       self.logger.debug('SGEConfiguration.configure completed')    
       return True
+
+    # The accept_limited argument was added for Steve Timm.  We are not adding
+    # it to the default config.ini template because we do not think it is
+    # useful to a wider audience.
+    # See VDT RT ticket 7757 for more information.
+    if self.attributes[self.__mappings['accept_limited']].upper() == "TRUE":
+      if not self.enable_accept_limited(MANAGED_FORK_CONFIG_FILE):
+          self.logger.error('Error writing to condor configuration')
+          self.logger.debug('SGEConfiguration.configure completed')
+          return False
+    elif self.attributes[self.__mappings['accept_limited']].upper() == "FALSE":
+      if not self.disable_accept_limited(MANAGED_FORK_CONFIG_FILE):
+          self.logger.error('Error writing to condor configuration')
+          self.logger.debug('SGEConfiguration.configure completed')
+          return False
 
     self.logger.debug('SGEConfiguration.configure started')    
     return True

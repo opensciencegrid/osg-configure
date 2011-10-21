@@ -13,6 +13,8 @@ from osg_configure.modules.jobmanagerbase import JobManagerConfiguration
 
 __all__ = ['LSFConfiguration']
 
+LSF_CONFIG_FILE = '/etc/grid-services/available/jobmanager-lsf'
+
 class LSFConfiguration(JobManagerConfiguration):
   """Class to handle attributes related to lsf job manager configuration"""
   
@@ -23,7 +25,10 @@ class LSFConfiguration(JobManagerConfiguration):
     self.__mappings = {'lsf_location': 'OSG_LSF_LOCATION',
                        'job_contact': 'OSG_JOB_CONTACT',
                        'util_contact': 'OSG_UTIL_CONTACT',
-                       'wsgram': 'OSG_WS_GRAM'}
+                       'accept_limited': 'accept_limited'}
+    self.__optional = ['accept_limited']
+    self.__defaults = {'accept_limited' : 'False'}
+    
     self.config_section = 'LSF'
     self.__using_prima = False
     self.logger.debug('LSFConfiguration.__init__ completed')    
@@ -50,15 +55,13 @@ class LSFConfiguration(JobManagerConfiguration):
     for setting in self.__mappings:
       temp = configfile.get_option(configuration, 
                                    self.config_section, 
-                                   setting)
+                                   setting,
+                                   self.__optional, 
+                                   self.__defaults)
+                                   
       self.attributes[self.__mappings[setting]] = temp
       self.logger.debug("Got %s" % temp)
 
-    if configuration.getboolean(self.config_section, 'wsgram'):
-      self.attributes[self.__mappings['wsgram']] = 'Y'
-    else:
-      self.attributes[self.__mappings['wsgram']] = 'N'      
-     
     # set OSG_JOB_MANAGER_HOME
     self.attributes['OSG_JOB_MANAGER_HOME'] = \
       self.attributes[self.__mappings['lsf_location']]
@@ -136,21 +139,12 @@ class LSFConfiguration(JobManagerConfiguration):
                         ('util_contact',
                          self.attributes[self.__mappings['util_contact']]))
       
-    if self.attributes[self.__mappings['wsgram']] not in ('Y', 'N'):
-      attributes_ok = False
-      self.logger.error("In %s section:" % self.config_section)
-      self.logger.error("wsgram is not set correctly, it should be True or False")
-
     self.logger.debug('LSFConfiguration.checkAttributes completed')    
     return attributes_ok 
 
   def configure(self, attributes):
     """Configure installation using attributes"""
     self.logger.debug('LSFConfiguration.configure started')
-    # disable configuration for now
-    self.logger.debug('LSF not enabled, returning True')    
-    self.logger.debug('LSFConfiguration.configure completed')    
-    return True
         
     if not self.enabled:
       self.logger.debug('LSF not enabled, returning True')    
@@ -161,6 +155,21 @@ class LSFConfiguration(JobManagerConfiguration):
       self.logger.warning("%s configuration ignored" % self.config_section)
       self.logger.debug('LSFConfiguration.configure completed')    
       return True
+
+    # The accept_limited argument was added for Steve Timm.  We are not adding
+    # it to the default config.ini template because we do not think it is
+    # useful to a wider audience.
+    # See VDT RT ticket 7757 for more information.
+    if self.attributes[self.__mappings['accept_limited']].upper() == "TRUE":
+      if not self.enable_accept_limited(MANAGED_FORK_CONFIG_FILE):
+          self.logger.error('Error writing to condor configuration')
+          self.logger.debug('LSFConfiguration.configure completed')
+          return False
+    elif self.attributes[self.__mappings['accept_limited']].upper() == "FALSE":
+      if not self.disable_accept_limited(MANAGED_FORK_CONFIG_FILE):
+          self.logger.error('Error writing to condor configuration')
+          self.logger.debug('LSFConfiguration.configure completed')
+          return False
 
     self.logger.debug('LSFConfiguration.configure started')    
     return True

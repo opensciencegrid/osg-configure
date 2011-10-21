@@ -2,10 +2,13 @@
 
 """ Base class for all job manager configuration classes """
 
+import re
+
 from osg_configure.modules.configurationbase import BaseConfiguration
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
 from osg_configure.modules import validation
+
 
 
 __all__ = ['JobManagerConfiguration']
@@ -17,65 +20,8 @@ class JobManagerConfiguration(BaseConfiguration):
     # pylint: disable-msg=W0142
     super(JobManagerConfiguration, self).__init__(*args, **kwargs)
     self.attributes = {}
-      
+        
 
-# pylint: disable-msg=R0201
-  def get_sudo_text(self, globus_location, using_prima = False):
-    """
-    Generate text for sudoers file assuming the location of globus is given
-    by the globus_location variable (i.e. globus_location should be the same
-    as GLOBUS_LOCATION in the environment )    
-    """
-    
-    if validation.valid_user('globus'):
-      # globus is the default user if present
-      user = 'globus'
-    else:
-      user = 'daemon'
-      
-    text = "Runas_Alias GLOBUSUSERS = ALL, !root\n"
-    text += "\n"
-    if using_prima:
-      text += "%s   ALL=(GLOBUSUSERS) \\\n" % user
-      text += "     NOPASSWD: \\\n"
-      text += "     %s/libexec/globus-job-manager-script.pl * \n" % globus_location
-      text += "\n"
-      text += "%s   ALL=(GLOBUSUSERS) \\\n" % user
-      text += "     NOPASSWD: \\\n"
-      text += "     %s/libexec/globus-gram-local-proxy-tool * \n" % globus_location
-      text += "\n"
-    else:
-      text += "%s   ALL=(GLOBUSUSERS) \\\n" % user 
-      text += "     NOPASSWD: %s/libexec/globus-gridmap-and-execute \\\n" % globus_location
-      text += "     -g /etc/grid-security/grid-mapfile \\\n"
-      text += "     %s/libexec/globus-job-manager-script.pl * \n" % globus_location
-      text += "\n"
-      text += "%s   ALL=(GLOBUSUSERS) \\\n" % user 
-      text += "     NOPASSWD: %s/libexec/globus-gridmap-and-execute \\\n" % \
-                      globus_location
-      text += "     -g /etc/grid-security/grid-mapfile \\\n"
-      text += "     %s/libexec/globus-gram-local-proxy-tool * \n" % globus_location
-      text += "\n"
-    return text
-
-  def writeSudoExample(self, sudo_file, globus_location, using_prima = False):
-    """
-    Write an example sudo entries to sudoers file for admin
-    """
-    
-    self.logger.debug("JobManagerConfiguration.writeSudoExample started")
-    
-    try:
-      self.logger.debug("Writing to %s" % sudo_file)
-      sudo_file = open(sudo_file, 'w')
-      sudo_file.write(self.get_sudo_text(globus_location, using_prima))
-
-    except IOError:
-      self.logger.error("Can't write to sudo example file: %s" % sudo_file)
-      raise exceptions.ConfigureError("Can't write to %s" % sudo_file)
-    self.logger.debug("JobManagerConfiguration.writeSudoExample completed")
-    
-    
   def validContact(self, contact, jobmanager):
     """
     Check a contact string to make sure that it's valid, e.g. host[:port]/jobmanager
@@ -102,4 +48,45 @@ class JobManagerConfiguration(BaseConfiguration):
       return validation.valid_domain(host_part)
 
     return True
-  
+
+  def enable_accept_limited(self, filename):
+    """
+    Update the globus jobmanager configuration so that it allows limited proxies
+    
+    Returns:
+    True if config successfully updated 
+    """
+    buffer = open(filename).read()
+    if 'accept_limited' not in buffer:
+      buffer = 'accept_limited,' + buffer
+      if utilities.atomic_write(filename, buffer):
+        return True
+      else:
+        self.logger.error('Error writing to enabling accept_limited')
+        return False
+
+  def disable_accept_limited(self, filename):
+    """
+    Update the globus jobmanager configuration so that it does not allow limited proxies
+    
+    Returns:
+    True if config successfully updated 
+    """
+    buffer = open(filename).read()
+    if buffer.startswith('accept_limited,'):
+      buffer = buffer.replace('accept_limited,','',1)
+      if utilities.atomic_write(filename, buffer):
+        return True
+      else:
+        self.logger.error('Error disabling accept_limited')
+        return False
+      
+    if ',accept_limited' in buffer:
+      buffer = buffer.replace(',accept_limited','',1)
+      if utilities.atomic_write(filename, buffer):
+        return True
+      else:
+        self.logger.error('Error disabling accept_limited')
+        return False
+      
+    return True

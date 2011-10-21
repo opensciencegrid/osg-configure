@@ -151,23 +151,16 @@ class ManagedForkConfiguration(BaseConfiguration):
     # useful to a wider audience.
     # See VDT RT ticket 7757 for more information.
     if self.attributes[self.__mappings['accept_limited']].upper() == "TRUE":
-      buffer = open(MANAGED_FORK_CONFIG_FILE).read()
-      if 'accept_limited' not in buffer:
-        buffer = 'accept_limited,' + buffer
-        try:
-          (config_file, temp_name) = tempfile.mkstemp(dir=os.path.dirname(MANAGED_FORK_CONFIG_FILE))
-          try:
-            os.write(config_file, buffer)
-            os.close(config_file)
-            os.rename(temp_name, MANAGED_FORK_CONFIG_FILE)
-            os.chmod(MANAGED_FORK_CONFIG_FILE, 0644)
-          finally:
-            os.close(config_file)
-            os.unlink(temp_name)
-        except:
+      if not self.enable_accept_limited(MANAGED_FORK_CONFIG_FILE):
           self.logger.error('Error writing to managed fork configuration')
           self.logger.debug('ManagedForkConfiguration.configure completed')
           return False
+    elif self.attributes[self.__mappings['accept_limited']].upper() == "FALSE":
+      if not self.disable_accept_limited(MANAGED_FORK_CONFIG_FILE):
+          self.logger.error('Error writing to managed fork configuration')
+          self.logger.debug('ManagedForkConfiguration.configure completed')
+          return False
+      
 
     result = utilities.run_script(['/usr/sbin/globus-gatekeeper-admin',
                                    '-e',

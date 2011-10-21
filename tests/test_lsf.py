@@ -47,7 +47,6 @@ class TestLSF(unittest.TestCase):
                'OSG_LSF_LOCATION' : '/opt/lsf',
                'OSG_JOB_CONTACT' : 'my.domain.com/jobmanager-lsf',
                'OSG_UTIL_CONTACT' : 'my.domain.com/jobmanager',
-               'OSG_WS_GRAM' : 'Y',
                'OSG_JOB_MANAGER' : 'LSF'}
     for option in options:
       value = options[option]

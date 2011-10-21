@@ -47,7 +47,6 @@ class TestPBS(unittest.TestCase):
                'OSG_PBS_LOCATION' : '/opt/pbs',
                'OSG_JOB_CONTACT' : 'my.domain.com/jobmanager-pbs',
                'OSG_UTIL_CONTACT' : 'my.domain.com/jobmanager',
-               'OSG_WS_GRAM' : 'Y',
                'OSG_JOB_MANAGER' : 'PBS'}
     for option in options:
       value = options[option]

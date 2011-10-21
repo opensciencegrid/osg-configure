@@ -261,19 +261,7 @@ class CemonConfiguration(BaseConfiguration):
   </subscription>\n'''
 
     contents = re.sub(r'(</service>)', add + r'\1', contents, 1)
-    try:
-      (config_fd, temp_name) = tempfile.mkstemp(dir=os.path.dirname(config_path))
-      try:
-        try:
-          os.write(config_fd, contents)
-        finally:
-          os.close(config_fd)
-      except:
-        os.unlink(temp_name)
-        raise
-      os.rename(temp_name, config_path)
-      os.chmod(config_path, 0644)
-    except Exception, e:
+    if not utilities.atomic_write(config_path, contents, mode = 0644):
       self.logger.error("Error updating configuration file at %s: %s" %
                         (config_path, e))
       return False

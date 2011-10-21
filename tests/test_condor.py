@@ -49,7 +49,6 @@ class TestCondor(unittest.TestCase):
                'OSG_CONDOR_CONFIG' : '/etc/condor/condor_config',
                'OSG_JOB_CONTACT' : 'my.domain.com/jobmanager-condor',
                'OSG_UTIL_CONTACT' : 'my.domain.com/jobmanager',
-               'OSG_WS_GRAM' : 'Y',
                'OSG_JOB_MANAGER' : 'Condor'}
     for option in options:
       value = options[option]
@@ -213,7 +212,7 @@ class TestCondor(unittest.TestCase):
     """
     Test the checkAttributes function to see if it catches missing condor location
     """
-    os.environ['VDT_LOCATION'] = os.getcwd()
+    
 
     config_file = os.path.abspath("./configs/condor/missing_location.ini")
     configuration = ConfigParser.SafeConfigParser()
@@ -234,7 +233,7 @@ class TestCondor(unittest.TestCase):
     Test the checkAttributes function to see if it catches missing
     condor config locations
     """
-    os.environ['VDT_LOCATION'] = os.getcwd()
+    
 
     for filename in ["./configs/condor/missing_config1.ini", 
                      "./configs/condor/missing_config2.ini"]:
@@ -257,7 +256,7 @@ class TestCondor(unittest.TestCase):
     """
     Test the checkAttributes function to see if it works on valid settings
     """
-    os.environ['VDT_LOCATION'] = os.getcwd()
+    
 
     config_file = os.path.abspath("./configs/condor/check_ok.ini")
     configuration = ConfigParser.SafeConfigParser()
@@ -277,7 +276,7 @@ class TestCondor(unittest.TestCase):
     """
     Test the checkAttributes function to see if it works on valid settings
     """
-    os.environ['VDT_LOCATION'] = os.getcwd()
+    
 
     config_file = os.path.abspath("./configs/condor/check_ok2.ini")
     configuration = ConfigParser.SafeConfigParser()
@@ -298,7 +297,7 @@ class TestCondor(unittest.TestCase):
     """
     Test the checkAttributes function to see if it catches invalid job contacts
     """
-    os.environ['VDT_LOCATION'] = os.getcwd()
+    
 
     config_file = os.path.abspath("./configs/condor/invalid_job_contact.ini")
     configuration = ConfigParser.SafeConfigParser()
@@ -319,7 +318,7 @@ class TestCondor(unittest.TestCase):
     Test the checkAttributes function to see if it catches invalid
     utility contacts
     """
-    os.environ['VDT_LOCATION'] = os.getcwd()
+    
 
     config_file = os.path.abspath("./configs/condor/invalid_utility_contact.ini")
     configuration = ConfigParser.SafeConfigParser()

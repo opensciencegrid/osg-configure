@@ -49,7 +49,6 @@ class TestSGE(unittest.TestCase):
                'OSG_JOB_CONTACT' : 'my.domain.com/jobmanager-sge',
                'OSG_UTIL_CONTACT' : 'my.domain.com/jobmanager',
                'OSG_SGE_CELL' : 'sge',
-               'OSG_WS_GRAM' : 'Y',
                'OSG_JOB_MANAGER' : 'SGE'}
     for option in options:
       value = options[option]
@@ -110,12 +109,11 @@ class TestSGE(unittest.TestCase):
     Test the parsing when attributes are missing, should get exceptions
     """
 
-    os.environ['VDT_LOCATION'] = os.getcwd()
+
     mandatory = ['sge_root',
                  'sge_cell',
                  'job_contact',
-                 'util_contact',
-                 'wsgram']
+                 'util_contact']
     for option in mandatory:
       config_file = os.path.abspath("./configs/sge/sge1.ini")
       configuration = ConfigParser.SafeConfigParser()
@@ -133,7 +131,7 @@ class TestSGE(unittest.TestCase):
     """
     Test the checkAttributes function to see if it catches missing SGE location
     """
-    os.environ['VDT_LOCATION'] = os.getcwd()
+
 
     config_file = os.path.abspath("./configs/sge/missing_root.ini")
     configuration = ConfigParser.SafeConfigParser()
@@ -153,7 +151,7 @@ class TestSGE(unittest.TestCase):
     """
     Test the checkAttributes function to see if it catches missing SGE cell
     """
-    os.environ['VDT_LOCATION'] = os.getcwd()
+
 
     config_file = os.path.abspath("./configs/sge/missing_cell.ini")
     configuration = ConfigParser.SafeConfigParser()
@@ -173,7 +171,7 @@ class TestSGE(unittest.TestCase):
     """
     Test the checkAttributes function to see if it works on valid settings
     """
-    os.environ['VDT_LOCATION'] = os.getcwd()
+
 
     config_file = os.path.abspath("./configs/sge/check_ok.ini")
     configuration = ConfigParser.SafeConfigParser()
@@ -193,7 +191,7 @@ class TestSGE(unittest.TestCase):
     """
     Test the checkAttributes function to see if it works on valid settings
     """
-    os.environ['VDT_LOCATION'] = os.getcwd()
+
 
     config_file = os.path.abspath("./configs/sge/check_ok2.ini")
     configuration = ConfigParser.SafeConfigParser()
@@ -214,7 +212,7 @@ class TestSGE(unittest.TestCase):
     """
     Test the checkAttributes function to see if it catches invalid job contacts
     """
-    os.environ['VDT_LOCATION'] = os.getcwd()
+
 
     config_file = os.path.abspath("./configs/sge/invalid_job_contact.ini")
     configuration = ConfigParser.SafeConfigParser()
@@ -236,7 +234,6 @@ class TestSGE(unittest.TestCase):
     Test the checkAttributes function to see if it catches invalid
     utility contacts
     """
-    os.environ['VDT_LOCATION'] = os.getcwd()
 
     config_file = os.path.abspath("./configs/sge/invalid_utility_contact.ini")
     configuration = ConfigParser.SafeConfigParser()

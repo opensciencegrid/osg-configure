@@ -13,6 +13,9 @@ from osg_configure.modules.jobmanagerbase import JobManagerConfiguration
 
 __all__ = ['CondorConfiguration']
 
+CONDOR_CONFIG_FILE = '/etc/grid-services/available/jobmanager-condor'
+
+
 class CondorConfiguration(JobManagerConfiguration):
   """Class to handle attributes related to condor job manager configuration"""
   
@@ -25,13 +28,13 @@ class CondorConfiguration(JobManagerConfiguration):
                        'condor_config': 'OSG_CONDOR_CONFIG',
                        'job_contact': 'OSG_JOB_CONTACT',
                        'util_contact': 'OSG_UTIL_CONTACT',
-                       'wsgram': 'OSG_WS_GRAM'}
+                       'accept_limited': 'accept_limited'}
     self.__optional = ['condor_location',
                        'condor_config',
-                       'wsgram']
-    self.__defaults = {'wsgram' : 'Y',
-                       'condor_location' : utilities.get_condor_location(),
-                       'condor_config' : 'UNAVAILABLE'}
+                       'accept_limited']
+    self.__defaults = {'condor_location' : utilities.get_condor_location(),
+                       'condor_config' : 'UNAVAILABLE',
+                       'accept_limited' : 'False'}
     self.__using_prima = False
     self.logger.debug('CondorConfiguration.__init__ completed')    
       
@@ -88,12 +91,6 @@ class CondorConfiguration(JobManagerConfiguration):
     self.attributes['OSG_JOB_MANAGER_HOME'] = \
       self.attributes[self.__mappings['condor_location']]
       
-    if configuration.getboolean(self.config_section, 'wsgram'):
-      self.attributes[self.__mappings['wsgram']] = 'Y'
-    else:
-      self.attributes[self.__mappings['wsgram']] = 'N'
-    
-        
     # check and warn if unknown options found 
     temp = utilities.get_set_membership(configuration.options(self.config_section),
                                         self.__mappings,
@@ -170,10 +167,6 @@ class CondorConfiguration(JobManagerConfiguration):
                         ('util_contact',
                          self.attributes[self.__mappings['util_contact']]))
 
-    self.logger.debug('checking wsgram')
-    if self.attributes[self.__mappings['wsgram']] not in ('Y', 'N'):
-      attributes_ok = False
-      self.logger.error("%s is not set correctly, it should be True or False")
 
     self.logger.debug('CondorConfiguration.checkAttributes completed returning %s' \
                        % attributes_ok)
@@ -188,16 +181,25 @@ class CondorConfiguration(JobManagerConfiguration):
       self.logger.debug('CondorConfiguration.configure completed')
       return True
 
-    # disable configuration for now
-    self.logger.debug('condor not enabled')
-    self.logger.debug('CondorConfiguration.configure completed')
-    return True
-    
     if not self.enabled:
       self.logger.debug('condor not enabled')
       self.logger.debug('CondorConfiguration.configure completed')
       return True
             
+    # The accept_limited argument was added for Steve Timm.  We are not adding
+    # it to the default config.ini template because we do not think it is
+    # useful to a wider audience.
+    # See VDT RT ticket 7757 for more information.
+    if self.attributes[self.__mappings['accept_limited']].upper() == "TRUE":
+      if not self.enable_accept_limited(MANAGED_FORK_CONFIG_FILE):
+          self.logger.error('Error writing to condor configuration')
+          self.logger.debug('CondorConfiguration.configure completed')
+          return False
+    elif self.attributes[self.__mappings['accept_limited']].upper() == "FALSE":
+      if not self.disable_accept_limited(MANAGED_FORK_CONFIG_FILE):
+          self.logger.error('Error writing to condor configuration')
+          self.logger.debug('CondorConfiguration.configure completed')
+          return False
       
     self.logger.debug('CondorConfiguration.configure completed')
     return True    
