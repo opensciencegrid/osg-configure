@@ -160,6 +160,7 @@ class ManagedForkConfiguration(BaseConfiguration):
             os.write(config_file, buffer)
             os.close(config_file)
             os.rename(temp_name, MANAGED_FORK_CONFIG_FILE)
+            os.chmod(MANAGED_FORK_CONFIG_FILE, 0644)
           finally:
             os.close(config_file)
             os.unlink(temp_name)
