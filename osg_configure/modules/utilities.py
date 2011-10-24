@@ -2,7 +2,7 @@
 
 """ Module to hold various utility functions """
 
-import re, socket, os, types, pwd, sys, glob, ConfigParser
+import re, socket, os, types, pwd, sys, glob, ConfigParser, stat
 import tempfile, subprocess
 
 from osg_configure.modules import exceptions
@@ -21,7 +21,8 @@ __all__ = ['using_prima',
            'get_gums_host',
            'create_map_file',
            'fetch_crl',
-           'ce_config']
+           'ce_config',
+           'atomic_write']
   
 CONFIG_DIRECTORY = "/etc/osg"
 
@@ -368,11 +369,14 @@ def atomic_write(filename = None, contents = None, **kwargs):
   
   """
 
+  if (filename is None or contents is None):
+    return True
+   
   try:
     (config_fd, temp_name) = tempfile.mkstemp(dir=os.path.dirname(filename))
-    mode = kwargs.get('config_directory', None)
+    mode = kwargs.get('mode', None)
     if mode is None:
-      mode = stat.IS_MODE(stat(filename).st_mode)
+      mode = stat.S_IMODE(os.stat(filename).st_mode)
     try:
       try:
         os.write(config_fd, contents)
@@ -381,8 +385,8 @@ def atomic_write(filename = None, contents = None, **kwargs):
     except:
       os.unlink(temp_name)
       raise 
-    os.rename(temp_name, config_path)
-    os.chmod(config_path, mode)
+    os.rename(temp_name, filename)
+    os.chmod(filename, mode)
   except Exception, e:
     return False
   return True
