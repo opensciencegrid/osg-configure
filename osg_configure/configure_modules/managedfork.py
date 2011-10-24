@@ -8,13 +8,13 @@ import os, tempfile, ConfigParser
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile
 from osg_configure.modules import exceptions
-from osg_configure.modules.configurationbase import BaseConfiguration
+from osg_configure.modules.jobmanagerbase import JobManagerConfiguration
 
 __all__ = ['ManagedForkConfiguration']
 
 MANAGED_FORK_CONFIG_FILE = '/etc/grid-services/available/jobmanager-managedfork'
 
-class ManagedForkConfiguration(BaseConfiguration):
+class ManagedForkConfiguration(JobManagerConfiguration):
   """Class to handle attributes related to managedfork job 
   manager configuration
   """

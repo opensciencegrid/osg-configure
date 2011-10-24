@@ -174,12 +174,12 @@ class SGEConfiguration(JobManagerConfiguration):
     # useful to a wider audience.
     # See VDT RT ticket 7757 for more information.
     if self.attributes[self.__mappings['accept_limited']].upper() == "TRUE":
-      if not self.enable_accept_limited(MANAGED_FORK_CONFIG_FILE):
+      if not self.enable_accept_limited(SGE_CONFIG_FILE):
           self.logger.error('Error writing to condor configuration')
           self.logger.debug('SGEConfiguration.configure completed')
           return False
     elif self.attributes[self.__mappings['accept_limited']].upper() == "FALSE":
-      if not self.disable_accept_limited(MANAGED_FORK_CONFIG_FILE):
+      if not self.disable_accept_limited(SGE_CONFIG_FILE):
           self.logger.error('Error writing to condor configuration')
           self.logger.debug('SGEConfiguration.configure completed')
           return False
