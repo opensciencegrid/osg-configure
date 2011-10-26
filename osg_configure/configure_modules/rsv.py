@@ -43,7 +43,6 @@ class RsvConfiguration(BaseConfiguration):
                        'nagios_send_nsca' : 'nagios_send_nsca'}
     self.__defaults = {'enable_local_probes' : True,
                        'gratia_probes' : None,
-                       'ce_hosts' : utilities.get_hostname(),
                        'gridftp_hosts': None,
                        'gridftp_dir': '/tmp',
                        'gums_hosts' : utilities.get_hostname(),
