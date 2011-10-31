@@ -185,6 +185,7 @@ def blank(value):
     return False
   
   if (value.upper().startswith('UNAVAILABLE') or
+      value.upper() == 'DEFAULT' or
       value == "" or
       value is None):
     return True

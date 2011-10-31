@@ -21,8 +21,7 @@ class PBSConfiguration(JobManagerConfiguration):
   def __init__(self, *args, **kwargs):
     # pylint: disable-msg=W0142
     super(PBSConfiguration, self).__init__(*args, **kwargs)    
-    self.logger.debug('PBSConfiguration.__init__ started')    
-    self.__using_prima = False
+    self.logger.debug('PBSConfiguration.__init__ started')
     self.__mappings = {'pbs_location': 'OSG_PBS_LOCATION',
                        'job_contact': 'OSG_JOB_CONTACT',
                        'util_contact': 'OSG_UTIL_CONTACT',
@@ -31,6 +30,7 @@ class PBSConfiguration(JobManagerConfiguration):
     self.__defaults = {'accept_limited' : 'False'}
     
     self.config_section = "PBS"
+    self.__set_default = True
     self.logger.debug('PBSConfiguration.__init__ completed')    
       
   def parseConfiguration(self, configuration):
@@ -76,10 +76,10 @@ class PBSConfiguration(JobManagerConfiguration):
       self.logger.warning("Found unknown option %s in %s section" % 
                            (option, self.config_section))   
 
-    if (configuration.has_section('Misc Services') and
-        configuration.has_option('Misc Services', 'authorization_method') and
-        configuration.get('Misc Services', 'authorization_method') in ['xacml', 'prima']):
-      self.__using_prima = True
+    if (configuration.has_section('Managed Fork') and
+        configuration.has_option('Managed Fork', 'enabled') and
+        configuration.get('Managed Fork', 'enabled').upper == 'TRUE'):
+      self.__set_default = False
       
     self.logger.debug('PBSConfiguration.parseConfiguration completed')    
 
@@ -169,6 +169,9 @@ class PBSConfiguration(JobManagerConfiguration):
           self.logger.debug('PBSConfiguration.configure completed')
           return False
       
+    if self.__set_default:
+        self.logger.debug('Configuring gatekeeper to use regular fork service')
+        self.set_default_jobmanager('fork')
 
     self.logger.debug('PBSConfiguration.configure completed')    
     return True

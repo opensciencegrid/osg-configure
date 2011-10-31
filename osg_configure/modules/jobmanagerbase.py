@@ -90,3 +90,40 @@ class JobManagerConfiguration(BaseConfiguration):
         return False
       
     return True
+
+  def set_default_jobmanger(self, default = 'fork'):
+    """
+    Set the default jobmanager
+    
+    Arguments:
+    default - Indicates the default jobmanger, currently 
+              either 'fork' or 'managed-fork' 
+    """
+    self.logger.debug("JobManager.set_default_jobmanager started")
+
+    if default == 'fork': 
+      self.logger.debug("Setting regular fork manager to be the default jobmanager")
+      result = utilities.run_script(['/usr/sbin/globus-gatekeeper-admin',
+                                     '-e',
+                                     'jobmanager-fork-poll',
+                                     '-n',
+                                     'jobmanager'])    
+      if not result:
+        self.logger.error("Could not set the jobmanager-fork-poll to the default jobmanager")
+        return False
+    elif default == 'managed-fork':
+      self.logger.debug("Setting regular fork manager to be the default jobmanager")
+      result = utilities.run_script(['/usr/sbin/globus-gatekeeper-admin',
+                                     '-e',
+                                     'jobmanager-managedfork',
+                                     '-n',
+                                     'jobmanager'])    
+      if not result:
+        self.logger.error("Could not set the jobmanager-fork-poll to the default jobmanager")
+        return False
+    else:
+      self.logger.error("Invalid jobamanger type specified as the default jobmanger: %s" % default)
+      return False
+
+    
+    self.logger.debug("JobManager.set_default_jobmanager completed")

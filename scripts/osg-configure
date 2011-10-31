@@ -556,7 +556,7 @@ def main():
     sys.stderr.write("Please contact the developer, an unknown error occurred\n")
     error_exit("Unknown exception encountered while running: %s" % e)  
   
-  normal_exit("%s completed successfully" % (sys.argv[0],))
+  normal_exit("%s completed" % (sys.argv[0],))
   
   
 if __name__ == '__main__':

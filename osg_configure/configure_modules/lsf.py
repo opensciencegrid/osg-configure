@@ -30,7 +30,8 @@ class LSFConfiguration(JobManagerConfiguration):
     self.__defaults = {'accept_limited' : 'False'}
     
     self.config_section = 'LSF'
-    self.__using_prima = False
+    self.__set_default = True
+
     self.logger.debug('LSFConfiguration.__init__ completed')    
       
   def parseConfiguration(self, configuration):
@@ -76,10 +77,10 @@ class LSFConfiguration(JobManagerConfiguration):
       self.logger.warning("Found unknown option %s in %s section" % 
                            (option, self.config_section))
       
-    if (configuration.has_section('Misc Services') and
-        configuration.has_option('Misc Services', 'authorization_method') and
-        configuration.get('Misc Services', 'authorization_method') in ['xacml', 'prima']):
-      self.__using_prima = True
+    if (configuration.has_section('Managed Fork') and
+        configuration.has_option('Managed Fork', 'enabled') and
+        configuration.get('Managed Fork', 'enabled').upper == 'TRUE'):
+      self.__set_default = False
 
     self.logger.debug('LSFConfiguration.parseConfiguration completed')    
 
@@ -170,6 +171,10 @@ class LSFConfiguration(JobManagerConfiguration):
           self.logger.error('Error writing to condor configuration')
           self.logger.debug('LSFConfiguration.configure completed')
           return False
+
+    if self.__set_default:
+        self.logger.debug('Configuring gatekeeper to use regular fork service')
+        self.set_default_jobmanager('fork')
 
     self.logger.debug('LSFConfiguration.configure started')    
     return True

@@ -21,7 +21,6 @@ class SGEConfiguration(JobManagerConfiguration):
     # pylint: disable-msg=W0142
     super(SGEConfiguration, self).__init__(*args, **kwargs)    
     self.logger.debug('SGEConfiguration.__init__ started')    
-    self.__using_prima = False
     self.__mappings = {'sge_root': 'OSG_SGE_ROOT',
                        'sge_cell': 'OSG_SGE_CELL',
                        'job_contact': 'OSG_JOB_CONTACT',
@@ -30,6 +29,7 @@ class SGEConfiguration(JobManagerConfiguration):
     self.__optional = ['accept_limited']
     self.__defaults = {'accept_limited' : 'False'}
     
+    self.__set_default = True
     self.config_section = "SGE"
     self.logger.debug('SGEConfiguration.__init__ completed')    
       
@@ -81,10 +81,10 @@ class SGEConfiguration(JobManagerConfiguration):
       self.logger.warning("Found unknown option %s in %s section" % 
                            (option, self.config_section))
 
-    if (configuration.has_section('Misc Services') and
-        configuration.has_option('Misc Services', 'authorization_method') and
-        configuration.get('Misc Services', 'authorization_method') in ['xacml', 'prima']):
-      self.__using_prima = True
+    if (configuration.has_section('Managed Fork') and
+        configuration.has_option('Managed Fork', 'enabled') and
+        configuration.get('Managed Fork', 'enabled').upper == 'TRUE'):
+      self.__set_default = False
    
     self.logger.debug('SGEConfiguration.parseConfiguration completed')    
 
@@ -183,6 +183,10 @@ class SGEConfiguration(JobManagerConfiguration):
           self.logger.error('Error writing to condor configuration')
           self.logger.debug('SGEConfiguration.configure completed')
           return False
+
+    if self.__set_default:
+        self.logger.debug('Configuring gatekeeper to use regular fork service')
+        self.set_default_jobmanager('fork')
 
     self.logger.debug('SGEConfiguration.configure started')    
     return True

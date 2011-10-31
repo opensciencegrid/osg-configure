@@ -35,7 +35,7 @@ class ManagedForkConfiguration(JobManagerConfiguration):
     self.__defaults = {'condor_location' : condor_location,
                        'condor_config' : condor_config,
                        'accept_limited' : 'False'}
-    
+    self.section_present = False
     self.config_section = "Managed Fork"
     self.logger.debug('ManagedForkConfiguration.__init__ completed')    
     
@@ -49,10 +49,12 @@ class ManagedForkConfiguration(JobManagerConfiguration):
 
     if not configuration.has_section(self.config_section):
       self.enabled = False
+      self.section_present = False
       self.logger.debug("%s section not in config file" % self.config_section)
       self.logger.debug('ManagedFork.parseConfiguration completed')
       return
     
+    self.section_present = True
     if not self.setStatus(configuration):
       self.logger.debug('ManagedFork.parseConfiguration completed')
       self.attributes[self.__mappings['enabled']] = 'N'
@@ -131,8 +133,12 @@ class ManagedForkConfiguration(JobManagerConfiguration):
 
     if not self.enabled:
       self.logger.debug('ManagedFork not enabled')
-      self.logger.debug('Configuring gatekeeper to use regular fork service')
-      self.__disable_service()
+      if self.section_present:
+        # Only switch job managers if this is a CE configuration
+        self.logger.debug('Configuring gatekeeper to use regular fork service')
+        if not self.set_default_jobmanager('fork'):
+          self.logger.debug('ManagedForkConfiguration.configure completed')
+          return False 
       self.logger.debug('ManagedForkConfiguration.configure completed')
       return True
 
@@ -162,12 +168,7 @@ class ManagedForkConfiguration(JobManagerConfiguration):
           return False
       
 
-    result = utilities.run_script(['/usr/sbin/globus-gatekeeper-admin',
-                                   '-e',
-                                   'jobmanager-managedfork',
-                                   '-n',
-                                   'jobmanager'])
-    if not result:
+    if not self.set_default_jobmanager('managed-fork'):
       self.logger.error("Could not set the jobmanager-managedfork to the default jobmanager")
       return False
 
@@ -186,21 +187,3 @@ class ManagedForkConfiguration(JobManagerConfiguration):
     """Returns the sections from the configuration file that this module handles"""
     return [self.config_section]
   
-  def __disable_service(self):
-    """
-    Set the gatekeeper to use the regular fork service
-    """
-    self.logger.debug("ManagedForkConfiguration.__disable_service started")
-
-    self.logger.debug("Setting regular fork manager to be the default jobmanager")
-    result = utilities.run_script(['/usr/sbin/globus-gatekeeper-admin',
-                                   '-e',
-                                   'jobmanager-fork-poll',
-                                   '-n',
-                                   'jobmanager'])
-    if not result:
-      self.logger.error("Could not set the jobmanager-fork-poll to the default jobmanager")
-      return False
-
-    
-    self.logger.debug("ManagedForkConfiguration.__disable_service completed")
