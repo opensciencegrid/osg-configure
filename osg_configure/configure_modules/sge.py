@@ -83,7 +83,7 @@ class SGEConfiguration(JobManagerConfiguration):
 
     if (configuration.has_section('Managed Fork') and
         configuration.has_option('Managed Fork', 'enabled') and
-        configuration.get('Managed Fork', 'enabled').upper == 'TRUE'):
+        configuration.get('Managed Fork', 'enabled').upper() == 'TRUE'):
       self.__set_default = False
    
     self.logger.debug('SGEConfiguration.parseConfiguration completed')    

@@ -91,7 +91,7 @@ class JobManagerConfiguration(BaseConfiguration):
       
     return True
 
-  def set_default_jobmanger(self, default = 'fork'):
+  def set_default_jobmanager(self, default = 'fork'):
     """
     Set the default jobmanager
     
@@ -112,7 +112,7 @@ class JobManagerConfiguration(BaseConfiguration):
         self.logger.error("Could not set the jobmanager-fork-poll to the default jobmanager")
         return False
     elif default == 'managed-fork':
-      self.logger.debug("Setting regular fork manager to be the default jobmanager")
+      self.logger.debug("Setting managed fork manager to be the default jobmanager")
       result = utilities.run_script(['/usr/sbin/globus-gatekeeper-admin',
                                      '-e',
                                      'jobmanager-managedfork',
@@ -127,3 +127,4 @@ class JobManagerConfiguration(BaseConfiguration):
 
     
     self.logger.debug("JobManager.set_default_jobmanager completed")
+    return True
