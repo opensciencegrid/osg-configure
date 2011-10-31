@@ -47,7 +47,7 @@ class SquidConfiguration(BaseConfiguration):
       return
     
     if not self.setStatus(configuration):
-      self.logger.debug('RsvConfiguration.parseConfiguration completed')    
+      self.logger.debug('SquidConfiguration.parseConfiguration completed')    
       return True
 
     for setting in self.__mappings:
@@ -163,27 +163,6 @@ class SquidConfiguration(BaseConfiguration):
       self.logger.debug('SquidConfiguration.configure completed')
       return True
 
-    arguments = [os.path.join(utilities.get_vdt_location(),
-                              'vdt',
-                              'setup',
-                              'configure_squid')]
-    arguments.append('--server')
-    arguments.append(' ')
-    arguments.append('y')
-    
-    if self.attributes[self.__mappings['location']][0] == '/' and \
-       self.attributes[self.__mappings['location']].startswith(utilities.get_vdt_location()):
-      # squid is installed on the server and is part of this installation
-      arguments.append("--mem-cache-size")
-      arguments.append(" ")
-      arguments.append(self.attributes[self.__mappings['memory_size']])
-      arguments.append("--cache-size")
-      arguments.append(" ")
-      arguments.append(self.attributes[self.__mappings['cache_size']])
-      self.logger.info("Running configure_squid as: %s" % (" ".join(arguments)))
-      if not utilities.run_vdt_configure(arguments):
-        self.logger.error("Error while configuring squid")
-        raise exceptions.ConfigureError("Error configuring squid")
     self.logger.debug('SquidConfiguration.configure completed')
     return True     
 

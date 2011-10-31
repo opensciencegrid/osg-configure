@@ -139,6 +139,29 @@ class TestLocalSettings(unittest.TestCase):
                            "expected %s" % (var, 
                                             attributes[var], 
                                             variables[var]))
+
+    config_file = os.path.abspath("./configs/gratia/itb_default3.ini")
+    configuration = ConfigParser.SafeConfigParser()
+    configuration.read(config_file)
+
+    settings = gratia.GratiaConfiguration(logger=global_logger)
+    try:
+      settings.parseConfiguration(configuration)
+    except Exception, e:
+      self.fail("Received exception while parsing configuration: %s" % e)
+ 
+
+    attributes = settings.attributes
+    variables = {'probes' : 'jobmanager:gratia-osg-itb.opensciencegrid.org:80'}
+    for var in variables:      
+      self.failUnless(attributes.has_key(var), 
+                      "Attribute %s missing" % var)
+      self.failUnlessEqual(attributes[var], 
+                           variables[var], 
+                           "Wrong value obtained for %s, got %s but " \
+                           "expected %s" % (var, 
+                                            attributes[var], 
+                                            variables[var]))
     
   def testParsingMissingProductionDefault(self):
     """
