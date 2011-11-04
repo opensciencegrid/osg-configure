@@ -249,11 +249,10 @@ in your config.ini file."""
                         r'\1' + x + '="' + probe_host + '"',
                         buffer,
                         1)  
-        
-      (fh, filename) = tempfile.mkstemp(dir=os.path.dirname(probe_file))
-      os.write(fh, buffer)
-      os.close(fh)
-      os.rename(filename, probe_file)
+
+      if not utilities.atomic_write(probe_file, buffer):
+        self.logger.error("Error while configuring gratia probes")
+        raise exceptions.ConfigureError("Error configuring gratia")
     except IOError, OSError:
       self.logger.error("Error while configuring gratia probes")
       raise exceptions.ConfigureError("Error configuring gratia")
