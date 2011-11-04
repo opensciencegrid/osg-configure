@@ -13,7 +13,7 @@ from osg_configure.modules.jobmanagerbase import JobManagerConfiguration
 
 __all__ = ['PBSConfiguration']
 
-PBS_CONFIG_FILE = '/etc/grid-services/available/jobmanager-pbs'
+PBS_CONFIG_FILE = '/etc/grid-services/available/jobmanager-pbs-seg'
 
 class PBSConfiguration(JobManagerConfiguration):
   """Class to handle attributes related to pbs job manager configuration"""
