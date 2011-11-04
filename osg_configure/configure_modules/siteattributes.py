@@ -214,7 +214,7 @@ class SiteAttributes(BaseConfiguration):
             self.logger.warning("In %s section, problem with sponsor setting" % \
                                  self.config_section)
             self.logger.warning("VO name %s not found" % vo_name)
-            self.logger.warning("osg-user-vo-map.txt may be missing or empty " +
+            self.logger.warning("/var/lib/osg/user-vo-map may be missing or empty " +
                                 "please verify your gums or edg-mkgridmap " +
                                 "settings are correct")
             
