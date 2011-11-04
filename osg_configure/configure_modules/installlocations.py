@@ -20,17 +20,14 @@ class InstallLocations(BaseConfiguration):
     # pylint: disable-msg=W0142
     super(InstallLocations, self).__init__(*args, **kwargs)
     self.logger.debug('InstallLocations.configure started')    
-    self.__mappings = {'osg': 'OSG_LOCATION', 
-                       'globus': 'GLOBUS_LOCATION',
+    self.__mappings = {'globus': 'GLOBUS_LOCATION',
                        'user_vo_map': 'OSG_USER_VO_MAP',
                        'gridftp_log': 'OSG_GRIDFTP_LOG'}
-    self.__defaults = {'osg' : '/etc/osg',
-                       'user_vo_map' : '/var/lib/osg/user-vo-map',
+    self.__defaults = {'user_vo_map' : '/var/lib/osg/user-vo-map',
                        'gridftp_log' : '/var/log/gridftp.log',
-                       'globus' : '/'}
+                       'globus' : '/usr'}
     self.config_section = 'Install Locations'
-    self.__optional = ['osg', 
-                       'globus',
+    self.__optional = ['globus',
                        'user_vo_map',
                        'gridftp_log']
     self.__self_configured = False

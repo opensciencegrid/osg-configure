@@ -15,7 +15,6 @@ class LegacyConfiguration(BaseConfiguration):
     super(LegacyConfiguration, self).__init__(*args, **kwargs)
     self.logger.debug('LegacyConfiguration.__init__ started')        
     self.__mappings = {'GRID3_SITE_NAME': 'OSG_SITE_NAME', 
-                       'GRID3_BASE_DIR' : 'OSG_LOCATION',
                        'GRID3_APP_DIR': 'OSG_APP',
                        'GRID3_DATA_DIR': 'OSG_DATA',
                        'GRID3_TMP_DIR': 'OSG_DATA',

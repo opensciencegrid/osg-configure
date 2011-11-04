@@ -18,8 +18,7 @@ QUERY = 5
 CONFIG_DIRECTORY = '/etc/osg'
 OUTPUT_DIRECTORY = '/var/lib/osg'
 LOG_FILE = '/var/log/osg/osg-configure.log'
-job_environment_attributes = ['OSG_LOCATION',
-                              'GLOBUS_LOCATION',
+job_environment_attributes = ['GLOBUS_LOCATION',
                               'OSG_SITE_NAME',
                               'OSG_HOSTNAME',
                               'OSG_GRID',
