@@ -251,7 +251,7 @@ in your config.ini file."""
                         1)  
 
       if not utilities.atomic_write(probe_file, buffer):
-        self.logger.error("Error while configuring gratia probes")
+        self.logger.error("Error while configuring gratia probes: can't write to %s" % probe_file)
         raise exceptions.ConfigureError("Error configuring gratia")
     except IOError, OSError:
       self.logger.error("Error while configuring gratia probes")
