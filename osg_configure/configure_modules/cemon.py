@@ -34,8 +34,8 @@ class CemonConfiguration(BaseConfiguration):
     self.__defaults = {}
     self.__itb_defaults = {'ress_servers' : 'https://osg-ress-4.fnal.gov:8443/ig/' \
                                             'services/CEInfoCollector[OLD_CLASSAD]',
-                           'bdii_servers' : 'http://is-itb1.grid.iu.edu:14001[RAW],' \
-                                            'http://is-itb2.grid.iu.edu:14001[RAW]'}
+                           'bdii_servers' : 'http://is1.grid.iu.edu:14001[RAW],' \
+                                            'http://is2.grid.iu.edu:14001[RAW]'}
     self.__production_defaults = {'ress_servers' :
                                     'https://osg-ress-1.fnal.gov:8443/ig/' \
                                     'services/CEInfoCollector[OLD_CLASSAD]',
