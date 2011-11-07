@@ -229,6 +229,11 @@ def configure_system(modules, logger, configure_module=None, force=False):
     else:
       error_exit("Invalid attributes found, exiting")
         
+  if configure_module is not None:
+    # check whether the module we want to configure is present
+    if configure_module not in [x.moduleName().lower() for x in modules]:
+      error_exit("%s specified but that module is not present" % configure_module) 
+    
   for module in modules:
     logger.debug("Configuring %s" % (module.__class__.__name__))
     if configure_module is not None:
@@ -485,6 +490,7 @@ def main():
                     '--module',
                     action='store',
                     dest='module',
+                    default=None,
                     help='Indicate module to configure')
   parser.add_option('-f',
                     '--force',
@@ -501,7 +507,7 @@ def main():
   if options.debug == True:
     log_level = logging.DEBUG
   
-  configure_module = None
+  configure_module = options.module
   if options.mode == VERIFY:
     normal_exit_message = "Verification completed, exiting..."
   elif options.mode == LIST:
