@@ -45,10 +45,10 @@ class RsvConfiguration(BaseConfiguration):
                        'gratia_probes' : None,
                        'gridftp_hosts': None,
                        'gridftp_dir': '/tmp',
-                       'gums_hosts' : [],
-                       'srm_hosts' : [],
-                       'ce_hosts' : [],
-                       'gridftp_hosts' : [],
+                       'gums_hosts' : 'UNAVAILABLE',
+                       'srm_hosts' : 'UNAVAILABLE',
+                       'ce_hosts' : 'UNAVAILABLE',
+                       'gridftp_hosts' : 'UNAVAILABLE',
                        'service_cert' : '/etc/grid-security/rsvcert.pem',
                        'service_key' : '/etc/grid-security/rsvkey.pem', 
                        'service_proxy' : '/tmp/rsvproxy',
@@ -864,7 +864,7 @@ def split_list(list):
   """ Split a comma separated list of items """
 
   # Special case - when the list just contains UNAVAILABLE we want to ignore it
-  if list == "UNAVAILABLE":
+  if utilities.blank(list):
     return []
   
   items = []
