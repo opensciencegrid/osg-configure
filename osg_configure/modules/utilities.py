@@ -215,7 +215,11 @@ def fetch_crl():
   """
 
   try:
-    crl_files = glob.glob(os.path.join('etc', 'grid-security', 'certificates', '*.r0'))
+    crl_files = glob.glob(os.path.join('/', 
+                                       'etc', 
+                                       'grid-security', 
+                                       'certificates', 
+                                       '*.r0'))
     if len(crl_files) > 0:
       sys.stdout.write("CRLs exist, skipping fetch-crl invocation\n")
       sys.stdout.flush()
