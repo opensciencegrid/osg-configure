@@ -316,8 +316,8 @@ def atomic_write(filename = None, contents = None, **kwargs):
   try:
     (config_fd, temp_name) = tempfile.mkstemp(dir=os.path.dirname(filename))
     mode = kwargs.get('mode', None)
-    if mode is None:
-      mode = stat.S_IMODE(os.stat(filename).st_mode)
+    if mode is None and validation.valid_file(filename):
+        mode = stat.S_IMODE(os.stat(filename).st_mode)
     try:
       try:
         os.write(config_fd, contents)

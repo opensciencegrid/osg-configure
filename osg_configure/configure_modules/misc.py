@@ -174,7 +174,9 @@ class MiscConfiguration(BaseConfiguration):
       using_gums = True
       self.__enable_xacml()
     elif self.attributes['authorization_method'] == 'local_gridmap':
-      self.__enable_local_gridmap()
+      self.__disable_callout()
+    elif self.attributes['authorization_method'] == 'gridmap':
+      self.__disable_callout()
     else:
       self.logger.critical("Unknown authorization method specified: %s" % \
                            self.attributes['authorization_method'])
@@ -235,38 +237,44 @@ class MiscConfiguration(BaseConfiguration):
     
     self.logger.info("Updating " + GSI_AUTHZ_LOCATION)
     
-    gsi_contents = "globus_mapping liblcas_lcmaps_gt4_mapping.so lcmaps_callout"
+    gsi_contents = "globus_mapping liblcas_lcmaps_gt4_mapping.so lcmaps_callout\n"
     if not utilities.atomic_write(GSI_AUTHZ_LOCATION, gsi_contents):
       err_msg = "Error while writing to " + GSI_AUTHZ_LOCATION
       self.logger.error(err_msg)
       raise exceptions.ConfigureError(err_msg)
       
     self.logger.info("Updating " + GUMS_CLIENT_LOCATION)
-    gums_properties = open(GUMS_CLIENT_LOCATION).read()
-    replacement = "gums.location=https://%s:8443/gums/services/GUMSAdmin" % (self.attributes['gums_host'])
-    gums_properties  = re.sub("^gums.location=.*$", 
-                              replacement, 
-                              gums_properties, 
-                              re.MULTILINE)
-    replacement = "gums.authz=https://%s:8443/gums/services/GUMSXACMLAuthorizationServicePort" % (self.attributes['gums_host'])
-    gums_properties  = re.sub("^gums.authz=.*$", 
-                              replacement, 
-                              gums_properties, 
-                              re.MULTILINE)
+    if not validation.valid_file(GUMS_CLIENT_LOCATION):
+      gums_properties = "gums.location=https://%s:8443/gums/services/GUMSAdmin\n" % (self.attributes['gums_host'])
+      gums_properties += "gums.authz=https://%s:8443/gums/services/GUMSXACMLAuthorizationServicePort\n" % (self.attributes['gums_host'])
+    else:
+      gums_properties = open(GUMS_CLIENT_LOCATION).read()
+      replacement = "gums.location=https://%s:8443/gums/services/GUMSAdmin\n" % (self.attributes['gums_host'])
+      gums_properties  = re.sub("^gums.location=.*$", 
+                                replacement, 
+                                gums_properties, 
+                                re.MULTILINE)
+      replacement = "gums.authz=https://%s:8443/gums/services/GUMSXACMLAuthorizationServicePort\n" % (self.attributes['gums_host'])
+      gums_properties  = re.sub("^gums.authz=.*$", 
+                                replacement, 
+                                gums_properties, 
+                                re.MULTILINE)
     utilities.atomic_write(GUMS_CLIENT_LOCATION, gums_properties)
     
     
     
 
   
-  def __enable_local_gridmap(self):
+  def __disable_callout(self):
     """
     Enable authorization using gridmap files
-    """
-    
-    self.logger.info("Updating /etc/grid-security/gsi-authz")
-    gsi_contents = "#globus_mapping liblcas_lcmaps_gt4_mapping.so lcmaps_callout"
-    utilities.atomic_write('/etc/grid-security/gsi-authz', gsi_contents)
+    """    
+    self.logger.info("Updating " + GSI_AUTHZ_LOCATION)
+    gsi_contents = "#globus_mapping liblcas_lcmaps_gt4_mapping.so lcmaps_callout\n"
+    if not utilities.atomic_write(GSI_AUTHZ_LOCATION, gsi_contents):
+      err_msg = "Error while writing to " + GSI_AUTHZ_LOCATION
+      self.logger.error(err_msg)
+      raise exceptions.ConfigureError(err_msg)
 
     
 
