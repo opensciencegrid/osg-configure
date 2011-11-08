@@ -2,7 +2,7 @@
 
 """ Module to hold various utility functions """
 
-import glob, ConfigParser, types, os
+import glob, ConfigParser, types, os, rpm
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
@@ -12,7 +12,7 @@ __all__ = ['get_option_location',
            'get_file_list',
            'read_config_files', 
            'get_option',
-           'ce_config']
+           'jobmanager_enabled']
 
 CONFIG_DIRECTORY = '/etc/osg/config.d'
 
@@ -152,7 +152,7 @@ def get_option(config,
     raise exceptions.SettingError(err_mesg)
 
 
-def ce_config(configuration):
+def jobmanager_enabled(configuration):
   """
   Check the configuration file and enable this module if the configuration
   is for a ce. A configuration is for a ce if it enables one of the job manager 
@@ -161,7 +161,8 @@ def ce_config(configuration):
   Keyword arguments:
   configuration -- ConfigParser object to check
   """
-  
+
+        
   jobmanagers = ['PBS', 'Condor', 'SGE', 'LSF']  
   for jobmanager in jobmanagers:
     if (configuration.has_section(jobmanager) and

@@ -191,7 +191,7 @@ class TestConfigFile(unittest.TestCase):
                            "Didn't get the files in the correct order: " +
                            " %s\n instead of\n %s" % (file_list, file_order))
 
-    def test_ce_config(self):
+    def test_jobmanagers_enabled(self):
       """
       Test configurations to make sure that they are properly understood as being for a CE
       """
@@ -202,10 +202,10 @@ class TestConfigFile(unittest.TestCase):
                      './configs/config-ce-sge.d']
       for dir in config_dirs:
         config = configfile.read_config_files(config_directory = dir)
-        self.failUnless(configfile.ce_config(config), "%s is a CE config" % dir)
+        self.failUnless(configfile.jobmanagers_enabled(config), "%s is a CE config" % dir)
 
       config = configfile.read_config_files(config_directory = './configs/config-nonce.d')
-      self.failIf(configfile.ce_config(config), "ce_config returned true on a non-ce config")
+      self.failIf(configfile.jobmanagers_enabled(config), "ce_config returned true on a non-ce config")
           
 if __name__ == '__main__':
     unittest.main()

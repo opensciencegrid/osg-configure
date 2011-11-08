@@ -186,7 +186,7 @@ class GipConfiguration(BaseConfiguration):
     """
     self.logger.debug('GipConfiguration.parseConfiguration started')
 
-    if not configfile.ce_config(configuration):
+    if not utilities.ce_installed():
       self.logger.debug('Not a CE configuration, disabling GIP')
       self.logger.debug('GipConfiguration.parseConfiguration completed')
       self.enabled = False

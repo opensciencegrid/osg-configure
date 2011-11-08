@@ -3,7 +3,7 @@
 """ Module to hold various utility functions """
 
 import re, socket, os, types, pwd, sys, glob, ConfigParser, stat
-import tempfile, subprocess
+import tempfile, subprocess, rpm
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import validation
@@ -21,7 +21,7 @@ __all__ = ['using_prima',
            'get_gums_host',
            'create_map_file',
            'fetch_crl',
-           'ce_config',
+           'ce_installed',
            'atomic_write']
   
 CONFIG_DIRECTORY = "/etc/osg"
@@ -390,3 +390,16 @@ def atomic_write(filename = None, contents = None, **kwargs):
   except Exception, e:
     return False
   return True
+
+
+def ce_installed():
+  """
+  Check to see if the osg-ce metapackage is installed
+  
+  Returns:
+  True if osg-ce metapackage rpm is installed, False otherwise
+  """
+  ts = rpm.TransactionSet()
+  if ts.dbMatch('name', 'osg-ce').count() == 1:
+    return True
+  return False

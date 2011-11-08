@@ -66,7 +66,7 @@ class MiscConfiguration(BaseConfiguration):
       return
     
     self.__enabled = True
-    self.__ce_configuration = configfile.ce_config(configuration)
+    self.__ce_configuration = utilities.ce_installed()
     
     for setting in self.__mappings:
       self.logger.debug("Getting value for %s" % setting)        

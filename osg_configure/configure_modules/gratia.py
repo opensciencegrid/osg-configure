@@ -57,7 +57,7 @@ in your config.ini file."""
     self.checkConfig(configuration)
 
     if (not configuration.has_section(self.config_section) and
-        configfile.ce_config(configuration)):
+        utilities.ce_installed()):
       self.logger.debug('On CE and no Gratia section, auto-configuring gratia')    
       self.__auto_configure(configuration)
       self.logger.debug('GratiaConfiguration.parseConfiguration completed')    
@@ -73,7 +73,7 @@ in your config.ini file."""
       return True
       
     # set the appropriate defaults if we're on a CE
-    if configfile.ce_config(configuration):
+    if utilities.ce_installed():
       if configuration.has_option('Site Information', 'group'):
         group = configuration.get('Site Information', 'group')
       if group == 'OSG':

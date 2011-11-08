@@ -45,7 +45,7 @@ class StorageConfiguration(BaseConfiguration):
     self.checkConfig(configuration)
 
     if (not configuration.has_section(self.config_section) or
-        not configfile.ce_config(configuration)):
+        not utilities.ce_installed()):
       self.enabled = False
       self.logger.debug("%s section not in config file" % self.config_section)    
       self.logger.debug('StorageConfiguration.parseAttributes completed')    
