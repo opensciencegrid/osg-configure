@@ -202,7 +202,7 @@ class TestConfigFile(unittest.TestCase):
                      './configs/config-ce-sge.d']
       for dir in config_dirs:
         config = configfile.read_config_files(config_directory = dir)
-        self.failUnless(configfile.jobmanagers_enabled(config), "%s is a CE config" % dir)
+        self.failUnless(configfile.jobmanager_enabled(config), "%s is a CE config" % dir)
 
       config = configfile.read_config_files(config_directory = './configs/config-nonce.d')
       self.failIf(configfile.jobmanagers_enabled(config), "ce_config returned true on a non-ce config")

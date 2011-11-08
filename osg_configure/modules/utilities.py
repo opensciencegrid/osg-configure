@@ -9,7 +9,6 @@ from osg_configure.modules import exceptions
 from osg_configure.modules import validation
 
 __all__ = ['using_prima',
-           'using_xacml_protocol',
            'get_vos',
            'enable_service',
            'disable_service',
@@ -18,7 +17,6 @@ __all__ = ['using_prima',
            'get_hostname',
            'get_set_membership',
            'blank',
-           'get_gums_host',
            'create_map_file',
            'fetch_crl',
            'ce_installed',
@@ -27,67 +25,6 @@ __all__ = ['using_prima',
 CONFIG_DIRECTORY = "/etc/osg"
 
   
-def using_prima():
-  """
-  Function to check whether prima callouts are setup
-  """
-  
-  if (not validation.valid_file('/etc/grid-security/gsi-authz.conf') or
-      not validation.valid_file('/etc/grid-security/prima-authz.conf')):
-    return False
-    
-  gsi_set = False
-  prima_set = False
-  gsi_buffer = open('/etc/grid-security/gsi-authz.conf').read()
-  prima_buffer = open('/etc/grid-security/prima-authz.conf').read()
-
-  if re.search('^\s*globus_mapping', gsi_buffer, re.M):
-    gsi_set = True
-
-  if re.search('^\s*imsContact https://(.*?):\d+', prima_buffer, re.M):
-    prima_set = True
-
-  if gsi_set and prima_set:
-    return True
-  
-  return False
-
-def using_xacml_protocol():
-  """
-  Function to check to see whether the system is using xacml to talk to GUMS
-  """
-  
-  if not using_prima():
-    return False
-  
-  gsi_buffer = open('/etc/grid-security/gsi-authz.conf').read(8192)
-
-  if re.search('^globus_mapping.*_scas_.*', gsi_buffer, re.M):
-    return True
-  
-  return False
-  
-def get_gums_host():
-  """
-  Function to return the gums host being used on the system, returns a tuple 
-  with the host name and port of the gums host or None if a gums host is not being used
-  """
-
-  if 'VDT_GUMS_HOST' in os.environ:
-    return (os.environ['VDT_GUMS_HOST'], 8443)
-  
-  if not using_prima():
-    return None
-    
-  prima_buffer = open('/etc/grid-security/prima-authz.conf').read(8192)
-
-  match = re.search('^\s*imsContact https://(.*?):(\d+)?', prima_buffer, re.M)      
-  if match:
-    host = match.group(1)
-    port = match.group(2)
-    return (host, port)
-  
-  return None
       
 def get_elements(element=None, filename=None):
   """Get values for selected element from xml file specified in filename"""
