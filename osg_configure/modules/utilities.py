@@ -185,18 +185,23 @@ def create_map_file(using_gums = False):
   Check and create a mapfile if needed
   """
 
-  map_file = os.path.join(CONFIG_DIRECTORY,
-                          'osg-user-vo-map.txt')
+  map_file = os.path.join('/',
+                          'var',
+                          'lib',
+                          'osg',
+                          'osg-user-vo-map')
   result = True
   try:
     if validation.valid_user_vo_file(map_file):
       return result
     if using_gums:
-      gums_script = os.path.join('usr',
+      gums_script = os.path.join('/',
+                                 'usr',
                                  'bin',
                                  'gums-host-cron')
     else:
-      gums_script = os.path.join('usr'
+      gums_script = os.path.join('/',
+                                 'usr'
                                  'bin',
                                  'edg-mkgridmap')
       
@@ -267,8 +272,7 @@ def run_script(script):
 
 def get_condor_location(default_location = '/usr'):
   """
-  Check environment variables to try to get condor location preferring 
-  VDTSET_CONDOR_LOCATION over CONDOR_LOCATION
+  Check environment variables to try to get condor location
   """
 
   if 'CONDOR_LOCATION' in os.environ:
@@ -280,8 +284,7 @@ def get_condor_location(default_location = '/usr'):
 
 def get_condor_config(default_config = '/etc/condor'):
   """
-  Check environment variables to try to get condor config preferring 
-  VDTSET_CONDOR_CONFIG over CONDOR_CONFIG
+  Check environment variables to try to get condor config
   """
   
   if 'CONDOR_CONFIG' in os.environ:
