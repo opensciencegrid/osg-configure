@@ -2,17 +2,12 @@
 
 import os, imp, sys, unittest, ConfigParser, logging
 
-# setup system library path if it's not there at present
-try:
-  from osg_configure.modules import utilities
-except ImportError:
-  pathname = '../'
-  sys.path.append(pathname)
-  from osg_configure.modules import utilities
+# setup system library path 
+pathname = os.path.realpath('../')
+sys.path.insert(0, pathname)
 
+from osg_configure.modules import utilities
 from osg_configure.modules import exceptions
-
-
 from osg_configure.configure_modules import lsf
 
 global_logger = logging.getLogger('test lsf configuration')
@@ -34,7 +29,6 @@ class TestLSF(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     settings = lsf.LSFConfiguration(logger=global_logger)
     try:
       settings.parseConfiguration(configuration)
@@ -68,7 +62,6 @@ class TestLSF(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     settings = lsf.LSFConfiguration(logger=global_logger)
     try:
       settings.parseConfiguration(configuration)
@@ -89,7 +82,6 @@ class TestLSF(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     settings = lsf.LSFConfiguration(logger=global_logger)
     try:
       settings.parseConfiguration(configuration)
@@ -106,8 +98,6 @@ class TestLSF(unittest.TestCase):
     """
     Test the checkAttributes function to see if it catches missing LSF location
     """
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/lsf/missing_location.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -127,8 +117,6 @@ class TestLSF(unittest.TestCase):
     """
     Test the checkAttributes function to see if it works on valid settings
     """
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/lsf/check_ok.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -147,8 +135,6 @@ class TestLSF(unittest.TestCase):
     """
     Test the checkAttributes function to see if it works on valid settings
     """
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/lsf/check_ok2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -167,8 +153,6 @@ class TestLSF(unittest.TestCase):
     """
     Test the checkAttributes function to see if it catches invalid job contacts
     """
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/lsf/invalid_job_contact.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -189,8 +173,6 @@ class TestLSF(unittest.TestCase):
     Test the checkAttributes function to see if it catches invalid
     utility contacts
     """
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/lsf/invalid_utility_contact.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)

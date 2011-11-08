@@ -2,17 +2,12 @@
 
 import os, imp, sys, unittest, ConfigParser, logging
 
-# setup system library path if it's not there at present
-try:
-  from osg_configure.modules import utilities
-except ImportError:
-  pathname = '../'
-  sys.path.append(pathname)
-  from osg_configure.modules import utilities
+# setup system library path
+pathname = os.path.realpath('../')
+sys.path.insert(0, pathname)
 
+from osg_configure.modules import utilities
 from osg_configure.modules import exceptions
-
-
 from osg_configure.configure_modules import xrootd
 
 global_logger = logging.getLogger('test xrootd configuration')
@@ -34,7 +29,6 @@ class TestXrootd(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     settings = xrootd.XrootdConfiguration(logger=global_logger)
     try:
       settings.parseConfiguration(configuration)
@@ -69,7 +63,6 @@ class TestXrootd(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     settings = xrootd.XrootdConfiguration(logger=global_logger)
     try:
       settings.parseConfiguration(configuration)
@@ -105,7 +98,6 @@ class TestXrootd(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     settings = xrootd.XrootdConfiguration(logger=global_logger)
     try:
       settings.parseConfiguration(configuration)
@@ -126,7 +118,6 @@ class TestXrootd(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     settings = xrootd.XrootdConfiguration(logger=global_logger)
     try:
       settings.parseConfiguration(configuration)
@@ -145,8 +136,6 @@ class TestXrootd(unittest.TestCase):
     space tokens
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/xrootd/invalid_tokens1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -167,8 +156,6 @@ class TestXrootd(unittest.TestCase):
     space tokens
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/xrootd/invalid_tokens2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -189,8 +176,6 @@ class TestXrootd(unittest.TestCase):
     xrootd redirector
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/xrootd/invalid_redirector.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -211,8 +196,6 @@ class TestXrootd(unittest.TestCase):
     xrootd modes
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/xrootd/invalid_mode.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -233,8 +216,6 @@ class TestXrootd(unittest.TestCase):
     xrootd user setting
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/xrootd/invalid_user.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -255,8 +236,6 @@ class TestXrootd(unittest.TestCase):
     cache size
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/xrootd/invalid_cache_size.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -277,8 +256,6 @@ class TestXrootd(unittest.TestCase):
     cache entry
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/xrootd/missing_cache.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -299,8 +276,6 @@ class TestXrootd(unittest.TestCase):
     path entry
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/xrootd/missing_path.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -320,7 +295,6 @@ class TestXrootd(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/xrootd/check_ok1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -340,7 +314,6 @@ class TestXrootd(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/xrootd/check_ok2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -360,7 +333,6 @@ class TestXrootd(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/xrootd/check_ok3.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -380,7 +352,6 @@ class TestXrootd(unittest.TestCase):
     Test the checkAttributes function to see if it oks a disabled configuration
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/xrootd/disabled.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)

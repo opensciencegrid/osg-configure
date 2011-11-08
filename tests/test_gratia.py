@@ -2,17 +2,11 @@
 
 import os, imp, sys, unittest, ConfigParser, logging
 
-# setup system library path if it's not there at present
-try:
-  from osg_configure.modules import utilities
-except ImportError:
-  pathname = '../'
-  sys.path.append(pathname)
-  from osg_configure.modules import utilities
+# setup system library path 
+pathname = os.path.realpath('../')
+sys.path.insert(0, pathname)
 
 from osg_configure.modules import exceptions
-
-
 from osg_configure.configure_modules import gratia
 
 global_logger = logging.getLogger('test gratia configuration')
@@ -201,7 +195,6 @@ class TestLocalSettings(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     settings = gratia.GratiaConfiguration(logger=global_logger)
     try:
       settings.parseConfiguration(configuration)
@@ -222,7 +215,6 @@ class TestLocalSettings(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     settings = gratia.GratiaConfiguration(logger=global_logger)
     try:
       settings.parseConfiguration(configuration)
@@ -240,8 +232,6 @@ class TestLocalSettings(unittest.TestCase):
     probes
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/gratia/invalid_probe1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -262,8 +252,6 @@ class TestLocalSettings(unittest.TestCase):
     probes
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/gratia/invalid_probe2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -283,7 +271,6 @@ class TestLocalSettings(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/gratia/check_ok.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -303,7 +290,6 @@ class TestLocalSettings(unittest.TestCase):
     Test the checkAttributes function to see if it oks a disabled section
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/gratia/disabled.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -322,7 +308,6 @@ class TestLocalSettings(unittest.TestCase):
     """
     Test the ITB defaults and make sure that they are valid
     """
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/gratia/itb_default.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -341,8 +326,7 @@ class TestLocalSettings(unittest.TestCase):
     """
     Test the production defaults and make sure that they are valid
     """
-    os.environ['VDT_LOCATION'] = os.getcwd()
-    config_file = os.path.abspath("./configs/gratia/production_default.ini")
+    config_file = os.path.abspath("./configs/gratia/prod_default.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -354,14 +338,13 @@ class TestLocalSettings(unittest.TestCase):
  
     attributes = settings.getAttributes()
     self.failUnless(settings.checkAttributes(attributes), 
-                    "ITB defaults flagged as invalid")
+                    "Production defaults flagged as invalid")
     
   def testMissingITBDefaults(self):
     """
     Test the ITB defaults and make sure that they are valid when the
     gratia section is missing
     """
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/gratia/itb_default2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -381,8 +364,7 @@ class TestLocalSettings(unittest.TestCase):
     Test the production defaults and make sure that they are valid when the 
     gratia section is missing
     """
-    os.environ['VDT_LOCATION'] = os.getcwd()
-    config_file = os.path.abspath("./configs/gratia/production_default2.ini")
+    config_file = os.path.abspath("./configs/gratia/prod_default2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -394,7 +376,7 @@ class TestLocalSettings(unittest.TestCase):
  
     attributes = settings.getAttributes()
     self.failUnless(settings.checkAttributes(attributes), 
-                    "ITB defaults flagged as invalid")
+                    "Production defaults flagged as invalid")
 
 if __name__ == '__main__':
     unittest.main()

@@ -2,16 +2,15 @@
 
 import os, imp, sys, unittest, ConfigParser, types
 
-# setup system library path if it's not there at present
-try:
-  from osg_configure.modules import exceptions
-except ImportError:
-  pathname = '../'
-  sys.path.append(pathname)
-  from osg_configure.modules import exceptions
+# setup system library path
+pathname = os.path.realpath('../')
+sys.path.insert(0, pathname)
 
+from osg_configure.modules import exceptions
+from osg_configure.modules import exceptions
+from osg_configure.modules import utilities
 
-pathname = os.path.join('../scripts', 'configure-osg')
+pathname = os.path.join('../scripts', 'osg-configure')
 
 try:
     has_configure_osg = False
@@ -21,26 +20,7 @@ try:
 except:
     raise
 
-from osg_configure.modules import exceptions
-from osg_configure.modules import utilities
-
 class TestUtilities(unittest.TestCase):
-
-    def test_get_gums_host(self):
-      """
-      Check the functionality of get_gums_host
-      """
-      
-      failed = False
-      message = None
-      gums_host = 'gums-host.test.com'
-
-      os.environ['VDT_GUMS_HOST'] = gums_host
-      self.failUnlessEqual(utilities.get_gums_host(), 
-                           (gums_host, 8443), 
-                           "Gums host not found from environment")
-      del os.environ['VDT_GUMS_HOST']
-        
 
     def test_write_attribute_file(self):
       """
@@ -59,7 +39,6 @@ class TestUtilities(unittest.TestCase):
         if os.path.exists(attribute_file):
           os.unlink(attribute_file)
       except Exception, ex:
-        print ex
         self.fail('Got exception while testing wite_attribute_file' \
                   "functionality:\n%s" % ex)
         if os.path.exists(attribute_file):

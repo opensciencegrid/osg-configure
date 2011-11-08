@@ -2,17 +2,12 @@
 
 import os, imp, sys, unittest, ConfigParser, logging
 
-# setup system library path if it's not there at present
-try:
-  from osg_configure.modules import utilities
-except ImportError:
-  pathname = '../'
-  sys.path.append(pathname)
-  from osg_configure.modules import utilities
+# setup system library path
+pathname = os.path.realpath('../')
+sys.path.insert(0, pathname)
 
+from osg_configure.modules import utilities
 from osg_configure.modules import exceptions
-
-
 from osg_configure.configure_modules import misc
 
 global_logger = logging.getLogger('test misc configuration')
@@ -43,10 +38,8 @@ class TestLocalSettings(unittest.TestCase):
 
     attributes = settings.attributes
     variables = {'OSG_GLEXEC_LOCATION' : './configs/misc',
-                 'OSG_CERT_UPDATER' : 'Y',
-                 'enable_webpage_creation' : 'Y',
                  'gums_host' : 'my.gums.org',
-                 'authorization_method' : 'prima'}
+                 'authorization_method' : 'xacml'}
     for var in variables:      
       self.failUnless(attributes.has_key(var), 
                       "Attribute %s missing" % var)
@@ -76,10 +69,8 @@ class TestLocalSettings(unittest.TestCase):
 
     attributes = settings.attributes
     variables = {'OSG_GLEXEC_LOCATION' : './configs/misc',
-                 'OSG_CERT_UPDATER' : 'N',
-                 'enable_webpage_creation' : 'N',
                  'gums_host' : 'my.gums.org',
-                 'authorization_method' : 'prima'}
+                 'authorization_method' : 'xacml'}
     for var in variables:      
       self.failUnless(attributes.has_key(var), 
                       "Attribute %s missing" % var)
@@ -185,10 +176,7 @@ class TestLocalSettings(unittest.TestCase):
     Test the parsing when attributes are missing, should get exceptions
     """
         
-
-    os.environ['VDT_LOCATION'] = os.getcwd()
-    mandatory = ['gums_host',
-                 'authorization_method']
+    mandatory = ['gums_host']
     for option in mandatory:
       config_file = os.path.abspath("./configs/misc/misc1.ini")
       configuration = ConfigParser.SafeConfigParser()
@@ -200,31 +188,6 @@ class TestLocalSettings(unittest.TestCase):
                             settings.parseConfiguration, 
                             configuration)
 
-  def testPrimaMissingGums(self):
-    """
-    Test the checkAttributes function when prima is specified but the
-    gums host isn't given
-    """
-        
-
-    os.environ['VDT_LOCATION'] = os.getcwd()
-    config_file = os.path.abspath("./configs/misc/misc_prima_missing_gums.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-
-    settings = misc.MiscConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      print "a"
-      print e
-      print "b"
-      self.fail("Received exception while parsing configuration")
-
-    attributes = settings.attributes
-    self.failIf(settings.checkAttributes(attributes), 
-                "Did not notice missing gums host")
-
   def testXacmlMissingGums(self):
     """
     Test the checkAttributes function when xacml is specified but the
@@ -232,20 +195,14 @@ class TestLocalSettings(unittest.TestCase):
     """
         
 
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/misc/misc_xacml_missing_gums.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
     settings = misc.MiscConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration")
-
-    attributes = settings.attributes
-    self.failIf(settings.checkAttributes(attributes), 
-                "Did not notice missing gums host")
+    self.failUnlessRaises(exceptions.ConfigureError,
+                          settings.parseConfiguration,
+                          configuration)
     
   def testXacmlBadGums(self):
     """
@@ -254,7 +211,6 @@ class TestLocalSettings(unittest.TestCase):
     """
         
 
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/misc/misc_xacml_bad_gums.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -276,7 +232,6 @@ class TestLocalSettings(unittest.TestCase):
     """
         
 
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/misc/misc_prima_bad_gums.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -296,7 +251,6 @@ class TestLocalSettings(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/misc/valid_settings.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -316,7 +270,6 @@ class TestLocalSettings(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/misc/valid_settings2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -336,7 +289,6 @@ class TestLocalSettings(unittest.TestCase):
     Test the checkAttributes function to see if it flags bad attributes
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/misc/invalid_settings1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)

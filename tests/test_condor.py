@@ -2,17 +2,11 @@
 
 import os, imp, sys, unittest, ConfigParser, logging
 
-# setup system library path if it's not there at present
-try:
-  from osg_configure.modules import utilities
-except ImportError:
-  pathname = '../'
-  sys.path.append(pathname)
-  from osg_configure.modules import utilities
+# setup system library path
+pathname = os.path.realpath('../')
+sys.path.insert(0, pathname)
 
 from osg_configure.modules import exceptions
-
-
 from osg_configure.configure_modules import condor
 
 global_logger = logging.getLogger('test condor configuration')
@@ -35,7 +29,6 @@ class TestCondor(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     settings = condor.CondorConfiguration(logger=global_logger)
     try:
       settings.parseConfiguration(configuration)
@@ -70,7 +63,6 @@ class TestCondor(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     settings = condor.CondorConfiguration(logger=global_logger)
     try:
       settings.parseConfiguration(configuration)
@@ -91,7 +83,6 @@ class TestCondor(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     settings = condor.CondorConfiguration(logger=global_logger)
     try:
       settings.parseConfiguration(configuration)

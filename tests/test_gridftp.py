@@ -2,17 +2,12 @@
 
 import os, imp, sys, unittest, ConfigParser, logging
 
-# setup system library path if it's not there at present
-try:
-  from osg_configure.modules import utilities
-except ImportError:
-  pathname = '../'
-  sys.path.append(pathname)
-  from osg_configure.modules import utilities
+# setup system library path
+pathname = os.path.realpath('../')
+sys.path.insert(0, pathname)
 
+from osg_configure.modules import utilities
 from osg_configure.modules import exceptions
-
-
 from osg_configure.configure_modules import gridftp
 
 global_logger = logging.getLogger('test gridftp configuration')
@@ -34,7 +29,6 @@ class TestGridFTP(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     settings = gridftp.GridFTPConfiguration(logger=global_logger)
     try:
       settings.parseConfiguration(configuration)
@@ -66,7 +60,6 @@ class TestGridFTP(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     settings = gridftp.GridFTPConfiguration(logger=global_logger)
     try:
       settings.parseConfiguration(configuration)
@@ -99,7 +92,6 @@ class TestGridFTP(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     settings = gridftp.GridFTPConfiguration(logger=global_logger)
     try:
       settings.parseConfiguration(configuration)
@@ -119,7 +111,6 @@ class TestGridFTP(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     settings = gridftp.GridFTPConfiguration(logger=global_logger)
     try:
       settings.parseConfiguration(configuration)
@@ -138,8 +129,6 @@ class TestGridFTP(unittest.TestCase):
     redirector host
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/gridftp/invalid_redirector.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -160,8 +149,6 @@ class TestGridFTP(unittest.TestCase):
     gridftp modes
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/gridftp/invalid_mode.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -182,8 +169,6 @@ class TestGridFTP(unittest.TestCase):
     redirector host
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/gridftp/missing_redirector.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -204,8 +189,6 @@ class TestGridFTP(unittest.TestCase):
     xrootd point
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/gridftp/missing_mount.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -226,8 +209,6 @@ class TestGridFTP(unittest.TestCase):
     path
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/gridftp/missing_storage_path.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -248,8 +229,6 @@ class TestGridFTP(unittest.TestCase):
     the xrootd section if the storage path is missing in the gridftp section
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/gridftp/storage_path_default.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -269,7 +248,6 @@ class TestGridFTP(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/gridftp/check_ok1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -289,7 +267,6 @@ class TestGridFTP(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/gridftp/check_ok2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -309,7 +286,6 @@ class TestGridFTP(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/gridftp/check_ok3.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -329,7 +305,6 @@ class TestGridFTP(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/gridftp/check_ok4.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -350,7 +325,6 @@ class TestGridFTP(unittest.TestCase):
     attributes
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/gridftp/check_ok5.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)

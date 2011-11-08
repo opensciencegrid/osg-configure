@@ -37,17 +37,23 @@ class StorageConfiguration(BaseConfiguration):
     self.logger.debug('StorageConfiguration.__init__ completed')
       
   def parseConfiguration(self, configuration):
-    """Try to get configuration information from ConfigParser or SafeConfigParser object given
-    by configuration and write recognized settings to attributes dict
+    """
+    Try to get configuration information from ConfigParser or SafeConfigParser 
+    object given by configuration and write recognized settings to attributes 
+    dict
     """
     self.logger.debug('StorageConfiguration.parseAttributes started')    
 
     self.checkConfig(configuration)
 
-    if (not configuration.has_section(self.config_section) or
-        not utilities.ce_installed()):
+    if not configuration.has_section(self.config_section):
       self.enabled = False
-      self.logger.debug("%s section not in config file" % self.config_section)    
+      self.logger.debug("%s section not in config file" % self.config_section)
+      self.logger.debug('StorageConfiguration.parseAttributes completed')    
+      return
+    if not utilities.ce_installed():
+      self.enabled = False
+      self.logger.debug("osg-ce rpm not installed, skipping ce specific module")
       self.logger.debug('StorageConfiguration.parseAttributes completed')    
       return
     else:

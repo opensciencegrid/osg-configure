@@ -75,6 +75,8 @@ class CemonConfiguration(BaseConfiguration):
     if utilities.ce_installed():
       if configuration.has_option('Site Information', 'group'):
         group = configuration.get('Site Information', 'group')
+      else:
+        group = 'OSG'
       if group == 'OSG':
         self.__defaults = self.__production_defaults
       elif group == 'OSG-ITB':

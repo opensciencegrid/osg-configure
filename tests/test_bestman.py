@@ -3,16 +3,11 @@
 import os, imp, sys, unittest, ConfigParser, logging
 
 
-# setup system library path if it's not there at present
-try:
-  from osg_configure.modules import utilities
-except ImportError:
-  pathname = '../'
-  sys.path.append(pathname)
-  from osg_configure.modules import utilities
+# setup system library path
+pathname = os.path.realpath('../')
+sys.path.insert(0, pathname)
 
 from osg_configure.modules import exceptions
-
 from osg_configure.configure_modules import bestman
 
 global_logger = logging.getLogger('test bestman configuration')
@@ -34,7 +29,6 @@ class TestBestman(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     settings = bestman.BestmanConfiguration(logger=global_logger)
     try:
       settings.parseConfiguration(configuration)
@@ -72,7 +66,6 @@ class TestBestman(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     settings = bestman.BestmanConfiguration(logger=global_logger)
     try:
       settings.parseConfiguration(configuration)
@@ -120,7 +113,6 @@ class TestBestman(unittest.TestCase):
     space tokens
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
 
     config_file = os.path.abspath("./configs/bestman/invalid_tokens1.ini")
     configuration = ConfigParser.SafeConfigParser()
@@ -142,7 +134,6 @@ class TestBestman(unittest.TestCase):
     space tokens
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
 
     config_file = os.path.abspath("./configs/bestman/invalid_tokens2.ini")
     configuration = ConfigParser.SafeConfigParser()
@@ -164,7 +155,6 @@ class TestBestman(unittest.TestCase):
     transfer servers
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
 
     config_file = os.path.abspath("./configs/bestman/invalid_transfer1.ini")
     configuration = ConfigParser.SafeConfigParser()
@@ -186,7 +176,6 @@ class TestBestman(unittest.TestCase):
     bestman modes
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
 
     config_file = os.path.abspath("./configs/bestman/invalid_mode.ini")
     configuration = ConfigParser.SafeConfigParser()
@@ -208,8 +197,6 @@ class TestBestman(unittest.TestCase):
     the key file
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/bestman/invalid_key.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -244,8 +231,6 @@ class TestBestman(unittest.TestCase):
     the certificate file
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/bestman/invalid_cert.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -280,8 +265,6 @@ class TestBestman(unittest.TestCase):
     http ports
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/bestman/invalid_http_port1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -302,8 +285,6 @@ class TestBestman(unittest.TestCase):
     http ports
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/bestman/invalid_http_port2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -320,8 +301,6 @@ class TestBestman(unittest.TestCase):
     http ports
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/bestman/invalid_https_port1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -337,8 +316,6 @@ class TestBestman(unittest.TestCase):
     http ports
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/bestman/invalid_https_port2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -359,8 +336,6 @@ class TestBestman(unittest.TestCase):
     allowed paths
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/bestman/invalid_allowed_paths.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -381,8 +356,6 @@ class TestBestman(unittest.TestCase):
     cache size
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/bestman/invalid_cache_size1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -411,8 +384,6 @@ class TestBestman(unittest.TestCase):
     volatile lifetimes
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/bestman/invalid_volatile_lifetime1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -441,8 +412,6 @@ class TestBestman(unittest.TestCase):
     custodial size
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/bestman/invalid_custodial_size1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -471,8 +440,6 @@ class TestBestman(unittest.TestCase):
     custodial path
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/bestman/invalid_custodial_path1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -493,8 +460,6 @@ class TestBestman(unittest.TestCase):
     blocked paths
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/bestman/invalid_blocked_paths.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -515,7 +480,6 @@ class TestBestman(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/bestman/check_ok1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -535,7 +499,6 @@ class TestBestman(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/bestman/check_ok2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -555,7 +518,6 @@ class TestBestman(unittest.TestCase):
     Test the checkAttributes function to see if it oks a disabled section
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/bestman/disabled.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -575,7 +537,6 @@ class TestBestman(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/bestman/check_ok3.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -595,7 +556,6 @@ class TestBestman(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/bestman/check_ok4.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)

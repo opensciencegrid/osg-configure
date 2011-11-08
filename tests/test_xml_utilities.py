@@ -2,16 +2,14 @@
 
 import os, imp, sys, unittest, ConfigParser, types
 
-# setup system library path if it's not there at present
-try:
-  from osg_configure.modules import exceptions
-except ImportError:
-  pathname = '../'
-  sys.path.append(pathname)
-  from osg_configure.modules import exceptions
+# setup system library path
+pathname = os.path.realpath('../')
+sys.path.insert(0, pathname)
 
+from osg_configure.modules import exceptions
+from osg_configure.modules import xml_utilities
 
-pathname = os.path.join('../scripts', 'configure-osg')
+pathname = os.path.join('../scripts', 'osg-configure')
 
 try:
     has_configure_osg = False
@@ -21,8 +19,6 @@ try:
 except:
     raise
 
-from osg_configure.modules import exceptions
-from osg_configure.modules import xml_utilities
 
 class TestXMLUtilities(unittest.TestCase):
 

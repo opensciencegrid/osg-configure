@@ -2,17 +2,12 @@
 
 import os, imp, sys, unittest, ConfigParser, logging
 
-# setup system library path if it's not there at present
-try:
-  from osg_configure.modules import utilities
-except ImportError:
-  pathname = '../'
-  sys.path.append(pathname)
-  from osg_configure.modules import utilities
+# setup system library path
+pathname = os.path.realpath('../')
+sys.path.insert(0, pathname)
 
+from osg_configure.modules import utilities
 from osg_configure.modules import exceptions
-
-
 from osg_configure.configure_modules import siteattributes
 
 global_logger = logging.getLogger('test siteattributes configuration')
@@ -158,7 +153,6 @@ class TestSiteAttributesSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
         
 
-    os.environ['VDT_LOCATION'] = os.getcwd()
     mandatory = ['host_name',
                  'sponsor',
                  'site_policy',
@@ -362,7 +356,6 @@ class TestSiteAttributesSettings(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/siteattributes/valid_settings.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -382,7 +375,6 @@ class TestSiteAttributesSettings(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/siteattributes/siteattributes3.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)

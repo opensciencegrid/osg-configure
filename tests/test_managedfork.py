@@ -2,17 +2,12 @@
 
 import os, imp, sys, unittest, ConfigParser, logging
 
-# setup system library path if it's not there at present
-try:
-  from osg_configure.modules import utilities
-except ImportError:
-  pathname = '../'
-  sys.path.append(pathname)
-  from osg_configure.modules import utilities
+# setup system library path
+pathname = os.path.realpath('../')
+sys.path.insert(0, pathname)
 
+from osg_configure.modules import utilities
 from osg_configure.modules import exceptions
-
-
 from osg_configure.configure_modules import managedfork
 
 global_logger = logging.getLogger('test managedfork configuration')
@@ -34,7 +29,6 @@ class TestManagedFork(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     settings = managedfork.ManagedForkConfiguration(logger=global_logger)
     try:
       settings.parseConfiguration(configuration)
@@ -59,7 +53,6 @@ class TestManagedFork(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     settings = managedfork.ManagedForkConfiguration(logger=global_logger)
     try:
       settings.parseConfiguration(configuration)
@@ -82,7 +75,6 @@ class TestManagedFork(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     settings = managedfork.ManagedForkConfiguration(logger=global_logger)
     try:
       settings.parseConfiguration(configuration)
@@ -101,7 +93,6 @@ class TestManagedFork(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/managedfork/check_ok.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -122,7 +113,6 @@ class TestManagedFork(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/managedfork/check_accept_limited_true.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -143,7 +133,6 @@ class TestManagedFork(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/managedfork/check_accept_limited_false.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)

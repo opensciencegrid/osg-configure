@@ -2,17 +2,12 @@
 
 import os, imp, sys, unittest, ConfigParser, logging
 
-# setup system library path if it's not there at present
-try:
-  from osg_configure.modules import utilities
-except ImportError:
-  pathname = '../'
-  sys.path.append(pathname)
-  from osg_configure.modules import utilities
+# setup system library path
+pathname = os.path.realpath('../')
+sys.path.insert(0, pathname)
 
+from osg_configure.modules import utilities
 from osg_configure.modules import exceptions
-
-
 from osg_configure.configure_modules import squid
 
 global_logger = logging.getLogger('test squid configuration')
@@ -96,7 +91,6 @@ class TestSquidSettings(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     settings = squid.SquidConfiguration(logger=global_logger)
     try:
       settings.parseConfiguration(configuration)
@@ -131,7 +125,6 @@ class TestSquidSettings(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     settings = squid.SquidConfiguration(logger=global_logger)
     try:
       settings.parseConfiguration(configuration)
@@ -164,7 +157,6 @@ class TestSquidSettings(unittest.TestCase):
     """
         
 
-    os.environ['VDT_LOCATION'] = os.getcwd()
     mandatory = ['location', 
                  'policy',
                  'cache_size',
@@ -187,7 +179,6 @@ class TestSquidSettings(unittest.TestCase):
     """
         
 
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/squid/squid_bad_mem.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -208,7 +199,6 @@ class TestSquidSettings(unittest.TestCase):
     """
         
 
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/squid/squid_bad_cache.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -231,7 +221,6 @@ class TestSquidSettings(unittest.TestCase):
     """
         
 
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/squid/squid_bad_host.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -253,7 +242,6 @@ class TestSquidSettings(unittest.TestCase):
     """
         
 
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/squid/squid_bad_port.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -274,7 +262,6 @@ class TestSquidSettings(unittest.TestCase):
     """
         
 
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/squid/squid_missing_location.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -294,7 +281,6 @@ class TestSquidSettings(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/squid/valid_settings.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)

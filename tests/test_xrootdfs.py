@@ -2,16 +2,12 @@
 
 import os, imp, sys, unittest, ConfigParser, logging
 
-# setup system library path if it's not there at present
-try:
-  from osg_configure.modules import utilities
-except ImportError:
-  pathname = '../'
-  sys.path.append(pathname)
-  from osg_configure.modules import utilities
+# setup system library path
+pathname = os.path.realpath('../')
+sys.path.insert(0, pathname)
 
+from osg_configure.modules import utilities
 from osg_configure.modules import exceptions
-
 from osg_configure.configure_modules import xrootdfs
 
 global_logger = logging.getLogger('test xrootdfs configuration')
@@ -33,7 +29,6 @@ class TestXrootdFS(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     settings = xrootdfs.XrootdFSConfiguration(logger=global_logger)
     try:
       settings.parseConfiguration(configuration)
@@ -68,7 +63,6 @@ class TestXrootdFS(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     settings = xrootdfs.XrootdFSConfiguration(logger=global_logger)
     try:
       settings.parseConfiguration(configuration)
@@ -89,7 +83,6 @@ class TestXrootdFS(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     settings = xrootdfs.XrootdFSConfiguration(logger=global_logger)
     try:
       settings.parseConfiguration(configuration)
@@ -107,8 +100,6 @@ class TestXrootdFS(unittest.TestCase):
     xrootd redirector host
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/xrootdfs/invalid_host.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -129,8 +120,6 @@ class TestXrootdFS(unittest.TestCase):
     xrootd mount point
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/xrootdfs/invalid_mount.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -151,8 +140,6 @@ class TestXrootdFS(unittest.TestCase):
     user being specified for xrootdfs
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/xrootdfs/invalid_user.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -174,8 +161,6 @@ class TestXrootdFS(unittest.TestCase):
     storage path
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/xrootdfs/missing_path.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -195,7 +180,6 @@ class TestXrootdFS(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/xrootdfs/check_ok1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -215,7 +199,6 @@ class TestXrootdFS(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/xrootdfs/check_ok2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)

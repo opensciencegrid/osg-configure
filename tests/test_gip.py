@@ -2,13 +2,9 @@
 
 import os, imp, sys, unittest, ConfigParser, logging
 
-# setup system library path if it's not there at present
-try:
-  from osg_configure.modules import utilities
-except ImportError:
-  pathname = '../'
-  sys.path.append(pathname)
-  from osg_configure.modules import utilities
+# setup system library path
+pathname = os.path.realpath('../')
+sys.path.insert(0, pathname)
 
 from osg_configure.modules import exceptions
 
@@ -40,7 +36,7 @@ class TestConfigureOsg(unittest.TestCase):
         """
         Test to see if the configure_osg module properly loaded
         """
-        self.failUnless(has_configure_osg, msg="configure-osg failed to " \
+        self.failUnless(has_configure_osg, msg="osg-configure failed to " \
             "load.")
 
 

@@ -2,16 +2,11 @@
 
 import os, imp, sys, unittest, ConfigParser, logging
 
-# setup system library path if it's not there at present
-try:
-  from osg_configure.modules import utilities
-except ImportError:
-  pathname = '../'
-  sys.path.append(pathname)
-  from osg_configure.modules import utilities
+# setup system library path
+pathname = os.path.realpath('../')
+sys.path.insert(0, pathname)
 
 from osg_configure.modules import exceptions
-
 from osg_configure.configure_modules import cemon
 
 global_logger = logging.getLogger('test cemon configuration')
@@ -73,8 +68,8 @@ class TestLocalSettings(unittest.TestCase):
     attributes = settings.attributes
     variables = {'ress_servers' : 'https://osg-ress-4.fnal.gov:8443/ig/' \
                                   'services/CEInfoCollector[OLD_CLASSAD]',
-                 'bdii_servers' : 'http://is-itb1.grid.iu.edu:14001[RAW],'\
-                                  'http://is-itb2.grid.iu.edu:14001[RAW]'}
+                 'bdii_servers' : 'http://is1.grid.iu.edu:14001[RAW],'\
+                                  'http://is2.grid.iu.edu:14001[RAW]'}
 
     for var in variables:      
       self.failUnless(attributes.has_key(var), 
@@ -138,8 +133,8 @@ class TestLocalSettings(unittest.TestCase):
     attributes = settings.attributes
     variables = {'ress_servers' : 'https://osg-ress-4.fnal.gov:8443/ig/' \
                                   'services/CEInfoCollector[OLD_CLASSAD]',
-                 'bdii_servers' : 'http://is-itb1.grid.iu.edu:14001[RAW],'\
-                                  'http://is-itb2.grid.iu.edu:14001[RAW]'}
+                 'bdii_servers' : 'http://is1.grid.iu.edu:14001[RAW],'\
+                                  'http://is2.grid.iu.edu:14001[RAW]'}
 
     for var in variables:      
       self.failUnless(attributes.has_key(var), 
@@ -193,7 +188,6 @@ class TestLocalSettings(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     settings = cemon.CemonConfiguration(logger=global_logger)
     try:
       settings.parseConfiguration(configuration)
@@ -214,7 +208,6 @@ class TestLocalSettings(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     settings = cemon.CemonConfiguration(logger=global_logger)
     try:
       settings.parseConfiguration(configuration)
@@ -235,7 +228,6 @@ class TestLocalSettings(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     settings = cemon.CemonConfiguration(logger=global_logger)
     try:
       settings.parseConfiguration(configuration)
@@ -249,7 +241,6 @@ class TestLocalSettings(unittest.TestCase):
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
-    os.environ['VDT_LOCATION'] = '/opt/osg'
     settings = cemon.CemonConfiguration(logger=global_logger)
     try:
       settings.parseConfiguration(configuration)
@@ -265,8 +256,6 @@ class TestLocalSettings(unittest.TestCase):
     ress servers
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/cemon/invalid_ress1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -282,8 +271,6 @@ class TestLocalSettings(unittest.TestCase):
     ress servers
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/cemon/invalid_ress2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -304,8 +291,6 @@ class TestLocalSettings(unittest.TestCase):
     ress servers
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/cemon/invalid_ress3.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -326,8 +311,6 @@ class TestLocalSettings(unittest.TestCase):
     bdii servers
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/cemon/invalid_bdii1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -343,8 +326,6 @@ class TestLocalSettings(unittest.TestCase):
     bdii servers
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/cemon/invalid_bdii2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -365,8 +346,6 @@ class TestLocalSettings(unittest.TestCase):
     bdii servers
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
-
     config_file = os.path.abspath("./configs/cemon/invalid_bdii3.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -386,7 +365,6 @@ class TestLocalSettings(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/cemon/check_ok.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -406,7 +384,6 @@ class TestLocalSettings(unittest.TestCase):
     Test the checkAttributes function to see if it oks a disabled section
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/cemon/disabled.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -427,7 +404,6 @@ class TestLocalSettings(unittest.TestCase):
     Test the checkAttributes function to see if it oks the itb defaults
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/cemon/itb_defaults.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -447,7 +423,6 @@ class TestLocalSettings(unittest.TestCase):
     Test the checkAttributes function to see if it oks the production defaults
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/cemon/prod_defaults.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -468,7 +443,6 @@ class TestLocalSettings(unittest.TestCase):
     set when the cemon section is missing
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/cemon/itb_defaults2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -489,7 +463,6 @@ class TestLocalSettings(unittest.TestCase):
     set when the cemon section is missing
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/cemon/prod_defaults2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -510,7 +483,6 @@ class TestLocalSettings(unittest.TestCase):
     set when the cemon section is missing
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/cemon/multiple_ress.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -530,7 +502,6 @@ class TestLocalSettings(unittest.TestCase):
     set when the cemon section is missing
     """
         
-    os.environ['VDT_LOCATION'] = os.getcwd()
     config_file = os.path.abspath("./configs/cemon/multiple_bdii.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)

@@ -2,14 +2,12 @@
 
 import os, imp, sys, unittest, ConfigParser, types
 
-# setup system library path if it's not there at present
-try:
-  from osg_configure.modules import exceptions
-except ImportError:
-  pathname = '../'
-  sys.path.append(pathname)
-  from osg_configure.modules import exceptions
+# setup system library path
+pathname = os.path.realpath('../')
+sys.path.insert(0, pathname)
 
+from osg_configure.modules import exceptions
+from osg_configure.modules import configfile
 
 pathname = os.path.join('../scripts', 'osg-configure')
 
@@ -20,9 +18,6 @@ try:
     has_configure_osg = True
 except:
     raise
-
-from osg_configure.modules import exceptions
-from osg_configure.modules import configfile
 
 class TestConfigFile(unittest.TestCase):
 
@@ -191,7 +186,7 @@ class TestConfigFile(unittest.TestCase):
                            "Didn't get the files in the correct order: " +
                            " %s\n instead of\n %s" % (file_list, file_order))
 
-    def test_jobmanagers_enabled(self):
+    def test_jobmanager_enabled(self):
       """
       Test configurations to make sure that they are properly understood as being for a CE
       """
@@ -202,10 +197,12 @@ class TestConfigFile(unittest.TestCase):
                      './configs/config-ce-sge.d']
       for dir in config_dirs:
         config = configfile.read_config_files(config_directory = dir)
-        self.failUnless(configfile.jobmanager_enabled(config), "%s is a CE config" % dir)
+        self.failUnless(configfile.jobmanager_enabled(config), 
+                        "%s has an enabled jobmanager" % dir)
 
       config = configfile.read_config_files(config_directory = './configs/config-nonce.d')
-      self.failIf(configfile.jobmanagers_enabled(config), "ce_config returned true on a non-ce config")
+      self.failIf(configfile.jobmanager_enabled(config), 
+                  "jobmanager_enabled returned true on a config without an enabled jobmanager")
           
 if __name__ == '__main__':
     unittest.main()
