@@ -215,26 +215,26 @@ def fetch_crl():
   """
 
   try:
-    if 'X509_CADIR' not in os.environ:
-      sys.stdout.write("Can't find CA directory, assuming crl files not present\n")
-    else:
-      crl_files = glob.glob(os.path.join(os.environ['X509_CADIR'], '*.r0'))
-      if len(crl_files) > 0:
-        sys.stdout.write("CRLs exist, skipping fetch-crl invocation\n")
-        sys.stdout.flush()
-        return True
+    crl_files = glob.glob(os.path.join('etc', 'grid-security', 'certificates'), '*.r0')
+    if len(crl_files) > 0:
+      sys.stdout.write("CRLs exist, skipping fetch-crl invocation\n")
+      sys.stdout.flush()
+      return True
       
-    crl_path = os.path.join('usr',
-                            'bin',
-                            'fetch-crl.cron')
+    crl_path = os.path.join('/',
+                            'usr',
+                            'sbin',
+                            'fetch-crl')
                  
-    if len(glob.glob(crl_path)) > 0:
-      crl_script = glob.glob(crl_path)[0]
+    if not validation.valid_file(crl_path):
+      sys.stdout.write("Can't find fetch-crl script, skipping fetch-crl invocation\n")
+      sys.stdout.flush()
+      return True
     
-    sys.stdout.write("Running %s, this process make take " % crl_script +
+    sys.stdout.write("Running %s, this process make take " % crl_path +
                      "some time to fetch all the crl updates\n")
     sys.stdout.flush()
-    if not run_script([crl_script]):
+    if not run_script([crl_path]):
       return False
   except IOError:
     return False

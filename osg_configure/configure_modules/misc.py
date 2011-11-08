@@ -12,7 +12,7 @@ from osg_configure.modules.configurationbase import BaseConfiguration
 
 __all__ = ['MiscConfiguration']
 
-GSI_AUTHZ_LOCATION = "/etc/grid-security/gsi-authz"
+GSI_AUTHZ_LOCATION = "/etc/grid-security/gsi-authz.conf"
 GUMS_CLIENT_LOCATION = "/etc/gums/gums-client.properties"
 
 class MiscConfiguration(BaseConfiguration):
@@ -43,7 +43,7 @@ class MiscConfiguration(BaseConfiguration):
     self.__option_types = {'cleanup_age_in_days' : types.IntType}
     self.__enabled = False
     self.__ce_configuration = False
-    self.__defaults['user-vo-map-file'] = '/var/lib/osg/osg-user-vo-map'
+    self.__defaults['user-vo-map-file'] = '/var/lib/osg/user-vo-map'
     self.config_section = "Misc Services"
     self.logger.debug('MiscConfiguration.__init__ completed')
     
@@ -184,13 +184,13 @@ class MiscConfiguration(BaseConfiguration):
                                       "in Misc Services")
       
     if not validation.valid_user_vo_file(self.__defaults['user-vo-map-file']):
-      self.logger.debug("Trying to create osg-user-vo-map file")
+      self.logger.debug("Trying to create user-vo-map file")
       result = utilities.create_map_file(using_gums) 
       (temp, invalid_lines) = validation.valid_user_vo_file(self.__defaults['user-vo-map-file'],
                                                            True)
       result = result and temp
       if not result:
-        error_mesg = "Can't generate osg-user-vo-map, manual intervention is needed"
+        error_mesg = "Can't generate user-vo-map, manual intervention is needed"
         self.logger.critical(error_mesg)
         self.logger.critical("Invalid lines in user-vo-map file:")
         self.logger.critical(invalid_lines)
