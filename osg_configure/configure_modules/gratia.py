@@ -45,6 +45,8 @@ in your config.ini file."""
     
     self.__job_managers = ['pbs', 'sge', 'lsf', 'condor']
     self.logger.debug("GratiaConfiguration.__init__ completed")
+    
+    self.grid_group = 'OSG'
       
   def parseConfiguration(self, configuration):
     """
@@ -75,12 +77,11 @@ in your config.ini file."""
     # set the appropriate defaults if we're on a CE
     if utilities.ce_installed():
       if configuration.has_option('Site Information', 'group'):
-        group = configuration.get('Site Information', 'group')
-      else:
-        group = 'OSG'
-      if group == 'OSG':
+        self.grid_group = configuration.get('Site Information', 'group')
+        
+      if self.grid_group == 'OSG':
         self.__defaults = self.__production_defaults
-      elif group == 'OSG-ITB':
+      elif self.grid_group == 'OSG-ITB':
         self.__defaults = self.__itb_defaults
 
     for setting in self.__mappings:
@@ -240,6 +241,10 @@ in your config.ini file."""
                       1)
       buffer = re.sub(r'(\s*)SiteName\s*=.*',
                       r'\1SiteName="' + site + '"',
+                      buffer,
+                      1)
+      buffer = re.sub(r'(\s*)Grid\s*=.*',
+                      r'\1Grid="' + self.grid_group + '"',
                       buffer,
                       1)
       buffer = re.sub(r'(\s*)EnableProbe\s*=.*',

@@ -82,6 +82,7 @@ class RsvConfiguration(BaseConfiguration):
     self.__gratia_metric_map = {}
     self.__enable_rsv_downloads = False
     self.__meta = ConfigParser.RawConfigParser()
+    self.grid_group = 'OSG'
     self.config_section = "RSV"
     self.rsv_control = os.path.join('/', 'usr', 'bin', 'rsv-control')
     self.rsv_meta_dir = os.path.join('/', 'etc', 'rsv', 'meta', 'metrics')
@@ -132,6 +133,10 @@ class RsvConfiguration(BaseConfiguration):
 
       self.attributes[self.__mappings[option]] = configuration.getboolean(self.config_section, option)
 
+    # If we're on a CE, get the grid group if possible
+    if utilities.ce_installed():
+      if configuration.has_option('Site Information', 'group'):
+        self.grid_group = configuration.get('Site Information', 'group')
 
     # check and warn if unknown options found 
     temp = utilities.get_set_membership(configuration.options(self.config_section),
@@ -852,6 +857,8 @@ class RsvConfiguration(BaseConfiguration):
     conf = re.sub("CollectorHost=\".+\"", "CollectorHost=\"%s\"" % collector, conf)
     conf = re.sub("SSLHost=\".+\"", "SSLHost=\"%s\"" % collector, conf)
     conf = re.sub("SSLRegistrationHost=\".+\"", "SSLRegistrationHost=\"%s\"" % collector, conf)
+    conf = re.sub(r'(\s*)EnableProbe\s*=.*', r'\1EnableProbe="1"', conf, 1)
+    conf = re.sub(r'(\s*)Grid\s*=.*', r'\1Grid="' + self.grid_group + '"', buffer, 1)
 
     config_fp = open(probe_conf, 'w')
     config_fp.write(conf)
