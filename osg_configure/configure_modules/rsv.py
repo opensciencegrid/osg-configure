@@ -83,6 +83,7 @@ class RsvConfiguration(BaseConfiguration):
     self.__enable_rsv_downloads = False
     self.__meta = ConfigParser.RawConfigParser()
     self.grid_group = 'OSG'
+    self.site_name = 'Generic Site'
     self.config_section = "RSV"
     self.rsv_control = os.path.join('/', 'usr', 'bin', 'rsv-control')
     self.rsv_meta_dir = os.path.join('/', 'etc', 'rsv', 'meta', 'metrics')
@@ -134,9 +135,15 @@ class RsvConfiguration(BaseConfiguration):
       self.attributes[self.__mappings[option]] = configuration.getboolean(self.config_section, option)
 
     # If we're on a CE, get the grid group if possible
-    if utilities.ce_installed():
+    if configuration.has_section('Site Information'): 
       if configuration.has_option('Site Information', 'group'):
         self.grid_group = configuration.get('Site Information', 'group')
+
+      if configuration.has_option('Site Information', 'resource'):
+        self.site_name = configuration.get('Site Information', 'resource')
+      elif configuration.has_option('Site Information', 'site_name'):
+        self.site_name = configuration.get('Site Information', 'site_name')
+
 
     # check and warn if unknown options found 
     temp = utilities.get_set_membership(configuration.options(self.config_section),
@@ -848,7 +855,7 @@ class RsvConfiguration(BaseConfiguration):
       self.logger.debug("Not configuring Gratia collector because enable_gratia is not true")
       return True
 
-    probe_conf = os.path.join('/', 'usr', 'share', 'gratia', 'metric', 'ProbeConfig')
+    probe_conf = os.path.join('/', 'etc', 'gratia', 'metric', 'ProbeConfig')
 
     self.logger.debug("Putting collector '%s' into Gratia conf file '%s'" % (collector, probe_conf))
 
@@ -858,11 +865,12 @@ class RsvConfiguration(BaseConfiguration):
     conf = re.sub("SSLHost=\".+\"", "SSLHost=\"%s\"" % collector, conf)
     conf = re.sub("SSLRegistrationHost=\".+\"", "SSLRegistrationHost=\"%s\"" % collector, conf)
     conf = re.sub(r'(\s*)EnableProbe\s*=.*', r'\1EnableProbe="1"', conf, 1)
-    conf = re.sub(r'(\s*)Grid\s*=.*', r'\1Grid="' + self.grid_group + '"', buffer, 1)
+    conf = re.sub(r'(\s*)Grid\s*=.*', r'\1Grid="' + self.grid_group + '"', conf, 1)
+    conf = re.sub(r'(\s*)SiteName\s*=.*', r'\1SiteName="' + self.site_name + '"', conf, 1)
 
-    config_fp = open(probe_conf, 'w')
-    config_fp.write(conf)
-    config_fp.close()
+    if not utilities.atomic_write(probe_conf, conf):
+      self.logger.error("Error while configuring metric probe: can't write to %s" % probe_file)
+      raise exceptions.ConfigureError("Error configuring gratia")
 
     return True
 
