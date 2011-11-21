@@ -49,8 +49,8 @@ class RsvConfiguration(BaseConfiguration):
                        'srm_hosts' : 'UNAVAILABLE',
                        'ce_hosts' : 'UNAVAILABLE',
                        'gridftp_hosts' : 'UNAVAILABLE',
-                       'service_cert' : '/etc/grid-security/rsvcert.pem',
-                       'service_key' : '/etc/grid-security/rsvkey.pem', 
+                       'service_cert' : '/etc/grid-security/rsv/rsvcert.pem',
+                       'service_key' : '/etc/grid-security/rsv/rsvkey.pem', 
                        'service_proxy' : '/tmp/rsvproxy',
                        # It would be nice to get this information from gratia.py instead
                        # of replicating it here but that is not currently easy.
