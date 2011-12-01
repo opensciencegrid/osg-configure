@@ -135,8 +135,11 @@ def get_vos(user_vo_file):
 
   if (user_vo_file is None or 
       not os.path.isfile(user_vo_file)):
-    user_vo_file = os.path.join(os.path.join(CONFIG_DIRECTORY, 
-                                             'osg-user-vo-map.txt'))
+    user_vo_file = os.path.join(os.path.join('/',
+                                             'var',
+                                             'lib',
+                                             'osg', 
+                                             'user-vo-map'))
   if not os.path.isfile(user_vo_file):
     return []
   file_buffer = open(os.path.expandvars(user_vo_file), 'r')
