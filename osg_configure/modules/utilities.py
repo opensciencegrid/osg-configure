@@ -285,7 +285,7 @@ def get_condor_location(default_location = '/usr'):
   else:
     return ""
 
-def get_condor_config(default_config = '/etc/condor'):
+def get_condor_config(default_config = '/etc/condor/condor_config'):
   """
   Check environment variables to try to get condor config
   """

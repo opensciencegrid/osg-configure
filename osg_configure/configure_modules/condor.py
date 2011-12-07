@@ -33,7 +33,7 @@ class CondorConfiguration(JobManagerConfiguration):
                        'condor_config',
                        'accept_limited']
     self.__defaults = {'condor_location' : utilities.get_condor_location(),
-                       'condor_config' : 'UNAVAILABLE',
+                       'condor_config' : utilities.get_condor_config(),
                        'accept_limited' : 'False'}
     self.__set_default = True
     self.logger.debug('CondorConfiguration.__init__ completed')    
@@ -68,25 +68,6 @@ class CondorConfiguration(JobManagerConfiguration):
                                    self.__defaults)
       self.attributes[self.__mappings[setting]] = temp
       self.logger.debug("Got %s" % temp)  
-
-    if (not configuration.has_option(self.config_section, 'condor_location') or
-        utilities.blank(configuration.get(self.config_section, 'condor_location'))):
-      # Warn admin that condor_location was set from an environment variable
-      self.logger.debug("Set condor location from an environment variable")
-      
-    if (self.__mappings['condor_config'] not in self.attributes or
-        utilities.blank(self.attributes[self.__mappings['condor_config']])):
-      if (self.__mappings['condor_location'] in self.attributes and
-          not utilities.blank(self.attributes[self.__mappings['condor_location']])):
-        temp = os.path.join(self.attributes[self.__mappings['condor_location']], 
-                            "etc", 
-                            "condor_config")
-      else:
-        temp = ""
-      self.attributes[self.__mappings['condor_config']] = \
-        utilities.get_condor_config(temp)
-      
-
 
     self.attributes['OSG_JOB_MANAGER_HOME'] = \
       self.attributes[self.__mappings['condor_location']]
