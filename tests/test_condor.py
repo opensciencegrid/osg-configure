@@ -145,7 +145,7 @@ class TestCondor(unittest.TestCase):
     self.failUnless(attributes.has_key('OSG_CONDOR_CONFIG'), 
                     'Attribute OSG_CONDOR_CONFIG missing')
     self.failUnlessEqual(attributes['OSG_CONDOR_CONFIG'], 
-                         '/my/condor/etc/condor_config', 
+                         '/etc/condor/condor_config', 
                          'Wrong value obtained for OSG_CONDOR_CONFIG')
 
 
@@ -195,7 +195,7 @@ class TestCondor(unittest.TestCase):
     self.failUnless(attributes.has_key('OSG_CONDOR_CONFIG'), 
                     'Attribute OSG_CONDOR_CONFIG missing')
     self.failUnlessEqual(attributes['OSG_CONDOR_CONFIG'], 
-                         '/usr/local/condor/etc/condor_config', 
+                         '/etc/condor/condor_config', 
                          'Wrong value obtained for OSG_CONDOR_CONFIG')
 
                            
