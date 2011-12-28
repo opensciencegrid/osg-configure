@@ -414,7 +414,7 @@ class RsvConfiguration(BaseConfiguration):
     if not metrics:
       return True
     
-    if not utilities.run_script([self.rsv_control, "--enable", "--host", host] + metrics):
+    if not utilities.run_script([self.rsv_control, "-v0", "--enable", "--host", host] + metrics):
       self.logger.error("ERROR: Attempt to enable metrics via rsv-control failed")
       self.logger.error("Host: %s" % host)
       self.logger.error("Metrics: %s" % " ".join(metrics))
@@ -740,7 +740,7 @@ class RsvConfiguration(BaseConfiguration):
     consumer_list = " ".join(consumers)
     self.logger.debug("Enabling consumers: %s " % consumer_list)
 
-    if utilities.run_script([self.rsv_control, "--enable"] + consumers):
+    if utilities.run_script([self.rsv_control, "-v0", "--enable"] + consumers):
       return True
     else:
       return False
