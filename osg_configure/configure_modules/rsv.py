@@ -408,13 +408,13 @@ class RsvConfiguration(BaseConfiguration):
     return metrics
 
 
-  def __enable_metrics(self, host, metrics):
+  def __enable_metrics(self, host, metrics, args=[]):
     """ Given a host and array of metrics, enable them via rsv-control """
 
     if not metrics:
       return True
-    
-    if not utilities.run_script([self.rsv_control, "-v0", "--enable", "--host", host] + metrics):
+
+    if not utilities.run_script([self.rsv_control, "-v0", "--enable", "--host", host] + args + metrics):
       self.logger.error("ERROR: Attempt to enable metrics via rsv-control failed")
       self.logger.error("Host: %s" % host)
       self.logger.error("Metrics: %s" % " ".join(metrics))
@@ -458,16 +458,16 @@ class RsvConfiguration(BaseConfiguration):
     count = 0
     for gridftp_host in self.__gridftp_hosts:
       self.logger.debug("Enabling GridFTP metrics for host '%s'" % gridftp_host)
-      if not self.__enable_metrics(gridftp_host, gridftp_metrics):
-        return False
 
-      dir = None
       if len(gridftp_dirs) == 1:
         dir = gridftp_dirs[0]
       else:
         dir = gridftp_dirs[count]
 
-      self.__add_metric_config_value(gridftp_host, gridftp_metrics, "destination-dir", dir)
+      args = ["--arg", "destination-dir=%s" % dir]
+
+      if not self.__enable_metrics(gridftp_host, gridftp_metrics, args):
+        return False
 
       count += 1
              
@@ -539,43 +539,18 @@ class RsvConfiguration(BaseConfiguration):
     count = 0
     for srm_host in self.__srm_hosts:
       self.logger.debug("Enabling SRM metrics for host '%s'" % srm_host)
-      if not self.__enable_metrics(srm_host, srm_metrics):
-        return False
 
-      self.__add_metric_config_value(srm_host, srm_metrics, "srm-destination-dir", srm_dirs[count])
+      args = ["--arg", "srm-destination-dir=%s" % srm_dirs[count]]
       if srm_ws_paths:
-        self.__add_metric_config_value(srm_host, srm_metrics, "srm-webservice-path", srm_ws_paths[count])
+        args += ["--arg", "srm-webservice-path=%s" % srm_ws_paths[count]]
+
+      if not self.__enable_metrics(srm_host, srm_metrics, args):
+        return False
 
       count += 1
       
     return True
 
-
-  def __add_metric_config_value(self, host, metrics, knob, value):
-    """ Open a host specific metric file and add a value """
-
-    parent_dir = os.path.join('/', 'etc', 'rsv', 'metrics', host)
-    if not os.path.exists(parent_dir):
-      os.mkdir(parent_dir, 0755)
-      os.chown(parent_dir, 0, 0)
-
-    for metric in metrics:
-      conf_file = os.path.join(parent_dir, "%s.conf" % metric)
-      config = ConfigParser.RawConfigParser()
-      if os.path.exists(conf_file):
-        config.read(conf_file)
-
-      section = "%s args" % metric
-      if not config.has_section(section):
-        config.add_section(section)
-
-      config.set(section, knob, value)
-
-      config_fp = open(conf_file, 'w')
-      config.write(config_fp)
-      config_fp.close()
-
-    return
 
   def __map_gratia_metric(self, gratia_type):
 
