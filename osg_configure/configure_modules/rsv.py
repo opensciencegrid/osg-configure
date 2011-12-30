@@ -6,6 +6,7 @@ import os
 import re
 import pwd
 import sys
+import shutil
 import ConfigParser
 
 from osg_configure.modules import exceptions
@@ -383,6 +384,15 @@ class RsvConfiguration(BaseConfiguration):
       path = os.path.join(parent_dir, file)
       self.logger.debug("Removing %s as part of reset" % path)
       os.unlink(path)
+
+    # Remove any host specific metric configuration
+    parent_dir = os.path.join('/', 'etc', 'rsv', 'metrics')
+    for dir in os.listdir(parent_dir):
+      path = os.path.join(parent_dir, dir)
+      if not os.path.isdir(path):
+        continue
+
+      shutil.rmtree(path)
       
     return True    
 
