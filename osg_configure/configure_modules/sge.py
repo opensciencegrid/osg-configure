@@ -247,41 +247,59 @@ class SGEConfiguration(JobManagerConfiguration):
     Returns True if successful, False otherwise
     """    
     buffer = open(SGEConfiguration.GRAM_CONFIG_FILE).read()
-    bin_location = os.path.join([self.options['sge_location'].value,
-                                 'bin',
-                                 'qsub'])
+    bin_location = os.path.join(self.options['sge_location'].value,
+                                'bin',
+                                'qsub')
     if validation.valid_file(bin_location):
-      (buffer, count) = re.subn('^qsub=.*$', "qsub=\"%s\"" % bin_location, 1)
+      (buffer, count) = re.subn('^qsub=.*$',
+                                "qsub=\"%s\"" % bin_location,
+                                buffer,
+                                1)
       if count == 0:
         buffer = "qsub=\"%s\"\n" % bin_location + buffer
-    bin_location = os.path.join([self.options['sge_location'].value,
-                                 'bin',
-                                 'qstat'])
+    bin_location = os.path.join(self.options['sge_location'].value,
+                                'bin',
+                                'qstat')
     if validation.valid_file(bin_location):
-      (buffer, count) = re.subn('^qstat=.*$', "qstat=\"%s\"" % bin_location, 1)
+      (buffer, count) = re.subn('^qstat=.*$',
+                                "qstat=\"%s\"" % bin_location,
+                                buffer,
+                                1)
       if count == 0:
         buffer = "qstat=\"%s\"\n" % bin_location + buffer
-    bin_location = os.path.join([self.options['sge_location'].value,
-                                 'bin',
-                                 'qdel'])
+    bin_location = os.path.join(self.options['sge_location'].value,
+                                'bin',
+                                'qdel')
     if validation.valid_file(bin_location):
-      (buffer, count) = re.subn('^qdel=.*$', "qdel=\"%s\"" % bin_location, 1)
+      (buffer, count) = re.subn('^qdel=.*$',
+                                "qdel=\"%s\"" % bin_location,
+                                buffer,
+                                1)
       if count == 0:
         buffer = "qdel=\"%s\"\n" % bin_location + buffer
     
     new_setting = "sge_cell=\"%s\"" % self.options['sge_cell'].value
-    (buffer, count) = re.subn('^sge_cell=.*$', new_setting, 1)
+    (buffer, count) = re.subn('^sge_cell=.*$',
+                              new_setting,
+                              buffer,
+                              1)
     if count == 0:
       buffer = new_setting + "\n" + buffer
     
     new_setting = "sge_root=\"%s\"" % self.options['sge_root'].value
-    (buffer, count) = re.subn('^sge_root=.*$', new_setting, 1)
+    (buffer, count) = re.subn('^sge_root=.*$',
+                              new_setting,
+                              buffer,
+                              1)
     if count == 0:
       buffer = new_setting + "\n" + buffer
 
     if self.options['seg_enabled'].value:
       new_setting = "log_path=\"%s\"" % self.options['log_directory'].value
-      (buffer, count) = re.subn('^sge_root=.*$', new_setting, 1)
+      (buffer, count) = re.subn('^sge_root=.*$',
+                                new_setting,
+                                buffer,
+                                1)
       if count == 0:
         buffer = new_setting + "\n" + buffer
     

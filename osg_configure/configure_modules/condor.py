@@ -224,23 +224,32 @@ class CondorConfiguration(JobManagerConfiguration):
     
     Returns True if successful, False otherwise
     """    
-    buffer = open(PBSConfiguration.GRAM_CONFIG_FILE).read()
-    bin_location = os.path.join([self.options['condor_location'].value,
-                                 'bin',
-                                 'condor_submit'])
+    buffer = open(CondorConfiguration.GRAM_CONFIG_FILE).read()
+    bin_location = os.path.join(self.options['condor_location'].value,
+                                'bin',
+                                'condor_submit')
     if validation.valid_file(bin_location):
-      (buffer, count) = re.subn('^condor_submit=.*$', "condor_submit=\"%s\"" % bin_location, 1)
+      (buffer, count) = re.subn('^condor_submit=.*$', 
+                                "condor_submit=\"%s\"" % bin_location, 
+                                buffer,
+                                1)
       if count == 0:
         buffer = "condor_submit=\"%s\"\n" % bin_location + buffer
-    bin_location = os.path.join([self.options['condor_location'].value,
-                                 'bin',
-                                 'condor_rm'])
+    bin_location = os.path.join(self.options['condor_location'].value,
+                                'bin',
+                                'condor_rm')
     if validation.valid_file(bin_location):
-      (buffer, count) = re.subn('^condor_rm=.*$', "condor_rm=\"%s\"" % bin_location, 1)
+      (buffer, count) = re.subn('^condor_rm=.*$',
+                                "condor_rm=\"%s\"" % bin_location,
+                                buffer,
+                                1)
       if count == 0:
         buffer = "condor_rm=\"%s\"\n" % bin_location + buffer
     if not utilities.blank(self.options['condor_config'].value):
-      (buffer, count) = re.subn('^condor_config=.*$', "condor_config=\"%s\"" % bin_location, 1)
+      (buffer, count) = re.subn('^condor_config=.*$',
+                                "condor_config=\"%s\"" % bin_location,
+                                buffer,
+                                1)
       if count == 0:
         buffer = "condor_config=\"%s\"\n" % self.options['condor_config'].value
         

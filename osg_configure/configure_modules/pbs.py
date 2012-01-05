@@ -222,25 +222,31 @@ class PBSConfiguration(JobManagerConfiguration):
     Returns True if successful, False otherwise
     """    
     buffer = open(PBSConfiguration.GRAM_CONFIG_FILE).read()
-    bin_location = os.path.join([self.options['pbs_location'].value,
-                                 'bin',
-                                 'qsub'])
+    bin_location = os.path.join(self.options['pbs_location'].value,
+                                'bin',
+                                'qsub')
     if validation.valid_file(bin_location):
-      (buffer, count) = re.subn('^qsub=.*$', "qsub=\"%s\"" % bin_location, 1)
+      (buffer, count) = re.subn('^qsub=.*$',
+                                "qsub=\"%s\"" % bin_location,
+                                buffer,
+                                1)
       if count == 0:
         buffer = "qsub=\"%s\"\n" % bin_location + buffer
-    bin_location = os.path.join([self.options['pbs_location'].value,
-                                 'bin',
-                                 'qstat'])
+    bin_location = os.path.join(self.options['pbs_location'].value,
+                                'bin',
+                                'qstat')
     if validation.valid_file(bin_location):
       (buffer, count) = re.subn('^qstat=.*$', "qstat=\"%s\"" % bin_location, 1)
       if count == 0:
         buffer = "qstat=\"%s\"\n" % bin_location + buffer
-    bin_location = os.path.join([self.options['pbs_location'].value,
-                                 'bin',
-                                 'qdel'])
+    bin_location = os.path.join(self.options['pbs_location'].value,
+                                'bin',
+                                'qdel')
     if validation.valid_file(bin_location):
-      (buffer, count) = re.subn('^qdel=.*$', "qdel=\"%s\"" % bin_location, 1)
+      (buffer, count) = re.subn('^qdel=.*$',
+                                "qdel=\"%s\"" % bin_location,
+                                buffer,
+                                1)
       if count == 0:
         buffer = "qdel=\"%s\"\n" % bin_location + buffer
     if self.options['pbs_server'].value is not None:
