@@ -32,7 +32,8 @@ in your config.ini file."""
 
     self.config_section = 'Gratia'
     self.options = {'probes' : 
-                      configfile.Option(name = 'probes'),
+                      configfile.Option(name = 'probes',
+                                        default_value = ''),
                     'resource' : 
                       configfile.Option(name = 'resource',
                                         required = configfile.Option.OPTIONAL)}

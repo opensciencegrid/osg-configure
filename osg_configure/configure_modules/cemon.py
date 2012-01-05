@@ -29,8 +29,10 @@ class CemonConfiguration(BaseConfiguration):
     # file location for xml file with cemon subscriptions
     self.__cemon_configuration_file = os.path.join(self.CEMON_CONFIG_FILE)
     self.config_section = 'Cemon'
-    self.options = {'ress_servers' : configfile.Option(name = 'ress_servers'),
-                    'bdii_servers' : configfile.Option(name = 'bdii_servers')}
+    self.options = {'ress_servers' : configfile.Option(name = 'ress_servers',
+                                                       default_value = ''),
+                    'bdii_servers' : configfile.Option(name = 'bdii_servers',
+                                                       default_value = '')}
     self.__itb_defaults = {'ress_servers' : 'https://osg-ress-4.fnal.gov:8443/ig/' \
                                             'services/CEInfoCollector[OLD_CLASSAD]',
                            'bdii_servers' : 'http://is1.grid.iu.edu:14001[RAW],' \
