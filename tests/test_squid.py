@@ -99,13 +99,10 @@ class TestSquidSettings(unittest.TestCase):
  
 
     attributes = settings.getAttributes()
-    self.failUnlessEqual(len(attributes), 4, 
+    self.failUnlessEqual(len(attributes), 1, 
                          "Disabled configuration should have 4 attributes")
     
-    variables = {'OSG_SQUID_LOCATION' : 'UNAVAILABLE',
-                 'OSG_SQUID_POLICY' : 'UNAVAILABLE',
-                 'OSG_SQUID_CACHE_SIZE' : 'UNAVAILABLE',
-                 'OSG_SQUID_MEM_CACHE' : 'UNAVAILABLE'}
+    variables = {'OSG_SQUID_LOCATION' : 'UNAVAILABLE'}
     for var in variables:      
       self.failUnless(attributes.has_key(var), 
                       "Attribute %s missing" % var)
@@ -133,6 +130,7 @@ class TestSquidSettings(unittest.TestCase):
  
 
     attributes = settings.getAttributes()
+    print attributes
     self.failUnlessEqual(len(attributes), 4, 
                          "Ignored configuration should have 4 attributes")
     
@@ -181,14 +179,9 @@ class TestSquidSettings(unittest.TestCase):
     configuration.read(config_file)
 
     settings = squid.SquidConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration")
-
-    attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes), 
-                "Did not notice invalid memory size")
+    self.assertRaises(exceptions.SettingError,
+                      settings.parseConfiguration,
+                      configuration)
     
   def testBadCache(self):
     """
@@ -201,15 +194,10 @@ class TestSquidSettings(unittest.TestCase):
     configuration.read(config_file)
 
     settings = squid.SquidConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration")
+    self.assertRaises(exceptions.SettingError,
+                      settings.parseConfiguration,
+                      configuration)
 
-    attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes), 
-                "Did not notice invalid cache size")
-                
 
   def testBadHost(self):
     """

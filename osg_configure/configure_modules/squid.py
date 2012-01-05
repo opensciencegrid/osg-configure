@@ -68,8 +68,7 @@ class SquidConfiguration(BaseConfiguration):
                             option)
       self.log("Got %s" % option.value)
     
-    if (self.enabled and 
-        not utilities.blank(self.options['location'].value)):
+    if not utilities.blank(self.options['location'].value):
       if ":" not in self.options['location'].value:        
         self.options['location'].value += ":3128"        
         
@@ -166,13 +165,14 @@ class SquidConfiguration(BaseConfiguration):
     self.log("%s.getAttributes started" % self.__class__)
 
     attributes = BaseConfiguration.getAttributes(self)
-    if not self.enabled:
+    if self.ignored:
+      self.log("%s.getAttributes completed" % self.__class__)
+      return dict(zip([item.mapping for item in self.options.values() if item.isMappable()],
+                      [str(item.value) for item in self.options.values() if item.isMappable()]))
+    elif not self.enabled:
       attributes['OSG_SQUID_LOCATION'] = 'UNAVAILABLE'
       self.log("%s.getAttributes completed" % self.__class__)
       return attributes              
-    elif attributes == {}:
-      self.log("%s.getAttributes completed" % self.__class__)
-      return attributes
     
     self.log("%s.getAttributes completed" % self.__class__)
     return attributes
