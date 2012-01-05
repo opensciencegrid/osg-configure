@@ -212,35 +212,30 @@ class MiscConfiguration(BaseConfiguration):
       raise exceptions.ConfigureError(err_msg)
       
     self.log("Updating " + GUMS_CLIENT_LOCATION, level = logging.INFO)
+    location_re = re.compile("^gums.location=.*$", re.MULTILINE)
+    authz_re = re.compile("^gums.authz=.*$", re.MULTILINE)
     if not validation.valid_file(GUMS_CLIENT_LOCATION):
       gums_properties = "gums.location=https://%s:8443" % (self.options['gums_host'].value)
       gums_properties += "/gums/services/GUMSAdmin\n"
       gums_properties += "gums.authz=https://%s:8443" % (self.options['gums_host'].value) 
-      gums_properties += "/gums/services/GUMSXACMLAuthorizationServicePort\n"
+      gums_properties += "/gums/services/GUMSXACMLAuthorizationServicePort"
     else:
       gums_properties = open(GUMS_CLIENT_LOCATION).read()
       replacement = "gums.location=https://%s:8443" % (self.options['gums_host'].value)
       replacement += "/gums/services/GUMSAdmin\n"
-      gums_properties  = re.sub("^gums.location=.*$", 
-                                replacement, 
-                                gums_properties, 
-                                re.MULTILINE)
+      gums_properties  = location_re.sub(replacement, gums_properties)
       replacement = "gums.authz=https://%s:8443" % (self.options['gums_host'].value)
-      replacement += "/gums/services/GUMSXACMLAuthorizationServicePort\n"
-      gums_properties  = re.sub("^gums.authz=.*$", 
-                                replacement, 
-                                gums_properties, 
-                                re.MULTILINE)
+      replacement += "/gums/services/GUMSXACMLAuthorizationServicePort"
+      gums_properties  = authz_re.sub(replacement, gums_properties)
     utilities.atomic_write(GUMS_CLIENT_LOCATION, gums_properties)
     
     self.log("Updating " + LCMAPS_DB_LOCATION, level = logging.INFO)
     lcmaps_db = open(LCMAPS_DB_LOCATION).read()
+    endpoint_re = re.compile("^\s+--endpoint http://.*/gums/services.*$",
+                             re.MULTILINE)
     replacement = "             \"--endpoint https://%s:8443" % (self.options['gums_host'].value)
-    replacement += "/gums/services/GUMSXACMLAuthorizationServicePort\"\n"
-    lcmaps_db  = re.sub("^\s+--endpoint http://.*/gums/services.*$", 
-                        replacement, 
-                        lcmaps_db,
-                        re.MULTILINE)
+    replacement += "/gums/services/GUMSXACMLAuthorizationServicePort\""
+    lcmaps_db  = endpoint_re.sub(replacement, lcmaps_db)
     utilities.atomic_write(LCMAPS_DB_LOCATION, lcmaps_db)
     
     
