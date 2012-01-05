@@ -231,7 +231,7 @@ class PBSConfiguration(JobManagerConfiguration):
                                     buffer,
                                     1)
       if count == 0:
-        buffer += "qsub=\"%s\"\n" % bin_location + buffer
+        buffer += "qsub=\"%s\"\n" % bin_location
     bin_location = os.path.join(self.options['pbs_location'].value,
                                 'bin',
                                 'qstat')
@@ -239,7 +239,7 @@ class PBSConfiguration(JobManagerConfiguration):
       re_obj = re.compile('^qstat=.*$', re.MULTILINE)
       (buffer, count) = re_obj.subn("qstat=\"%s\"" % bin_location, 1)
       if count == 0:
-        buffer += "qstat=\"%s\"\n" % bin_location + buffer
+        buffer += "qstat=\"%s\"\n" % bin_location
     bin_location = os.path.join(self.options['pbs_location'].value,
                                 'bin',
                                 'qdel')
@@ -249,7 +249,7 @@ class PBSConfiguration(JobManagerConfiguration):
                                     buffer,
                                     1)
       if count == 0:
-        buffer += "qdel=\"%s\"\n" % bin_location + buffer
+        buffer += "qdel=\"%s\"\n" % bin_location
     if self.options['pbs_server'].value is not None:
       re_obj = re.compile('^pbs_default=.*$', re.MULTILINE)
       (buffer, count) = re_obj.subn("pbs_default=\"%s\"" % 

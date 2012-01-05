@@ -234,7 +234,7 @@ class CondorConfiguration(JobManagerConfiguration):
                                     buffer,
                                     1)
       if count == 0:
-        buffer += "condor_submit=\"%s\"\n" % bin_location + buffer
+        buffer += "condor_submit=\"%s\"\n" % bin_location
     bin_location = os.path.join(self.options['condor_location'].value,
                                 'bin',
                                 'condor_rm')
@@ -244,7 +244,7 @@ class CondorConfiguration(JobManagerConfiguration):
                                     buffer,
                                     1)
       if count == 0:
-        buffer += "condor_rm=\"%s\"\n" % bin_location + buffer
+        buffer += "condor_rm=\"%s\"\n" % bin_location
     if not utilities.blank(self.options['condor_config'].value):
       re_obj = re.compile('^condor_config=.*$', re.MULTILINE)
       (buffer, count) = re_obj.subn("condor_config=\"%s\"" % 

@@ -220,7 +220,7 @@ class LSFConfiguration(JobManagerConfiguration):
                                     buffer, 
                                     1)
       if count == 0:
-        buffer += "qsub=\"%s\"\n" % bin_location + buffer
+        buffer += "qsub=\"%s\"\n" % bin_location
     bin_location = os.path.join(self.options['lsf_location'].value,
                                 'bin',
                                 'qstat')
@@ -230,7 +230,7 @@ class LSFConfiguration(JobManagerConfiguration):
                                     buffer,
                                     1)
       if count == 0:
-        buffer += "qstat=\"%s\"\n" % bin_location + buffer
+        buffer += "qstat=\"%s\"\n" % bin_location
     bin_location = os.path.join(self.options['lsf_location'].value,
                                 'bin',
                                 'qdel')
@@ -238,7 +238,7 @@ class LSFConfiguration(JobManagerConfiguration):
       re_obj = re.compile('^qstat=.*$', re.MULTILINE)
       (buffer, count) = re_obj.subn("qdel=\"%s\"" % bin_location, 1)
       if count == 0:
-        buffer += "qdel=\"%s\"\n" % bin_location + buffer
+        buffer += "qdel=\"%s\"\n" % bin_location
     if self.options['lsf_server'].value is not None:
       re_obj = re.compile('^qstat=.*$', re.MULTILINE)
       (buffer, count) = re_obj.subn("lsf_default=\"%s\"" % bin_location,
