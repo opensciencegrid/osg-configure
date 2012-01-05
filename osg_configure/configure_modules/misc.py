@@ -14,6 +14,7 @@ __all__ = ['MiscConfiguration']
 
 GSI_AUTHZ_LOCATION = "/etc/grid-security/gsi-authz.conf"
 GUMS_CLIENT_LOCATION = "/etc/gums/gums-client.properties"
+LCMAPS_DB_LOCATION = "/etc/lcmaps.db"
 USER_VO_MAP_LOCATION = '/var/lib/osg/user-vo-map'
 
 class MiscConfiguration(BaseConfiguration):
@@ -232,6 +233,15 @@ class MiscConfiguration(BaseConfiguration):
                                 re.MULTILINE)
     utilities.atomic_write(GUMS_CLIENT_LOCATION, gums_properties)
     
+    self.log("Updating " + LCMAPS_DB_LOCATION, level = logging.INFO)
+    lcmaps_db = open(LCMAPS_DB_LOCATION).read()
+    replacement = "             \"--endpoint https://%s:8443" % (self.options['gums_host'].value)
+    replacement += "/gums/services/GUMSXACMLAuthorizationServicePort\"\n"
+    lcmaps_db  = re.sub("^\s+--endpoint http://.*/gums/services.*$", 
+                        replacement, 
+                        lcmaps_db,
+                        re.MULTILINE)
+  utilities.atomic_write(LCMAPS_DB_LOCATION, lcmaps_db)
     
     
 
