@@ -222,7 +222,7 @@ class MiscConfiguration(BaseConfiguration):
     else:
       gums_properties = open(GUMS_CLIENT_LOCATION).read()
       replacement = "gums.location=https://%s:8443" % (self.options['gums_host'].value)
-      replacement += "/gums/services/GUMSAdmin\n"
+      replacement += "/gums/services/GUMSAdmin"
       gums_properties  = location_re.sub(replacement, gums_properties)
       replacement = "gums.authz=https://%s:8443" % (self.options['gums_host'].value)
       replacement += "/gums/services/GUMSXACMLAuthorizationServicePort"
@@ -231,7 +231,7 @@ class MiscConfiguration(BaseConfiguration):
     
     self.log("Updating " + LCMAPS_DB_LOCATION, level = logging.INFO)
     lcmaps_db = open(LCMAPS_DB_LOCATION).read()
-    endpoint_re = re.compile("^\s+--endpoint http://.*/gums/services.*$",
+    endpoint_re = re.compile(r'^\s*"--endpoint\s+https://.*/gums/services.*"\s*$',
                              re.MULTILINE)
     replacement = "             \"--endpoint https://%s:8443" % (self.options['gums_host'].value)
     replacement += "/gums/services/GUMSXACMLAuthorizationServicePort\""

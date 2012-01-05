@@ -247,7 +247,8 @@ class CondorConfiguration(JobManagerConfiguration):
         buffer += "condor_rm=\"%s\"\n" % bin_location + buffer
     if not utilities.blank(self.options['condor_config'].value):
       re_obj = re.compile('^condor_config=.*$', re.MULTILINE)
-      (buffer, count) = re_obj.subn("condor_config=\"%s\"" % bin_location,
+      (buffer, count) = re_obj.subn("condor_config=\"%s\"" % 
+                                    self.options['condor_config'].value,
                                     buffer,
                                     1)
       if count == 0:

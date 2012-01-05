@@ -251,11 +251,18 @@ class LSFConfiguration(JobManagerConfiguration):
       if (self.options['log_directory'].value is None or
           not validation.valid_directory(self.options['log_directory'].value)):
         mesg = "%s is not a valid directory location " % self.options['log_directory'].value
-        mesg += "for lsf_log files"
+        mesg += "for lsf log files"
         self.logMessage(mesg, 
                         section = self.config_section,
                         option = 'log_directory',
                         level = logging.ERROR)
+        return False
+
+      new_setting = "log_path=\"%s\"" % self.options['log_directory'].value
+      re_obj = re.compile('^log_path=.*$', re.MULTILINE)
+      (buffer, count) = re_obj.subn(new_setting, buffer, 1)
+      if count == 0:
+        buffer += new_setting + "\n"
     
     if not utilities.atomic_write(LSFConfiguration.GRAM_CONFIG_FILE, buffer):
       return False

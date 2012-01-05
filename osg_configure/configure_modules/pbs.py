@@ -252,7 +252,9 @@ class PBSConfiguration(JobManagerConfiguration):
         buffer += "qdel=\"%s\"\n" % bin_location + buffer
     if self.options['pbs_server'].value is not None:
       re_obj = re.compile('^pbs_default=.*$', re.MULTILINE)
-      (buffer, count) = re_obj.subn("pbs_default=\"%s\"" % bin_location, 1)
+      (buffer, count) = re_obj.subn("pbs_default=\"%s\"" % 
+                                    self.options['pbs_server'].value, 
+                                    1)
       if count == 0:
         buffer += "pbs_default=\"%s\"\n" % self.options['pbs_server'].value
         
@@ -265,6 +267,13 @@ class PBSConfiguration(JobManagerConfiguration):
                         section = self.config_section,
                         option = 'log_directory',
                         level = logging.ERROR)
+        return False
+
+      new_setting = "log_path=\"%s\"" % self.options['log_directory'].value
+      re_obj = re.compile('^log_path=.*$', re.MULTILINE)
+      (buffer, count) = re_obj.subn(new_setting, buffer, 1)
+      if count == 0:
+        buffer += new_setting + "\n"
     
     if not utilities.atomic_write(PBSConfiguration.GRAM_CONFIG_FILE, buffer):
       return False
