@@ -1,10 +1,19 @@
 from distutils.core import setup
-import glob
+import glob,re
 
 config_files = glob.glob('config/*.ini')
 
+
+def get_version():
+  """
+  Gets version from osg-configure script file
+  """
+  buffer = open('scripts/osg-configure').read()
+  match = re.search("VERSION\s+=\s+'(.*)'", buffer)
+  return match.group(1)
+  
 setup(name='osg-configure',
-      version='0.7.2',
+      version=get_version(),
       description='Package for configure-osg and associated scripts',
       author='Suchandra Thapa',
       author_email='sthapa@ci.uchicago.edu',
