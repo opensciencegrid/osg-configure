@@ -37,7 +37,7 @@ class TestSquidSettings(unittest.TestCase):
  
 
     attributes = settings.getAttributes()
-    variables = {'OSG_SQUID_LOCATION' : "%s:3128" % utilities.get_hostname(),
+    variables = {'OSG_SQUID_LOCATION' : "test.com:3128",
                  'OSG_SQUID_POLICY' : 'LRU',
                  'OSG_SQUID_CACHE_SIZE' : '2048',
                  'OSG_SQUID_MEM_CACHE' : '256'}

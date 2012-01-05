@@ -57,8 +57,9 @@ class SquidConfiguration(BaseConfiguration):
       return
     
     if not self.setStatus(configuration):
-      self.log('SquidConfiguration.parseConfiguration completed')    
-      return True
+      self.log('SquidConfiguration.parseConfiguration completed')
+      if not self.ignored and not self.enabled:
+        return True
 
     for option in self.options.values():
       self.log("Getting value for %s" % option.name)
@@ -152,3 +153,26 @@ class SquidConfiguration(BaseConfiguration):
   def parseSections(self):
     """Returns the sections from the configuration file that this module handles"""
     return [self.config_section]
+
+  def getAttributes(self):
+    """
+    Get attributes for the osg attributes file using the dict in self.options
+
+    Returns a dictionary of ATTRIBUTE => value mappings
+    
+    Need to override parent class method since two options may map to OSG_SITE_NAME
+    """
+
+    self.log("%s.getAttributes started" % self.__class__)
+
+    attributes = BaseConfiguration.getAttributes(self)
+    if not self.enabled:
+      attributes['OSG_SQUID_LOCATION'] = 'UNAVAILABLE'
+      self.log("%s.getAttributes completed" % self.__class__)
+      return attributes              
+    elif attributes == {}:
+      self.log("%s.getAttributes completed" % self.__class__)
+      return attributes
+    
+    self.log("%s.getAttributes completed" % self.__class__)
+    return attributes
