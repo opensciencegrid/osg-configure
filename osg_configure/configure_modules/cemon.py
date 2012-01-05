@@ -355,5 +355,7 @@ class CemonConfiguration(BaseConfiguration):
       ress_servers = self.__itb_defaults['ress_servers']
       bdii_servers = self.__itb_defaults['bdii_servers']
     
+    self.options['ress_servers'].value = ress_servers
+    self.options['bdii_servers'].value = bdii_servers
     self.ress_servers = self.__parse_servers(ress_servers)
     self.bdii_servers = self.__parse_servers(bdii_servers)

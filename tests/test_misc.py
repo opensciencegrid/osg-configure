@@ -49,7 +49,7 @@ class TestLocalSettings(unittest.TestCase):
                            "expected %s" % (var, 
                                             options[var].value, 
                                             variables[var]))
-    attributes = settngs.getAttributes()
+    attributes = settings.getAttributes()
     variables = {'OSG_GLEXEC_LOCATION' : './configs/misc'}
     for var in variables:      
       self.failUnless(attributes.has_key(var), 
@@ -79,7 +79,7 @@ class TestLocalSettings(unittest.TestCase):
  
 
     options = settings.options
-    variables = {'OSG_GLEXEC_LOCATION' : './configs/misc',
+    variables = {'glexec_location' : './configs/misc',
                  'gums_host' : 'my.gums.org',
                  'authorization_method' : 'xacml'}
     for var in variables:      
@@ -91,7 +91,7 @@ class TestLocalSettings(unittest.TestCase):
                            "expected %s" % (var, 
                                             options[var].value, 
                                             variables[var]))
-    attributes = settngs.getAttributes()
+    attributes = settings.getAttributes()
     variables = {'OSG_GLEXEC_LOCATION' : './configs/misc'}
     for var in variables:      
       self.failUnless(attributes.has_key(var), 
@@ -126,7 +126,7 @@ class TestLocalSettings(unittest.TestCase):
                          'xacml', 
                          "Wrong value obtained for %s, got %s but " \
                          "expected %s" % ('authorization_method',                                             
-                                          attributes['authorization_method'],
+                                          settings.options['authorization_method'].value,
                                           'xacml'))
 
     config_file = os.path.abspath("./configs/misc/misc_gridmap.ini")
@@ -146,7 +146,7 @@ class TestLocalSettings(unittest.TestCase):
                          'gridmap', 
                          "Wrong value obtained for %s, got %s but " \
                          "expected %s" % ('authorization_method',                                             
-                                          attributes['authorization_method'],
+                                          settings.options['authorization_method'].value,
                                           'gridmap'))
 
     config_file = os.path.abspath("./configs/misc/misc_local_gridmap.ini")
@@ -166,7 +166,7 @@ class TestLocalSettings(unittest.TestCase):
                          'local-gridmap', 
                          "Wrong value obtained for %s, got %s but " \
                          "expected %s" % ('authorization_method',                                             
-                                          attributes['authorization_method'],
+                                          settings.options['authorization_method'].value,
                                           'local-gridmap'))
 
   def testMissingAttribute(self):
@@ -182,9 +182,8 @@ class TestLocalSettings(unittest.TestCase):
       configuration.remove_option('Misc Services', option)
 
       settings = misc.MiscConfiguration(logger=global_logger)
-      self.failUnlessRaises(exceptions.SettingError, 
-                            settings.parseConfiguration, 
-                            configuration)
+      settings.parseConfiguration(configuration)
+      self.failUnless(not settings.checkAttributes({})) 
 
   def testXacmlMissingGums(self):
     """
@@ -198,9 +197,9 @@ class TestLocalSettings(unittest.TestCase):
     configuration.read(config_file)
 
     settings = misc.MiscConfiguration(logger=global_logger)
-    self.failUnlessRaises(exceptions.ConfigureError,
-                          settings.parseConfiguration,
-                          configuration)
+    settings.parseConfiguration(configuration)
+    self.failUnless(exceptions.ConfigureError,
+                    settings.checkAttributes({}))
     
   def testXacmlBadGums(self):
     """
@@ -219,7 +218,7 @@ class TestLocalSettings(unittest.TestCase):
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e)
 
-    attributes = settings.attributes
+    attributes = settings.getAttributes()
     self.failIf(settings.checkAttributes(attributes), 
                 "Did not notice bad gums host")
 

@@ -56,8 +56,9 @@ class MiscConfiguration(BaseConfiguration):
     self.log('MiscConfiguration.__init__ completed')
     
   def parseConfiguration(self, configuration):
-    """Try to get configuration information from ConfigParser or SafeConfigParser object given
-    by configuration and write recognized settings to attributes dict
+    """
+    Try to get configuration information from ConfigParser or SafeConfigParser 
+    object given by configuration and write recognized settings to options dict
     """
     self.log('MiscConfiguration.parseConfiguration started')    
 
@@ -103,7 +104,7 @@ class MiscConfiguration(BaseConfiguration):
       return True
     
     if (self.options['authorization_method'].value not in \
-        ['gridmap', 'xacml']):
+        ['gridmap', 'local-gridmap', 'xacml']):
       self.log("Setting is not xacml, or gridmap",
                option = 'authorization_method',
                section = self.config_section,
@@ -149,6 +150,8 @@ class MiscConfiguration(BaseConfiguration):
       using_gums = True
       self.__enable_xacml()
     elif self.options['authorization_method'].value == 'gridmap':
+      self.__disable_callout()
+    elif self.options['authorization_method'].value == 'local-gridmap':
       self.__disable_callout()
     else:
       self.log("Unknown authorization method: %s" % \

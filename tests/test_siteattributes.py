@@ -125,8 +125,7 @@ class TestSiteAttributesSettings(unittest.TestCase):
                  'OSG_SITE_CITY' : 'Chicago',
                  'OSG_SITE_COUNTRY' : 'US',
                  'OSG_SITE_LONGITUDE' : '-84.23',
-                 'OSG_SITE_LATITUDE' : '-23.32',
-                 'resource_group' : 'RESOURCE_GROUP'}
+                 'OSG_SITE_LATITUDE' : '-23.32'}
     for var in variables:      
       self.failUnless(attributes.has_key(var), 
                       "Attribute %s missing" % var)

@@ -61,9 +61,11 @@ class SiteAttributes(BaseConfiguration):
                     'resource' : 
                       configfile.Option(name = 'resource',
                                         required = configfile.Option.OPTIONAL,
+                                        default_value = '',
                                         mapping = 'OSG_SITE_NAME'),
                     'resource_group' : 
                       configfile.Option(name = 'resource_group',
+                                        default_value = '',
                                         required = configfile.Option.OPTIONAL)}
     
     self.config_section = "Site Information"
@@ -316,8 +318,6 @@ class SiteAttributes(BaseConfiguration):
         self.options['resource'].value is not None and
         not utilities.blank(self.options['resource'].value)):
       attributes['OSG_SITE_NAME'] = self.options['resource'].value
-      self.log("%s.getAttributes completed" % self.__class__)
-      return attributes
     
     self.log("%s.getAttributes completed" % self.__class__)
     return attributes

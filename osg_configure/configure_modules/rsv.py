@@ -27,6 +27,7 @@ class RsvConfiguration(BaseConfiguration):
                                         default_value = True),
                     'gratia_probes' : 
                       configfile.Option(name = 'gratia_probes',
+                                        default_value = '',
                                         required = configfile.Option.OPTIONAL),
                     'ce_hosts' : 
                       configfile.Option(name = 'ce_hosts',
@@ -63,6 +64,7 @@ class RsvConfiguration(BaseConfiguration):
                                         default_value = '/tmp/rsvproxy'),
                     'user_proxy' : 
                       configfile.Option(name = 'user_proxy',
+                                        default_value = '',
                                         required = configfile.Option.OPTIONAL),
                     'enable_gratia' : 
                       configfile.Option(name = 'enable_gratia',

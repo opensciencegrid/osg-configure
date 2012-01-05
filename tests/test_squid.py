@@ -136,10 +136,10 @@ class TestSquidSettings(unittest.TestCase):
     self.failUnlessEqual(len(attributes), 4, 
                          "Ignored configuration should have 4 attributes")
     
-    variables = {'OSG_SQUID_LOCATION' : 'UNAVAILABLE',
-                 'OSG_SQUID_POLICY' : 'UNAVAILABLE',
-                 'OSG_SQUID_CACHE_SIZE' : 'UNAVAILABLE',
-                 'OSG_SQUID_MEM_CACHE' : 'UNAVAILABLE'}
+    variables = {'OSG_SQUID_LOCATION' : 'test.com:3128',
+                 'OSG_SQUID_POLICY' : 'LRU',
+                 'OSG_SQUID_CACHE_SIZE' : '2048',
+                 'OSG_SQUID_MEM_CACHE' : '256'}
     for var in variables:      
       self.failUnless(attributes.has_key(var), 
                       "Attribute %s missing" % var)
@@ -157,10 +157,7 @@ class TestSquidSettings(unittest.TestCase):
     """
         
 
-    mandatory = ['location', 
-                 'policy',
-                 'cache_size',
-                 'memory_size']
+    mandatory = ['location']
     for option in mandatory:
       config_file = os.path.abspath("./configs/squid/squid1.ini")
       configuration = ConfigParser.SafeConfigParser()

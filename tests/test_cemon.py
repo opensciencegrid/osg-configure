@@ -196,9 +196,9 @@ class TestLocalSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    self.failUnlessEqual(len(settings.options['ress_servers'].value), 0, 
+    self.failUnlessEqual(settings.options['ress_servers'].value, '', 
                          "Disabled configuration should have no attributes")
-    self.failUnlessEqual(len(settings.options['bdii_servers'].value), 0, 
+    self.failUnlessEqual(settings.options['bdii_servers'].value, '', 
                          "Disabled configuration should have no attributes")
 
   def testParsingIgnored(self):
@@ -217,9 +217,9 @@ class TestLocalSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    self.failUnlessEqual(len(settings.options['ress_servers'].value), 0, 
+    self.failUnlessEqual(settings.options['ress_servers'].value, '', 
                          "Disabled configuration should have no attributes")
-    self.failUnlessEqual(len(settings.options['bdii_servers'].value), 0, 
+    self.failUnlessEqual(settings.options['bdii_servers'].value, '', 
                          "Disabled configuration should have no attributes")
 
   def testIgnoredServices(self):

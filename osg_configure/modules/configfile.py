@@ -177,7 +177,7 @@ class Option(object):
     
     self.type = kwargs.get('type', str)
     if self.type == str:
-      self.value = kwargs.get('value', None)
+      self.value = kwargs.get('value', '')
     elif self.type == int or self.type == float:
       self.value = kwargs.get('value', 0)
     self.default_value = kwargs.get('default_value', None)

@@ -79,7 +79,7 @@ class TestRSVSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e) 
 
     options = settings.options
-    variables = {'gratia_probes' : None, 
+    variables = {'gratia_probes' : '', 
                  'ce_hosts' : 'my.host.com, my2.host.com',
                  'gridftp_hosts' : 'my.host.com, my2.host.com',
                  'gridftp_dir' : '/tmp',

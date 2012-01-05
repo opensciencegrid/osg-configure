@@ -65,6 +65,7 @@ class MonalisaConfiguration(BaseConfiguration):
                                         mapping = 'OSG_GANGLIA_PORT'),
                     'monitor_group' : 
                       configfile.Option(name = 'monitor_group',
+                                        default_value = '',
                                         required = configfile.Option.OPTIONAL),
                     'user' : 
                       configfile.Option(name = 'user',
@@ -136,10 +137,10 @@ class MonalisaConfiguration(BaseConfiguration):
 
     if self.options['ganglia_support'].value:
       if not validation.valid_domain(self.options['ganglia_host'].value):
-        self.logger.error("Setting is not a valid host/domain",
-                          option = 'ganglia_host',
-                          section = self.config_section,
-                          level = logging.ERROR)
+        self.log("Setting is not a valid host/domain",
+                 option = 'ganglia_host',
+                 section = self.config_section,
+                 level = logging.ERROR)
         attributes_ok = False
                     
     self.log('MonalisaConfiguration.checkAttributes completed')
@@ -178,7 +179,7 @@ class MonalisaConfiguration(BaseConfiguration):
     arguments.append('--farm')
     arguments.append(attributes['OSG_SITE_NAME'])
     arguments.append('--monitor-group')
-    if self.attributes['monitor_group'] is None:
+    if self.options['monitor_group'].value is None:
       arguments.append(attributes['OSG_GROUP'])
     else:
       arguments.append(self.attributes['monitor_group'])

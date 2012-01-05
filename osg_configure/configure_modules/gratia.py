@@ -36,6 +36,7 @@ in your config.ini file."""
                                         default_value = ''),
                     'resource' : 
                       configfile.Option(name = 'resource',
+                                        default_value = '',
                                         required = configfile.Option.OPTIONAL)}
     
     # Dictionary holding probe settings, the probe's name is used as the key and the
@@ -55,8 +56,9 @@ in your config.ini file."""
       
   def parseConfiguration(self, configuration):
     """
-    Try to get configuration information from ConfigParser or SafeConfigParser object given
-    by configuration and write recognized settings to attributes dict    
+    Try to get configuration information from ConfigParser or SafeConfigParser 
+    object given by configuration and write recognized settings to attributes 
+    dict    
     """
     
     self.log('GratiaConfiguration.parseConfiguration started')
@@ -85,9 +87,11 @@ in your config.ini file."""
         self.grid_group = configuration.get('Site Information', 'group')
         
       if self.grid_group == 'OSG':
-        self.__defaults = self.__production_defaults
+        self.options['probes'].default_value = \
+            self.__production_defaults['probes']
       elif self.grid_group == 'OSG-ITB':
-        self.__defaults = self.__itb_defaults
+        self.options['probes'].default_value = \
+            self.__itb_defaults['probes']
 
     for option in self.options.values():
       self.log("Getting value for %s" % option.name)

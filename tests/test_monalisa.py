@@ -195,7 +195,7 @@ class TestLocalSettings(unittest.TestCase):
     
     self.failUnless(settings.options.has_key('monitor_group'), 
                     'Attribute monitor_group missing')
-    self.failUnlessEqual(settings.options['monitor_group'].value, None, 
+    self.failUnlessEqual(settings.options['monitor_group'].value, '', 
                          'Wrong value obtained for monitor_group')
 
     self.failUnless(settings.options.has_key('user'), 
@@ -219,14 +219,9 @@ class TestLocalSettings(unittest.TestCase):
     configuration.read(config_file)
 
     settings = monalisa.MonalisaConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
-    attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes), 
-                "Non-numeric ganglia port not flagged")    
+    self.assertRaises(exceptions.SettingError,
+                      settings.parseConfiguration,
+                      configuration)
                             
     config_file = os.path.abspath("./configs/monalisa/bad_host.ini")
     configuration = ConfigParser.SafeConfigParser()

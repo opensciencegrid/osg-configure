@@ -49,29 +49,29 @@ class TestConfigFile(unittest.TestCase):
       option.default_value = 'test'
       option.value = ''
       # make sure defaults get used 
+      configfile.get_option(config, section, option)
       self.failUnlessEqual('test', 
-                           configfile.get_option(config, 
-                                                 section, 
-                                                 option), 
-                           'Raised exception for missing optional setting')
+                           option.value,
+                           "Default value not obtained, got %s, expected %s" %
+                           (option.value, 'test'))
       # get integer option
-      config.set(section, option, '1')
+      config.set(section, option.name, '1')
       option.type = int
+      configfile.get_option(config, section, option)
       self.failUnlessEqual(1, 
-                           configfile.get_option(config, 
-                                                 section, 
-                                                 option), 
-                           'Should have gotten an integer equal to 1 back')
+                           option.value,
+                           'Should have gotten an integer equal to 1 back ' +
+                           "got %s" % option.value)
       
       # get float option
       option.type = float
-      config.set(section, option, '1.23e5')
+      config.set(section, option.name, '1.23e5')
+      configfile.get_option(config, section, option)
       self.failUnlessAlmostEqual(1.23e5, 
-                                 configfile.get_option(config, 
-                                                       section, 
-                                                       option),
+                                 option.value,
                                  7,
-                                 'Should have gotten a float equal to 1.23e5 back')
+                                 'Should have gotten a float equal to 1.23e5 '+
+                                 "back, got %s" % option.value)
 
       # check errors when wrong type specified
       option.type = int
@@ -83,12 +83,12 @@ class TestConfigFile(unittest.TestCase):
 
       # get boolean option 
       option.type = bool
-      config.set(section, option, 'False')
+      config.set(section, option.name, 'False')
+      configfile.get_option(config, section, option)
       self.failUnlessEqual(False, 
-                           configfile.get_option(config, 
-                                                 section, 
-                                                 option), 
-                           'Should have gotten False back')
+                           option.value,
+                           'Should have gotten False back, got %s' % 
+                           option.value)
       # check errors when wrong type specified
       option.type = int
       self.failUnlessRaises(exceptions.SettingError, 
@@ -99,7 +99,7 @@ class TestConfigFile(unittest.TestCase):
       
       # check errors when wrong type specified
       option.type = bool
-      config.set(section, option, 'abc')
+      config.set(section, option.name, 'abc')
       self.failUnlessRaises(exceptions.SettingError, 
                             configfile.get_option,
                             config = config,
@@ -109,12 +109,12 @@ class TestConfigFile(unittest.TestCase):
       # check to make sure that default gets set when setting is set to 
       # blank/UNAVAILABLE
       option.type = str
-      config.set(section, option, 'UNAVAILABLE')
+      config.set(section, option.name, 'UNAVAILABLE')
+      configfile.get_option(config, section, option)
       self.failUnlessEqual('test', 
-                           configfile.get_option(config, 
-                                                 section, 
-                                                 option), 
-                           'Should have gotten a value of test back')
+                           option.value,
+                           "Should have gotten a value of test back, got %s" %
+                           option.value)
 
     def test_get_option_location(self):
       """
