@@ -226,33 +226,35 @@ class PBSConfiguration(JobManagerConfiguration):
                                 'bin',
                                 'qsub')
     if validation.valid_file(bin_location):
-      (buffer, count) = re.subn('^qsub=.*$',
-                                "qsub=\"%s\"" % bin_location,
-                                buffer,
-                                1)
+      re_obj = re.compile('^qsub=.*$', re.MULTILINE)
+      (buffer, count) = re_obj.subn("qsub=\"%s\"" % bin_location,
+                                    buffer,
+                                    1)
       if count == 0:
-        buffer = "qsub=\"%s\"\n" % bin_location + buffer
+        buffer += "qsub=\"%s\"\n" % bin_location + buffer
     bin_location = os.path.join(self.options['pbs_location'].value,
                                 'bin',
                                 'qstat')
     if validation.valid_file(bin_location):
-      (buffer, count) = re.subn('^qstat=.*$', "qstat=\"%s\"" % bin_location, 1)
+      re_obj = re.compile('^qstat=.*$', re.MULTILINE)
+      (buffer, count) = re_obj.subn("qstat=\"%s\"" % bin_location, 1)
       if count == 0:
-        buffer = "qstat=\"%s\"\n" % bin_location + buffer
+        buffer += "qstat=\"%s\"\n" % bin_location + buffer
     bin_location = os.path.join(self.options['pbs_location'].value,
                                 'bin',
                                 'qdel')
     if validation.valid_file(bin_location):
-      (buffer, count) = re.subn('^qdel=.*$',
-                                "qdel=\"%s\"" % bin_location,
-                                buffer,
-                                1)
+      re_obj = re.compile('^qdel=.*$', re.MULTILINE)
+      (buffer, count) = re_obj.subn("qdel=\"%s\"" % bin_location,
+                                    buffer,
+                                    1)
       if count == 0:
-        buffer = "qdel=\"%s\"\n" % bin_location + buffer
+        buffer += "qdel=\"%s\"\n" % bin_location + buffer
     if self.options['pbs_server'].value is not None:
-      (buffer, count) = re.subn('^pbs_default=.*$', "pbs_default=\"%s\"" % bin_location, 1)
+      re_obj = re.compile('^pbs_default=.*$', re.MULTILINE)
+      (buffer, count) = re_obj.subn("pbs_default=\"%s\"" % bin_location, 1)
       if count == 0:
-        buffer = "pbs_default=\"%s\"\n" % self.options['pbs_server'].value
+        buffer += "pbs_default=\"%s\"\n" % self.options['pbs_server'].value
         
     if self.options['seg_enabled'].value:
       if (self.options['log_directory'].value is None or

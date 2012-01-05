@@ -229,29 +229,29 @@ class CondorConfiguration(JobManagerConfiguration):
                                 'bin',
                                 'condor_submit')
     if validation.valid_file(bin_location):
-      (buffer, count) = re.subn('^condor_submit=.*$', 
-                                "condor_submit=\"%s\"" % bin_location, 
-                                buffer,
-                                1)
+      re_obj = re.compile('^condor_submit=.*$', re.MULTILINE)
+      (buffer, count) = re_obj.subn("condor_submit=\"%s\"" % bin_location, 
+                                    buffer,
+                                    1)
       if count == 0:
-        buffer = "condor_submit=\"%s\"\n" % bin_location + buffer
+        buffer += "condor_submit=\"%s\"\n" % bin_location + buffer
     bin_location = os.path.join(self.options['condor_location'].value,
                                 'bin',
                                 'condor_rm')
     if validation.valid_file(bin_location):
-      (buffer, count) = re.subn('^condor_rm=.*$',
-                                "condor_rm=\"%s\"" % bin_location,
-                                buffer,
-                                1)
+      re_obj = re.compile('^condor_rm=.*$', re.MULTILINE)
+      (buffer, count) = re_obj.subn("condor_rm=\"%s\"" % bin_location,
+                                    buffer,
+                                    1)
       if count == 0:
-        buffer = "condor_rm=\"%s\"\n" % bin_location + buffer
+        buffer += "condor_rm=\"%s\"\n" % bin_location + buffer
     if not utilities.blank(self.options['condor_config'].value):
-      (buffer, count) = re.subn('^condor_config=.*$',
-                                "condor_config=\"%s\"" % bin_location,
-                                buffer,
-                                1)
+      re_obj = re.compile('^condor_config=.*$', re.MULTILINE)
+      (buffer, count) = re_obj.subn("condor_config=\"%s\"" % bin_location,
+                                    buffer,
+                                    1)
       if count == 0:
-        buffer = "condor_config=\"%s\"\n" % self.options['condor_config'].value
+        buffer += "condor_config=\"%s\"\n" % self.options['condor_config'].value
         
     
     if not utilities.atomic_write(CondorConfiguration.GRAM_CONFIG_FILE, buffer):

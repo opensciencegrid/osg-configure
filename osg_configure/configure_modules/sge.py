@@ -251,57 +251,51 @@ class SGEConfiguration(JobManagerConfiguration):
                                 'bin',
                                 'qsub')
     if validation.valid_file(bin_location):
-      (buffer, count) = re.subn('^qsub=.*$',
-                                "qsub=\"%s\"" % bin_location,
-                                buffer,
-                                1)
+      re_obj = re.compile('^qsub=.*$', re.MULTILINE)
+      (buffer, count) = re_obj.subn("qsub=\"%s\"" % bin_location,
+                                    buffer,
+                                    1)
       if count == 0:
-        buffer = "qsub=\"%s\"\n" % bin_location + buffer
+        buffer += "qsub=\"%s\"\n" % bin_location + buffer
     bin_location = os.path.join(self.options['sge_location'].value,
                                 'bin',
                                 'qstat')
     if validation.valid_file(bin_location):
-      (buffer, count) = re.subn('^qstat=.*$',
-                                "qstat=\"%s\"" % bin_location,
-                                buffer,
-                                1)
+      re_obj = re.compile('^qstat=.*$', re.MULTILINE)
+      (buffer, count) = re_obj.subn("qstat=\"%s\"" % bin_location,
+                                    buffer,
+                                    1)
       if count == 0:
-        buffer = "qstat=\"%s\"\n" % bin_location + buffer
+        buffer += "qstat=\"%s\"\n" % bin_location + buffer
     bin_location = os.path.join(self.options['sge_location'].value,
                                 'bin',
                                 'qdel')
     if validation.valid_file(bin_location):
-      (buffer, count) = re.subn('^qdel=.*$',
-                                "qdel=\"%s\"" % bin_location,
-                                buffer,
-                                1)
+      re_obj = re.compile('^qdel=.*$', re.MULTILINE)
+      (buffer, count) = re_obj.subn("qdel=\"%s\"" % bin_location,
+                                    buffer,
+                                    1)
       if count == 0:
-        buffer = "qdel=\"%s\"\n" % bin_location + buffer
+        buffer += "qdel=\"%s\"\n" % bin_location + buffer
     
     new_setting = "sge_cell=\"%s\"" % self.options['sge_cell'].value
-    (buffer, count) = re.subn('^sge_cell=.*$',
-                              new_setting,
-                              buffer,
-                              1)
+    re_obj = re.compile('^sge_cell=.*$', re.MULTILINE)
+    (buffer, count) = re_obj.subn(new_setting, buffer, 1)
     if count == 0:
-      buffer = new_setting + "\n" + buffer
+      buffer += new_setting + "\n" + buffer
     
     new_setting = "sge_root=\"%s\"" % self.options['sge_root'].value
-    (buffer, count) = re.subn('^sge_root=.*$',
-                              new_setting,
-                              buffer,
-                              1)
+    re_obj = re.compile('^sge_root=.*$', re.MULTILINE)
+    (buffer, count) = re_obj.subn(new_setting, buffer, 1)
     if count == 0:
-      buffer = new_setting + "\n" + buffer
+      buffer += new_setting + "\n" + buffer
 
     if self.options['seg_enabled'].value:
       new_setting = "log_path=\"%s\"" % self.options['log_directory'].value
-      (buffer, count) = re.subn('^sge_root=.*$',
-                                new_setting,
-                                buffer,
-                                1)
+      re_obj = re.compile('^log_path=.*$', re.MULTILINE)
+      (buffer, count) = re_obj.subn(new_setting, buffer, 1)
       if count == 0:
-        buffer = new_setting + "\n" + buffer
+        buffer += new_setting + "\n" + buffer
     
     if not utilities.atomic_write(SGEConfiguration.GRAM_CONFIG_FILE, buffer):
       return False
