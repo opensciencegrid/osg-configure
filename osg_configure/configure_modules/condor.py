@@ -194,7 +194,7 @@ class CondorConfiguration(JobManagerConfiguration):
         self.log('CondorConfiguration.configure completed')
         return False
 
-    if not self.setup_gram_config():
+    if not self.setupGramConfig():
       self.log('Error writing to ' + CondorConfiguration.GRAM_CONFIG_FILE,
                level = logging.ERROR)
       return False

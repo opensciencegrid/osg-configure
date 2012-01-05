@@ -207,7 +207,7 @@ class SGEConfiguration(JobManagerConfiguration):
         self.log('SGEConfiguration.configure completed')
         return False
 
-    if not self.setup_gram_config():
+    if not self.setupGramConfig():
       self.log('Error writing to ' + SGEConfiguration.GRAM_CONFIG_FILE,
                level = logging.ERROR)
       return False

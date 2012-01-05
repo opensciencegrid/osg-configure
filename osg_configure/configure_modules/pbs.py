@@ -191,7 +191,7 @@ class PBSConfiguration(JobManagerConfiguration):
     else:
       self.disable_seg(PBSConfiguration.PBS_CONFIG_FILE)
     
-    if not self.setup_gram_config():
+    if not self.setupGramConfig():
       self.log('Error writing to ' + PBSConfiguration.GRAM_CONFIG_FILE,
                level = logging.ERROR)
       return False

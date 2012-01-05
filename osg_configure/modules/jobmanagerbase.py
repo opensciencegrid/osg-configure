@@ -73,7 +73,8 @@ class JobManagerConfiguration(BaseConfiguration):
 
   def disable_accept_limited(self, filename):
     """
-    Update the globus jobmanager configuration so that it does not allow limited proxies
+    Update the globus jobmanager configuration so that it does not allow 
+    limited proxies
     
     Returns:
     True if config successfully updated 
@@ -99,7 +100,10 @@ class JobManagerConfiguration(BaseConfiguration):
         self.log('Error disabling accept_limited',
                  level = logging.ERROR)
         return False
-
+    
+    # accept limited already disabled, don't do anything
+    return True
+  
   def enable_seg(self, seg_module, filename):
     """
     Update the globus jobmanager configuration so that it uses the SEG 
@@ -126,6 +130,8 @@ class JobManagerConfiguration(BaseConfiguration):
     if not utilities.run_script([self.seg_admin_path, '-e', seg_module]):
       return False
 
+    return True
+  
   def disable_seg(self, seg_modules, filename):
     """
     Update the globus jobmanager configuration so that it does not allow use the SEG
@@ -172,7 +178,8 @@ class JobManagerConfiguration(BaseConfiguration):
                                      '-n',
                                      'jobmanager'])    
       if not result:
-        self.log("Could not set the jobmanager-fork-poll to the default jobmanager",
+        self.log("Could not set the jobmanager-fork-poll to the default " +
+                 "jobmanager",
                  level = logging.ERROR)
         return False
     elif default == 'managed-fork':
@@ -183,11 +190,13 @@ class JobManagerConfiguration(BaseConfiguration):
                                      '-n',
                                      'jobmanager'])    
       if not result:
-        self.log("Could not set the jobmanager-fork-poll to the default jobmanager",
+        self.log("Could not set the jobmanager-managedfork to the default " +
+                 "jobmanager",
                  level = logging.ERROR)
         return False
     else:
-      self.log("Invalid jobamanger type specified as the default jobmanger: %s" % default,
+      self.log("Invalid jobamanger type specified as the default " +
+               "jobmanger: %s" % default,
                level = logging.ERROR)
       return False
 

@@ -180,7 +180,7 @@ class LSFConfiguration(JobManagerConfiguration):
         self.log('LSFConfiguration.configure completed')
         return False
 
-    if not self.setup_gram_config():
+    if not self.setupGramConfig():
       self.log('Error writing to ' + LSFConfiguration.GRAM_CONFIG_FILE,
                level = logging.ERROR)
       return False
