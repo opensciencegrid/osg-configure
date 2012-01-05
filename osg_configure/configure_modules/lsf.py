@@ -25,17 +25,25 @@ class LSFConfiguration(JobManagerConfiguration):
     super(LSFConfiguration, self).__init__(*args, **kwargs)    
     self.log('LSFConfiguration.__init__ started')    
     # dictionary to hold information about options
-    self.options = {'lsf_location' : configfile.Option(name = 'lsf_location',
-                                                       default_value = '/usr',
-                                                       mapping = 'OSG_LSF_LOCATION'),
-                    'job_contact' : configfile.Option(name = 'job_contact',
-                                                      mapping = 'OSG_JOB_CONTACT'),
-                    'util_contact' : configfile.Option(name = 'util_contact',
-                                                       mapping = 'OSG_UTIL_CONTACT'),
-                    'seg_enabled' : configfile.Option(name = 'seg_enabled',
-                                                      required = configfile.Option.OPTIONAL,
-                                                      type = bool,
-                                                      default_value = False),
+    self.options = {'lsf_location' : 
+                      configfile.Option(name = 'lsf_location',
+                                        default_value = '/usr',
+                                        mapping = 'OSG_LSF_LOCATION'),
+                    'job_contact' : 
+                      configfile.Option(name = 'job_contact',
+                                        mapping = 'OSG_JOB_CONTACT'),
+                    'util_contact' : 
+                      configfile.Option(name = 'util_contact',
+                                        mapping = 'OSG_UTIL_CONTACT'),
+                    'seg_enabled' : 
+                      configfile.Option(name = 'seg_enabled',
+                                        required = configfile.Option.OPTIONAL,
+                                        type = bool,
+                                        default_value = False),
+                    'log_directory' : 
+                      configfile.Option(name = 'log_directory',
+                                        required = configfile.Option.OPTIONAL,
+                                        default_value = ''),
                     'accept_limited' : configfile.Option(name = 'accept_limited',
                                                       required = configfile.Option.OPTIONAL,
                                                       type = bool,

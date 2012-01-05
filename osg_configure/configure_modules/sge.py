@@ -41,6 +41,10 @@ class SGEConfiguration(JobManagerConfiguration):
                                         required = configfile.Option.OPTIONAL,
                                         type = bool,
                                         default_value = False),
+                    'log_directory' : 
+                      configfile.Option(name = 'log_directory',
+                                        required = configfile.Option.OPTIONAL,
+                                        default_value = ''),
                     'default_queue' : 
                       configfile.Option(name = 'default_queue',
                                         required = configfile.Option.OPTIONAL,

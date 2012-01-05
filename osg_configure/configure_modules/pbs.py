@@ -40,6 +40,10 @@ class PBSConfiguration(JobManagerConfiguration):
                                         required = configfile.Option.OPTIONAL,
                                         type = bool,
                                         default_value = False),
+                    'log_directory' : 
+                      configfile.Option(name = 'log_directory',
+                                        required = configfile.Option.OPTIONAL,
+                                        default_value = ''),
                     'accept_limited' : 
                       configfile.Option(name = 'accept_limited',
                                         required = configfile.Option.OPTIONAL,
