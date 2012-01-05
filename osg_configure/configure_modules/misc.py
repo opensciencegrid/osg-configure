@@ -241,7 +241,7 @@ class MiscConfiguration(BaseConfiguration):
                         replacement, 
                         lcmaps_db,
                         re.MULTILINE)
-  utilities.atomic_write(LCMAPS_DB_LOCATION, lcmaps_db)
+    utilities.atomic_write(LCMAPS_DB_LOCATION, lcmaps_db)
     
     
 
