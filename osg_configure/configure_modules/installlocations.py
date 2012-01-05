@@ -54,13 +54,16 @@ class InstallLocations(BaseConfiguration):
       self.__auto_configure()
       self.log('InstallLocations.parseConfiguration completed')
       self.__self_configured = True    
+      self.enabled = True
       return
     else:
-      self.log("Install Locations section found and will be used to configure "\
-               "your resource, however, this section is not needed for typical "\
-               "resources and can be deleted from your config file",
+      self.log("Install Locations section found and will be used to " +
+               "configure your resource, however, this section is not " +
+               "needed for typical resources and can be deleted from " +
+               "your config file",
                level = logging.WARNING)
     
+    self.enabled = True
     for option in self.options.values():
       self.log("Getting value for %s" % option.name)
       configfile.get_option(configuration,
