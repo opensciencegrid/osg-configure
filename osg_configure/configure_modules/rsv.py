@@ -2,12 +2,7 @@
 
 """ Module to handle attributes and configuration for RSV service """
 
-import os
-import re
-import pwd
-import sys
-import shutil
-import ConfigParser
+import os, re, pwd, sys, shutil, ConfigParser, logging
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
@@ -24,55 +19,66 @@ class RsvConfiguration(BaseConfiguration):
   def __init__(self, *args, **kwargs):
     # pylint: disable-msg=W0142
     super(RsvConfiguration, self).__init__(*args, **kwargs)    
-    self.logger.debug('RsvConfiguration.__init__ started')    
-    self.__mappings = {'enable_local_probes': 'enable_local_probes',
-                       'gratia_probes' : 'gratia_probes',
-                       'ce_hosts' : 'ce_hosts',
-                       'gridftp_hosts' : 'gridftp_hosts',
-                       'gridftp_dir' : 'gridftp_dir',
-                       'gums_hosts' : 'gums_hosts',
-                       'srm_hosts' : 'srm_hosts',
-                       'srm_dir' : 'srm_dir',
-                       'srm_webservice_path' : 'srm_webservice_path',
-                       'service_cert' : 'service_cert',
-                       'service_key' : 'service_key',
-                       'service_proxy' : 'service_proxy',
-                       'user_proxy' : 'user_proxy',
-                       'enable_gratia' : 'enable_gratia',
-                       'gratia_collector' : 'gratia_collector',
-                       'enable_nagios' : 'enable_nagios',
-                       'nagios_send_nsca' : 'nagios_send_nsca'}
-    self.__defaults = {'enable_local_probes' : True,
-                       'gratia_probes' : None,
-                       'gridftp_hosts': None,
-                       'gridftp_dir': '/tmp',
-                       'gums_hosts' : 'UNAVAILABLE',
-                       'srm_hosts' : 'UNAVAILABLE',
-                       'ce_hosts' : 'UNAVAILABLE',
-                       'gridftp_hosts' : 'UNAVAILABLE',
-                       'service_cert' : '/etc/grid-security/rsv/rsvcert.pem',
-                       'service_key' : '/etc/grid-security/rsv/rsvkey.pem', 
-                       'service_proxy' : '/tmp/rsvproxy',
-                       # It would be nice to get this information from gratia.py instead
-                       # of replicating it here but that is not currently easy.
-                       'gratia_collector' : 'rsv.grid.iu.edu:8880',
-                       'nagios_send_nsca' : False}
-    self.__optional = ['gratia_probes',
-                       'ce_hosts',
-                       'gums_hosts',
-                       'srm_hosts',
-                       'srm_dir',
-                       'srm_webservice_path',
-                       'service_cert',
-                       'service_key',
-                       'service_proxy',
-                       'user_proxy',
-                       'gratia_collector',
-                       'nagios_send_nsca']
-    self.__booleans = ['enable_local_probes',
-                       'enable_gratia',
-                       'enable_nagios',
-                       'nagios_send_nsca']
+    self.log('RsvConfiguration.__init__ started')    
+    self.options = {'enable_local_probes' : 
+                      configfile.Option(name = 'enable_local_probes',
+                                        required = configfile.Option.OPTIONAL,
+                                        type = bool,
+                                        default_value = True),
+                    'gratia_probes' : 
+                      configfile.Option(name = 'gratia_probes',
+                                        required = configfile.Option.OPTIONAL),
+                    'ce_hosts' : 
+                      configfile.Option(name = 'ce_hosts',
+                                        required = configfile.Option.OPTIONAL),
+                    'gridftp_hosts' : 
+                      configfile.Option(name = 'gridftp_hosts',
+                                        required = configfile.Option.OPTIONAL),
+                    'gridftp_dir' : 
+                      configfile.Option(name = 'gridftp_dir',
+                                        default_value = '/tmp'),
+                    'gums_hosts' : 
+                      configfile.Option(name = 'gums_hosts',
+                                        required = configfile.Option.OPTIONAL),
+                    'srm_hosts' : 
+                      configfile.Option(name = 'srm_hosts',
+                                        required = configfile.Option.OPTIONAL),
+                    'srm_dir' : 
+                      configfile.Option(name = 'srm_dir',
+                                        required = configfile.Option.OPTIONAL),
+                    'srm_webservice_path' : 
+                      configfile.Option(name = 'srm_webservice_path',
+                                        required = configfile.Option.OPTIONAL),
+                    'service_cert' : 
+                      configfile.Option(name = 'service_cert',
+                                        required = configfile.Option.OPTIONAL,
+                                        default_value = '/etc/grid-security/rsv/rsvcert.pem'),
+                    'service_key' : 
+                      configfile.Option(name = 'service_key',
+                                        required = configfile.Option.OPTIONAL,
+                                        default_value = '/etc/grid-security/rsv/rsvkey.pem'),
+                    'service_proxy' : 
+                      configfile.Option(name = 'service_proxy',
+                                        required = configfile.Option.OPTIONAL,
+                                        default_value = '/tmp/rsvproxy'),
+                    'user_proxy' : 
+                      configfile.Option(name = 'user_proxy',
+                                        required = configfile.Option.OPTIONAL),
+                    'enable_gratia' : 
+                      configfile.Option(name = 'enable_gratia',
+                                        type = bool),
+                    'gratia_collector' : 
+                      configfile.Option(name = 'gratia_collector',
+                                        required = configfile.Option.OPTIONAL,
+                                        default_value = 'rsv.grid.iu.edu:8880'),
+                    'enable_nagios' : 
+                      configfile.Option(name = 'enable_nagios',
+                                        type = bool),
+                    'nagios_send_nsca' : 
+                      configfile.Option(name = 'nagios_send_nsca',
+                                        required = configfile.Option.OPTIONAL,
+                                        type = bool,
+                                        default_value = False)}
 
     self.__rsv_user = "rsv"
     self.__ce_hosts = []
@@ -88,7 +94,7 @@ class RsvConfiguration(BaseConfiguration):
     self.config_section = "RSV"
     self.rsv_control = os.path.join('/', 'usr', 'bin', 'rsv-control')
     self.rsv_meta_dir = os.path.join('/', 'etc', 'rsv', 'meta', 'metrics')
-    self.logger.debug('RsvConfiguration.__init__ completed')
+    self.log('RsvConfiguration.__init__ completed')
 
   def parseConfiguration(self, configuration):
     """
@@ -96,44 +102,27 @@ class RsvConfiguration(BaseConfiguration):
     SafeConfigParser object given by configuration and write recognized settings 
     to attributes dict
     """
-    self.logger.debug('RsvConfiguration.parseConfiguration started')    
+    self.log('RsvConfiguration.parseConfiguration started')    
 
     self.checkConfig(configuration)
 
     if not configuration.has_section(self.config_section):
       self.enabled = False
-      self.logger.debug("%s section not in config file" % self.config_section)    
-      self.logger.debug('RsvConfiguration.parseConfiguration completed')    
+      self.log("%s section not in config file" % self.config_section)    
+      self.log('RsvConfiguration.parseConfiguration completed')    
       return True
 
     if not self.setStatus(configuration):
-      self.logger.debug('RsvConfiguration.parseConfiguration completed')    
+      self.log('RsvConfiguration.parseConfiguration completed')    
       return True
 
-    for setting in self.__mappings:
-      self.logger.debug("Getting value for %s" % setting)
-      temp = configfile.get_option(configuration, 
-                                   self.config_section, 
-                                   setting, 
-                                   self.__optional, 
-                                   self.__defaults)
-      self.attributes[self.__mappings[setting]] = temp
-      self.logger.debug("Got %s" % temp)      
+    for option in self.options.values():
+      self.log("Getting value for %s" % option.name)
+      configfile.get_option(configuration,
+                            self.config_section, 
+                            option)
+      self.log("Got %s" % option.value)
 
-    # set boolean options
-    self.logger.debug("Setting boolean options")    
-    for option in self.__booleans:
-      if not configuration.has_option(self.config_section, option):
-        continue
-      if not validation.valid_boolean(configuration, 
-                                      self.config_section, 
-                                      option):
-        mesg = "In %s section, %s needs to be set to True or False" \
-                          % (self.config_section, option)
-        self.logger.error(mesg)
-        raise exceptions.ConfigureError(mesg)
-
-      self.attributes[self.__mappings[option]] = configuration.getboolean(self.config_section, option)
 
     # If we're on a CE, get the grid group if possible
     if configuration.has_section('Site Information'): 
@@ -148,29 +137,32 @@ class RsvConfiguration(BaseConfiguration):
 
     # check and warn if unknown options found 
     temp = utilities.get_set_membership(configuration.options(self.config_section),
-                                        self.__mappings,
+                                        self.options.keys(),
                                         configuration.defaults().keys())
     for option in temp:
       if option == 'enabled':
         continue
-      self.logger.warning("Found unknown option [%s].%s" % (self.config_section, option))
+      self.log("Found unknown option",
+               option = option, 
+               section = self.config_section,
+               level = logging.WARNING)
 
 
     # Parse lists
-    self.__ce_hosts = split_list(self.attributes[self.__mappings['ce_hosts']])
-    self.__gums_hosts = split_list(self.attributes[self.__mappings['gums_hosts']])
-    self.__srm_hosts = split_list(self.attributes[self.__mappings['srm_hosts']])
+    self.__ce_hosts = split_list(self.options['ce_hosts'].value)
+    self.__gums_hosts = split_list(self.options['gums_hosts'].value)
+    self.__srm_hosts = split_list(self.options['srm_hosts'].value)
 
     # If the gridftp hosts are not defined then they default to the CE hosts
-    if self.__mappings['gridftp_hosts'] in self.attributes and self.attributes[self.__mappings['gridftp_hosts']]:
-      self.__gridftp_hosts = split_list(self.attributes[self.__mappings['gridftp_hosts']])
+    if self.options['gridftp_hosts'].value is not None:
+      self.__gridftp_hosts = split_list(self.options['gridftp_hosts'].value)
     else:
       self.__gridftp_hosts = self.__ce_hosts
 
-    if self.__mappings['gratia_probes'] in self.attributes:
-      self.__gratia_probes_2d = self.split_2d_list(self.attributes[self.__mappings['gratia_probes']])
+    if self.options['gratia_probes'].value is not None:
+      self.__gratia_probes_2d = self.split_2d_list(self.options['gratia_probes'].value)
 
-    self.logger.debug('RsvConfiguration.parseConfiguration completed')    
+    self.log('RsvConfiguration.parseConfiguration completed')    
   
 
 # pylint: disable-msg=W0613
@@ -179,17 +171,17 @@ class RsvConfiguration(BaseConfiguration):
     Check attributes currently stored and make sure that they are consistent
     """
 
-    self.logger.debug('RsvConfiguration.checkAttributes started')
+    self.log('RsvConfiguration.checkAttributes started')
     attributes_ok = True
 
     if not self.enabled:
-      self.logger.debug('Not enabled, returning True')
-      self.logger.debug('RsvConfiguration.checkAttributes completed')    
+      self.log('Not enabled, returning True')
+      self.log('RsvConfiguration.checkAttributes completed')    
       return attributes_ok
 
     if self.ignored:
-      self.logger.debug('Ignored, returning True')
-      self.logger.debug('RsvConfiguration.checkAttributes completed')    
+      self.log('Ignored, returning True')
+      self.log('RsvConfiguration.checkAttributes completed')    
       return attributes_ok
 
     # Slurp in all the meta files which will tell us what type of metrics
@@ -207,22 +199,22 @@ class RsvConfiguration(BaseConfiguration):
     # check Gratia list
     attributes_ok &= self.__check_gratia_settings()
 
-    self.logger.debug('RsvConfiguration.checkAttributes completed')    
+    self.log('RsvConfiguration.checkAttributes completed')    
     return attributes_ok 
 
 
   def configure(self, attributes):
     """Configure installation using attributes"""
-    self.logger.debug('RsvConfiguration.configure started')    
+    self.log('RsvConfiguration.configure started')    
 
     if self.ignored:
       self.logger.warning("%s configuration ignored" % self.config_section)
-      self.logger.debug('RsvConfiguration.configure completed') 
+      self.log('RsvConfiguration.configure completed') 
       return True
 
     if not self.enabled:
-      self.logger.debug('Not enabled, returning True')
-      self.logger.debug('RsvConfiguration.configure completed') 
+      self.log('Not enabled, returning True')
+      self.log('RsvConfiguration.configure completed') 
       return True
 
     # Reset always?
@@ -259,18 +251,10 @@ class RsvConfiguration(BaseConfiguration):
     # Setup Apache?  I think this is done in the RPM
 
     # Fix the Gratia ProbeConfig file to point at the appropriate collector
-    self.__set_gratia_collector(self.attributes[self.__mappings['gratia_collector']])
+    self.__set_gratia_collector(self.options['gratia_collector'].value)
 
-    self.logger.debug('RsvConfiguration.configure completed')
+    self.log('RsvConfiguration.configure completed')
     return True
-
-  def getAttributes(self):
-    """Return settings"""
-    # no RSV attributes for the osg-attributes.conf file
-    self.logger.debug('RsvConfiguration.getAttributes started')    
-    self.logger.debug('RsvConfiguration.getAttributes completed')    
-    return {}
-
 
   def moduleName(self):
     """Return a string with the name of the module"""
@@ -289,10 +273,10 @@ class RsvConfiguration(BaseConfiguration):
     """ Check gridftp settings and make sure they are valid """
     status_check = self.__validate_host_list(self.__gridftp_hosts, "gridftp_hosts")
 
-    if utilities.blank(self.attributes[self.__mappings['gridftp_dir']]):
+    if utilities.blank(self.options['gridftp_dir'].value):
       self.logger.error("In %s section" % self.config_section)
       self.logger.error("Invalid gridftp_dir given: %s" %
-                        self.attributes[self.__mappings['gridftp_dir']])
+                        self.options['gridftp_dir'].value)
       status_check = False
 
     return status_check 
@@ -304,16 +288,16 @@ class RsvConfiguration(BaseConfiguration):
 
     # Do not allow both the service cert settings and proxy settings
     # first create some helper variables
-    blank_service_vals = (utilities.blank(self.attributes[self.__mappings['service_cert']]) and
-                          utilities.blank(self.attributes[self.__mappings['service_key']]) and
-                          utilities.blank(self.attributes[self.__mappings['service_proxy']]))
-    default_service_vals = (self.attributes[self.__mappings['service_cert']] == 
-                            self.__defaults['service_cert'])
-    default_service_vals &= (self.attributes[self.__mappings['service_key']] == 
-                             self.__defaults['service_key'])
-    default_service_vals &= (self.attributes[self.__mappings['service_proxy']] == 
-                             self.__defaults['service_proxy'])
-    blank_user_proxy = utilities.blank(self.attributes[self.__mappings['user_proxy']])
+    blank_service_vals = (utilities.blank(self.options['service_cert'].value) and
+                          utilities.blank(self.options['service_key'].value) and
+                          utilities.blank(self.options['service_proxy'].value))
+    default_service_vals = (self.options['service_cert'].value == 
+                            self.options['service_cert'].default_value)
+    default_service_vals &= (self.options['service_key'].value == 
+                             self.options['service_key'].default_value)
+    default_service_vals &= (self.options['service_proxy'].value == 
+                             self.options['service_proxy'].default_value)
+    blank_user_proxy = utilities.blank(self.options['user_proxy'].value)
     if (not  blank_user_proxy and default_service_vals):
       self.logger.warning("In %s section" % self.config_section)
       self.logger.warning('User proxy specified and service_cert, service_key, service_proxy at default values, assuming user_proxy takes precedence')
@@ -324,42 +308,42 @@ class RsvConfiguration(BaseConfiguration):
             
 
     # Make sure that either a service cert or user cert is selected
-    if not ((self.attributes[self.__mappings['service_cert']] and
-             self.attributes[self.__mappings['service_key']] and
-             self.attributes[self.__mappings['service_proxy']])
+    if not ((self.options['service_cert'].value and
+             self.options['service_key'].value and
+             self.options['service_proxy'].value)
             or
-            self.attributes[self.__mappings['user_proxy']]):
+            self.options['user_proxy'].value):
       self.logger.error("In %s section" % self.config_section)
       self.logger.error("You must specify either service_cert/service_key/service_proxy *or* user_proxy in order to provide credentials for RSV to run jobs")
       check_value = False
 
     if not blank_user_proxy:
       # if not using a service certificate, make sure that the proxy file exists
-      value = self.attributes[self.__mappings['user_proxy']]
+      value = self.options['user_proxy'].value
       if utilities.blank(value) or not validation.valid_file(value):
         self.logger.error("In %s section" % self.config_section)
         self.logger.error("user_proxy does not point to an existing file: %s" % value)
         check_value = False      
     else:
-      value = self.attributes[self.__mappings['service_cert']]
+      value = self.options['service_cert'].value
       if utilities.blank(value) or not validation.valid_file(value):
         self.logger.error("In %s section" % self.config_section)
         self.logger.error("service_cert must point to an existing file: %s" % value)
         check_value = False
 
-      value = self.attributes[self.__mappings['service_key']]
+      value = self.options['service_key'].value
       if utilities.blank(value) or not validation.valid_file(value):
         self.logger.error("In %s section" % self.config_section)
         self.logger.error("service_key must point to an existing file: %s" % value)
         check_value = False
 
-      value = self.attributes[self.__mappings['service_proxy']]
+      value = self.options['service_proxy'].value
       if utilities.blank(value):
         self.logger.error("In %s section" % self.config_section)
         self.logger.error("service_proxy must have a valid location: %s" % value)
         check_value = False
 
-      value = os.path.dirname(self.attributes[self.__mappings['service_proxy']])
+      value = os.path.dirname(self.options['service_proxy'].value)
       if not validation.valid_location(value):
         self.logger.error("In %s section" % self.config_section)
         self.logger.error("service_proxy must be located in a valid directory: %s" % value)
@@ -371,7 +355,7 @@ class RsvConfiguration(BaseConfiguration):
   def __reset_configuration(self):
     """ Reset all metrics and consumers to disabled """
 
-    self.logger.debug("Resetting all metrics and consumers to disabled")
+    self.log("Resetting all metrics and consumers to disabled")
 
     parent_dir = os.path.join('/', 'etc', 'rsv')
     for file in os.listdir(parent_dir):
@@ -382,7 +366,7 @@ class RsvConfiguration(BaseConfiguration):
         continue
 
       path = os.path.join(parent_dir, file)
-      self.logger.debug("Removing %s as part of reset" % path)
+      self.log("Removing %s as part of reset" % path)
       os.unlink(path)
 
     # Remove any host specific metric configuration
@@ -438,13 +422,13 @@ class RsvConfiguration(BaseConfiguration):
     """
 
     if not self.__ce_hosts:
-      self.logger.debug("No ce_hosts defined.  Not configuring CE metrics")
+      self.log("No ce_hosts defined.  Not configuring CE metrics")
       return True
 
     ce_metrics = self.__get_metrics_by_type("OSG-CE")
 
     for ce in self.__ce_hosts:
-      self.logger.debug("Enabling CE metrics for host '%s'" % ce)
+      self.log("Enabling CE metrics for host '%s'" % ce)
       if not self.__enable_metrics(ce, ce_metrics):
         return False
 
@@ -455,10 +439,10 @@ class RsvConfiguration(BaseConfiguration):
     """ Enable GridFTP metrics for each GridFTP host declared    """
 
     if not self.__gridftp_hosts:
-      self.logger.debug("No gridftp_hosts defined.  Not configuring GridFTP metrics")
+      self.log("No gridftp_hosts defined.  Not configuring GridFTP metrics")
       return True
 
-    gridftp_dirs = split_list(self.attributes[self.__mappings['gridftp_dir']])
+    gridftp_dirs = split_list(self.options['gridftp_dir'].value)
     if len(self.__gridftp_hosts) != len(gridftp_dirs) and len(gridftp_dirs) != 1:
       self.logger.error("RSV.gridftp_dir is set incorrectly.  When enabling GridFTP metrics you must specify either exactly 1 entry, or the same number of entries in the gridftp_dir variable as you have in the gridftp_hosts section.  There are %i host entries and %i gridftp_dir entries." % (len(self.__gridftp_hosts), len(gridftp_dirs)))
       raise exceptions.ConfigureError("Failed to configure RSV")
@@ -467,7 +451,7 @@ class RsvConfiguration(BaseConfiguration):
 
     count = 0
     for gridftp_host in self.__gridftp_hosts:
-      self.logger.debug("Enabling GridFTP metrics for host '%s'" % gridftp_host)
+      self.log("Enabling GridFTP metrics for host '%s'" % gridftp_host)
 
       if len(gridftp_dirs) == 1:
         dir = gridftp_dirs[0]
@@ -489,17 +473,17 @@ class RsvConfiguration(BaseConfiguration):
     """ Enable GUMS metrics for each GUMS host declared """
 
     if not self.__gums_hosts:
-      self.logger.debug("No gums_hosts defined.  Not configuring GUMS metrics")
+      self.log("No gums_hosts defined.  Not configuring GUMS metrics")
       return True
 
     gums_metrics = self.__get_metrics_by_type("OSG-GUMS")
 
     if not gums_metrics:
-      self.logger.debug("No current GUMS metrics.  No configuration to do at this time.")
+      self.log("No current GUMS metrics.  No configuration to do at this time.")
       return True
 
     for gums_host in self.__gums_hosts:
-      self.logger.debug("Enabling GUMS metrics for host '%s'" % gums_host)
+      self.log("Enabling GUMS metrics for host '%s'" % gums_host)
       if not self.__enable_metrics(gums_host, gums_metrics):
         return False
 
@@ -509,13 +493,13 @@ class RsvConfiguration(BaseConfiguration):
   def __configure_local_metrics(self):
     """ Enable appropriate local metrics """
 
-    if not self.attributes[self.__mappings['enable_local_probes']]:
-      self.logger.debug("Local probes disabled.")
+    if not self.options['enable_local_probes'].value:
+      self.log("Local probes disabled.")
       return True
 
     local_metrics = self.__get_metrics_by_type("OSG-Local-Monitor")
 
-    self.logger.debug("Enabling local metrics for host '%s'" % utilities.get_hostname())
+    self.log("Enabling local metrics for host '%s'" % utilities.get_hostname())
     if not self.__enable_metrics(utilities.get_hostname(), local_metrics):
       return False
     
@@ -526,19 +510,18 @@ class RsvConfiguration(BaseConfiguration):
     """ Enable SRM metric """
 
     if not self.__srm_hosts:
-      self.logger.debug("No srm_hosts defined.  Not configuring SRM metrics")
+      self.log("No srm_hosts defined.  Not configuring SRM metrics")
       return True
 
     # Do some checking on the values.  perhaps this should be in the validate section?
-    srm_dirs = split_list(self.attributes[self.__mappings['srm_dir']])
+    srm_dirs = split_list(self.options['srm_dir'].value)
     if len(self.__srm_hosts) != len(srm_dirs):
       self.logger.error("When enabling SRM metrics you must specify the same number of entries in the srm_dir variable as you have in the srm_hosts section.  There are %i host entries and %i srm_dir entries." % (len(self.__srm_hosts), len(srm_dirs)))
       raise exceptions.ConfigureError("Failed to configure RSV")
 
     srm_ws_paths = []
-    if (self.__mappings['srm_webservice_path'] in self.attributes and
-        not utilities.blank(self.attributes[self.__mappings['srm_webservice_path']])):
-      srm_ws_paths = split_list(self.attributes[self.__mappings['srm_webservice_path']])
+    if not utilities.blank(self.options['srm_webservice_path'].value):
+      srm_ws_paths = split_list(self.options['srm_webservice_path'].value)
 
       if len(self.__srm_hosts) != len(srm_ws_paths):
         self.logger.error("If you set srm_webservice_path when enabling SRM metrics you must specify the same number of entries in the srm_webservice_path variable as you have in the srm_hosts section.  There are %i host entries and %i srm_webservice_path entries." % (len(self.__srm_hosts), len(srm_ws_paths)))
@@ -548,7 +531,7 @@ class RsvConfiguration(BaseConfiguration):
     srm_metrics = self.__get_metrics_by_type("OSG-SRM")
     count = 0
     for srm_host in self.__srm_hosts:
-      self.logger.debug("Enabling SRM metrics for host '%s'" % srm_host)
+      self.log("Enabling SRM metrics for host '%s'" % srm_host)
 
       args = ["--arg", "srm-destination-dir=%s" % srm_dirs[count]]
       if srm_ws_paths:
@@ -572,7 +555,7 @@ class RsvConfiguration(BaseConfiguration):
         match = re.search("\.gratia\.(\S+)$", metric)
         if match:
           self.__gratia_metric_map[match.group(1)] = metric
-          self.logger.debug("Gratia map -> %s = %s" % (match.group(1), metric))
+          self.log("Gratia map -> %s = %s" % (match.group(1), metric))
 
     # Now that we have the mapping, simply return the appropriate type.
     # This is the only code that should execute every time after the data structure is loaded.
@@ -615,11 +598,11 @@ class RsvConfiguration(BaseConfiguration):
     """
 
     if not self.__gratia_probes_2d:
-      self.logger.debug("Skipping Gratia metric configuration because gratia_probes_2d is empty")
+      self.log("Skipping Gratia metric configuration because gratia_probes_2d is empty")
       return True
 
     if not self.__ce_hosts:
-      self.logger.debug("Skipping Gratia metric configuration because ce_hosts is empty")
+      self.log("Skipping Gratia metric configuration because ce_hosts is empty")
       return True
 
     num_ces = len(self.__ce_hosts)
@@ -684,12 +667,12 @@ class RsvConfiguration(BaseConfiguration):
       config.add_section('rsv')
 
     # Set the appropriate options in the rsv.conf file
-    if self.attributes[self.__mappings['service_cert']]:
-      config.set('rsv', 'service-cert', self.attributes[self.__mappings['service_cert']])
-      config.set('rsv', 'service-key', self.attributes[self.__mappings['service_key']])
-      config.set('rsv', 'service-proxy', self.attributes[self.__mappings['service_proxy']])
-    elif self.attributes[self.__mappings['user_proxy']]:
-      config.set('rsv', 'proxy-file', self.attributes[self.__mappings['user_proxy']])
+    if self.options['service_cert'].value:
+      config.set('rsv', 'service-cert', self.options['service_cert'].value)
+      config.set('rsv', 'service-key', self.options['service_key'].value)
+      config.set('rsv', 'service-proxy', self.options['service_proxy'].value)
+    elif self.options['user_proxy'].value:
+      config.set('rsv', 'proxy-file', self.options['user_proxy'].value)
 
       # Remove these keys or they will override the proxy-file setting in rsv-control
       config.remove_option('rsv', 'service-cert')
@@ -714,16 +697,16 @@ class RsvConfiguration(BaseConfiguration):
 
     consumers = ["html-consumer"]
 
-    if self.attributes[self.__mappings['enable_gratia']]:
+    if self.options['enable_gratia'].value:
       consumers.append("gratia-consumer")
       # TODO - set up Gratia directories?  Look at setup_gratia() in configure_rsv
 
-    if self.attributes[self.__mappings['enable_nagios']]:
+    if self.options['enable_nagios'].value:
       consumers.append("nagios-consumer")
       self.__configure_nagios_files()
 
     consumer_list = " ".join(consumers)
-    self.logger.debug("Enabling consumers: %s " % consumer_list)
+    self.log("Enabling consumers: %s " % consumer_list)
 
     if utilities.run_script([self.rsv_control, "-v0", "--enable"] + consumers):
       return True
@@ -752,7 +735,7 @@ class RsvConfiguration(BaseConfiguration):
       config.add_section('nagios-consumer')
 
     args = "--conf-file %s" % pw_file
-    if self.attributes[self.__mappings['nagios_send_nsca']]:
+    if self.options['nagios_send_nsca'].value:
       args += " --send-nsca"
 
     config.set("nagios-consumer", "args", args)
@@ -836,13 +819,13 @@ class RsvConfiguration(BaseConfiguration):
   def __set_gratia_collector(self, collector):
     """ Put the appropriate collector URL into the ProbeConfig file """
 
-    if not self.attributes[self.__mappings['enable_gratia']]:
-      self.logger.debug("Not configuring Gratia collector because enable_gratia is not true")
+    if not self.options['enable_gratia'].value:
+      self.log("Not configuring Gratia collector because enable_gratia is not true")
       return True
 
     probe_conf = os.path.join('/', 'etc', 'gratia', 'metric', 'ProbeConfig')
 
-    self.logger.debug("Putting collector '%s' into Gratia conf file '%s'" % (collector, probe_conf))
+    self.log("Putting collector '%s' into Gratia conf file '%s'" % (collector, probe_conf))
 
     conf = open(probe_conf).read()
 

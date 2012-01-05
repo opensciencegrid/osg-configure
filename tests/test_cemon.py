@@ -35,18 +35,18 @@ class TestLocalSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    attributes = settings.attributes
+    options = settings.options
     variables = {'ress_servers' : 'https://osg-ress-1.fnal.gov:8443/ig/services/CEInfoCollector[OLD_CLASSAD]',
                  'bdii_servers' : 'http://is1.grid.iu.edu:14001[RAW], http://is2.grid.iu.edu:14001[RAW]' }
 
     for var in variables:      
-      self.failUnless(attributes.has_key(var), 
-                      "Attribute %s missing" % var)
-      self.failUnlessEqual(attributes[var], 
+      self.failUnless(options.has_key(var), 
+                      "Option %s missing" % var)
+      self.failUnlessEqual(options[var].value, 
                            variables[var], 
                            "Wrong value obtained for %s, got %s but " \
                            "expected %s" % (var, 
-                                            attributes[var], 
+                                            options[var].value, 
                                             variables[var]))
     
   def testParsingITBDefaults(self):
@@ -65,20 +65,20 @@ class TestLocalSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    attributes = settings.attributes
+    options = settings.options
     variables = {'ress_servers' : 'https://osg-ress-4.fnal.gov:8443/ig/' \
                                   'services/CEInfoCollector[OLD_CLASSAD]',
                  'bdii_servers' : 'http://is1.grid.iu.edu:14001[RAW],'\
                                   'http://is2.grid.iu.edu:14001[RAW]'}
 
     for var in variables:      
-      self.failUnless(attributes.has_key(var), 
-                      "Attribute %s missing" % var)
-      self.failUnlessEqual(attributes[var], 
+      self.failUnless(options.has_key(var), 
+                      "Option %s missing" % var)
+      self.failUnlessEqual(options[var].value, 
                            variables[var], 
                            "Wrong value obtained for %s, got %s but " \
                            "expected %s" % (var, 
-                                            attributes[var], 
+                                            options[var].value, 
                                             variables[var]))
 
   def testParsingProductionDefaults(self):
@@ -97,20 +97,20 @@ class TestLocalSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    attributes = settings.attributes
+    options = settings.options
     variables = {'ress_servers' : 'https://osg-ress-1.fnal.gov:8443/ig/' \
                                   'services/CEInfoCollector[OLD_CLASSAD]',
                  'bdii_servers' : 'http://is1.grid.iu.edu:14001[RAW],' \
                                   'http://is2.grid.iu.edu:14001[RAW]'}
 
     for var in variables:      
-      self.failUnless(attributes.has_key(var), 
-                      "Attribute %s missing" % var)
-      self.failUnlessEqual(attributes[var], 
+      self.failUnless(options.has_key(var), 
+                      "Option %s missing" % var)
+      self.failUnlessEqual(options[var].value, 
                            variables[var], 
                            "Wrong value obtained for %s, got %s but " \
                            "expected %s" % (var, 
-                                            attributes[var], 
+                                            options[var].value, 
                                             variables[var]))
 
   def testParsingMissingITBDefaults(self):
@@ -130,21 +130,22 @@ class TestLocalSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    attributes = settings.attributes
+    options = settings.options
     variables = {'ress_servers' : 'https://osg-ress-4.fnal.gov:8443/ig/' \
                                   'services/CEInfoCollector[OLD_CLASSAD]',
                  'bdii_servers' : 'http://is1.grid.iu.edu:14001[RAW],'\
                                   'http://is2.grid.iu.edu:14001[RAW]'}
 
     for var in variables:      
-      self.failUnless(attributes.has_key(var), 
-                      "Attribute %s missing" % var)
-      self.failUnlessEqual(attributes[var], 
+      self.failUnless(options.has_key(var), 
+                      "Option %s missing" % var)
+      self.failUnlessEqual(options[var].value, 
                            variables[var], 
                            "Wrong value obtained for %s, got %s but " \
                            "expected %s" % (var, 
-                                            attributes[var], 
+                                            options[var].value, 
                                             variables[var]))
+
 
   def testParsingMissingProductionDefaults(self):
     """
@@ -163,20 +164,20 @@ class TestLocalSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    attributes = settings.attributes
+    options = settings.options
     variables = {'ress_servers' : 'https://osg-ress-1.fnal.gov:8443/ig/' \
                                   'services/CEInfoCollector[OLD_CLASSAD]',
                  'bdii_servers' : 'http://is1.grid.iu.edu:14001[RAW],' \
                                   'http://is2.grid.iu.edu:14001[RAW]'}
 
     for var in variables:      
-      self.failUnless(attributes.has_key(var), 
-                      "Attribute %s missing" % var)
-      self.failUnlessEqual(attributes[var], 
+      self.failUnless(options.has_key(var), 
+                      "Option %s missing" % var)
+      self.failUnlessEqual(options[var].value, 
                            variables[var], 
                            "Wrong value obtained for %s, got %s but " \
                            "expected %s" % (var, 
-                                            attributes[var], 
+                                            options[var].value, 
                                             variables[var]))
 
   def testParsingDisabled(self):
@@ -195,8 +196,9 @@ class TestLocalSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    attributes = settings.attributes
-    self.failUnlessEqual(len(attributes), 0, 
+    self.failUnlessEqual(len(settings.options['ress_servers'].value), 0, 
+                         "Disabled configuration should have no attributes")
+    self.failUnlessEqual(len(settings.options['bdii_servers'].value), 0, 
                          "Disabled configuration should have no attributes")
 
   def testParsingIgnored(self):
@@ -215,8 +217,9 @@ class TestLocalSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    attributes = settings.attributes
-    self.failUnlessEqual(len(attributes), 0, 
+    self.failUnlessEqual(len(settings.options['ress_servers'].value), 0, 
+                         "Disabled configuration should have no attributes")
+    self.failUnlessEqual(len(settings.options['bdii_servers'].value), 0, 
                          "Disabled configuration should have no attributes")
 
   def testIgnoredServices(self):

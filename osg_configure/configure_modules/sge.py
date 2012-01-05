@@ -2,7 +2,7 @@
 
 """ Module to handle attributes related to the sge jobmanager configuration """
 
-import ConfigParser, os
+import ConfigParser, os, re, types, logging
 
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile
@@ -12,183 +12,220 @@ from osg_configure.modules.jobmanagerbase import JobManagerConfiguration
 
 __all__ = ['SGEConfiguration']
 
-SGE_CONFIG_FILE = '/etc/grid-services/available/jobmanager-sge'
 
 class SGEConfiguration(JobManagerConfiguration):
   """Class to handle attributes related to sge job manager configuration"""
 
+  SGE_CONFIG_FILE = '/etc/grid-services/available/jobmanager-sge'
+  GRAM_CONFIG_FILE = '/etc/globus/globus-pbs.conf'
+  
   def __init__(self, *args, **kwargs):
     # pylint: disable-msg=W0142
-    super(SGEConfiguration, self).__init__(*args, **kwargs)    
-    self.logger.debug('SGEConfiguration.__init__ started')    
-    self.__mappings = {'sge_root': 'OSG_SGE_ROOT',
-                       'sge_cell': 'OSG_SGE_CELL',
-                       'job_contact': 'OSG_JOB_CONTACT',
-                       'util_contact': 'OSG_UTIL_CONTACT',
-                       'accept_limited': 'accept_limited'}
-    self.__optional = ['accept_limited']
-    self.__defaults = {'accept_limited' : 'False'}
-    
+    super(SGEConfiguration, self).__init__(*args, **kwargs)
+    self.log('SGEConfiguration.__init__ started') 
+    # option information
+    self.options = {'sge_root' : 
+                      configfile.Option(name = 'sge_root',
+                                        mapping = 'OSG_SGE_ROOT'),
+                    'sge_cell' : 
+                      configfile.Option(name = 'sge_CELL',
+                                        mapping = 'OSG_SGE_CELL'),
+                    'job_contact' : 
+                      configfile.Option(name = 'job_contact',
+                                        mapping = 'OSG_JOB_CONTACT'),
+                    'util_contact' : 
+                      configfile.Option(name = 'util_contact',
+                                        mapping = 'OSG_UTIL_CONTACT'),
+                    'seg_enabled' : 
+                      configfile.Option(name = 'seg_enabled',
+                                        required = configfile.Option.OPTIONAL,
+                                        type = bool,
+                                        default_value = False),
+                    'accept_limited' : 
+                      configfile.Option(name = 'accept_limited',
+                                        required = configfile.Option.OPTIONAL,
+                                        type = bool,
+                                        default_value = False)}               
     self.__set_default = True
     self.config_section = "SGE"
-    self.logger.debug('SGEConfiguration.__init__ completed')    
+    self.log('SGEConfiguration.__init__ completed')    
       
   def parseConfiguration(self, configuration):
     """Try to get configuration information from ConfigParser or SafeConfigParser object given
     by configuration and write recognized settings to attributes dict
     """
-    self.logger.debug('SGEConfiguration.parseConfiguration started')    
+    self.log('SGEConfiguration.parseConfiguration started')    
 
     self.checkConfig(configuration)
 
     if not configuration.has_section(self.config_section):
-      self.logger.debug('SGE section not found in config file')
-      self.logger.debug('SGEConfiguration.parseConfiguration completed')    
+      self.log('SGE section not found in config file')
+      self.log('SGEConfiguration.parseConfiguration completed')    
       return
     
     if not self.setStatus(configuration):
-      self.logger.debug('SGEConfiguration.parseConfiguration completed')    
+      self.log('SGEConfiguration.parseConfiguration completed')    
       return True
        
-    self.attributes['OSG_JOB_MANAGER'] = 'SGE'
-    for setting in self.__mappings:
-      self.logger.debug("Getting value for %s" % setting)
-      temp = configfile.get_option(configuration, 
-                                   self.config_section, 
-                                   setting,
-                                   self.__optional, 
-                                   self.__defaults)
-                                   
-      self.attributes[self.__mappings[setting]] = temp
-      self.logger.debug("Got %s" % temp)
+    for option in self.options.values():
+      self.log("Getting value for %s" % option.name)
+      configfile.get_option(configuration, 
+                            self.config_section, 
+                            option)
+      self.log("Got %s" % option.value)
         
     # fill in values for sge_location and home
-    if self.__mappings['sge_root'] in self.attributes:
-      self.attributes['OSG_JOB_MANAGER_HOME'] = \
-        self.attributes[self.__mappings['sge_root']]
-      self.attributes['OSG_SGE_LOCATION'] = \
-        self.attributes[self.__mappings['sge_root']]
-    else:
-      self.attributes['OSG_JOB_MANAGER_HOME'] = 'UNAVAILABLE'
-      self.attributes['OSG_SGE_LOCATION'] = 'UNAVAILABLE'
+    self.options['job_manager'] = configfile.Option(name = 'job_manager',
+                                                    value = 'SGE',
+                                                    mapping = 'OSG_JOB_MANAGER')
+    self.options['home'] = configfile.Option(name = 'job_manager_home',
+                                             value = self.options['sge_root'].value,
+                                             mapping = 'OSG_JOB_MANAGER_HOME')
+    self.options['osg_sge_location'] = configfile.Option(name = 'osg_sge_location',
+                                                         value = self.options['sge_root'].value,
+                                                         mapping = 'OSG_SGE_LOCATION')
     # check and warn if unknown options found 
     temp = utilities.get_set_membership(configuration.options(self.config_section),
-                                        self.__mappings,
+                                        self.options.keys(),
                                         configuration.defaults().keys())
     for option in temp:
       if option == 'enabled':
         continue
-      self.logger.warning("Found unknown option %s in %s section" % 
-                           (option, self.config_section))
+      self.log("Found unknown option",
+               option = option, 
+               section = self.config_section,
+               level = logging.WARNING)
 
+    # used to see if we need to enable the default fork manager, if we don't 
+    # find the managed fork service enabled, set the default manager to fork
+    # needed since the managed fork section could be removed after managed fork
+    # was enabled 
     if (configuration.has_section('Managed Fork') and
         configuration.has_option('Managed Fork', 'enabled') and
-        configuration.get('Managed Fork', 'enabled').upper() == 'TRUE'):
+        configuration.getboolean('Managed Fork', 'enabled')):
       self.__set_default = False
    
-    self.logger.debug('SGEConfiguration.parseConfiguration completed')    
-
-  def getAttributes(self):
-    """Return settings"""
-    self.logger.debug('SGEConfiguration.getAttributes started')    
-    if not self.enabled:
-      self.logger.debug('SGE not enabled, returning empty dictionary')
-      self.logger.debug('SGEConfiguration.parseConfiguration completed')    
-      return {}
-    self.logger.debug('SGEConfiguration.parseConfiguration completed')    
-    return self.attributes
+    self.log('SGEConfiguration.parseConfiguration completed')    
   
 # pylint: disable-msg=W0613
   def checkAttributes(self, attributes):
     """Check attributes currently stored and make sure that they are consistent"""
-    self.logger.debug('SGEConfiguration.checkAttributes started')    
+    self.log('SGEConfiguration.checkAttributes started')    
     attributes_ok = True
     if not self.enabled:
-      self.logger.debug('SGE not enabled, returning True')
-      self.logger.debug('SGEConfiguration.checkAttributes completed')    
+      self.log('SGE not enabled, returning True')
+      self.log('SGEConfiguration.checkAttributes completed')    
       return attributes_ok
     
     if self.ignored:
-      self.logger.debug('Ignored, returning True')
-      self.logger.debug('SGEConfiguration.checkAttributes completed')    
+      self.log('Ignored, returning True')
+      self.log('SGEConfiguration.checkAttributes completed')    
       return attributes_ok
 
-    # Make sure all settings are present
-    for setting in self.__mappings:
-      if self.__mappings[setting] not in self.attributes:
-        raise exceptions.SettingError("Missing setting for %s in %s section" %
-                                      (setting, self.config_section))
-
     # make sure locations exist
-    if not validation.valid_location(self.attributes[self.__mappings['sge_root']]):
+    if not validation.valid_location(self.options['sge_root'].value):
       attributes_ok = False
-      self.logger.error("In %s section" % self.config_section)
-      self.logger.error("%s points to non-existent location: %s" % 
-                          ('sge_root',
-                           self.attributes[self.__mappings['sge_root']]))
+      self.log("Non-existent location given: %s" % 
+                          (self.options['sge_root'].value),
+                option = 'sge_root',
+                section = self.config_section,
+                level = logging.ERROR)
 
-    settings_file = os.path.join(self.attributes[self.__mappings['sge_root']],
-                                 self.attributes[self.__mappings['sge_cell']], 
+    settings_file = os.path.join(self.options['sge_root'].value,
+                                 self.options['sge_cell'].value, 
                                  'common', 
                                  'settings.sh')
     
     if not validation.valid_file(settings_file):
       attributes_ok = False
-      self.logger.error("In %s section" % self.config_section)
-      self.logger.error("$SGE_ROOT/$SGE_CELL/common/settings.sh points to " \
-                        "non-existent location: %s" % settings_file)
+      self.log("$SGE_ROOT/$SGE_CELL/common/settings.sh not present: %s" % 
+                          settings_file,
+                option = 'sge_cell',
+                section = self.config_section,
+                level = logging.ERROR)
 
-    if not self.validContact(self.attributes[self.__mappings['job_contact']], 
+    if not self.validContact(self.options['job_contact'].value, 
                              'sge'):
       attributes_ok = False
-      self.logger.error("%s is not a valid job contact: %s" % 
-                          ('job_contact',
-                           self.attributes[self.__mappings['job_contact']]))
+      self.log("Invalid job contact: %s" % 
+                         (self.options['job_contact'].value),
+               option = 'job_contact',
+               section = self.config_section,
+               level = logging.ERROR)
       
-    if not self.validContact(self.attributes[self.__mappings['util_contact']], 
+    if not self.validContact(self.options['util_contact'].value, 
                              'sge'):
       attributes_ok = False
-      self.logger.error("%s is not a valid util contact: %s" % 
-                          ('util_contact',
-                           self.attributes[self.__mappings['util_contact']]))      
+      self.log("Invalid util contact: %s" % 
+                        (self.options['util_contact'].value),
+               option = 'util_contact',
+               section = self.config_section,
+               level = logging.ERROR)
+
+    if self.options['seg_enabled'].value:
+      if (self.options['log_directory'].value is None or
+          not validation.valid_directory(self.options['log_directory'].value)):
+        mesg = "%s is not a valid directory location " % self.options['log_directory'].value
+        mesg += "for sge log files"
+        self.log(mesg, 
+                 section = self.config_section,
+                 option = 'log_directory',
+                 level = logging.ERROR)
       
-    self.logger.debug('SGEConfiguration.checkAttributes completed')    
+    self.log('SGEConfiguration.checkAttributes completed')    
     return attributes_ok 
   
   def configure(self, attributes):
     """Configure installation using attributes"""
-    self.logger.debug('SGEConfiguration.configure started')
+    self.log('SGEConfiguration.configure started')
 
     if not self.enabled:
-      self.logger.debug('SGE not enabled, returning True')    
-      self.logger.debug('SGEConfiguration.configure completed')    
+      self.log('SGE not enabled, returning True')    
+      self.log('SGEConfiguration.configure completed')    
       return True
 
     if self.ignored:
-      self.logger.warning("%s configuration ignored" % self.config_section)
-      self.logger.debug('SGEConfiguration.configure completed')    
+      self.log("%s configuration ignored" % self.config_section, 
+               level = logging.WARNING)
+      self.log('SGEConfiguration.configure completed')    
       return True
 
     # The accept_limited argument was added for Steve Timm.  We are not adding
     # it to the default config.ini template because we do not think it is
     # useful to a wider audience.
     # See VDT RT ticket 7757 for more information.
-    if self.attributes[self.__mappings['accept_limited']].upper() == "TRUE":
-      if not self.enable_accept_limited(SGE_CONFIG_FILE):
-          self.logger.error('Error writing to condor configuration')
-          self.logger.debug('SGEConfiguration.configure completed')
-          return False
-    elif self.attributes[self.__mappings['accept_limited']].upper() == "FALSE":
-      if not self.disable_accept_limited(SGE_CONFIG_FILE):
-          self.logger.error('Error writing to condor configuration')
-          self.logger.debug('SGEConfiguration.configure completed')
-          return False
+    if self.options['accept_limited'].value:
+      if not self.enable_accept_limited(SGEConfiguration.SGE_CONFIG_FILE):
+        self.log('Error writing to ' + SGEConfiguration.SGE_CONFIG_FILE, 
+                 level = logging.ERROR)
+        self.log('SGEConfiguration.configure completed')
+        return False
+    else:
+      if not self.disable_accept_limited(SGEConfiguration.SGE_CONFIG_FILE):
+        self.log('Error writing to ' + SGEConfiguration.SGE_CONFIG_FILE, 
+                 level = logging.ERROR)
+        self.log('SGEConfiguration.configure completed')
+        return False
+
+    if not self.setup_gram_config():
+      self.log('Error writing to ' + SGEConfiguration.GRAM_CONFIG_FILE,
+               level = logging.ERROR)
+      return False
 
     if self.__set_default:
-        self.logger.debug('Configuring gatekeeper to use regular fork service')
-        self.set_default_jobmanager('fork')
+      self.log('Configuring gatekeeper to use regular fork service')
+      self.set_default_jobmanager('fork')
 
-    self.logger.debug('SGEConfiguration.configure started')    
+    if self.options['seg_enabled'].value:
+      self.enable_seg('sge', SGEConfiguration.SGE_CONFIG_FILE)
+      #TODO: do other SEG configuration
+    else:
+      self.disable_seg(SGEConfiguration.SGE_CONFIG_FILE)
+      #TODO: do other SEG configuration
+
+    # TODO: do other globus job manager configuration, e.g. paths etc.s      
+
+    self.log('SGEConfiguration.configure started')    
     return True
   
   def moduleName(self):
@@ -202,3 +239,51 @@ class SGEConfiguration(JobManagerConfiguration):
   def parseSections(self):
     """Returns the sections from the configuration file that this module handles"""
     return [self.config_section]
+
+  def setupGramConfig(self):
+    """
+    Populate the gram config file with correct values
+    
+    Returns True if successful, False otherwise
+    """    
+    buffer = open(SGEConfiguration.GRAM_CONFIG_FILE).read()
+    bin_location = os.path.join([self.options['sge_location'].value,
+                                 'bin',
+                                 'qsub'])
+    if validation.valid_file(bin_location):
+      (buffer, count) = re.subn('^qsub=.*$', "qsub=\"%s\"" % bin_location, 1)
+      if count == 0:
+        buffer = "qsub=\"%s\"\n" % bin_location + buffer
+    bin_location = os.path.join([self.options['sge_location'].value,
+                                 'bin',
+                                 'qstat'])
+    if validation.valid_file(bin_location):
+      (buffer, count) = re.subn('^qstat=.*$', "qstat=\"%s\"" % bin_location, 1)
+      if count == 0:
+        buffer = "qstat=\"%s\"\n" % bin_location + buffer
+    bin_location = os.path.join([self.options['sge_location'].value,
+                                 'bin',
+                                 'qdel'])
+    if validation.valid_file(bin_location):
+      (buffer, count) = re.subn('^qdel=.*$', "qdel=\"%s\"" % bin_location, 1)
+      if count == 0:
+        buffer = "qdel=\"%s\"\n" % bin_location + buffer
+    
+    new_setting = "sge_cell=\"%s\"" % self.options['sge_cell'].value
+    (buffer, count) = re.subn('^sge_cell=.*$', new_setting, 1)
+    if count == 0:
+      buffer = new_setting + "\n" + buffer
+    
+    new_setting = "sge_root=\"%s\"" % self.options['sge_root'].value
+    (buffer, count) = re.subn('^sge_root=.*$', new_setting, 1)
+    if count == 0:
+      buffer = new_setting + "\n" + buffer
+
+    if self.options['seg_enabled'].value:
+      new_setting = "log_path=\"%s\"" % self.options['log_directory'].value
+      (buffer, count) = re.subn('^sge_root=.*$', new_setting, 1)
+      if count == 0:
+        buffer = new_setting + "\n" + buffer
+    
+    if not utilities.atomic_write(SGEConfiguration.GRAM_CONFIG_FILE, buffer):
+      return False

@@ -1,6 +1,6 @@
 """ Module to handle attributes related to the GIP """
 
-import re, os, pwd
+import re, os, pwd, logging
 
 
 from osg_configure.modules import exceptions
@@ -104,17 +104,17 @@ class GipConfiguration(BaseConfiguration):
   def __init__(self, *args, **kwargs):
     # pylint: disable-msg=W0142
     super(GipConfiguration, self).__init__(*args, **kwargs)
-    self.logger.debug('GipConfiguration.__init__ started')
+    self.log('GipConfiguration.__init__ started')
     self.config_section = "GIP"
     self.vo_dir = "VONAME"  # default to allowing substitution in vo_dir
     self._valid_batch_opt = ['pbs', 'lsf', 'condor', 'sge', 'forwarding']
-    self.logger.debug('GipConfiguration.__init__ completed')
+    self.log('GipConfiguration.__init__ completed')
     
   def _check_entry(self, config, section, option, status, kind):
     """
     Check entries to make sure that they conform to the correct range of values 
     """
-    self.logger.debug('GipConfiguration._check_entry started')
+    self.log('GipConfiguration._check_entry started')
     has_entry = True
     try:
       entry = config.get(section, option)
@@ -122,16 +122,16 @@ class GipConfiguration(BaseConfiguration):
     except Exception:
       has_entry = False
     if not has_entry and status == REQUIRED:
-      self.logger.debug("Mandatory setting %s in section %s not found." % \
+      self.log("Mandatory setting %s in section %s not found." % \
                         (option, section))
       raise exceptions.SettingError("Can't get value for %s in section %s." %\
                                     (option, section))
     elif not has_entry and status == OPTIONAL:
-      self.logger.debug('GipConfiguration._check_entry completed')
+      self.log('GipConfiguration._check_entry completed')
       return None
     if kind == STRING:
       # No parsing we can do for strings.
-      self.logger.debug('GipConfiguration._check_entry completed')
+      self.log('GipConfiguration._check_entry completed')
       return entry
     elif kind == POSITIVE_INT:
       try:
@@ -142,7 +142,7 @@ class GipConfiguration(BaseConfiguration):
         raise exceptions.SettingError("Value of option `%s` in section " \
                                       "`%s` should be a positive integer, but it is `%s`" % \
                                       (option, section, entry))
-      self.logger.debug('GipConfiguration._check_entry completed')
+      self.log('GipConfiguration._check_entry completed')
       return entry
     elif kind == POSITIVE_FLOAT:
       try:
@@ -153,7 +153,7 @@ class GipConfiguration(BaseConfiguration):
         raise exceptions.SettingError("Value of option `%s` in section " \
                                       "`%s` should be a positive float, but it is `%s`" % \
                                       (option, section, entry))
-      self.logger.debug('GipConfiguration._check_entry completed')
+      self.log('GipConfiguration._check_entry completed')
       return entry
     elif kind == BOOLEAN:
       entry = entry.lower()
@@ -165,17 +165,17 @@ class GipConfiguration(BaseConfiguration):
                                       "`%s` should be a boolean, but it is `%s`" % (option, 
                                                                                     section,
                                                                                     entry))
-      self.logger.debug('GipConfiguration._check_entry completed')
+      self.log('GipConfiguration._check_entry completed')
       return entry in positive_vals
     elif kind == LIST:
       regex = re.compile('\s*,*\s*')
       entry = regex.split(entry)
-      self.logger.debug('GipConfiguration._check_entry completed')
+      self.log('GipConfiguration._check_entry completed')
       return entry
 
     else:
       # Kind of entry isn't known... OK for now.
-      self.logger.debug('GipConfiguration._check_entry completed')
+      self.log('GipConfiguration._check_entry completed')
       return entry
 
   def parseConfiguration(self, configuration):
@@ -184,11 +184,11 @@ class GipConfiguration(BaseConfiguration):
     object given by configuration and write recognized settings to attributes
     dict
     """
-    self.logger.debug('GipConfiguration.parseConfiguration started')
+    self.log('GipConfiguration.parseConfiguration started')
 
     if not utilities.ce_installed():
-      self.logger.debug('Not a CE configuration, disabling GIP')
-      self.logger.debug('GipConfiguration.parseConfiguration completed')
+      self.log('Not a CE configuration, disabling GIP')
+      self.log('GipConfiguration.parseConfiguration completed')
       self.enabled = False
       return
     
@@ -202,7 +202,7 @@ class GipConfiguration(BaseConfiguration):
               "(e.g. %s), %s was given" % (self.config_section, 
                                            ",".join(self._valid_batch_opt),
                                            batch_opt)
-        self.logger.error(msg)
+        self.log(msg, level = logging.ERROR)
         raise exceptions.SettingError(msg)
     
     has_sc = False
@@ -246,13 +246,13 @@ class GipConfiguration(BaseConfiguration):
               " At least one must be configured.  Please see the configuration"\
               " documentation."
         raise exceptions.SettingError(msg)
-    self.logger.debug('GipConfiguration.parseConfiguration completed')
+    self.log('GipConfiguration.parseConfiguration completed')
 
   def checkSC(self, config, section):
     """
     Check attributes related to a SE and make sure that they are consistent
     """
-    self.logger.debug('GipConfiguration.checkSC started')
+    self.log('GipConfiguration.checkSC started')
     attributes_ok = True
     if section.lower().find('changeme') >= 0:
       msg = "You have a section named 'Subcluster CHANGEME', you must change this name.\n"
@@ -288,14 +288,14 @@ class GipConfiguration(BaseConfiguration):
         raise exceptions.SettingError("Value for %s in section %s, %s, is" \
                                       " outside allowed range, 1-32" % 
                                       (option, section, entry))
-    self.logger.debug('GipConfiguration.checkSC completed')
+    self.log('GipConfiguration.checkSC completed')
     return attributes_ok
     
   def checkSE(self, config, section):
     """
     Check attributes currently stored and make sure that they are consistent
     """
-    self.logger.debug('GipConfiguration.checkSE started')
+    self.log('GipConfiguration.checkSE started')
     attributes_ok = True
 
     enabled = True
@@ -365,7 +365,7 @@ class GipConfiguration(BaseConfiguration):
             else:
               msg += "  There are no allowed VOs detected; contact the experts!"
             raise exceptions.SettingError(msg)
-    self.logger.debug('GipConfiguration.checkSE completed')
+    self.log('GipConfiguration.checkSE completed')
     return attributes_ok
     
 # pylint: disable-msg=W0613
@@ -373,16 +373,16 @@ class GipConfiguration(BaseConfiguration):
     """
     Configure installation using attributes.
     """
-    self.logger.debug('GipConfiguration.configure started')
+    self.log('GipConfiguration.configure started')
 
     # disable for now
-    self.logger.debug("Skipping GIP configuration.")
+    self.log("Skipping GIP configuration.")
     return
 
     glite_dir = os.path.join(utilities.get_vdt_location(),
                              'glite')
     if not os.path.exists(glite_dir):
-      self.logger.debug("glite directory (%s) does not exist.  Skipping GIP configuration." % glite_dir)
+      self.log("glite directory (%s) does not exist.  Skipping GIP configuration." % glite_dir)
       return
 
     try:
@@ -399,13 +399,17 @@ class GipConfiguration(BaseConfiguration):
       cemon_exec_file.write('#!/bin/sh\n')
       cemon_exec_file.write(osg_info_wrapper + '\n')
     except Exception, e:
-      self.logger.error("Can't write to " + cemon_exec_filename)
+      self.log("Can't write to " + cemon_exec_filename,
+               exception = True,
+               level = logging.ERROR)
       raise exceptions.ConfigurationError("Can't write to %s: %s" % (cemon_exec_filename, e))
 
     try:
       daemon_pwent = pwd.getpwnam('daemon')
     except Exception, e:
-      self.logger.error("Couldn't find username daemon")
+      self.log("Couldn't find username daemon",
+               exception = True,
+               level = logging.ERROR)
       raise exceptions.ConfigurationError("Couldn't find username daemon: %s" % e)
 
     (daemon_uid, daemon_gid)  = daemon_pwent[2:4]
@@ -414,26 +418,32 @@ class GipConfiguration(BaseConfiguration):
 
     try:
       if not os.path.exists(gip_tmpdir) or not os.path.isdir(gip_tmpdir):
-        self.logger.error("%s is not present or is not a directory, " % gip_tmpdir +
-                          "pacman didn't install gip correctly")
+        self.log("%s is not present or is not a directory, " % gip_tmpdir +
+                 "pacman didn't install gip correctly",
+                 level = logging.ERROR)
         raise exceptions.ConfigurationError("GIP install directory not setup: %s" % gip_tmpdir)
       os.chown(gip_tmpdir, daemon_uid, daemon_gid)
     except Exception, e:
-      self.logger.error("Can't set permissions on " + gip_tmpdir)
+      self.log("Can't set permissions on " + gip_tmpdir,
+               exception = True,
+               level = logging.ERROR)
       raise exceptions.ConfigurationError("Can't set permissions on %s: %s" % (gip_tmpdir, e))
 
     try:
       if not os.path.exists(gip_logdir) or not os.path.isdir(gip_logdir):
-        self.logger.error("%s is not present or is not a directory, " % gip_logdir +
-                          "pacman didn't install gip correctly")
+        self.log("%s is not present or is not a directory, " % gip_logdir +
+                 "pacman didn't install gip correctly",
+                 level = logging.ERROR)
         raise exceptions.ConfigurationError("GIP install directory not setup: %s" % gip_logdir)
       os.chown(gip_logdir, daemon_uid, daemon_gid)
     except Exception, e:
-      self.logger.error("Can't set permissions on " + gip_logdir)
+      self.log("Can't set permissions on " + gip_logdir,
+               exception = True,
+               level = logging.ERROR)
       raise exceptions.ConfigurationError("Can't set permissions on %s: %s" % \
                                           (gip_logdir, e))        
 
-    self.logger.debug('GipConfiguration.configure completed')   
+    self.log('GipConfiguration.configure completed')   
     
 
   

@@ -2,7 +2,7 @@
 
 """ Module to handle attributes related to the site location and details """
 
-import re, socket
+import re, socket, logging
 
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile
@@ -20,172 +20,198 @@ class SiteAttributes(BaseConfiguration):
   def __init__(self, *args, **kwargs):
     # pylint: disable-msg=W0142
     super(SiteAttributes, self).__init__(*args, **kwargs)
-    self.logger.debug('SiteAttributes.__init__ started')
-    self.__mappings = {'group': 'OSG_GROUP', 
-                       'host_name': 'OSG_HOSTNAME',
-                       'site_name': 'OSG_SITE_NAME',
-                       'sponsor': 'OSG_SPONSOR',
-                       'site_policy': 'OSG_SITE_INFO',
-                       'contact': 'OSG_CONTACT_NAME',
-                       'email': 'OSG_CONTACT_EMAIL',
-                       'city': 'OSG_SITE_CITY',
-                       'country': 'OSG_SITE_COUNTRY',
-                       'longitude': 'OSG_SITE_LONGITUDE',
-                       'latitude': 'OSG_SITE_LATITUDE',
-                       'resource': 'OSG_SITE_NAME',
-                       'resource_group': 'resource_group'}
-    self.__defaults = {'group' : 'OSG'}
-    self.__optional_settings = ['site_name',
-                                'resource',
-                                'resource_group']
+    self.log('SiteAttributes.__init__ started')
+    self.options = {'group' : 
+                      configfile.Option(name = 'group',
+                                        default_value = 'OSG',
+                                        mapping = 'OSG_GROUP'),
+                    'host_name' : 
+                      configfile.Option(name = 'host_name',
+                                        mapping = 'OSG_HOSTNAME'),
+                    'site_name' : 
+                      configfile.Option(name = 'site_name',
+                                        required = configfile.Option.OPTIONAL,
+                                        mapping = 'OSG_SITE_NAME'),
+                    'sponsor' : 
+                      configfile.Option(name = 'sponsor',
+                                        mapping = 'OSG_SPONSOR'),
+                    'site_policy' : 
+                      configfile.Option(name = 'site_policy',
+                                        mapping = 'OSG_SITE_INFO'),
+                    'contact' : 
+                      configfile.Option(name = 'contact',
+                                        mapping = 'OSG_CONTACT_NAME'),
+                    'email' : 
+                      configfile.Option(name = 'email',
+                                        mapping = 'OSG_CONTACT_EMAIL'),
+                    'city' : 
+                      configfile.Option(name = 'city',
+                                        mapping = 'OSG_SITE_CITY'),
+                    'country' : 
+                      configfile.Option(name = 'country',
+                                        mapping = 'OSG_SITE_COUNTRY'),
+                    'longitude' : 
+                      configfile.Option(name = 'longitude',
+                                        type = float,
+                                        mapping = 'OSG_SITE_LONGITUDE'),
+                    'latitude' : 
+                      configfile.Option(name = 'latitude',
+                                        type = float,
+                                        mapping = 'OSG_SITE_LATITUDE'),
+                    'resource' : 
+                      configfile.Option(name = 'resource',
+                                        required = configfile.Option.OPTIONAL,
+                                        mapping = 'OSG_SITE_NAME'),
+                    'resource_group' : 
+                      configfile.Option(name = 'resource_group',
+                                        required = configfile.Option.OPTIONAL)}
+    
     self.config_section = "Site Information"
-    self.__enabled = True
-    self.logger.debug('SiteAttributes.__init__ completed')
+    self.enabled = True
+    self.log('SiteAttributes.__init__ completed')
         
   def parseConfiguration(self, configuration):
     """Try to get configuration information from ConfigParser or SafeConfigParser object given
     by configuration and write recognized settings to attributes dict
     """
-    self.logger.debug('SiteAttributes.parseConfiguration started')
+    self.log('SiteAttributes.parseConfiguration started')
 
     self.checkConfig(configuration)
 
     if not configuration.has_section(self.config_section):
-      self.__enabled = False
-      self.logger.debug("%s section not in config file" % self.config_section)    
-      self.logger.debug('SiteAttributes.parseConfiguration completed')
+      self.enabled = False
+      self.log("%s section not in config file" % self.config_section)    
+      self.log('SiteAttributes.parseConfiguration completed')
       return
     
-    for setting in self.__mappings:
-      self.logger.debug("Getting value for %s" % setting)
-      temp = configfile.get_option(configuration, 
-                                   self.config_section, 
-                                   setting,
-                                   defaults = self.__defaults,
-                                   optional_settings = self.__optional_settings)
-      self.attributes[self.__mappings[setting]] = temp
-      self.logger.debug("Got %s" % temp)
+    for option in self.options.values():
+      self.log("Getting value for %s" % option.name)
+      configfile.get_option(configuration,
+                            self.config_section, 
+                            option)
+      self.log("Got %s" % option.value)
  
-    # site_name or resource/resource_group must be specified not both
-    if (configuration.has_option(self.config_section, 'site_name') and
-        (configuration.has_option(self.config_section, 'resource') or
-         configuration.has_option(self.config_section, 'resource_group'))):
-      self.logger.warn("In section '%s', site_name and resource or " \
-                       "resource_group given at the same time, you should "\
-                       "use just the resource and resource_group settings.")
-    if configuration.has_option(self.config_section, 'resource'):
-      resource = configuration.get(self.config_section, 'resource')
-      if self.attributes['OSG_SITE_NAME'] != resource:
-        self.attributes['OSG_SITE_NAME'] = resource
 
-    # check and warn if unknown options found 
+    # check and warn if unknown options found    
     temp = utilities.get_set_membership(configuration.options(self.config_section),
-                                        self.__mappings,
+                                        self.options.keys(),
                                         configuration.defaults().keys())
     for option in temp:
-      self.logger.warning("Found unknown option %s in %s section" % 
-                           (option, self.config_section))   
-    self.logger.debug('SiteAttributes.parseConfiguration completed')
+      self.log("Found unknown option",
+               option = option, 
+               section = self.config_section,
+               level = logging.WARNING)
+    self.log('SiteAttributes.parseConfiguration completed')
 
 # pylint: disable-msg=W0613
   def checkAttributes(self, attributes):
     """Check attributes currently stored and make sure that they are consistent"""
-    self.logger.debug('SiteAttributes.checkAttributes started')
+    self.log('SiteAttributes.checkAttributes started')
     attributes_ok = True
     
-    if not self.__enabled:
-      self.logger.debug('Not enabled, returning True')
-      self.logger.debug('SiteAttributes.checkAttributes completed')    
+    if not self.enabled:
+      self.log('Not enabled, returning True')
+      self.log('SiteAttributes.checkAttributes completed')    
       return attributes_ok
 
-    # Make sure all settings are present
-    for setting in self.__mappings:
-      if self.__mappings[setting] not in self.attributes:
-        self.logger.error("Missing setting for %s", self.__mappings[setting])
-        attributes_ok = False
+
         
     # OSG_GROUP must be either OSG or OSG-ITB
-    if self.attributes['OSG_GROUP'] not in ('OSG', 'OSG-ITB'):
-      self.logger.error("The group setting must be either OSG or OSG-ITB, got: %s" %
-                        self.attributes['OSG_GROUP'])
+    if self.options['group'].value not in ('OSG', 'OSG-ITB'):
+      self.log("The group setting must be either OSG or OSG-ITB, got: %s" %
+               self.options['group'].value,
+               option = 'group',
+               section = self.config_section,
+               level = logging.ERROR)
       attributes_ok = False
     
-    # OSG_HOSTNAME must be different from the default setting
-    if self.attributes['OSG_HOSTNAME'] == 'my.domain.name':      
-      self.logger.error("In %s section, hostname %s set to default my.domain.name" % \
-                        (self.config_section, self.attributes['OSG_HOSTNAME']))
-      self.logger.error("Check to make sure that localhost in the " +
-                        "Default section has been changed")
+    # host_name must be different from the default setting
+    if self.options['host_name'].value == 'my.domain.name':      
+      self.log("Setting left at default value: my.domain.name",
+               option = 'host_name',
+               section = self.config_section,
+               level = logging.ERROR)
       attributes_ok = False
     
-    # OSG_HOSTNAME must be a valid dns name, check this by getting it's ip adddress
-    if not validation.valid_domain(self.attributes['OSG_HOSTNAME'], True):
-      self.logger.error("In %s section, hostname %s can't be resolved" % \
-                        (self.config_section, self.attributes['OSG_HOSTNAME']))
+    # host_name must be a valid dns name, check this by getting it's ip adddress
+    if not validation.valid_domain(self.options['host_name'].value, True):
+      self.log("hostname %s can't be resolved" % self.options['host_name'],
+               option = 'host_name',
+               section = self.config_section,
+               level = logging.ERROR)
       attributes_ok = False
+
+    # site_name or resource/resource_group must be specified not both
+    if (not utilities.blank(self.options['site_name'].value) and
+        (not utilities.blank(self.options['resource'].value) or
+         not utilities.blank(self.options['resource_group'].value))):
+      self.log("In section '%s', site_name and resource or " \
+               "resource_group given at the same time, you should "\
+               "use just the resource and resource_group settings.",
+               level = logging.WARNING)
     
-    try:
-      temp = float(self.attributes['OSG_SITE_LATITUDE'])
-      if temp > 90 or temp < -90:
-        self.logger.error("In %s section, problem with latitude setting" % self.config_section)
-        self.logger.error("Latitude must be between -90 and 90, got %s" % 
-                          self.attributes['OSG_SITE_LATITUDE'])    
-        attributes_ok = False
-    except ValueError:
-      self.logger.error("In %s section, problem with latitude setting" % self.config_section)
-      self.logger.error("Latitude must be a number, got %s" % 
-                        self.attributes['OSG_SITE_LATITUDE'])
+    
+    if  self.options['latitude'].value > 90 or self.options['latitude'].value < -90:
+      self.log("Latitude must be between -90 and 90, got %s" % 
+                self.options['latitude'].value,
+               section = self.config_section,
+               option = 'latitude',
+               level = logging.ERROR)    
       attributes_ok = False
   
-    try:
-      temp = float(self.attributes['OSG_SITE_LONGITUDE'])
-      if temp > 180 or temp < -180:
-        self.logger.error("In %s section, problem with longitude setting" % self.config_section)
-        self.logger.error("Longitude must be between -180 and 180, got %s" % 
-                          self.attributes['OSG_SITE_LONGITUDE'])
-        attributes_ok = False
-    except ValueError:
-      self.logger.error("In %s section, problem with longitude setting" % self.config_section)
-      self.logger.error("Longitude must be a number, got %s" % 
-                        self.attributes['OSG_SITE_LONGITUDE'])
+    if  self.options['longitude'].value > 180 or self.options['longitude'].value < -180:
+      self.log("Longitude must be between -180 and 180, got %s" % 
+                self.options['longitude'].value,
+               section = self.config_section,
+               option = 'longitude',
+               level = logging.ERROR)    
       attributes_ok = False
+
   
     # make sure that the email address is different from the default value
-    if self.attributes['OSG_CONTACT_EMAIL'] == 'foo@my.domain':
-      self.logger.error("In %s section, problem with email setting" % self.config_section)
-      self.logger.error("The email setting must be changed from the default")
-      self.logger.error("Make sure that the admin_email setting in the Default " +
-                        "section has been changed from foo@my.domain.")
+    if self.options['email'] == 'foo@my.domain':
+      self.log("The email setting must be changed from the default",
+               section = self.config_section,
+               option = 'email',
+               level = logging.ERROR)
       attributes_ok = False
       
     # make sure the email address has the correct format and that the domain portion is
     # resolvable    
-    match = re.match('(?:[a-zA-Z\-_+0-9.]+)@([a-zA-Z0-9_\-]+(?:\.[a-zA-Z0-9_\-]+)+)', 
-                     self.attributes['OSG_CONTACT_EMAIL'])
-    if not validation.valid_email(self.attributes['OSG_CONTACT_EMAIL']):
-      self.logger.error("In %s section, problem with email setting" % self.config_section)
-      self.logger.error("Invalid email address in site information: %s" % 
-                        self.attributes['OSG_CONTACT_EMAIL'])
+    if not validation.valid_email(self.options['email'].value):
+      self.log("Invalid email address in site information: %s" % 
+               self.options['email'].value,
+               section = self.config_section,
+               option = 'email',
+               level = logging.ERROR)
       attributes_ok = False
     else:
+      match = re.match('(?:[a-zA-Z\-_+0-9.]+)@([a-zA-Z0-9_\-]+(?:\.[a-zA-Z0-9_\-]+)+)', 
+                     self.options['email'].value)
       try:
         socket.gethostbyname(match.group(1))
-      except socket.herror, exception:
-        self.logger.warning("In %s section, problem with email setting" % self.config_section)
-        self.logger.warning("Can't resolve domain in contact email: %s" % exception)
-      except socket.gaierror, exception:
-        self.logger.warning("In %s section, problem with email setting" % self.config_section)
-        self.logger.warning("Can't resolve domain in contact email: %s" % exception)
+      except socket.herror:
+        self.log("Can't resolve domain in  email: %s" % self.options['email'].value,
+                 section = self.config_section,
+                 option = 'email',
+                 level = logging.WARNING,
+                 exception = True)
+      except socket.gaierror:
+        self.log("Can't resolve domain in  email: %s" % self.options['email'].value,
+                 section = self.config_section,
+                 option = 'email',
+                 level = logging.WARNING,
+                 exception = True)
         
-    vo_list = self.attributes[self.__mappings['sponsor']]    
+    vo_list = self.options['sponsor'].value    
     percentage = 0
     vo_names = utilities.get_vos(None)
     if vo_names == []:
       map_file_present = False
     else:
       map_file_present = True
-    vo_names.append('usatlas')   # local is a valid vo name
-    vo_names.append('uscms')   # local is a valid vo name
+    vo_names.append('usatlas')   # usatlas is a valid vo name
+    vo_names.append('uscms')   # uscms is a valid vo name
     vo_names.append('local')   # local is a valid vo name
     
     cap_vo_names = [vo.upper() for vo in vo_names]
@@ -193,30 +219,36 @@ class SiteAttributes(BaseConfiguration):
       vo_name = vo.split(':')[0]
       if vo_name not in vo_names:
         if vo_name.upper() in cap_vo_names:
-          self.logger.warning("In %s section, problem with sponsor setting" % \
-                              self.config_section)
-          self.logger.warning("VO name  %s has the wrong capitialization" % vo_name)
+          self.log("VO name  %s has the wrong capitialization" % vo_name,
+                   section = self.config_section,
+                   option = 'sponsor',
+                   level = logging.WARNING)
           vo_mesg = "Valid VO names are as follows:\n"
           for name in vo_names:
             vo_mesg +=  name + "\n"
-          self.logger.critical(vo_mesg)
+          self.log(vo_mesg, level = logging.WARNING)
         else:
           if map_file_present:
-            self.logger.critical("In %s section, problem with sponsor setting" % \
+            self.log("In %s section, problem with sponsor setting" % \
                                  self.config_section)
-            self.logger.critical("VO name %s not found" % vo_name)
+            self.log("VO name %s not found" % vo_name,
+                   section = self.config_section,
+                   option = 'sponsor',
+                   level = logging.ERROR)
             vo_mesg = "Valid VO names are as follows:\n"
             for name in vo_names:
               vo_mesg +=  name + "\n"
-            self.logger.critical(vo_mesg)
+            self.log(vo_mesg, level = logging.ERROR)
             attributes_ok = False
           else:
-            self.logger.warning("In %s section, problem with sponsor setting" % \
-                                 self.config_section)
-            self.logger.warning("VO name %s not found" % vo_name)
-            self.logger.warning("/var/lib/osg/user-vo-map may be missing or empty " +
-                                "please verify your gums or edg-mkgridmap " +
-                                "settings are correct")
+            self.log("VO name %s not found" % vo_name,
+                     section = self.config_section,
+                     option = 'sponsor',
+                     level = logging.WARNING)
+            self.log("/var/lib/osg/user-vo-map may be missing or empty " +
+                     "please verify your gums or edg-mkgridmap " +
+                     "settings are correct",
+                     level = logging.WARNING)
             
 
       if len(vo.split(':')) == 1:
@@ -226,20 +258,30 @@ class SiteAttributes(BaseConfiguration):
         try:        
           percentage += int(vo_percentage)
         except ValueError:
-          self.logger.critical("VO percentage (%s) in sponsor field (%s) not an integer" \
-                               % (vo_percentage, vo))   
+          self.log("VO percentage (%s) in sponsor field (%s) not an integer" \
+                   % (vo_percentage, vo),
+                   section = self.config_section,
+                   option = 'sponsor',
+                   level = logging.ERROR,
+                   exception = True)
           attributes_ok = False
       else:
-        self.logger.critical("VO sponsor field is not formated correctly: %s" % vo)
-        self.logger.critical("sponsors should be given as sponsor:percentage "
-                             "separated by a space or comma")
+        self.log("VO sponsor field is not formated correctly: %s" % vo,
+                 section = self.config_section,
+                 option = 'sponsor',
+                 level = logging.ERROR)
+        self.log("Sponsors should be given as sponsor:percentage "
+                 "separated by a space or comma")
         
         
     if percentage != 100:
-      self.logger.critical("VO percentages in sponsor field do not add up to 100, got %s"\
-                            % percentage)
+      self.log("VO percentages in sponsor field do not add up to 100, got %s"\
+               % percentage,
+               section = self.config_section,
+               option = 'sponsor',
+               level = logging.ERROR)
       attributes_ok = False
-    self.logger.debug('SiteAttributes.checkAttributes completed')
+    self.log('SiteAttributes.checkAttributes completed')
     return attributes_ok 
   
   def moduleName(self):
@@ -253,3 +295,30 @@ class SiteAttributes(BaseConfiguration):
   def parseSections(self):
     """Returns the sections from the configuration file that this module handles"""
     return [self.config_section]
+
+  def getAttributes(self):
+    """
+    Get attributes for the osg attributes file using the dict in self.options
+
+    Returns a dictionary of ATTRIBUTE => value mappings
+    
+    Need to override parent class method since two options may map to OSG_SITE_NAME
+    """
+
+    self.log("%s.getAttributes started" % self.__class__)
+
+    attributes = BaseConfiguration.getAttributes(self)
+    if attributes == {}:
+      self.log("%s.getAttributes completed" % self.__class__)
+      return attributes
+    
+    if ('OSG_SITE_NAME' in attributes and
+        self.options['resource'].value is not None and
+        not utilities.blank(self.options['resource'].value)):
+      attributes['OSG_SITE_NAME'] = self.options['resource'].value
+      self.log("%s.getAttributes completed" % self.__class__)
+      return attributes
+    
+    self.log("%s.getAttributes completed" % self.__class__)
+    return attributes
+    

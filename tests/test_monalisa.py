@@ -62,20 +62,22 @@ class TestLocalSettings(unittest.TestCase):
     self.failUnlessEqual(attributes['OSG_GANGLIA_PORT'], '1234', 
                          'Wrong value obtained for OSG_GANGLIA_PORT')
 
-    self.failUnless(attributes.has_key('monitor_group'), 
+    self.failUnless(settings.options.has_key('monitor_group'), 
                     'Attribute monitor_group missing')
-    self.failUnlessEqual(attributes['monitor_group'], 'monalisa_group', 
+    self.failUnlessEqual(settings.options['monitor_group'].value, 
+                         'monalisa_group', 
                          'Wrong value obtained for monitor_group')
 
-    self.failUnless(attributes.has_key('user'), 
+    self.failUnless(settings.options.has_key('user'), 
                     'Attribute user missing')
-    self.failUnlessEqual(attributes['user'], 'monalisa_user', 
-                         'Wrong value obtained for monitor_group')
+    self.failUnlessEqual(settings.options['user'].value, 'monalisa_user', 
+                         'Wrong value obtained for user')
 
-    self.failUnless(attributes.has_key('auto_update'), 
+    self.failUnless(settings.options.has_key('auto_update'), 
                     'Attribute auto_update missing')
-    self.failUnlessEqual(attributes['auto_update'], 'Y', 
+    self.failUnlessEqual(settings.options['auto_update'].value, True, 
                          'Wrong value obtained for auto_update')
+
 
   def testParsing2(self):
     """
@@ -109,9 +111,9 @@ class TestLocalSettings(unittest.TestCase):
     self.failUnlessEqual(attributes['OSG_GANGLIA_SUPPORT'], 'N', 
                          'Wrong value obtained for OSG_GANGLIA_SUPPORT')
     
-    self.failUnless(attributes.has_key('auto_update'), 
+    self.failUnless(settings.options.has_key('auto_update'), 
                     'Attribute auto_update missing')
-    self.failUnlessEqual(attributes['auto_update'], 'N', 
+    self.failUnlessEqual(settings.options['auto_update'].value, False, 
                          'Wrong value obtained for auto_update')
 
   def testParsingDisabled(self):
@@ -190,20 +192,20 @@ class TestLocalSettings(unittest.TestCase):
                     'Attribute OSG_GANGLIA_PORT missing')
     self.failUnlessEqual(attributes['OSG_GANGLIA_PORT'], '8649', 
                          'Wrong value obtained for OSG_GANGLIA_PORT')
-
-    self.failUnless(attributes.has_key('monitor_group'), 
+    
+    self.failUnless(settings.options.has_key('monitor_group'), 
                     'Attribute monitor_group missing')
-    self.failUnlessEqual(attributes['monitor_group'], None, 
+    self.failUnlessEqual(settings.options['monitor_group'].value, None, 
                          'Wrong value obtained for monitor_group')
 
-    self.failUnless(attributes.has_key('user'), 
+    self.failUnless(settings.options.has_key('user'), 
                     'Attribute user missing')
-    self.failUnlessEqual(attributes['user'], 'daemon', 
-                         'Wrong value obtained for monitor_group')
+    self.failUnlessEqual(settings.options['user'].value, 'daemon', 
+                         'Wrong value obtained for user')
 
-    self.failUnless(attributes.has_key('auto_update'), 
+    self.failUnless(settings.options.has_key('auto_update'), 
                     'Attribute auto_update missing')
-    self.failUnlessEqual(attributes['auto_update'], 'N', 
+    self.failUnlessEqual(settings.options['auto_update'].value, False, 
                          'Wrong value obtained for auto_update')
 
   def testAttributeCheck(self):

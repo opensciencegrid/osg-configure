@@ -36,18 +36,29 @@ class TestLocalSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    attributes = settings.attributes
-    variables = {'OSG_GLEXEC_LOCATION' : './configs/misc',
+    options = settings.options
+    variables = {'glexec_location' : './configs/misc',
                  'gums_host' : 'my.gums.org',
                  'authorization_method' : 'xacml'}
+    for var in variables:      
+      self.failUnless(options.has_key(var), 
+                      "Option %s missing" % var)
+      self.failUnlessEqual(options[var].value, 
+                           variables[var], 
+                           "Wrong value obtained for %s, got %s but " \
+                           "expected %s" % (var, 
+                                            options[var].value, 
+                                            variables[var]))
+    attributes = settngs.getAttributes()
+    variables = {'OSG_GLEXEC_LOCATION' : './configs/misc'}
     for var in variables:      
       self.failUnless(attributes.has_key(var), 
                       "Attribute %s missing" % var)
       self.failUnlessEqual(attributes[var], 
                            variables[var], 
                            "Wrong value obtained for %s, got %s but " \
-                           "expected %s" % (var, 
-                                            attributes[var], 
+                           "expected %s" % (var,                                             
+                                            attributes[var],
                                             variables[var]))
     
 
@@ -67,10 +78,21 @@ class TestLocalSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    attributes = settings.attributes
+    options = settings.options
     variables = {'OSG_GLEXEC_LOCATION' : './configs/misc',
                  'gums_host' : 'my.gums.org',
                  'authorization_method' : 'xacml'}
+    for var in variables:      
+      self.failUnless(options.has_key(var), 
+                      "Option %s missing" % var)
+      self.failUnlessEqual(options[var].value, 
+                           variables[var], 
+                           "Wrong value obtained for %s, got %s but " \
+                           "expected %s" % (var, 
+                                            options[var].value, 
+                                            variables[var]))
+    attributes = settngs.getAttributes()
+    variables = {'OSG_GLEXEC_LOCATION' : './configs/misc'}
     for var in variables:      
       self.failUnless(attributes.has_key(var), 
                       "Attribute %s missing" % var)
@@ -87,27 +109,6 @@ class TestLocalSettings(unittest.TestCase):
     Test misc parsing with negative values
     """
     
-    config_file = os.path.abspath("./configs/misc/misc_prima.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-
-    settings = misc.MiscConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
-
-    attributes = settings.attributes
-    self.failUnless(attributes.has_key('authorization_method'), 
-                    "Attribute authorization_method missing")
-    self.failUnlessEqual(attributes['authorization_method'], 
-                         'prima', 
-                         "Wrong value obtained for %s, got %s but " \
-                         "expected %s" % ('authorization_method',                                             
-                                          attributes['authorization_method'],
-                                          'prima'))
-
     config_file = os.path.abspath("./configs/misc/misc_xacml.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -119,10 +120,9 @@ class TestLocalSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    attributes = settings.attributes
-    self.failUnless(attributes.has_key('authorization_method'), 
+    self.failUnless(settings.options.has_key('authorization_method'), 
                     "Attribute authorization_method missing")
-    self.failUnlessEqual(attributes['authorization_method'], 
+    self.failUnlessEqual(settings.options['authorization_method'].value, 
                          'xacml', 
                          "Wrong value obtained for %s, got %s but " \
                          "expected %s" % ('authorization_method',                                             
@@ -140,10 +140,9 @@ class TestLocalSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    attributes = settings.attributes
-    self.failUnless(attributes.has_key('authorization_method'), 
+    self.failUnless(settings.options.has_key('authorization_method'), 
                     "Attribute authorization_method missing")
-    self.failUnlessEqual(attributes['authorization_method'], 
+    self.failUnlessEqual(settings.options['authorization_method'].value, 
                          'gridmap', 
                          "Wrong value obtained for %s, got %s but " \
                          "expected %s" % ('authorization_method',                                             
@@ -161,10 +160,9 @@ class TestLocalSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    attributes = settings.attributes
-    self.failUnless(attributes.has_key('authorization_method'), 
+    self.failUnless(settings.options.has_key('authorization_method'), 
                     "Attribute authorization_method missing")
-    self.failUnlessEqual(attributes['authorization_method'], 
+    self.failUnlessEqual(settings.options['authorization_method'].value, 
                          'local-gridmap', 
                          "Wrong value obtained for %s, got %s but " \
                          "expected %s" % ('authorization_method',                                             
@@ -212,27 +210,6 @@ class TestLocalSettings(unittest.TestCase):
         
 
     config_file = os.path.abspath("./configs/misc/misc_xacml_bad_gums.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-
-    settings = misc.MiscConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
-
-    attributes = settings.attributes
-    self.failIf(settings.checkAttributes(attributes), 
-                "Did not notice bad gums host")
-
-  def testPrimaBadGums(self):
-    """
-    Test the checkAttributes function when prima is specified but the
-    gums host isn't valid
-    """
-        
-
-    config_file = os.path.abspath("./configs/misc/misc_prima_bad_gums.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 

@@ -29,102 +29,91 @@ class TestConfigFile(unittest.TestCase):
       config = ConfigParser.ConfigParser()
       section = 'Test'
       config.add_section(section)
-      option = 'foo'
+      option = configfile.Option(name = 'foo')
       
       # do missing options get flagged
       self.failUnlessRaises(exceptions.SettingError, 
                             configfile.get_option,
                             config = config,
                             section = section,
-                            option = 'missing')
-      optional_settings = [option]
+                            option = option)
+      option.required = configfile.Option.OPTIONAL
       
       # do optional settings get handled correctly if they are missing
       self.failUnlessEqual(None, 
                            configfile.get_option(config, 
                                                  section, 
-                                                 option, 
-                                                 optional_settings), 
+                                                 option), 
                            'Raised exception for missing optional setting')
-      defaults = { option : 'test'}
+      
+      option.default_value = 'test'
+      option.value = ''
       # make sure defaults get used 
       self.failUnlessEqual('test', 
                            configfile.get_option(config, 
                                                  section, 
-                                                 option, 
-                                                 optional_settings,
-                                                 defaults), 
+                                                 option), 
                            'Raised exception for missing optional setting')
       # get integer option
       config.set(section, option, '1')
+      option.type = int
       self.failUnlessEqual(1, 
                            configfile.get_option(config, 
                                                  section, 
-                                                 option, 
-                                                 optional_settings,
-                                                 defaults,
-                                                 types.IntType), 
+                                                 option), 
                            'Should have gotten an integer equal to 1 back')
       
       # get float option
+      option.type = float
       config.set(section, option, '1.23e5')
       self.failUnlessAlmostEqual(1.23e5, 
                                  configfile.get_option(config, 
                                                        section, 
-                                                       option, 
-                                                       optional_settings,
-                                                       defaults,
-                                                       types.FloatType),
+                                                       option),
                                  7,
                                  'Should have gotten a float equal to 1.23e5 back')
 
       # check errors when wrong type specified
+      option.type = int
       self.failUnlessRaises(exceptions.SettingError, 
                             configfile.get_option,
                             config = config,
                             section = section,
-                            option = option,
-                            defaults = defaults,
-                            option_type = types.IntType)
+                            option = option)
 
       # get boolean option 
+      option.type = bool
       config.set(section, option, 'False')
       self.failUnlessEqual(False, 
                            configfile.get_option(config, 
                                                  section, 
-                                                 option, 
-                                                 optional_settings,
-                                                 defaults,
-                                                 types.BooleanType), 
+                                                 option), 
                            'Should have gotten False back')
       # check errors when wrong type specified
+      option.type = int
       self.failUnlessRaises(exceptions.SettingError, 
                             configfile.get_option,
                             config = config,
                             section = section,
-                            option = option,
-                            defaults = defaults,
-                            option_type = types.IntType)
+                            option = option)
       
       # check errors when wrong type specified
+      option.type = bool
       config.set(section, option, 'abc')
       self.failUnlessRaises(exceptions.SettingError, 
                             configfile.get_option,
                             config = config,
                             section = section,
-                            option = option,
-                            defaults = defaults,
-                            option_type = types.BooleanType)
+                            option = option)
 
       # check to make sure that default gets set when setting is set to 
       # blank/UNAVAILABLE
+      option.type = str
       config.set(section, option, 'UNAVAILABLE')
       self.failUnlessEqual('test', 
                            configfile.get_option(config, 
                                                  section, 
-                                                 option, 
-                                                 optional_settings,
-                                                 defaults), 
+                                                 option), 
                            'Should have gotten a value of test back')
 
     def test_get_option_location(self):

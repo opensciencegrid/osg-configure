@@ -331,6 +331,9 @@ def atomic_write(filename = None, contents = None, **kwargs):
     try:
       try:
         os.write(config_fd, contents)
+        # need to fsync data to make sure data is written on disk before renames
+        # see ext4 documentation for more information
+        os.fsync(config_fd)
       finally:
         os.close(config_fd)
     except:

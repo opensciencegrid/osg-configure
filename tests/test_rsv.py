@@ -38,7 +38,7 @@ class TestRSVSettings(unittest.TestCase):
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e) 
 
-    attributes = settings.attributes
+    options = settings.options
     variables = {'gratia_probes' : 'pbs,metric,condor', 
                  'ce_hosts' : 'my.host.com',
                  'gridftp_hosts' : 'my.host.com',
@@ -53,13 +53,13 @@ class TestRSVSettings(unittest.TestCase):
                  'enable_gratia' : True,
                  'enable_nagios' : True}
     for var in variables:      
-      self.failUnless(attributes.has_key(var), 
-                      "Attribute %s missing" % var)
-      self.failUnlessEqual(attributes[var], 
+      self.failUnless(options.has_key(var), 
+                      "Option %s missing" % var)
+      self.failUnlessEqual(options[var].value, 
                            variables[var], 
                            "Wrong value obtained for %s, got %s but " \
                            "expected %s" % (var, 
-                                            attributes[var], 
+                                            options[var].value, 
                                             variables[var]))
         
   def testParsing2(self):
@@ -78,7 +78,7 @@ class TestRSVSettings(unittest.TestCase):
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e) 
 
-    attributes = settings.attributes
+    options = settings.options
     variables = {'gratia_probes' : None, 
                  'ce_hosts' : 'my.host.com, my2.host.com',
                  'gridftp_hosts' : 'my.host.com, my2.host.com',
@@ -93,13 +93,13 @@ class TestRSVSettings(unittest.TestCase):
                  'enable_gratia' : False,
                  'enable_nagios' : False}
     for var in variables:
-      self.failUnless(attributes.has_key(var), 
-                      "Attribute %s missing" % var)
-      self.failUnlessEqual(attributes[var], 
+      self.failUnless(options.has_key(var), 
+                      "Option %s missing" % var)
+      self.failUnlessEqual(options[var].value, 
                            variables[var], 
                            "Wrong value obtained for %s, got %s but " \
                            "expected %s" % (var, 
-                                            attributes[var], 
+                                            options[var].value, 
                                             variables[var]))
 
   def testMultipleHosts(self):
@@ -118,7 +118,7 @@ class TestRSVSettings(unittest.TestCase):
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e) 
 
-    attributes = settings.attributes
+    options = settings.options
     variables = {'ce_hosts' : 'host1.site.com, host2.site.com',
                  'gridftp_hosts' : 'host3.site.com, host4.site.com',
                  'gridftp_dir' : '/tmp',
@@ -132,13 +132,13 @@ class TestRSVSettings(unittest.TestCase):
                  'enable_gratia' : True,
                  'enable_nagios' : True}
     for var in variables:
-      self.failUnless(attributes.has_key(var), 
-                      "Attribute %s missing" % var)
-      self.failUnlessEqual(attributes[var], 
+      self.failUnless(options.has_key(var), 
+                      "Option %s missing" % var)
+      self.failUnlessEqual(options[var].value, 
                            variables[var], 
                            "Wrong value obtained for %s, got %s but " \
                            "expected %s" % (var, 
-                                            attributes[var], 
+                                            options[var].value, 
                                             variables[var]))
 
 

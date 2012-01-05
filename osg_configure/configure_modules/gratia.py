@@ -2,7 +2,7 @@
 
 """ Module to handle attributes and configuration for Gratia """
 
-import os, sys, ConfigParser, re, tempfile
+import os, sys, ConfigParser, re, tempfile, logging
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
@@ -28,23 +28,27 @@ in your config.ini file."""
   def __init__(self, *args, **kwargs):
     # pylint: disable-msg=W0142
     super(GratiaConfiguration, self).__init__(*args, **kwargs)
-    self.logger.debug("GratiaConfiguration.__init__ started")
+    self.log("GratiaConfiguration.__init__ started")
 
     self.config_section = 'Gratia'
-    self.__mappings = {'probes' : 'probes',
-                       'resource' : 'resource'}
-    self.__optional = ['resource']
+    self.options = {'probes' : 
+                      configfile.Option(name = 'probes'),
+                    'resource' : 
+                      configfile.Option(name = 'resource',
+                                        required = configfile.Option.OPTIONAL)}
+    
     # Dictionary holding probe settings, the probe's name is used as the key and the
     # server the probe should report to is the value.  
     self.enabled_probe_settings = {}
-    self.__defaults = {}
     
-    #defaults for itb and production use
-    self.__itb_defaults = {'probes' : 'jobmanager:gratia-osg-itb.opensciencegrid.org:80'}
-    self.__production_defaults = {'probes' : 'jobmanager:gratia-osg-prod.opensciencegrid.org:80'}     
+    # defaults for itb and production use
+    self.__itb_defaults = {'probes' : 
+                            'jobmanager:gratia-osg-itb.opensciencegrid.org:80'}
+    self.__production_defaults = {'probes' : 
+                                    'jobmanager:gratia-osg-prod.opensciencegrid.org:80'}     
     
     self.__job_managers = ['pbs', 'sge', 'lsf', 'condor']
-    self.logger.debug("GratiaConfiguration.__init__ completed")
+    self.log("GratiaConfiguration.__init__ completed")
     
     self.grid_group = 'OSG'
       
@@ -54,24 +58,24 @@ in your config.ini file."""
     by configuration and write recognized settings to attributes dict    
     """
     
-    self.logger.debug('GratiaConfiguration.parseConfiguration started')
+    self.log('GratiaConfiguration.parseConfiguration started')
 
     self.checkConfig(configuration)
 
     if (not configuration.has_section(self.config_section) and
         utilities.ce_installed()):
-      self.logger.debug('On CE and no Gratia section, auto-configuring gratia')    
+      self.log('On CE and no Gratia section, auto-configuring gratia')    
       self.__auto_configure(configuration)
-      self.logger.debug('GratiaConfiguration.parseConfiguration completed')    
+      self.log('GratiaConfiguration.parseConfiguration completed')    
       return True
     elif not configuration.has_section(self.config_section):
       self.enabled = False
-      self.logger.debug("%s section not in config file" % self.config_section)
-      self.logger.debug('Gratia.parseConfiguration completed')
+      self.log("%s section not in config file" % self.config_section)
+      self.log('Gratia.parseConfiguration completed')
       return
     
     if not self.setStatus(configuration):
-      self.logger.debug('GratiaConfiguration.parseConfiguration completed')    
+      self.log('GratiaConfiguration.parseConfiguration completed')    
       return True
       
     # set the appropriate defaults if we're on a CE
@@ -84,55 +88,55 @@ in your config.ini file."""
       elif self.grid_group == 'OSG-ITB':
         self.__defaults = self.__itb_defaults
 
-    for setting in self.__mappings:
-      self.logger.debug("Getting value for %s" % setting)
-      temp = configfile.get_option(configuration, 
-                                   self.config_section, 
-                                   setting,
-                                   optional_settings = self.__optional,
-                                   defaults = self.__defaults)
-      self.attributes[setting] = temp
-      self.logger.debug("Got %s" % temp)
+    for option in self.options.values():
+      self.log("Getting value for %s" % option.name)
+      configfile.get_option(configuration,
+                            self.config_section, 
+                            option)
+      self.log("Got %s" % option.value)
     
-    if utilities.blank(self.attributes['probes']):
+    if utilities.blank(self.options['probes'].value):
+      self.log('GratiaConfiguration.parseConfiguration completed')
       return
     
-    self.__parse_probes(self.attributes['probes'])
-    self.logger.debug('GratiaConfiguration.parseConfiguration completed')
+    self.__parse_probes(self.options['probes'].value)
+    self.log('GratiaConfiguration.parseConfiguration completed')
     
       
     
   def configure(self, attributes):
     """Configure installation using attributes"""
-    self.logger.debug("GratiaConfiguration.configure started")
+    self.log("GratiaConfiguration.configure started")
 
     if self.ignored:
-      self.logger.warning("%s configuration ignored" % self.config_section)
-      self.logger.debug("GratiaConfiguration.configure completed")
+      self.log("%s configuration ignored" % self.config_section, 
+               level = logging.WARNING)
+      self.log("GratiaConfiguration.configure completed")
       return True
 
     # disable all gratia services
     # if gratia is enabled, probes will get enabled below
     if not self.enabled:
-      self.logger.debug("Not enabled")
-      self.logger.debug("GratiaConfiguration.configure completed")
+      self.log("Not enabled")
+      self.log("GratiaConfiguration.configure completed")
       return True
     
-    if ('resource' not in self.attributes or
-        utilities.blank(self.attributes['resource'])):
+    if (utilities.blank(self.options['resource'].value)):
       if 'OSG_SITE_NAME' not in attributes:
-        self.logger.error('No resource found for gratia reporting.' \
-                          'You must give it using the resource option '\
-                          'in the Gratia section or specify it in the '\
-                          'Site Information section')
+        self.log('No resource found for gratia reporting. You must give it '\
+                 'using the resource option in the Gratia section or specify '\
+                 'it in the Site Information section',
+                 level = logging.ERROR)
+        self.log("GratiaConfiguration.configure completed")
         return False
       else:
-        self.attributes['resource'] = attributes['OSG_SITE_NAME']
+        self.options['resource'].value = attributes['OSG_SITE_NAME']
          
     if ('OSG_HOSTNAME' not in attributes):
-      self.logger.error('Hostname of this machine not specified.  Please ' \
-                        'give this in the host_name option in the Site ' \
-                        'Information section' )
+      self.log('Hostname of this machine not specified.  Please give this '\
+               'in the host_name option in the Site Information section', 
+               level = logging.ERROR)
+      self.log("GratiaConfiguration.configure completed")
       return False
     
     hostname = attributes['OSG_HOSTNAME']
@@ -151,11 +155,11 @@ in your config.ini file."""
       self.__makeSubscription(probe, 
                               probe_list[probe], 
                               probe_host, 
-                              self.attributes['resource'],
+                              self.options['resource'].value,
                               hostname)
 
 
-    self.logger.debug("GratiaConfiguration.configure completed")
+    self.log("GratiaConfiguration.configure completed")
     return True
 
 # pylint: disable-msg=R0201
@@ -182,19 +186,19 @@ in your config.ini file."""
   # pylint: disable-msg=W0613  
   def checkAttributes(self, attributes):
     """Check configuration  and make sure things are setup correctly"""
-    self.logger.debug("GratiaConfiguration.checkAttributes started")
+    self.log("GratiaConfiguration.checkAttributes started")
 
     if self.ignored:
-      self.logger.debug("%s section ignored" % self.config_section)
-      self.logger.debug("GratiaConfiguration.checkAttributes completed")
+      self.log("%s section ignored" % self.config_section)
+      self.log("GratiaConfiguration.checkAttributes completed")
       return True
       
     if not self.enabled:
-      self.logger.debug("Not enabled")
-      self.logger.debug("GratiaConfiguration.checkAttributes completed")
+      self.log("Not enabled")
+      self.log("GratiaConfiguration.checkAttributes completed")
       return True
     status = self.__check_servers()
-    self.logger.debug("GratiaConfiguration.checkAttributes completed")
+    self.log("GratiaConfiguration.checkAttributes completed")
     return status
 
   def __subscriptionPresent(self, probe_file, probe_host):
@@ -202,19 +206,19 @@ in your config.ini file."""
     Check probe file to see if subscription to the host is present
     """
     
-    self.logger.debug("GratiaConfiguration.__subscriptionPresent started")
+    self.log("GratiaConfiguration.__subscriptionPresent started")
     elements = utilities.get_elements('ProbeConfiguration', probe_file)
     for element in elements:
       try:
         if (element.getAttribute('EnableProbe') == 1 and
             element.getAttribute('SOAPHost') == probe_host):
-          self.logger.debug("Subscription for %s in %s found" % (probe_host, probe_file))
+          self.log("Subscription for %s in %s found" % (probe_host, probe_file))
           return True
       # pylint: disable-msg=W0703
       except Exception, e:
-        self.logger.debug("Exception checking element, %s" % e)
+        self.log("Exception checking element, %s" % e)
 
-    self.logger.debug("GratiaConfiguration.__subscriptionPresent completed")
+    self.log("GratiaConfiguration.__subscriptionPresent completed")
     return False
   
   def __makeSubscription(self, probe, probe_file, probe_host, site, hostname):
@@ -223,11 +227,11 @@ in your config.ini file."""
     make it.
     """
     
-    self.logger.debug("GratiaConfiguration.__makeSubscription started")
+    self.log("GratiaConfiguration.__makeSubscription started")
     
     if self.__subscriptionPresent(probe_file, probe_host):
-      self.logger.debug("Subscription found %s probe, returning"  % (probe))
-      self.logger.debug("GratiaConfiguration.__makeSubscription completed")
+      self.log("Subscription found %s probe, returning"  % (probe))
+      self.log("GratiaConfiguration.__makeSubscription completed")
       return True
     
     if probe == 'gridftp':
@@ -258,13 +262,17 @@ in your config.ini file."""
                         1)  
 
       if not utilities.atomic_write(probe_file, buffer, mode=420):
-        self.logger.error("Error while configuring gratia probes: can't write to %s" % probe_file)
+        self.log("Error while configuring gratia probes: " +
+                 "can't write to %s" % probe_file,
+                 level = logging.ERROR)
         raise exceptions.ConfigureError("Error configuring gratia")
     except IOError, OSError:
-      self.logger.error("Error while configuring gratia probes")
+      self.log("Error while configuring gratia probes",
+               exception = True,
+               level = logging.ERROR)
       raise exceptions.ConfigureError("Error configuring gratia")
 
-    self.logger.debug("GratiaConfiguration.__makeSubscription completed")
+    self.log("GratiaConfiguration.__makeSubscription completed")
     return True
     
     
@@ -287,12 +295,12 @@ in your config.ini file."""
     for probe in self.enabled_probe_settings:
       if probe == 'metric':
         sys.stdout.write(self.metric_probe_deprecation + "\n")
-        self.logger.warning(self.metric_probe_deprecation)
+        self.log(self.metric_probe_deprecation, level = logging.WARNING)
       server = self.enabled_probe_settings[probe].split(':')[0]
       if not validation.valid_domain(server, True):
         err_mesg = "The server specified for probe %s does not " % probe
         err_mesg += "resolve: %s" % server
-        self.logger.error(err_mesg)
+        self.log(err_mesg, level = logging.ERROR)
         valid = False
       if server != self.enabled_probe_settings[probe]:
         port = self.enabled_probe_settings[probe].split(':')[1]
@@ -301,9 +309,10 @@ in your config.ini file."""
           if temp < 0:
             raise ValueError()
         except ValueError:
-          self.logger.error("The port specified for probe" \
-                            " %s is not valid, either it "\
-                            "is less than 0 or not an integer"  % probe)                        
+          self.log("The port specified for probe %s is not valid, either it "\
+                   "is less than 0 or not an integer"  % probe,
+                   exception = True,
+                   level = logging.ERROR)                        
     return valid
   
   def __parse_probes(self, probes):
@@ -331,21 +340,22 @@ in your config.ini file."""
     
     if configuration.has_option('Site Information', 'resource'):
       resource = configuration.get('Site Information', 'resource')
-      self.attributes['resource'] = resource      
+      self.options['resource'].value = resource      
     elif configuration.has_option('Site Information', 'site_name'):
       resource = configuration.get('Site Information', 'site_name')
-      self.attributes['resource'] = resource      
+      self.options['resource'].value = resource      
     else:
-      self.logger.error('No site_name or resource defined in Site ' \
-                        'Information, this is required on a CE')
+      self.log('No site_name or resource defined in Site Information, this'\
+               ' is required on a CE',
+               level = logging.ERROR)
       raise exceptions.SettingError('In Site Information, ' \
                                     'site_name or resource needs to be set')
 
     if configuration.has_option('Site Information', 'group'):
       group = configuration.get('Site Information', 'group')
     else:
-      self.logger.error('No group defined in Site Information, ' \
-                        'this is required on a CE')
+      self.log('No group defined in Site Information, this is required on a CE',
+               level = logging.ERROR)
       raise exceptions.SettingError('In Site Information, ' \
                                     'group needs to be set')
 
@@ -357,7 +367,7 @@ in your config.ini file."""
       raise exceptions.SettingError('In Site Information, group must be ' \
                                     'OSG or OSG-ITB')
     
-    self.attributes['probes'] = probes
+    self.options['probes'].value = probes
     self.__parse_probes(probes) 
     
     return True

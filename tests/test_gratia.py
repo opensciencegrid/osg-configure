@@ -35,18 +35,18 @@ class TestLocalSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    attributes = settings.attributes
+    options = settings.options
     variables = {'probes' : 'jobmanager:gratia-osg-prod.opensciencegrid.org:80, '\
                             'metric:rsv.grid.iu.edu:8880, ' \
                             'gridftp:gratia-osg-transfer.opensciencegrid.org:80'}
     for var in variables:      
-      self.failUnless(attributes.has_key(var), 
+      self.failUnless(options.has_key(var), 
                       "Attribute %s missing" % var)
-      self.failUnlessEqual(attributes[var], 
+      self.failUnlessEqual(options[var].value, 
                            variables[var], 
                            "Wrong value obtained for %s, got %s but " \
                            "expected %s" % (var, 
-                                            attributes[var], 
+                                            options[var].value, 
                                             variables[var]))
 
   def testParsingITBDefault(self):
@@ -65,17 +65,18 @@ class TestLocalSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    attributes = settings.attributes
+    options = settings.options
     variables = {'probes' : 'jobmanager:gratia-osg-itb.opensciencegrid.org:80'}
     for var in variables:      
-      self.failUnless(attributes.has_key(var), 
+      self.failUnless(options.has_key(var), 
                       "Attribute %s missing" % var)
-      self.failUnlessEqual(attributes[var], 
+      self.failUnlessEqual(options[var].value, 
                            variables[var], 
                            "Wrong value obtained for %s, got %s but " \
                            "expected %s" % (var, 
-                                            attributes[var], 
+                                            options[var].value, 
                                             variables[var]))
+
     
   def testParsingProductionDefault(self):
     """
@@ -93,16 +94,16 @@ class TestLocalSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    attributes = settings.attributes
+    options = settings.options
     variables = {'probes' : 'jobmanager:gratia-osg-prod.opensciencegrid.org:80'}
     for var in variables:      
-      self.failUnless(attributes.has_key(var), 
+      self.failUnless(options.has_key(var), 
                       "Attribute %s missing" % var)
-      self.failUnlessEqual(attributes[var], 
+      self.failUnlessEqual(options[var].value, 
                            variables[var], 
                            "Wrong value obtained for %s, got %s but " \
                            "expected %s" % (var, 
-                                            attributes[var], 
+                                            options[var].value, 
                                             variables[var]))
 
   def testParsingMissingITBDefault(self):
@@ -122,16 +123,16 @@ class TestLocalSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    attributes = settings.attributes
+    options = settings.options
     variables = {'probes' : 'jobmanager:gratia-osg-itb.opensciencegrid.org:80'}
     for var in variables:      
-      self.failUnless(attributes.has_key(var), 
+      self.failUnless(options.has_key(var), 
                       "Attribute %s missing" % var)
-      self.failUnlessEqual(attributes[var], 
+      self.failUnlessEqual(options[var].value, 
                            variables[var], 
                            "Wrong value obtained for %s, got %s but " \
                            "expected %s" % (var, 
-                                            attributes[var], 
+                                            options[var].value, 
                                             variables[var]))
 
     config_file = os.path.abspath("./configs/gratia/itb_default3.ini")
@@ -145,16 +146,16 @@ class TestLocalSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    attributes = settings.attributes
+    options = settings.options
     variables = {'probes' : 'jobmanager:gratia-osg-itb.opensciencegrid.org:80'}
     for var in variables:      
-      self.failUnless(attributes.has_key(var), 
+      self.failUnless(options.has_key(var), 
                       "Attribute %s missing" % var)
-      self.failUnlessEqual(attributes[var], 
+      self.failUnlessEqual(options[var].value, 
                            variables[var], 
                            "Wrong value obtained for %s, got %s but " \
                            "expected %s" % (var, 
-                                            attributes[var], 
+                                            options[var].value, 
                                             variables[var]))
     
   def testParsingMissingProductionDefault(self):
@@ -174,16 +175,16 @@ class TestLocalSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    attributes = settings.attributes
+    options = settings.options
     variables = {'probes' : 'jobmanager:gratia-osg-prod.opensciencegrid.org:80'}
     for var in variables:      
-      self.failUnless(attributes.has_key(var), 
+      self.failUnless(options.has_key(var), 
                       "Attribute %s missing" % var)
-      self.failUnlessEqual(attributes[var], 
+      self.failUnlessEqual(options[var].value, 
                            variables[var], 
                            "Wrong value obtained for %s, got %s but " \
                            "expected %s" % (var, 
-                                            attributes[var], 
+                                            options[var].value, 
                                             variables[var]))
 
   def testParsingDisabled(self):
@@ -202,8 +203,7 @@ class TestLocalSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    attributes = settings.attributes
-    self.failUnlessEqual(len(attributes), 0, 
+    self.failUnlessEqual(len(settings.options['probes'].value), 0, 
                          "Disabled configuration should have no attributes")
 
   def testParsingIgnored(self):
@@ -222,8 +222,7 @@ class TestLocalSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    attributes = settings.attributes
-    self.failUnlessEqual(len(attributes), 0, 
+    self.failUnlessEqual(len(settings.options['probes'].value), 0, 
                          "Disabled configuration should have no attributes")
 
   def testInvalidProbes1(self):

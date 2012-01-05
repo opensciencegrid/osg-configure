@@ -136,7 +136,9 @@ class TestSiteAttributesSettings(unittest.TestCase):
                            "expected %s" % (var, 
                                             attributes[var], 
                                             variables[var]))
-                                                            
+    if ('resource_group' not in settings.options or
+        settings.options['resource_group'].value != 'RESOURCE_GROUP'):
+      self.fail('resource_group not present or not set to RESOURCE_GROUP')
 
   def testMissingAttribute(self):
     """

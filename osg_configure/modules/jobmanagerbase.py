@@ -20,6 +20,8 @@ class JobManagerConfiguration(BaseConfiguration):
     # pylint: disable-msg=W0142
     super(JobManagerConfiguration, self).__init__(*args, **kwargs)
     self.attributes = {}
+    self.lrms = ['pbs', 'sge', 'lsf', 'condor']
+    self.seg_admin_path = '/usr/sbin/globus-scheduler-event-generator-admin'
         
 
   def validContact(self, contact, jobmanager):
@@ -56,6 +58,9 @@ class JobManagerConfiguration(BaseConfiguration):
     Returns:
     True if config successfully updated 
     """
+    if filename is None:
+      return False
+
     buffer = open(filename).read()
     if 'accept_limited' not in buffer:
       buffer = 'accept_limited,' + buffer
@@ -72,6 +77,9 @@ class JobManagerConfiguration(BaseConfiguration):
     Returns:
     True if config successfully updated 
     """
+    if filename is None:
+      return False
+
     buffer = open(filename).read()
     if buffer.startswith('accept_limited,'):
       buffer = buffer.replace('accept_limited,','',1)
@@ -88,7 +96,57 @@ class JobManagerConfiguration(BaseConfiguration):
       else:
         self.logger.error('Error disabling accept_limited')
         return False
-      
+
+  def enable_seg(self, seg_module, filename):
+    """
+    Update the globus jobmanager configuration so that it uses the SEG 
+    
+    Returns:
+    True if config successfully updated 
+    """
+    if filename is None or seg_module is None:
+      return False
+    
+    if seg_module not in self.lrms:
+      return False
+    
+    buffer = open(filename).read()
+    if '-seg-module' not in buffer:
+      buffer = buffer + '-seg-module ' + seg_module
+      if utilities.atomic_write(filename, buffer):
+        return True
+      else:
+        self.logger.error('Error enabling SEG in ' + filename)
+        return False
+
+    if not utilities.run_script([self.seg_admin_path, '-e', seg_module]):
+      return False
+
+  def disable_seg(self, seg_modules, filename):
+    """
+    Update the globus jobmanager configuration so that it does not allow use the SEG
+    
+    Returns:
+    True if config successfully updated 
+    """
+    if filename is None or seg_module is None:
+      return False
+    
+    if seg_module not in self.lrms:
+      return False
+
+    buffer = open(filename).read()
+    if '-seg-module' in buffer:
+      buffer = re.sub('-seg-module\s+.*?\s', '', buffer, 1)
+      if utilities.atomic_write(filename, buffer):
+        return True
+      else:
+        self.logger.error('Error disabling SEG in ' + filename)
+        return False
+            
+    if not utilities.run_script([self.seg_admin_path, '-d', seg_module]):
+      return False
+    
     return True
 
   def set_default_jobmanager(self, default = 'fork'):

@@ -2,7 +2,7 @@
 
 """ Module to handle attributes related to the storage """
 
-import os, shutil, stat
+import os, shutil, stat, logging
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
@@ -19,22 +19,40 @@ class StorageConfiguration(BaseConfiguration):
   def __init__(self, *args, **kwargs):
     # pylint: disable-msg=W0142
     super(StorageConfiguration, self).__init__(*args, **kwargs)    
-    self.logger.debug('StorageConfiguration.__init__ started')
-    self.__mappings = {'se_available': 'OSG_STORAGE_ELEMENT', 
-                       'default_se': 'OSG_DEFAULT_SE',
-                       'grid_dir': 'OSG_GRID',
-                       'app_dir': 'OSG_APP',
-                       'data_dir': 'OSG_DATA',
-                       'worker_node_temp': 'OSG_WN_TMP',
-                       'site_read': 'OSG_SITE_READ',
-                       'site_write': 'OSG_SITE_WRITE'}
-    self.__defaults = {'grid_dir' : '/etc/osg/wn-client'}
-    self.__optional = ['default_se', 
-                       'grid_dir',
-                       'site_read',
-                       'site_write']
+    self.log('StorageConfiguration.__init__ started')
+    self.options = {'se_available' : 
+                      configfile.Option(name = 'se_available',
+                                        type = bool,
+                                        default_value = False,
+                                        mapping = 'OSG_STORAGE_ELEMENT'),
+                    'default_se' : 
+                      configfile.Option(name = 'default_se',
+                                        required = configfile.Option.OPTIONAL,
+                                        mapping = 'OSG_DEFAULT_SE'),
+                    'grid_dir' : 
+                      configfile.Option(name = 'grid_dir',
+                                        default_value = '/etc/osg/wn-client',
+                                        required = configfile.Option.OPTIONAL,
+                                        mapping = 'OSG_GRID'),
+                    'app_dir' : 
+                      configfile.Option(name = 'app_dir',
+                                        mapping = 'OSG_APP'),
+                    'data_dir' : 
+                      configfile.Option(name = 'data_dir',
+                                        mapping = 'OSG_DATA'),
+                    'worker_node_temp' : 
+                      configfile.Option(name = 'worker_node_temp',
+                                        mapping = 'OSG_WN_TMP'),
+                    'site_read' : 
+                      configfile.Option(name = 'site_read',
+                                        required = configfile.Option.OPTIONAL,
+                                        mapping = 'OSG_SITE_READ'),
+                    'site_write' : 
+                      configfile.Option(name = 'site_write',
+                                        required = configfile.Option.OPTIONAL,
+                                        mapping = 'OSG_SITE_WRITE')}
     self.config_section = "Storage"
-    self.logger.debug('StorageConfiguration.__init__ completed')
+    self.log('StorageConfiguration.__init__ completed')
       
   def parseConfiguration(self, configuration):
     """
@@ -42,76 +60,77 @@ class StorageConfiguration(BaseConfiguration):
     object given by configuration and write recognized settings to attributes 
     dict
     """
-    self.logger.debug('StorageConfiguration.parseAttributes started')    
+    self.log('StorageConfiguration.parseAttributes started')    
 
     self.checkConfig(configuration)
 
     if not configuration.has_section(self.config_section):
       self.enabled = False
-      self.logger.debug("%s section not in config file" % self.config_section)
-      self.logger.debug('StorageConfiguration.parseAttributes completed')    
+      self.log("%s section not in config file" % self.config_section)
+      self.log('StorageConfiguration.parseAttributes completed')    
       return
     if not utilities.ce_installed():
       self.enabled = False
-      self.logger.debug("osg-ce rpm not installed, skipping ce specific module")
-      self.logger.debug('StorageConfiguration.parseAttributes completed')    
+      self.log("osg-ce rpm not installed, skipping ce specific module")
+      self.log('StorageConfiguration.parseAttributes completed')    
       return
     else:
       self.enabled = True
       
-    for setting in self.__mappings:
-      self.logger.debug("Getting value for %s" % setting)        
-      temp = configfile.get_option(configuration, 
-                                   self.config_section, 
-                                   setting, 
-                                   self.__optional)
-      self.attributes[self.__mappings[setting]] = temp
-      self.logger.debug("Got %s" % temp)
+    for option in self.options.values():
+      self.log("Getting value for %s" % option.name)
+      configfile.get_option(configuration,
+                            self.config_section,
+                            option)
+      self.log("Got %s" % option.value)
 
 
-    # check and warn if unknown options found 
+    # check and warn if unknown options found    
     temp = utilities.get_set_membership(configuration.options(self.config_section),
-                                        self.__mappings,
+                                        self.options.keys(),
                                         configuration.defaults().keys())
     for option in temp:
-      self.logger.warning("Found unknown option %s in %s section" % 
-                           (option, self.config_section))   
-    self.logger.debug('StorageConfiguration.parseAttributes completed')    
+      self.log("Found unknown option",
+               option = option, 
+               section = self.config_section,
+               level = logging.WARNING)
+    self.log('StorageConfiguration.parseAttributes completed')    
        
 # pylint: disable-msg=W0613
   def checkAttributes(self, attributes):
     """Check attributes currently stored and make sure that they are consistent"""
-    self.logger.debug('StorageConfiguration.checkAttributes started')    
+    self.log('StorageConfiguration.checkAttributes started')    
     attributes_ok = True
     
     if not self.enabled:
-      self.logger.debug('Not enabled, returning True')
-      self.logger.debug('StorageConfiguration.checkAttributes completed')    
+      self.log('Not enabled, returning True')
+      self.log('StorageConfiguration.checkAttributes completed')    
       return attributes_ok
 
     # make sure locations exist
-    if not self.__check_app_dir(self.attributes[self.__mappings['app_dir']]):
-      self.logger.error("app_dir does not meet requirements: %s" % \
-                        self.attributes[self.__mappings['app_dir']])
-      self.logger.error("The app_dir directory should exist and have permissions "
-                       "of 1777 or 777 on OSG installations.")
+    if not self.__check_app_dir(self.options['app_dir'].value):
+      self.log("The app_dir directory should exist and have permissions " +
+               "of 1777 or 777 on OSG installations.",
+               section = self.config_section,
+               option = 'app_dir',
+               level = logging.ERROR)
       attributes_ok = False
     
-    self.logger.debug('StorageConfiguration.checkAttributes completed')    
+    self.log('StorageConfiguration.checkAttributes completed')    
     return attributes_ok 
 
   def configure(self, attributes):
     """Configure storage locations for ce usage"""
 
-    self.logger.debug("StorageConfiguration.configure started")
+    self.log("StorageConfiguration.configure started")
     
     if not self.enabled:
-      self.logger.debug('Not enabled, exiting')
-      self.logger.debug("StorageConfiguration.configure completed")
+      self.log('Not enabled, exiting')
+      self.log("StorageConfiguration.configure completed")
       return True
       
     status = True
-    grid3_location = os.path.join(self.attributes[self.__mappings['app_dir']],
+    grid3_location = os.path.join(self.options['app_dir'].value,
                                   'etc',
                                   'grid3-locations.txt')
     if not validation.valid_file(grid3_location):
@@ -120,25 +139,29 @@ class StorageConfiguration(BaseConfiguration):
                                   'grid3-locations.txt')
       if not validation.valid_file(grid3_source):
         status = False
-        self.logger.warning("Can't get grid3-location file at %s" % (grid3_source))
-        self.logger.warning("You will need to manually create one at %s" %  (grid3_location))
+        self.log("Can't get grid3-location file at %s" % (grid3_source), 
+                 level = logging.ERROR)
+        self.log("You will need to manually create one at %s" %  (grid3_location),
+                 level = logging.ERROR)
         return status
       
       try:
         shutil.copyfile(grid3_source, grid3_location)        
       except IOError:
         status = False
-        self.logger.warning("Can't copy grid3-location file from %s to %s" % (grid3_source, 
-                                                                              grid3_location))
+        self.log("Can't copy grid3-location file from %s to %s" % (grid3_source, 
+                                                                   grid3_location),
+                 level = logging.ERROR)
       try:
         if status is not False:
           os.chmod(grid3_location, 0666)        
       except IOError:
         status = False
-        self.logger.warning("Can't set permissions on grid3-location file at %s" % \
-                            (grid3_location))
+        self.log("Can't set permissions on grid3-location file at %s" % \
+                            (grid3_location),
+                 level = logging.ERROR)
   
-    self.logger.debug("StorageConfiguration.configure completed")    
+    self.log("StorageConfiguration.configure completed")    
     return status
 
   def moduleName(self):
@@ -162,7 +185,10 @@ class StorageConfiguration(BaseConfiguration):
     """
     try:
       if not validation.valid_location(app_dir) or not os.path.isdir(app_dir):
-        self.logger.error("OSG_APP directory not present: %s" % app_dir)
+        self.log("Directory not present: %s" % app_dir,
+                 section = self.config_section,
+                 option = 'app_dir',
+                 level = logging.ERROR)
         return False
       
       etc_dir = os.path.join(app_dir, "etc")
@@ -190,8 +216,10 @@ class StorageConfiguration(BaseConfiguration):
                             "2777, 775, 1775, 2775, 755, 1755, 2755 " \
                             "for sites: %s" % etc_dir)
     # pylint: disable-msg=W0703      
-    except Exception, ex:
-      self.logger.error("Can't check $OSG_APP, got exception: %s", ex)
+    except Exception:
+      self.log("Can't check $OSG_APP, got an exception", 
+               level = logging.ERROR,
+               exception = True)
       return False
     
     return True

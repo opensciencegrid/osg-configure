@@ -13,46 +13,76 @@ class LegacyConfiguration(BaseConfiguration):
   def __init__(self, *args, **kwargs):
     # pylint: disable-msg=W0142
     super(LegacyConfiguration, self).__init__(*args, **kwargs)
-    self.logger.debug('LegacyConfiguration.__init__ started')        
-    self.__mappings = {'GRID3_SITE_NAME': 'OSG_SITE_NAME', 
-                       'GRID3_APP_DIR': 'OSG_APP',
-                       'GRID3_DATA_DIR': 'OSG_DATA',
-                       'GRID3_TMP_DIR': 'OSG_DATA',
-                       'GRID3_TMP_WN_DIR': 'OSG_WN_TMP',
-                       'GRID3_SPONSOR': 'OSG_SPONSOR',
-                       'GRID3_SITE_INFO': 'OSG_SITE_INFO',
-                       'GRID3_UTIL_CONTACT': 'OSG_UTIL_CONTACT',
-                       'GRID3_JOB_CONTACT': 'OSG_JOB_CONTACT',
-                       'GRID3_USER_VO_MAP': 'OSG_USER_VO_MAP',
-                       'GRID3_GRIDFTP_LOG': 'OSG_GRIDFTP_LOG',
-                       'GRID3_TRANSFER_CONTACT': 'OSG_UTIL_CONTACT'}
-    self.logger.debug('LegacyConfiguration.__init__ completed')        
+    self.log('LegacyConfiguration.__init__ started')
+    self.options = {'osg_site_name' : 
+                      configfile.Option(name = 'osg_site_name',
+                                        mapping = 'GRID3_SITE_NAME'),
+                    'osg_app' : 
+                      configfile.Option(name = 'osg_app',
+                                        mapping = 'GRID3_APP_DIR'),
+                    'osg_data' : 
+                      configfile.Option(name = 'osg_data',
+                                        mapping = 'GRID3_DATA_DIR'),
+                    'osg_data_tmp' : 
+                      configfile.Option(name = 'osg_data_tmp',
+                                        mapping = 'GRID3_TMP_DIR'),
+                    'osg_wn_tmp' : 
+                      configfile.Option(name = 'osg_wn_tmp',
+                                        mapping = 'GRID3_TMP_WN_DIR'),
+                    'osg_sponsor' : 
+                      configfile.Option(name = 'osg_sponsor',
+                                        mapping = 'GRID3_SPONSOR'),
+                    'osg_site_info' : 
+                      configfile.Option(name = 'osg_site_info',
+                                        mapping = 'GRID3_SITE_INFO'),
+                    'osg_util_contact' : 
+                      configfile.Option(name = 'osg_util_contact',
+                                        mapping = 'GRID3_UTIL_CONTACT'),
+                    'osg_job_contact' : 
+                      configfile.Option(name = 'osg_job_contact',
+                                        mapping = 'GRID3_JOB_CONTACT'),
+                    'osg_user_vo_map' : 
+                      configfile.Option(name = 'osg_user_vo_map',
+                                        mapping = 'GRID3_USR_VO_MAP'),
+                    'osg_gridftp_log' : 
+                      configfile.Option(name = 'osg_gridftp_log',
+                                        mapping = 'GRID3_GRIDFTP_LOG'),
+                    'osg_transfer_contact' : 
+                      configfile.Option(name = 'osg_transfer_contact',
+                                        mapping = 'GRID3_TRANSFER_CONTACT')}
+    
+    self.log('LegacyConfiguration.__init__ completed')        
         
 # pylint: disable-msg=W0613
   def checkAttributes(self, attributes):
     """Check attributes currently stored and make sure that they are consistent"""
-    self.logger.debug('LegacyConfiguration.checkAttributes started')        
+    self.log('LegacyConfiguration.checkAttributes started')        
     attributes_ok = True
-    # Make sure all settings are present
-    for setting in self.__mappings:
-      if setting not in self.attributes:
-        self.logger.debug("Missing setting for %s for legacy attributes" % 
-                          (self.__mappings[setting]))
-    self.logger.debug('LegacyConfiguration.checkAttributes completed')        
+    self.log('LegacyConfiguration.checkAttributes completed')        
     return attributes_ok 
   
   def configure(self, attributes):
     """Configure installation using attributes"""
-    self.logger.debug('LegacyConfiguration.configure started')        
-    for key in self.__mappings:
-      self.logger.debug("Checking for %s" % key)        
-      if self.__mappings[key] in attributes:
-        self.logger.debug("Found %s for %s" % (attributes[self.__mappings[key]], 
-                                               key))        
-        self.attributes[key] = attributes[self.__mappings[key]]
+    self.log('LegacyConfiguration.configure started')        
+    for option in self.options.values():
+      self.log("Checking for %s" % option.name)
+        
+      if option.name == 'osg_transfer_contact':
+        # mapped from different osg attribute
+        cap_name = 'OSG_UTIL_CONTACT'
+      elif option.name == 'osg_data_tmp':
+        # mapped from different osg attribute
+        cap_name = 'OSG_DATA'
       else:
-        self.logger.debug("%s not found" % key)        
-    self.logger.debug('LegacyConfiguration.configure completed')        
+        cap_name = option.name.upper()
+        
+      if cap_name in attributes:
+        self.log("Found %s for %s" % (attributes[cap_name], 
+                                      option.name))        
+        option.value = attributes[cap_name]
+      else:
+        self.log("%s not found" % option.name)
+    self.log('LegacyConfiguration.configure completed')        
     return True
   
   def moduleName(self):

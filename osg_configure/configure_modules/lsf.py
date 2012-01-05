@@ -3,7 +3,7 @@
 """ Module to handle attributes related to the lsf jobmanager 
 configuration """
 
-import ConfigParser, os
+import ConfigParser, os, re, types, logging
 
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile
@@ -13,170 +13,183 @@ from osg_configure.modules.jobmanagerbase import JobManagerConfiguration
 
 __all__ = ['LSFConfiguration']
 
-LSF_CONFIG_FILE = '/etc/grid-services/available/jobmanager-lsf'
 
 class LSFConfiguration(JobManagerConfiguration):
   """Class to handle attributes related to lsf job manager configuration"""
   
+  LSF_CONFIG_FILE = '/etc/grid-services/available/jobmanager-lsf'
+  GRAM_CONFIG_FILE = '/etc/globus/globus-lsf.conf'
+
   def __init__(self, *args, **kwargs):
     # pylint: disable-msg=W0142
     super(LSFConfiguration, self).__init__(*args, **kwargs)    
-    self.logger.debug('LSFConfiguration.__init__ started')    
-    self.__mappings = {'lsf_location': 'OSG_LSF_LOCATION',
-                       'job_contact': 'OSG_JOB_CONTACT',
-                       'util_contact': 'OSG_UTIL_CONTACT',
-                       'accept_limited': 'accept_limited'}
-    self.__optional = ['accept_limited']
-    self.__defaults = {'accept_limited' : 'False'}
-    
+    self.log('LSFConfiguration.__init__ started')    
+    # dictionary to hold information about options
+    self.options = {'lsf_location' : configfile.Option(name = 'lsf_location',
+                                                       default_value = '/usr',
+                                                       mapping = 'OSG_LSF_LOCATION'),
+                    'job_contact' : configfile.Option(name = 'job_contact',
+                                                      mapping = 'OSG_JOB_CONTACT'),
+                    'util_contact' : configfile.Option(name = 'util_contact',
+                                                       mapping = 'OSG_UTIL_CONTACT'),
+                    'seg_enabled' : configfile.Option(name = 'seg_enabled',
+                                                      required = configfile.Option.OPTIONAL,
+                                                      type = bool,
+                                                      default_value = False),
+                    'accept_limited' : configfile.Option(name = 'accept_limited',
+                                                      required = configfile.Option.OPTIONAL,
+                                                      type = bool,
+                                                      default_value = False)}    
     self.config_section = 'LSF'
     self.__set_default = True
 
-    self.logger.debug('LSFConfiguration.__init__ completed')    
+    self.log('LSFConfiguration.__init__ completed')    
       
   def parseConfiguration(self, configuration):
     """Try to get configuration information from ConfigParser or SafeConfigParser object given
     by configuration and write recognized settings to attributes dict
     """
-    self.logger.debug('LSFConfiguration.parseConfiguration started')    
+    self.log('LSFConfiguration.parseConfiguration started')    
 
     self.checkConfig(configuration)
     
     if not configuration.has_section(self.config_section):
       self.enabled = False
-      self.logger.debug('LSF section not found in config file')
-      self.logger.debug('LSFConfiguration.parseConfiguration completed')    
+      self.log('LSF section not found in config file')
+      self.log('LSFConfiguration.parseConfiguration completed')    
       return
     
     if not self.setStatus(configuration):
-      self.logger.debug('LSFConfiguration.parseConfiguration completed')    
+      self.log('LSFConfiguration.parseConfiguration completed')    
       return True
        
-    self.attributes['OSG_JOB_MANAGER'] = 'LSF'
-    for setting in self.__mappings:
-      temp = configfile.get_option(configuration, 
-                                   self.config_section, 
-                                   setting,
-                                   self.__optional, 
-                                   self.__defaults)
-                                   
-      self.attributes[self.__mappings[setting]] = temp
-      self.logger.debug("Got %s" % temp)
+    for option in self.options.values():
+      self.log("Getting value for %s" % option.name)
+      configfile.get_option(configuration,
+                            self.config_section, 
+                            option)
+      self.log("Got %s" % option.value)
 
     # set OSG_JOB_MANAGER_HOME
-    self.attributes['OSG_JOB_MANAGER_HOME'] = \
-      self.attributes[self.__mappings['lsf_location']]
+    # set OSG_JOB_MANAGER and OSG_JOB_MANAGER_HOME
+    self.options['job_manager'] = configfile.Option(name = 'job_manager',
+                                                    value = 'LSF',
+                                                    mapping = 'OSG_JOB_MANAGER')
+    self.options['home'] = configfile.Option(name = 'job_manager_home',
+                                             value = self.options['lsf_location'].value,
+                                             mapping = 'OSG_JOB_MANAGER_HOME')
       
-    # check and warn if unknown options found 
+    # check and warn if unknown options found    
     temp = utilities.get_set_membership(configuration.options(self.config_section),
-                                        self.__mappings,
+                                        self.options.keys(),
                                         configuration.defaults().keys())
     for option in temp:
       if option == 'enabled':
         continue
-      self.logger.warning("Found unknown option %s in %s section" % 
-                           (option, self.config_section))
+      self.log("Found unknown option",
+               option = option, 
+               section = self.config_section,
+               level = logging.WARNING)
       
     if (configuration.has_section('Managed Fork') and
         configuration.has_option('Managed Fork', 'enabled') and
-        configuration.get('Managed Fork', 'enabled').upper() == 'TRUE'):
+        configuration.getboolean('Managed Fork', 'enabled').upper()):
       self.__set_default = False
 
-    self.logger.debug('LSFConfiguration.parseConfiguration completed')    
+    self.log('LSFConfiguration.parseConfiguration completed')    
 
-  def getAttributes(self):
-    """Return settings"""
-    self.logger.debug('LSFConfiguration.getAttributes started')    
-    if not self.enabled:
-      self.logger.debug('LSF not enabled, returning empty dictionary')
-      self.logger.debug('LSFConfiguration.parseConfiguration completed')    
-      return {}
-    self.logger.debug('LSFConfiguration.parseConfiguration completed')    
-    return self.attributes
   
 # pylint: disable-msg=W0613
   def checkAttributes(self, attributes):
     """Check attributes currently stored and make sure that they are consistent"""
-    self.logger.debug('LSFConfiguration.checkAttributes started')
+    self.log('LSFConfiguration.checkAttributes started')
     
     attributes_ok = True
 
     if not self.enabled:
-      self.logger.debug('LSF not enabled, returning True')
-      self.logger.debug('LSFConfiguration.checkAttributes completed')    
+      self.log('LSF not enabled, returning True')
+      self.log('LSFConfiguration.checkAttributes completed')    
       return attributes_ok
     
 
     if self.ignored:
-      self.logger.debug('Ignored, returning True')
-      self.logger.debug('LSFConfiguration.checkAttributes completed')    
+      self.log('Ignored, returning True')
+      self.log('LSFConfiguration.checkAttributes completed')    
       return attributes_ok
 
-    # Make sure all settings are present
-    for setting in self.__mappings:
-      if self.__mappings[setting] not in self.attributes:
-        raise exceptions.SettingError("Missing setting for %s in %s section" % 
-                                      (setting, self.config_section))
 
     # make sure locations exist
-    if not validation.valid_location(self.attributes[self.__mappings['lsf_location']]):
+    if not validation.valid_location(self.options['lsf_location'].value):
       attributes_ok = False
-      self.logger.error("In %s section:" % self.config_section)
-      self.logger.error("%s points to non-existent location: %s" % 
-                          ('lsf_location',
-                           self.attributes[self.__mappings['lsf_location']]))
+      self.log("Non-existent location given: %s" % 
+                          (self.options['lsf_location'].value),
+                option = 'lsf_location',
+                section = self.config_section,
+                level = logging.ERROR)
 
-    if not self.validContact(self.attributes[self.__mappings['job_contact']], 
+    if not self.validContact(self.options['job_contact'].value, 
                              'lsf'):
       attributes_ok = False
-      self.logger.error("%s is not a valid job contact: %s" % 
-                        ('job_contact',
-                         self.attributes[self.__mappings['job_contact']]))
+      self.log("Invalid job contact: %s" % 
+                         (self.options['job_contact'].value),
+               option = 'job_contact',
+               section = self.config_section,
+               level = logging.ERROR)
       
-    if not self.validContact(self.attributes[self.__mappings['util_contact']], 
+    if not self.validContact(self.options['util_contact'].value, 
                              'lsf'):
       attributes_ok = False
-      self.logger.error("%s is not a valid util contact: %s" % 
-                        ('util_contact',
-                         self.attributes[self.__mappings['util_contact']]))
+      self.log("Invalid util contact: %s" % 
+                        (self.options['util_contact'].value),
+               option = 'util_contact',
+               section = self.config_section,
+               level = logging.ERROR)
       
-    self.logger.debug('LSFConfiguration.checkAttributes completed')    
+    self.log('LSFConfiguration.checkAttributes completed')    
     return attributes_ok 
 
   def configure(self, attributes):
     """Configure installation using attributes"""
-    self.logger.debug('LSFConfiguration.configure started')
+    self.log('LSFConfiguration.configure started')
         
     if not self.enabled:
-      self.logger.debug('LSF not enabled, returning True')    
-      self.logger.debug('LSFConfiguration.configure completed')    
+      self.log('LSF not enabled, returning True')    
+      self.log('LSFConfiguration.configure completed')    
       return True
 
     if self.ignored:
-      self.logger.warning("%s configuration ignored" % self.config_section)
-      self.logger.debug('LSFConfiguration.configure completed')    
+      self.log("%s configuration ignored" % self.config_section, 
+               level = logging.WARNING)
+      self.log('LSFConfiguration.configure completed')    
       return True
 
     # The accept_limited argument was added for Steve Timm.  We are not adding
     # it to the default config.ini template because we do not think it is
     # useful to a wider audience.
     # See VDT RT ticket 7757 for more information.
-    if self.attributes[self.__mappings['accept_limited']].upper() == "TRUE":
-      if not self.enable_accept_limited(LSF_CONFIG_FILE):
-          self.logger.error('Error writing to condor configuration')
-          self.logger.debug('LSFConfiguration.configure completed')
-          return False
-    elif self.attributes[self.__mappings['accept_limited']].upper() == "FALSE":
-      if not self.disable_accept_limited(LSF_CONFIG_FILE):
-          self.logger.error('Error writing to condor configuration')
-          self.logger.debug('LSFConfiguration.configure completed')
-          return False
+    if self.options['accept_limited'].value:
+      if not self.enable_accept_limited(LSFConfiguration.LSF_CONFIG_FILE):
+        self.log('Error writing to ' + LSFConfiguration.LSF_CONFIG_FILE, 
+                 level = logging.ERROR)
+        self.log('LSFConfiguration.configure completed')
+        return False
+    elif self.options['accept_limited'].value:
+      if not self.disable_accept_limited(LSFConfiguration.LSF_CONFIG_FILE):
+        self.log('Error writing to ' + LSFConfiguration.LSF_CONFIG_FILE, 
+                 level = logging.ERROR)
+        self.log('LSFConfiguration.configure completed')
+        return False
+
+    if not self.setup_gram_config():
+      self.log('Error writing to ' + LSFConfiguration.GRAM_CONFIG_FILE,
+               level = logging.ERROR)
+      return False
 
     if self.__set_default:
-        self.logger.debug('Configuring gatekeeper to use regular fork service')
-        self.set_default_jobmanager('fork')
+      self.log('Configuring gatekeeper to use regular fork service')
+      self.set_default_jobmanager('fork')
 
-    self.logger.debug('LSFConfiguration.configure started')    
+    self.log('LSFConfiguration.configure started')    
     return True
   
   def moduleName(self):
@@ -190,3 +203,49 @@ class LSFConfiguration(JobManagerConfiguration):
   def parseSections(self):
     """Returns the sections from the configuration file that this module handles"""
     return [self.config_section]  
+
+  def setupGramConfig(self):
+    """
+    Populate the gram config file with correct values
+    
+    Returns True if successful, False otherwise
+    """    
+    buffer = open(LSFConfiguration.GRAM_CONFIG_FILE).read()
+    bin_location = os.path.join([self.options['lsf_location'].value,
+                                 'bin',
+                                 'qsub'])
+    if validation.valid_file(bin_location):
+      (buffer, count) = re.subn('^qsub=.*$', "qsub=\"%s\"" % bin_location, 1)
+      if count == 0:
+        buffer = "qsub=\"%s\"\n" % bin_location + buffer
+    bin_location = os.path.join([self.options['lsf_location'].value,
+                                 'bin',
+                                 'qstat'])
+    if validation.valid_file(bin_location):
+      (buffer, count) = re.subn('^qstat=.*$', "qstat=\"%s\"" % bin_location, 1)
+      if count == 0:
+        buffer = "qstat=\"%s\"\n" % bin_location + buffer
+    bin_location = os.path.join([self.options['lsf_location'].value,
+                                 'bin',
+                                 'qdel'])
+    if validation.valid_file(bin_location):
+      (buffer, count) = re.subn('^qdel=.*$', "qdel=\"%s\"" % bin_location, 1)
+      if count == 0:
+        buffer = "qdel=\"%s\"\n" % bin_location + buffer
+    if self.options['lsf_server'].value is not None:
+      (buffer, count) = re.subn('^lsf_default=.*$', "lsf_default=\"%s\"" % bin_location, 1)
+      if count == 0:
+        buffer = "lsf_default=\"%s\"\n" % self.options['lsf_server'].value
+        
+    if self.options['seg_enabled'].value:
+      if (self.options['log_directory'].value is None or
+          not validation.valid_directory(self.options['log_directory'].value)):
+        mesg = "%s is not a valid directory location " % self.options['log_directory'].value
+        mesg += "for lsf_log files"
+        self.logMessage(mesg, 
+                        section = self.config_section,
+                        option = 'log_directory',
+                        level = logging.ERROR)
+    
+    if not utilities.atomic_write(LSFConfiguration.GRAM_CONFIG_FILE, buffer):
+      return False

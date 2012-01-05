@@ -12,9 +12,11 @@ __all__ = ['get_option_location',
            'get_file_list',
            'read_config_files', 
            'get_option',
-           'jobmanager_enabled']
+           'jobmanager_enabled',
+           'Option']
 
 CONFIG_DIRECTORY = '/etc/osg/config.d'
+
 
 def read_config_files(**kwargs):
   """
@@ -94,62 +96,44 @@ def get_file_list(**kwargs):
   file_list.sort()
   return file_list
 
-def get_option(config,
-               section,
-               option,
-               optional_settings = None, 
-               defaults = None,
-               option_type = types.StringType):
+def get_option(config, section, option = None):
   """
   Get an option from a config file with optional defaults and mandatory 
   options.
 
-  Keyword arguments:
+  Arguments
   config  -- a ConfigParser object to query
   section --  the ini section the option is located in
-  option  --  option name to check
-  option_type --  an optional variable indicating the type of the option
-  optional_settings -- a list of options that don't have to be given
-  defaults -- a dictionary of option : value pairs giving default values for 
-    options
+  option  --  an Option object to information on the option to retrieve
+
   """
   
-  if optional_settings is None:
-    optional_settings = []
-    
-  if defaults is None:
-    defaults = {}
   
-  if option == None or option == "":
+  if option is None:
     raise exceptions.SettingError('No option passed to get_option')
 
-  if config.has_option(section, option):
+  if config.has_option(section, option.name):
     try:
       # if option is blank and there's a default for the option
       # return the default
-      if utilities.blank(config.get(section, option)):
-        if option in defaults:
-          return defaults[option] 
-      if (option_type is None or
-          option_type is types.StringType):
-        return config.get(section, option).strip()
-      elif option_type is types.BooleanType:
-        return config.getboolean(section, option)
-      elif option_type is types.IntType:
-        return config.getint(section, option)
-      elif option_type is types.FloatType:
-        return config.getfloat(section, option)      
+      if utilities.blank(config.get(section, option.name)):
+        option.value = option.default_value
+      elif option.type == bool:
+        option.value = config.getboolean(section, option.name)
+      elif option.type == int:
+        option.value = config.getint(section, option.name)
+      elif option.type == float:
+        option.value = config.getfloat(section, option.name)        
+      else:
+        option.value = config.get(section, option.name)
     except ValueError:
-      error_mesg = "%s  in %s section is of the wrong type" % (option, section)
+      error_mesg = "%s  in %s section is of the wrong type" % (option.name, section)
       raise exceptions.SettingError(error_mesg)
-  
-  if option in defaults:
-    return defaults[option]
-  elif option in optional_settings:
-    return None
-  else:
-    err_mesg = "Can't get value for %s in %s section" % (option, section)
+  elif option.required == Option.MANDATORY:
+    err_mesg = "Can't get value for %s in %s section" % (option.name, section)
     raise exceptions.SettingError(err_mesg)
+  else: 
+    option.value = option.default_value
 
 
 def jobmanager_enabled(configuration):
@@ -172,3 +156,52 @@ def jobmanager_enabled(configuration):
   
   return False
   
+class Option(object):
+  MANDATORY = 1
+  OPTIONAL = 2
+
+  def __init__(self, **kwargs):
+    """
+    Initialize class members
+    
+    Keyword args:
+    value - option value
+    type - option type from types module or built-in type, use None if not given
+    default_value - option's default value
+    mapping - option's mapping in osg attributes file, None if option should
+              not be written to file
+    required - whether file should is required to be in config file or not
+               use Option.MANDATORY or Option.OPTIONAL
+    name - option name                  
+    """
+    
+    self.type = kwargs.get('type', str)
+    if self.type == str:
+      self.value = kwargs.get('value', None)
+    elif self.type == int or self.type == float:
+      self.value = kwargs.get('value', 0)
+    self.default_value = kwargs.get('default_value', None)
+    self.required = kwargs.get('required', Option.MANDATORY)
+    self.name = kwargs.get('name', 'option')
+    self.mapping = kwargs.get('mapping', None)
+    
+  def __setattr__(self, name, value):
+    """
+    Check type when setting value and enforce requirements for self.value if
+    self.type is specified
+    """
+    if name == 'value' and self.type is not None:
+      if type(value) == self.type:      
+        self.__dict__[name] = value
+      else:
+        # raises ValueError if conversion can't be done
+        self.__dict__[name] =  self.type(value)
+    else:
+      self.__dict__[name] = value
+      
+  def isMappable(self):
+    """
+    Returns True if there is a mapping from option name to attribute
+    in osg attributes file
+    """
+    return self.mapping is not None
