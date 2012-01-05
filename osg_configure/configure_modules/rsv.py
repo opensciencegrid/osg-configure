@@ -210,7 +210,8 @@ class RsvConfiguration(BaseConfiguration):
     self.log('RsvConfiguration.configure started')    
 
     if self.ignored:
-      self.logger.warning("%s configuration ignored" % self.config_section)
+      self.log("%s configuration ignored" % self.config_section,
+               level = logging.WARNING)
       self.log('RsvConfiguration.configure completed') 
       return True
 
@@ -276,9 +277,11 @@ class RsvConfiguration(BaseConfiguration):
     status_check = self.__validate_host_list(self.__gridftp_hosts, "gridftp_hosts")
 
     if utilities.blank(self.options['gridftp_dir'].value):
-      self.logger.error("In %s section" % self.config_section)
-      self.logger.error("Invalid gridftp_dir given: %s" %
-                        self.options['gridftp_dir'].value)
+      self.log("Invalid gridftp_dir given: %s" %
+               self.options['gridftp_dir'].value,
+               section = self.config_section,
+               option = 'gridftp_dir',
+               level = logging.ERROR)
       status_check = False
 
     return status_check 
@@ -301,11 +304,15 @@ class RsvConfiguration(BaseConfiguration):
                              self.options['service_proxy'].default_value)
     blank_user_proxy = utilities.blank(self.options['user_proxy'].value)
     if (not  blank_user_proxy and default_service_vals):
-      self.logger.warning("In %s section" % self.config_section)
-      self.logger.warning('User proxy specified and service_cert, service_key, service_proxy at default values, assuming user_proxy takes precedence')
+      self.log('User proxy specified and service_cert, service_key, ' +
+               'service_proxy at default values, assuming user_proxy ' +
+               'takes precedence in ' + self.config_section + ' section',
+               level = logging.WARNING)
     elif not (blank_user_proxy or (blank_service_vals or blank_service_vals)):
-      self.logger.error("In %s section" % self.config_section)
-      self.logger.error("You cannot specify user_proxy with any of (service_cert, service_key, service_proxy).  They are mutually exclusive options.")
+      self.log("You cannot specify user_proxy with any of (service_cert, " +
+               "service_key, service_proxy).  They are mutually exclusive " +
+               "options in %s section." % self.config_section,
+               level = logging.ERROR)
       check_value = False
             
 
@@ -315,40 +322,54 @@ class RsvConfiguration(BaseConfiguration):
              self.options['service_proxy'].value)
             or
             self.options['user_proxy'].value):
-      self.logger.error("In %s section" % self.config_section)
-      self.logger.error("You must specify either service_cert/service_key/service_proxy *or* user_proxy in order to provide credentials for RSV to run jobs")
+      self.log("You must specify either service_cert/service_key/" +
+               "service_proxy *or* user_proxy in order to provide " +
+               "credentials for RSV to run jobs in " +
+               " %s section" % self.config_section,
+               level = logging.ERROR)
       check_value = False
 
     if not blank_user_proxy:
       # if not using a service certificate, make sure that the proxy file exists
       value = self.options['user_proxy'].value
       if utilities.blank(value) or not validation.valid_file(value):
-        self.logger.error("In %s section" % self.config_section)
-        self.logger.error("user_proxy does not point to an existing file: %s" % value)
+        self.log("user_proxy does not point to an existing file: %s" % value,
+                 section = self.config_section,
+                 option = 'user_proxy',
+                 level = logging.ERROR)
         check_value = False      
     else:
       value = self.options['service_cert'].value
       if utilities.blank(value) or not validation.valid_file(value):
-        self.logger.error("In %s section" % self.config_section)
-        self.logger.error("service_cert must point to an existing file: %s" % value)
+        self.log("service_cert must point to an existing file: %s" % value,
+                 section = self.config_section,
+                 option = 'service_cert',
+                 level = logging.ERROR)
         check_value = False
 
       value = self.options['service_key'].value
       if utilities.blank(value) or not validation.valid_file(value):
-        self.logger.error("In %s section" % self.config_section)
-        self.logger.error("service_key must point to an existing file: %s" % value)
+        self.log("service_key must point to an existing file: %s" % value,
+                 section = self.config_section,
+                 option = 'service_key',
+                 level = logging.ERROR)
         check_value = False
 
       value = self.options['service_proxy'].value
       if utilities.blank(value):
-        self.logger.error("In %s section" % self.config_section)
-        self.logger.error("service_proxy must have a valid location: %s" % value)
+        self.log("service_proxy must have a valid location: %s" % value,
+                 section = self.config_section,
+                 option = 'service_proxy',
+                 level = logging.ERROR)
         check_value = False
 
       value = os.path.dirname(self.options['service_proxy'].value)
       if not validation.valid_location(value):
-        self.logger.error("In %s section" % self.config_section)
-        self.logger.error("service_proxy must be located in a valid directory: %s" % value)
+        self.log("service_proxy must be located in a valid " +
+                 "directory: %s" % value,
+                 section = self.config_section,
+                 option = 'service_proxy',
+                 level = logging.ERROR)
         check_value = False
 
     return check_value
@@ -411,9 +432,12 @@ class RsvConfiguration(BaseConfiguration):
       return True
 
     if not utilities.run_script([self.rsv_control, "-v0", "--enable", "--host", host] + args + metrics):
-      self.logger.error("ERROR: Attempt to enable metrics via rsv-control failed")
-      self.logger.error("Host: %s" % host)
-      self.logger.error("Metrics: %s" % " ".join(metrics))
+      self.log("ERROR: Attempt to enable metrics via rsv-control failed",
+               level = logging.ERROR)
+      self.log("Host: %s" % host,
+               level = logging.ERROR)
+      self.log("Metrics: %s" % " ".join(metrics),
+               level = logging.ERROR)
       return False
 
     return True
@@ -446,7 +470,13 @@ class RsvConfiguration(BaseConfiguration):
 
     gridftp_dirs = split_list(self.options['gridftp_dir'].value)
     if len(self.__gridftp_hosts) != len(gridftp_dirs) and len(gridftp_dirs) != 1:
-      self.logger.error("RSV.gridftp_dir is set incorrectly.  When enabling GridFTP metrics you must specify either exactly 1 entry, or the same number of entries in the gridftp_dir variable as you have in the gridftp_hosts section.  There are %i host entries and %i gridftp_dir entries." % (len(self.__gridftp_hosts), len(gridftp_dirs)))
+      self.log("RSV.gridftp_dir is set incorrectly.  When enabling GridFTP " +
+               "metrics you must specify either exactly 1 entry, or the same "+
+               "number of entries in the gridftp_dir variable as you have in " +
+               "the gridftp_hosts section.  There are %i host entries " \
+               "and %i gridftp_dir entries." % (len(self.__gridftp_hosts), 
+                                                len(gridftp_dirs)),
+               level = logging.ERROR)
       raise exceptions.ConfigureError("Failed to configure RSV")
 
     gridftp_metrics = self.__get_metrics_by_type("OSG-GridFTP")
@@ -518,7 +548,11 @@ class RsvConfiguration(BaseConfiguration):
     # Do some checking on the values.  perhaps this should be in the validate section?
     srm_dirs = split_list(self.options['srm_dir'].value)
     if len(self.__srm_hosts) != len(srm_dirs):
-      self.logger.error("When enabling SRM metrics you must specify the same number of entries in the srm_dir variable as you have in the srm_hosts section.  There are %i host entries and %i srm_dir entries." % (len(self.__srm_hosts), len(srm_dirs)))
+      self.log("When enabling SRM metrics you must specify the same number " +
+               "of entries in the srm_dir variable as you have in the " +
+               "srm_hosts section.  There are %i host entries and %i " \
+               "srm_dir entries." % (len(self.__srm_hosts), len(srm_dirs)),
+               level = logging.ERROR)
       raise exceptions.ConfigureError("Failed to configure RSV")
 
     srm_ws_paths = []
@@ -526,7 +560,13 @@ class RsvConfiguration(BaseConfiguration):
       srm_ws_paths = split_list(self.options['srm_webservice_path'].value)
 
       if len(self.__srm_hosts) != len(srm_ws_paths):
-        self.logger.error("If you set srm_webservice_path when enabling SRM metrics you must specify the same number of entries in the srm_webservice_path variable as you have in the srm_hosts section.  There are %i host entries and %i srm_webservice_path entries." % (len(self.__srm_hosts), len(srm_ws_paths)))
+        self.log("If you set srm_webservice_path when enabling SRM metrics " +
+                 "you must specify the same number of entries in the " +
+                 "srm_webservice_path variable as you have in the srm_hosts " +
+                 "section.  There are %i host entries and %i " \
+                 "srm_webservice_path entries." % (len(self.__srm_hosts), 
+                                                   len(srm_ws_paths)),
+                 level = logging.ERROR)
         raise exceptions.ConfigureError("Failed to configure RSV")
 
     # Now time to do the actual configuration
@@ -583,9 +623,9 @@ class RsvConfiguration(BaseConfiguration):
           tmp.append(metric)
         else:
           status_check = False
-          err_mesg =  "In %s section, gratia_probes setting:" % self.config_section
-          err_mesg += "Probe %s is not a valid probe, " % type
-          self.logger.error(err_mesg)
+          self.log("In %s section, gratia_probes setting: Probe %s is " \
+                   "not a valid probe" % (self.config_section , type),
+                   level = logging.ERROR)
 
       tmp_2d.append(tmp)
 
@@ -610,10 +650,16 @@ class RsvConfiguration(BaseConfiguration):
     num_ces = len(self.__ce_hosts)
     num_gratia = len(self.__gratia_probes_2d)
     if num_ces != num_gratia and num_gratia != 1:
-      self.logger.error("The number of CE hosts does not match the number of Gratia host definitions")
-      self.logger.error("Number of CE hosts: %s" % num_ces)
-      self.logger.error("Number of Gratia host definitions: %2" % num_gratia)
-      self.logger.error("They must match, or you must have only one Gratia host definition (which will be used for all hosts")
+      self.log("The number of CE hosts does not match the number of " +
+               "Gratia host definitions",
+               level = logging.ERROR)
+      self.log("Number of CE hosts: %s" % num_ces,
+               level = logging.ERROR)
+      self.log("Number of Gratia host definitions: %2" % num_gratia,
+               level = logging.ERROR)
+      self.log("They must match, or you must have only one Gratia host " +
+               "definition (which will be used for all hosts",
+               level = logging.ERROR)
       return False
 
     i = 0
@@ -645,11 +691,15 @@ class RsvConfiguration(BaseConfiguration):
         hostname = host
         port = False
       if not validation.valid_domain(hostname):
-        self.logger.error("Invalid domain in [%s].%s: %s" % (self.config_section, setting, host))
+        self.log("Invalid domain in [%s].%s: %s" % (self.config_section, 
+                                                    setting, host),
+                 level = logging.ERROR)
         ret = False
 
       if port and re.search('\D', port):
-        self.logger.error("Invalid port in [%s].%s: %s" % (self.config_section, setting, host))
+        self.log("Invalid port in [%s].%s: %s" % (self.config_section, 
+                                                  setting, host),
+                 level = logging.ERROR)
 
     return ret
 
@@ -754,7 +804,9 @@ class RsvConfiguration(BaseConfiguration):
     metrics to enable """
 
     if not os.path.exists(self.rsv_meta_dir):
-      self.logger.warning("In RSV configuration, meta dir (%s) does not exist." % self.rsv_meta_dir)
+      self.log("In RSV configuration, meta dir (%s) does " \
+               "not exist." % self.rsv_meta_dir,
+               level = logging.WARNING)
       return
       
     files = os.listdir(self.rsv_meta_dir)
@@ -801,9 +853,12 @@ class RsvConfiguration(BaseConfiguration):
         # If we don't have a match then we are either finished processing, or there is
         # a syntax error.  So if we have anything left in the string we will bail
         if re.search("\S", list):
-          self.logger.error("ERROR: syntax error in parenthesized list")
-          self.logger.error("ERROR: Supplied list:\n\t%s" % original_list)
-          self.logger.error("ERROR: Leftover after parsing:\n\t%s" % list)
+          self.log("ERROR: syntax error in parenthesized list",
+                   level = logging.ERROR)
+          self.log("ERROR: Supplied list:\n\t%s" % original_list,
+                   level = logging.ERROR)
+          self.log("ERROR: Leftover after parsing:\n\t%s" % list,
+                   level = logging.ERROR)
           return False
         else:
           return array
@@ -839,7 +894,9 @@ class RsvConfiguration(BaseConfiguration):
     conf = re.sub(r'(\s*)SiteName\s*=.*', r'\1SiteName="' + self.site_name + '"', conf, 1)
 
     if not utilities.atomic_write(probe_conf, conf):
-      self.logger.error("Error while configuring metric probe: can't write to %s" % probe_file)
+      self.log("Error while configuring metric probe: can't " +
+               "write to %s" % probe_file,
+               level = logging.ERROR)
       raise exceptions.ConfigureError("Error configuring gratia")
 
     return True

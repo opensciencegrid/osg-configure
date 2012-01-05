@@ -193,7 +193,10 @@ class StorageConfiguration(BaseConfiguration):
       
       etc_dir = os.path.join(app_dir, "etc")
       if not validation.valid_location(etc_dir) or not os.path.isdir(etc_dir):
-        self.logger.error("$OSG_APP/etc directory not present: %s" % etc_dir)
+        self.log("$OSG_APP/etc directory not present: %s" % etc_dir,
+                 section = self.config_section,
+                 option = 'app_dir',
+                 level = logging.ERROR)
         return False
     
       permissions = stat.S_IMODE(os.stat(etc_dir).st_mode)
@@ -212,9 +215,12 @@ class StorageConfiguration(BaseConfiguration):
                   o_rwx | stat.S_ISVTX, # 1755
                   o_rwx | stat.S_ISGID] # 2755 
       if permissions not in allowed:
-        self.logger.warning("Permissions on $OSG_APP/etc should be 777, 1777, " \
-                            "2777, 775, 1775, 2775, 755, 1755, 2755 " \
-                            "for sites: %s" % etc_dir)
+        self.log("Permissions on $OSG_APP/etc should be 777, 1777, " \
+                 "2777, 775, 1775, 2775, 755, 1755, 2755 " \
+                 "for sites: %s" % etc_dir,
+                 section = self.config_section,
+                 option = 'app_dir',
+                 level = logging.WARNING)
     # pylint: disable-msg=W0703      
     except Exception:
       self.log("Can't check $OSG_APP, got an exception", 

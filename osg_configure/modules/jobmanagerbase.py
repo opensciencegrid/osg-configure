@@ -2,7 +2,7 @@
 
 """ Base class for all job manager configuration classes """
 
-import re
+import re, logging
 
 from osg_configure.modules.configurationbase import BaseConfiguration
 from osg_configure.modules import exceptions
@@ -67,7 +67,8 @@ class JobManagerConfiguration(BaseConfiguration):
       if utilities.atomic_write(filename, buffer):
         return True
       else:
-        self.logger.error('Error writing to enabling accept_limited')
+        self.log('Error writing to enabling accept_limited',
+                 level = logging.ERROR)
         return False
 
   def disable_accept_limited(self, filename):
@@ -86,7 +87,8 @@ class JobManagerConfiguration(BaseConfiguration):
       if utilities.atomic_write(filename, buffer):
         return True
       else:
-        self.logger.error('Error disabling accept_limited')
+        self.log('Error disabling accept_limited',
+                 level = logging.ERROR)
         return False
       
     if ',accept_limited' in buffer:
@@ -94,7 +96,8 @@ class JobManagerConfiguration(BaseConfiguration):
       if utilities.atomic_write(filename, buffer):
         return True
       else:
-        self.logger.error('Error disabling accept_limited')
+        self.log('Error disabling accept_limited',
+                 level = logging.ERROR)
         return False
 
   def enable_seg(self, seg_module, filename):
@@ -116,7 +119,8 @@ class JobManagerConfiguration(BaseConfiguration):
       if utilities.atomic_write(filename, buffer):
         return True
       else:
-        self.logger.error('Error enabling SEG in ' + filename)
+        self.log('Error enabling SEG in ' + filename,
+                 level = logging.ERROR)
         return False
 
     if not utilities.run_script([self.seg_admin_path, '-e', seg_module]):
@@ -141,7 +145,8 @@ class JobManagerConfiguration(BaseConfiguration):
       if utilities.atomic_write(filename, buffer):
         return True
       else:
-        self.logger.error('Error disabling SEG in ' + filename)
+        self.log('Error disabling SEG in ' + filename,
+                 level = logging.ERROR)                 
         return False
             
     if not utilities.run_script([self.seg_admin_path, '-d', seg_module]):
@@ -157,32 +162,35 @@ class JobManagerConfiguration(BaseConfiguration):
     default - Indicates the default jobmanger, currently 
               either 'fork' or 'managed-fork' 
     """
-    self.logger.debug("JobManager.set_default_jobmanager started")
+    self.log("JobManager.set_default_jobmanager started")
 
     if default == 'fork': 
-      self.logger.debug("Setting regular fork manager to be the default jobmanager")
+      self.log("Setting regular fork manager to be the default jobmanager")
       result = utilities.run_script(['/usr/sbin/globus-gatekeeper-admin',
                                      '-e',
                                      'jobmanager-fork-poll',
                                      '-n',
                                      'jobmanager'])    
       if not result:
-        self.logger.error("Could not set the jobmanager-fork-poll to the default jobmanager")
+        self.log("Could not set the jobmanager-fork-poll to the default jobmanager",
+                 level = logging.ERROR)
         return False
     elif default == 'managed-fork':
-      self.logger.debug("Setting managed fork manager to be the default jobmanager")
+      self.log("Setting managed fork manager to be the default jobmanager")
       result = utilities.run_script(['/usr/sbin/globus-gatekeeper-admin',
                                      '-e',
                                      'jobmanager-managedfork',
                                      '-n',
                                      'jobmanager'])    
       if not result:
-        self.logger.error("Could not set the jobmanager-fork-poll to the default jobmanager")
+        self.log("Could not set the jobmanager-fork-poll to the default jobmanager",
+                 level = logging.ERROR)
         return False
     else:
-      self.logger.error("Invalid jobamanger type specified as the default jobmanger: %s" % default)
+      self.log("Invalid jobamanger type specified as the default jobmanger: %s" % default,
+               level = logging.ERROR)
       return False
 
     
-    self.logger.debug("JobManager.set_default_jobmanager completed")
+    self.log("JobManager.set_default_jobmanager completed")
     return True

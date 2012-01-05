@@ -134,7 +134,7 @@ class SquidConfiguration(BaseConfiguration):
       return True
 
     if self.ignored:
-      self.logger.warning("%s configuration ignored" % self.config_section)
+      self.log('Ignored, returning True')
       self.log('SquidConfiguration.configure completed')
       return True
 

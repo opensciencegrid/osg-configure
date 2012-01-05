@@ -161,7 +161,7 @@ class MonalisaConfiguration(BaseConfiguration):
       return True
 
     if self.ignored:
-      self.logger.warning("%s configuration ignored" % self.config_section)
+      self.log("%s configuration ignored" % self.config_section)
       return True
 
     arguments = ['--server', 'y']
@@ -223,9 +223,9 @@ class MonalisaConfiguration(BaseConfiguration):
     else:    
       arguments.append('n')    
     arguments.append('--noprompt')
-    self.logger.info("Running configure_monalisa with: %s" % (" ".join(arguments)))
+    self.log("Running configure_monalisa with: %s" % (" ".join(arguments)))
     if not utilities.configure_service('configure_monalisa', arguments):
-      self.logger.error("Error while configuring monalisa")
+      self.log("Error while configuring monalisa", level = logging.ERROR)
       raise exceptions.ConfigureError("Error configuring MonaLisa")
     self.log('MonalisaConfiguration.configure completed')
     return True

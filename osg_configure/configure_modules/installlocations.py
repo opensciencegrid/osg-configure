@@ -73,8 +73,10 @@ class InstallLocations(BaseConfiguration):
                                         self.options.keys(),
                                         configuration.defaults().keys())
     for option in temp:
-      self.logger.warning("Found unknown option %s in %s section" % 
-                           (option, self.config_section))   
+      self.log("Found unknown option",
+               option = option, 
+               section = self.config_section,
+               level = logging.WARNING)
     self.log('InstallLocations.parseConfiguration completed')    
      
 
