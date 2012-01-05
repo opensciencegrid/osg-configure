@@ -100,7 +100,7 @@ class PBSConfiguration(JobManagerConfiguration):
     # was enabled 
     if (configuration.has_section('Managed Fork') and
         configuration.has_option('Managed Fork', 'enabled') and
-        configuration.getboolean('Managed Fork', 'enabled').upper()):
+        configuration.getboolean('Managed Fork', 'enabled')):
       self.__set_default = False
       
     self.log('PBSConfiguration.parseConfiguration completed')    
