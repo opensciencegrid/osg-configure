@@ -132,7 +132,7 @@ class JobManagerConfiguration(BaseConfiguration):
 
     return True
   
-  def disable_seg(self, seg_modules, filename):
+  def disable_seg(self, seg_module, filename):
     """
     Update the globus jobmanager configuration so that it does not allow use the SEG
     
