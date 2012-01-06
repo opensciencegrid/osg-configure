@@ -237,7 +237,7 @@ class SGEConfiguration(JobManagerConfiguration):
       self.enable_seg('sge', SGEConfiguration.SGE_CONFIG_FILE)
       #TODO: do other SEG configuration
     else:
-      self.disable_seg(SGEConfiguration.SGE_CONFIG_FILE)
+      self.disable_seg('sge', SGEConfiguration.SGE_CONFIG_FILE)
       #TODO: do other SEG configuration
 
     # TODO: do other globus job manager configuration, e.g. paths etc.s      

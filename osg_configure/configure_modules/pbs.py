@@ -44,6 +44,10 @@ class PBSConfiguration(JobManagerConfiguration):
                       configfile.Option(name = 'log_directory',
                                         required = configfile.Option.OPTIONAL,
                                         default_value = ''),
+                    'pbs_server' : 
+                      configfile.Option(name = 'pbs_server',
+                                        required = configfile.Option.OPTIONAL,
+                                        default_value = ''),
                     'accept_limited' : 
                       configfile.Option(name = 'accept_limited',
                                         required = configfile.Option.OPTIONAL,
@@ -193,7 +197,7 @@ class PBSConfiguration(JobManagerConfiguration):
     if self.options['seg_enabled'].value:
       self.enable_seg('pbs', PBSConfiguration.PBS_CONFIG_FILE)
     else:
-      self.disable_seg(PBSConfiguration.PBS_CONFIG_FILE)
+      self.disable_seg('pbs', PBSConfiguration.PBS_CONFIG_FILE)
     
     if not self.setupGramConfig():
       self.log('Error writing to ' + PBSConfiguration.GRAM_CONFIG_FILE,
@@ -241,7 +245,7 @@ class PBSConfiguration(JobManagerConfiguration):
                                 'qstat')
     if validation.valid_file(bin_location):
       re_obj = re.compile('^qstat=.*$', re.MULTILINE)
-      (buffer, count) = re_obj.subn("qstat=\"%s\"" % bin_location, 1)
+      (buffer, count) = re_obj.subn("qstat=\"%s\"" % bin_location, buffer, 1)
       if count == 0:
         buffer += "qstat=\"%s\"\n" % bin_location
     bin_location = os.path.join(self.options['pbs_location'].value,
@@ -254,10 +258,11 @@ class PBSConfiguration(JobManagerConfiguration):
                                     1)
       if count == 0:
         buffer += "qdel=\"%s\"\n" % bin_location
-    if self.options['pbs_server'].value is not None:
+    if self.options['pbs_server'].value != '':
       re_obj = re.compile('^pbs_default=.*$', re.MULTILINE)
       (buffer, count) = re_obj.subn("pbs_default=\"%s\"" % 
                                     self.options['pbs_server'].value, 
+                                    buffer,
                                     1)
       if count == 0:
         buffer += "pbs_default=\"%s\"\n" % self.options['pbs_server'].value

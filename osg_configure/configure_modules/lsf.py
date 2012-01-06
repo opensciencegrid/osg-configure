@@ -188,6 +188,11 @@ class LSFConfiguration(JobManagerConfiguration):
         self.log('LSFConfiguration.configure completed')
         return False
 
+    if self.options['seg_enabled'].value:
+      self.enable_seg('pbs', PBSConfiguration.PBS_CONFIG_FILE)
+    else:
+      self.disable_seg('pbs', PBSConfiguration.PBS_CONFIG_FILE)
+    
     if not self.setupGramConfig():
       self.log('Error writing to ' + LSFConfiguration.GRAM_CONFIG_FILE,
                level = logging.ERROR)
@@ -244,7 +249,7 @@ class LSFConfiguration(JobManagerConfiguration):
                                 'qdel')
     if validation.valid_file(bin_location):
       re_obj = re.compile('^qstat=.*$', re.MULTILINE)
-      (buffer, count) = re_obj.subn("qdel=\"%s\"" % bin_location, 1)
+      (buffer, count) = re_obj.subn("qdel=\"%s\"" % bin_location, buffer, 1)
       if count == 0:
         buffer += "qdel=\"%s\"\n" % bin_location
     if self.options['lsf_server'].value is not None:
