@@ -455,7 +455,7 @@ def main():
                     action='store_true',
                     dest='debug',
                     default=False,
-                    help='Output debugging information')
+                    help='Output debugging information to /var/log/osg/osg-configure.log')
   parser.add_option('-v',
                     '--verify',
                     action='store_const',
@@ -498,6 +498,10 @@ def main():
                     dest='force',
                     default=False,
                     help='Force configuration despite any errors present')
+  parser.add_option('--verbose',
+                    dest='verbose',
+                    default=False,
+                    help='Output all log messages to the console')
   (options, args) = parser.parse_args()
   log_level = logging.INFO
 
@@ -505,6 +509,7 @@ def main():
     error_exit("You must be root when running %s" % sys.argv[0])
     
   if options.debug == True:
+    sys.stdout.write("Writing debug information to /var/log/osg/osg-configure.log")
     log_level = logging.DEBUG
   
   configure_module = options.module
@@ -523,7 +528,9 @@ def main():
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     console = logging.StreamHandler()
-    console.setLevel(logging.ERROR)
+    console.setLevel(logging.WARNING)
+    if options.verbose:
+      console.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(levelname)-8s %(message)s')
     console.setFormatter(formatter)
     logger.addHandler(console)
