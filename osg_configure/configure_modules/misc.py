@@ -208,7 +208,8 @@ class MiscConfiguration(BaseConfiguration):
     if not utilities.atomic_write(GSI_AUTHZ_LOCATION, gsi_contents):
       self.log("Error while writing to " + GSI_AUTHZ_LOCATION, 
                level = logging.ERROR)
-      raise exceptions.ConfigureError(err_msg)
+      raise exceptions.ConfigureError("Error while writing to " +  
+                                      GSI_AUTHZ_LOCATION)
       
     self.log("Updating " + GUMS_CLIENT_LOCATION, level = logging.INFO)
     location_re = re.compile("^gums.location=.*$", re.MULTILINE)
@@ -249,7 +250,8 @@ class MiscConfiguration(BaseConfiguration):
     if not utilities.atomic_write(GSI_AUTHZ_LOCATION, gsi_contents):
       self.log("Error while writing to " + GSI_AUTHZ_LOCATION, 
                level = logging.ERROR)
-      raise exceptions.ConfigureError(err_msg)
+      raise exceptions.ConfigureError("Error while writing to " +
+                                      GSI_AUTHZ_LOCATION)
 
     
 
@@ -263,7 +265,8 @@ class MiscConfiguration(BaseConfiguration):
     
     # Do basic error checking to validate that this is a cron string
     if len(re.split("\s+", self.options['cleanup_cron_time'].value)) != 5:
-      err_msg = "Error: the value of cleanup_cron_time must be a 5 part cron string: %s"
+      err_msg = "Error: the value of cleanup_cron_time must be a 5 part " \
+                "cron string: %s" % self.options['cleanup_cron_time'].value
       self.log(err_msg,
                option = 'cleanup_cron_time',
                section = self.config_section,

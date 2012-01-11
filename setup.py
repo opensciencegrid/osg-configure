@@ -20,5 +20,6 @@ setup(name='osg-configure',
       url='http://www.opensciencegrid.org',
       packages=['osg_configure', 'osg_configure.modules', 'osg_configure.configure_modules'],      
       scripts=['scripts/osg-configure'],
-      data_files=[('/etc/osg/config.d', config_files),]
+      data_files=[('/etc/osg/config.d', config_files),
+                  ('/etc/osg/', 'data_files/grid3-locations.txt')]
       )

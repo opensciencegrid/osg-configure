@@ -1,0 +1,8 @@
+# lines starting with # are comments
+# the first word of the first valid line is the location list name
+# each following line has the format LogName Version PhName (where the first 2 are words, the last is the rest)
+# Applications/users are supposed to modify this file to publish their locations
+MountPoints
+SAMPLE_LOCATION default /SAMPLE-path
+SAMPLE_SCRATCH  devel /SAMPLE-path
+#

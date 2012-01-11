@@ -1,0 +1,3 @@
+gums.location=https://itb-gums.uchicago.edu:8443/gums/services/GUMSAdmin
+#gums.authz=https://localhost:8443/gums/services/GUMSAuthorizationServicePort
+gums.authz=https://foo:8443/gums/services/GUMSXACMLAuthorizationServicePort
