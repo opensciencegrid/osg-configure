@@ -25,6 +25,18 @@ class TestLocalSettings(unittest.TestCase):
     Test misc parsing
     """
     
+    config_file = os.path.abspath("./configs/network/check_blank.ini")
+    configuration = ConfigParser.SafeConfigParser()
+    configuration.read(config_file)
+
+    settings = network.NetworkConfiguration(logger=global_logger)
+    try:
+      settings.parseConfiguration(configuration)
+    except Exception, e:
+      self.fail("Received exception while parsing configuration: %s" % e)
+    self.assertTrue(settings.checkAttributes({}),
+                    "Flagged blank file as invalid")
+ 
     config_file = os.path.abspath("./configs/network/check_ok1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -34,13 +46,12 @@ class TestLocalSettings(unittest.TestCase):
       settings.parseConfiguration(configuration)
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e)
- 
 
     options = settings.options
     variables = {'source_range' : '2048,4096',
                  'port_range' : '9182,16384',
-                 'source_state_file' : '/tmp/source_range',
-                 'port_state_file' : '/tmp/port_range'}
+                 'source_state_file' : './configs/network/check_ok1.ini',
+                 'port_state_file' : './configs/network/check_ok1.ini'}
     for var in variables:      
       self.failUnless(options.has_key(var), 
                       "Option %s missing" % var)
@@ -50,6 +61,8 @@ class TestLocalSettings(unittest.TestCase):
                            "expected %s" % (var, 
                                             options[var].value, 
                                             variables[var]))
+    self.assertTrue(settings.checkAttributes({}),
+                    "Flagged blank file as invalid")
     
     config_file = os.path.abspath("./configs/network/check_ok2.ini")
     configuration = ConfigParser.SafeConfigParser()
@@ -60,12 +73,11 @@ class TestLocalSettings(unittest.TestCase):
       settings.parseConfiguration(configuration)
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e)
- 
 
     options = settings.options
     variables = {'source_range' : '2048,4096',
                  'port_range' : '',
-                 'source_state_file' : '/tmp/source_range',
+                 'source_state_file' : './configs/network/check_ok2.ini',
                  'port_state_file' : ''}
     for var in variables:      
       self.failUnless(options.has_key(var), 
@@ -76,6 +88,8 @@ class TestLocalSettings(unittest.TestCase):
                            "expected %s" % (var, 
                                             options[var].value, 
                                             variables[var]))
+    self.assertTrue(settings.checkAttributes({}),
+                    "Flagged blank file as invalid")
 
     config_file = os.path.abspath("./configs/network/check_ok3.ini")
     configuration = ConfigParser.SafeConfigParser()
@@ -87,12 +101,11 @@ class TestLocalSettings(unittest.TestCase):
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e)
  
-
     options = settings.options
     variables = {'source_range' : '',
                  'port_range' : '9182,16384',
                  'source_state_file' : '',
-                 'port_state_file' : '/tmp/port_range'}
+                 'port_state_file' : './configs/network/check_ok3.ini'}
     for var in variables:      
       self.failUnless(options.has_key(var), 
                       "Option %s missing" % var)
@@ -102,6 +115,8 @@ class TestLocalSettings(unittest.TestCase):
                            "expected %s" % (var, 
                                             options[var].value, 
                                             variables[var]))
+    self.assertTrue(settings.checkAttributes({}),
+                    "Flagged blank file as invalid")
   
 
   def testMissingStateFile(self):
@@ -120,7 +135,7 @@ class TestLocalSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    self.assertFalse(setting.checkAttributes({}),
+    self.assertFalse(settings.checkAttributes({}),
                      "In %s, missing source state file " % config_file +
                      "should have been flagged")
 
@@ -136,7 +151,7 @@ class TestLocalSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    self.assertFalse(setting.checkAttributes({}),
+    self.assertFalse(settings.checkAttributes({}),
                      "In %s, missing source state file " % config_file +
                      "should have been flagged")
     
@@ -157,7 +172,7 @@ class TestLocalSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    self.assertFalse(setting.checkAttributes({}),
+    self.assertFalse(settings.checkAttributes({}),
                      "In %s, missing source range " % config_file +
                      "should have been flagged")
 
@@ -173,7 +188,7 @@ class TestLocalSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    self.assertFalse(setting.checkAttributes({}),
+    self.assertFalse(settings.checkAttributes({}),
                      "In %s, missing source port range " % config_file +
                      "should have been flagged")
 
@@ -193,7 +208,7 @@ class TestLocalSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    self.assertFalse(setting.checkAttributes({}),
+    self.assertFalse(settings.checkAttributes({}),
                      "In %s, invalid source range " % config_file +
                      "should have been flagged")
 
@@ -208,7 +223,7 @@ class TestLocalSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    self.assertFalse(setting.checkAttributes({}),
+    self.assertFalse(settings.checkAttributes({}),
                      "In %s, invalid source range " % config_file +
                      "should have been flagged")
 
@@ -223,7 +238,7 @@ class TestLocalSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    self.assertFalse(setting.checkAttributes({}),
+    self.assertFalse(settings.checkAttributes({}),
                      "In %s, invalid source range " % config_file +
                      "should have been flagged")
 
@@ -244,7 +259,7 @@ class TestLocalSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    self.assertFalse(setting.checkAttributes({}),
+    self.assertFalse(settings.checkAttributes({}),
                      "In %s, invalid port range " % config_file +
                      "should have been flagged")
 
@@ -259,7 +274,7 @@ class TestLocalSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    self.assertFalse(setting.checkAttributes({}),
+    self.assertFalse(settings.checkAttributes({}),
                      "In %s, invalid port range " % config_file +
                      "should have been flagged")
 
@@ -274,6 +289,6 @@ class TestLocalSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    self.assertFalse(setting.checkAttributes({}),
+    self.assertFalse(settings.checkAttributes({}),
                      "In %s, invalid port range " % config_file +
                      "should have been flagged")

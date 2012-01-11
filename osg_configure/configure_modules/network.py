@@ -18,7 +18,7 @@ class NetworkConfiguration(BaseConfiguration):
 
   def __init__(self, *args, **kwargs):
     # pylint: disable-msg=W0142
-    super(Network, self).__init__(*args, **kwargs)
+    super(NetworkConfiguration, self).__init__(*args, **kwargs)
     self.log('NetworkConfiguration.configure started')    
     self.options = {'source_range' : 
                       configfile.Option(name = 'source_range',
@@ -80,10 +80,6 @@ class NetworkConfiguration(BaseConfiguration):
     self.log('NetworkConfiguration.checkAttributes started')
     attributes_ok = True
     
-    if self.__self_configured:
-      return True
-
-        
     for name in ['source_state_file', 'port_state_file']:
       if utilities.blank(self.options[name].value):
         continue
