@@ -250,13 +250,16 @@ class GipConfiguration(BaseConfiguration):
     
     if configuration.has_option(self.config_section, 'user'):
       username = configuration.get(self.config_section, 'user')
+      print username
+      print validation.valid_user(username)
       if not validation.valid_user(username):
         err_msg = "%s is not a valid account on this system" % username
+        print err_msg
         self.log(err_msg,
                  section = self.config_section,
                  option = 'user',
                  level = logging.ERROR)
-        raise exceptions.SettingError(msg)
+        raise exceptions.SettingError(err_msg)
       
     self.log('GipConfiguration.parseConfiguration completed')
 

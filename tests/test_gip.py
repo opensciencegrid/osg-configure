@@ -383,7 +383,7 @@ class TestConfigureOsg(unittest.TestCase):
     cp = ConfigParser.SafeConfigParser()
     cp.read("configs/gip/valid_user.ini")    
     gip_config = gip.GipConfiguration(logger=global_logger)
-    self.assertTrue(gip_config.parseConfiguration(cp),
+    self.assertTrue(gip_config.parseConfiguration(cp) is None,
                     "Flagged valid user as being missing")
     
 if __name__ == '__main__':
