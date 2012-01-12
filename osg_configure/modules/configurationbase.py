@@ -5,6 +5,7 @@
 import ConfigParser, logging
 
 from osg_configure.modules import configfile
+from osg_configure.modules import utilities
 
 __all__ = ['BaseConfiguration']
 
