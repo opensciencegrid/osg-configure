@@ -118,13 +118,7 @@ class RsvConfiguration(BaseConfiguration):
       self.log('RsvConfiguration.parseConfiguration completed')    
       return True
 
-    for option in self.options.values():
-      self.log("Getting value for %s" % option.name)
-      configfile.get_option(configuration,
-                            self.config_section, 
-                            option)
-      self.log("Got %s" % option.value)
-
+    self.getOptions(configuration, ignore_options = ['enabled'])
 
     # If we're on a CE, get the grid group if possible
     if configuration.has_section('Site Information'): 
@@ -135,19 +129,6 @@ class RsvConfiguration(BaseConfiguration):
         self.site_name = configuration.get('Site Information', 'resource')
       elif configuration.has_option('Site Information', 'site_name'):
         self.site_name = configuration.get('Site Information', 'site_name')
-
-
-    # check and warn if unknown options found 
-    temp = utilities.get_set_membership(configuration.options(self.config_section),
-                                        self.options.keys(),
-                                        configuration.defaults().keys())
-    for option in temp:
-      if option == 'enabled':
-        continue
-      self.log("Found unknown option",
-               option = option, 
-               section = self.config_section,
-               level = logging.WARNING)
 
 
     # Parse lists

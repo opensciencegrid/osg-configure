@@ -93,12 +93,7 @@ in your config.ini file."""
         self.options['probes'].default_value = \
             self.__itb_defaults['probes']
 
-    for option in self.options.values():
-      self.log("Getting value for %s" % option.name)
-      configfile.get_option(configuration,
-                            self.config_section, 
-                            option)
-      self.log("Got %s" % option.value)
+    self.getOptions(configuration)
     
     if utilities.blank(self.options['probes'].value):
       self.log('GratiaConfiguration.parseConfiguration completed')

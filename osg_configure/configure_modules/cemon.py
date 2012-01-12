@@ -81,13 +81,8 @@ class CemonConfiguration(BaseConfiguration):
       else:
         self.options['ress_servers'].default_value = self.__production_defaults['ress_servers']
         self.options['bdii_servers'].default_value = self.__production_defaults['bdii_servers']
-        
-    for option in self.options.values():
-      self.log("Getting value for %s" % option.name)
-      configfile.get_option(configuration,
-                            self.config_section, 
-                            option)
-      self.log("Got %s" % option.value)
+
+    self.getOptions(configuration)
     
     self.ress_servers = self.__parse_servers(self.options['ress_servers'].value)  
     self.bdii_servers = self.__parse_servers(self.options['bdii_servers'].value)  

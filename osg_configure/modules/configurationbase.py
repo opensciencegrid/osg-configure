@@ -116,9 +116,53 @@ class BaseConfiguration(object):
     if configuration is None or \
        (configuration.__class__.__name__ is not 'ConfigParser' and \
         configuration.__class__.__name__ is not 'SafeConfigParser'):
+      err_msg = 'Invalid type for configuration, must be a ConfigParser '
+      err_msg += 'or SafeConfigParser object'
+      self.log(err_msg, level = logging.ERROR)
       raise TypeError('Invalid type for configuration, must be a ' + 
                       'ConfigParser or SafeConfigParser object')    
   
+  def getOptions(self, configuration, **kwargs):
+    """
+    Populate self.options based on contents of ConfigParser object, 
+    warns if unknown options are found
+    
+    arguments:
+    configuration - a ConfigParser object
+    
+    keyword arguments:
+    ignore_options - a list of option names that should be ignored
+                     when checking for unknown options
+    """
+    
+    self.checkConfig(configuration)
+    for option in self.options.values():
+      self.log("Getting value for %s" % option.name)
+      try:              
+        configfile.get_option(configuration,
+                              self.config_section, 
+                              option)
+        self.log("Got %s" % option.value)
+      except Exception, ex:
+        self.log("Received exception when parsing option",
+                 option = option.name,
+                 section = self.config_section,
+                 level = logging.ERROR,
+                 exception = True)
+        raise
+
+    # check and warn if unknown options found
+    known_options = self.options.keys()
+    known_options.extend(kwargs.get('ignore_options', []))
+    temp = utilities.get_set_membership(configuration.options(self.config_section),
+                                        known_options,
+                                        configuration.defaults().keys())
+    for option in temp:
+      self.log("Found unknown option",
+               option = option, 
+               section = self.config_section,
+               level = logging.WARNING)
+    
   def getAttributes(self, converter = str):
     """
     Get attributes for the osg attributes file using the dict in self.options

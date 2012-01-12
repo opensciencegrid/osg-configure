@@ -84,12 +84,7 @@ class SGEConfiguration(JobManagerConfiguration):
       self.log('SGEConfiguration.parseConfiguration completed')    
       return True
        
-    for option in self.options.values():
-      self.log("Getting value for %s" % option.name)
-      configfile.get_option(configuration, 
-                            self.config_section, 
-                            option)
-      self.log("Got %s" % option.value)
+    self.getOptions(configuration, ignore_options = ['enabled'])
         
     # fill in values for sge_location and home
     self.options['job_manager'] = configfile.Option(name = 'job_manager',
@@ -101,18 +96,6 @@ class SGEConfiguration(JobManagerConfiguration):
     self.options['osg_sge_location'] = configfile.Option(name = 'osg_sge_location',
                                                          value = self.options['sge_root'].value,
                                                          mapping = 'OSG_SGE_LOCATION')
-    # check and warn if unknown options found 
-    temp = utilities.get_set_membership(configuration.options(self.config_section),
-                                        self.options.keys(),
-                                        configuration.defaults().keys())
-    for option in temp:
-      if option == 'enabled':
-        continue
-      self.log("Found unknown option",
-               option = option, 
-               section = self.config_section,
-               level = logging.WARNING)
-
     # used to see if we need to enable the default fork manager, if we don't 
     # find the managed fork service enabled, set the default manager to fork
     # needed since the managed fork section could be removed after managed fork

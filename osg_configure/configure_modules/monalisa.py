@@ -99,24 +99,7 @@ class MonalisaConfiguration(BaseConfiguration):
       return True
 
     self.enabled = True
-    for option in self.options.values():
-      self.log("Getting value for %s" % option.name)
-      configfile.get_option(configuration,
-                            self.config_section, 
-                            option)
-      self.log("Got %s" % option.value)
-
-        
-    
-    # check and warn if unknown options found    
-    temp = utilities.get_set_membership(configuration.options(self.config_section),
-                                        self.options.keys(),
-                                        configuration.defaults().keys())
-    for option in temp:
-      self.log("Found unknown option",
-               option = option, 
-               section = self.config_section,
-               level = logging.WARNING)
+    self.getOptions(configuration)
     self.log('MonalisaConfiguration.parseConfiguration completed')
   
 # pylint: disable-msg=W0613

@@ -75,12 +75,7 @@ class PBSConfiguration(JobManagerConfiguration):
       return True
 
     
-    for option in self.options.values():
-      self.log("Getting value for %s" % option.name)
-      configfile.get_option(configuration,
-                            self.config_section, 
-                            option)
-      self.log("Got %s" % option.value)
+    self.getOptions(configuration, ignore_options = ['enabled'])
 
     # set OSG_JOB_MANAGER and OSG_JOB_MANAGER_HOME
     self.options['job_manager'] = configfile.Option(name = 'job_manager',
@@ -89,18 +84,6 @@ class PBSConfiguration(JobManagerConfiguration):
     self.options['home'] = configfile.Option(name = 'job_manager_home',
                                              value = self.options['pbs_location'].value,
                                              mapping = 'OSG_JOB_MANAGER_HOME')
-
-    # check and warn if unknown options found    
-    temp = utilities.get_set_membership(configuration.options(self.config_section),
-                                        self.options.keys(),
-                                        configuration.defaults().keys())
-    for option in temp:
-      if option == 'enabled':
-        continue
-      self.log("Found unknown option",
-               option = option, 
-               section = self.config_section,
-               level = logging.WARNING)
 
     # used to see if we need to enable the default fork manager, if we don't 
     # find the managed fork service enabled, set the default manager to fork

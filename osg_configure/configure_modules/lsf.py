@@ -71,12 +71,7 @@ class LSFConfiguration(JobManagerConfiguration):
       self.log('LSFConfiguration.parseConfiguration completed')    
       return True
        
-    for option in self.options.values():
-      self.log("Getting value for %s" % option.name)
-      configfile.get_option(configuration,
-                            self.config_section, 
-                            option)
-      self.log("Got %s" % option.value)
+    self.getOptions(configuration, ignore_options = ['enabled'])
 
     # set OSG_JOB_MANAGER_HOME
     # set OSG_JOB_MANAGER and OSG_JOB_MANAGER_HOME
@@ -86,19 +81,7 @@ class LSFConfiguration(JobManagerConfiguration):
     self.options['home'] = configfile.Option(name = 'job_manager_home',
                                              value = self.options['lsf_location'].value,
                                              mapping = 'OSG_JOB_MANAGER_HOME')
-      
-    # check and warn if unknown options found    
-    temp = utilities.get_set_membership(configuration.options(self.config_section),
-                                        self.options.keys(),
-                                        configuration.defaults().keys())
-    for option in temp:
-      if option == 'enabled':
-        continue
-      self.log("Found unknown option",
-               option = option, 
-               section = self.config_section,
-               level = logging.WARNING)
-      
+
     if (configuration.has_section('Managed Fork') and
         configuration.has_option('Managed Fork', 'enabled') and
         configuration.getboolean('Managed Fork', 'enabled')):

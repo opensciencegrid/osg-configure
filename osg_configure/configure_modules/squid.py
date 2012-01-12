@@ -61,28 +61,12 @@ class SquidConfiguration(BaseConfiguration):
       if not self.ignored and not self.enabled:
         return True
 
-    for option in self.options.values():
-      self.log("Getting value for %s" % option.name)
-      configfile.get_option(configuration,
-                            self.config_section, 
-                            option)
-      self.log("Got %s" % option.value)
+    self.getOptions(configuration, ignore_options = ['enabled'])
     
     if not utilities.blank(self.options['location'].value):
       if ":" not in self.options['location'].value:        
         self.options['location'].value += ":3128"        
         
-      
-    temp = utilities.get_set_membership(configuration.options(self.config_section),
-                                        self.options.keys(),
-                                        configuration.defaults().keys())
-    for option in temp:
-      if option == 'enabled':
-        continue
-      self.log("Found unknown option",
-               option = option, 
-               section = self.config_section,
-               level = logging.WARNING)
     self.log('SquidConfiguration.parseConfiguration completed')
 
   

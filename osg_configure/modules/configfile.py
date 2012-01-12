@@ -114,18 +114,29 @@ def get_option(config, section, option = None):
 
   if config.has_option(section, option.name):
     try:
-      # if option is blank and there's a default for the option
-      # return the default
-      if utilities.blank(config.get(section, option.name)):
-        option.value = option.default_value
-      elif option.type == bool:
-        option.value = config.getboolean(section, option.name)
-      elif option.type == int:
-        option.value = config.getint(section, option.name)
-      elif option.type == float:
-        option.value = config.getfloat(section, option.name)        
+          
+      if not utilities.blank(config.get(section, option.name)):
+        if option.type == bool:
+          option.value = config.getboolean(section, option.name)
+        elif option.type == int:
+          option.value = config.getint(section, option.name)
+        elif option.type == float:
+          option.value = config.getfloat(section, option.name)        
+        else:
+          option.value = config.get(section, option.name)          
       else:
-        option.value = config.get(section, option.name)
+        # if option is blank and there's a default for the option
+        # return the default if possible, otherwise raise an exception
+        # if the option is mandatory
+        
+        if (option.required == Option.MANDATORY and 
+            option.default_value is None):
+          raise exceptions.SettingError("Can't get value for %s in %s " \
+                                        "section and no default given" % \
+                                        (option.name, section))
+        option.value = option.default_value
+          
+          
     except ValueError:
       error_mesg = "%s  in %s section is of the wrong type" % (option.name, section)
       raise exceptions.SettingError(error_mesg)
@@ -180,6 +191,7 @@ class Option(object):
       self.value = kwargs.get('value', '')
     elif self.type == int or self.type == float:
       self.value = kwargs.get('value', 0)
+      
     self.default_value = kwargs.get('default_value', None)
     self.required = kwargs.get('required', Option.MANDATORY)
     self.name = kwargs.get('name', 'option')
