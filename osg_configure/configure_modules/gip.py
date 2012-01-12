@@ -7,6 +7,7 @@ from osg_configure.modules import exceptions
 from osg_configure.modules.configurationbase import BaseConfiguration
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile
+from osg_configure.modules import validation
 
 __all__ = ['GipConfiguration']
 
@@ -246,6 +247,17 @@ class GipConfiguration(BaseConfiguration):
               " At least one must be configured.  Please see the configuration"\
               " documentation."
         raise exceptions.SettingError(msg)
+    
+    if configuration.has_option(self.config_section, 'user'):
+      username = configuration.get(self.config_section, 'user')
+      if not validation.valid_user(username):
+        err_msg = "%s is not a valid account on this system" % username
+        self.log(err_msg,
+                 section = self.config_section,
+                 option = 'user',
+                 level = logging.ERROR)
+        raise exceptions.SettingError(msg)
+      
     self.log('GipConfiguration.parseConfiguration completed')
 
   def checkSC(self, config, section):
