@@ -82,7 +82,12 @@ class CemonConfiguration(BaseConfiguration):
         self.options['ress_servers'].default_value = self.__production_defaults['ress_servers']
         self.options['bdii_servers'].default_value = self.__production_defaults['bdii_servers']
 
-    self.getOptions(configuration)
+    self.getOptions(configuration,
+                    ignore_options = ['itb-ress-servers',
+                                      'itb-bdii-servers',
+                                      'osg-ress-servers',
+                                      'osg-bdii-servers',
+                                      'enabled'])
     
     self.ress_servers = self.__parse_servers(self.options['ress_servers'].value)  
     self.bdii_servers = self.__parse_servers(self.options['bdii_servers'].value)  

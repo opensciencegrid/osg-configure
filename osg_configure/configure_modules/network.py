@@ -127,21 +127,21 @@ class NetworkConfiguration(BaseConfiguration):
       source_settings_sh = "export GLOBUS_TCP_SOURCE_RANGE_STATE_FILE=%s\n" % \
                            self.options['source_state_file'].value 
       source_settings_sh += "export GLOBUS_TCP_SOURCE_RANGE=%s\n" % \
-                            self.options['source_state_file'].value 
+                            self.options['source_range'].value 
       source_settings_csh = "setenv GLOBUS_TCP_SOURCE_RANGE_STATE_FILE=%s\n" % \
                             self.options['source_state_file'].value 
       source_settings_csh += "setenv GLOBUS_TCP_SOURCE_RANGE=%s\n" % \
-                             self.options['source_state_file'].value 
+                             self.options['source_range'].value 
     if not utilities.blank(self.options['port_range'].value):
       port_settings_sh = "export GLOBUS_TCP_PORT_RANGE_STATE_FILE=%s\n" % \
                            self.options['port_state_file'].value 
       port_settings_sh += "export GLOBUS_TCP_PORT_RANGE=%s\n" % \
-                            self.options['port_state_file'].value 
+                            self.options['port_range'].value 
       port_settings_csh = "setenv GLOBUS_TCP_PORT_RANGE_STATE_FILE=%s\n" % \
                             self.options['port_state_file'].value 
       port_settings_csh += "setenv GLOBUS_TCP_PORT_RANGE=%s\n" % \
-                             self.options['port_state_file'].value 
-    buffer = "#!/bin/sh\n" + source_settings_sh + port_settings_sh
+                             self.options['port_range'].value 
+    buffer = "#!/bin/sh\n" + header + source_settings_sh + port_settings_sh
     filename = os.path.join('/', 'var', 'lib', 'osg' , 'globus-firewall')
     if not utilities.atomic_write(filename, buffer):
       self.log("Error writing to %s" % filename,
@@ -152,7 +152,7 @@ class NetworkConfiguration(BaseConfiguration):
       self.log("Error writing to %s" % filename,
                level = logging.ERROR)
       status = False
-    buffer = "#!/bin/csh\n" + source_settings_csh + port_settings_csh
+    buffer = "#!/bin/csh\n" + header + source_settings_csh + port_settings_csh
     filename = os.path.join('/', 'etc', 'profile.d', 'osg.csh')
     if not utilities.atomic_write(filename, buffer):
       self.log("Error writing to %s" % filename,

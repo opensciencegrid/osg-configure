@@ -131,9 +131,9 @@ class SiteAttributes(BaseConfiguration):
     if (not utilities.blank(self.options['site_name'].value) and
         (not utilities.blank(self.options['resource'].value) or
          not utilities.blank(self.options['resource_group'].value))):
-      self.log("In section '%s', site_name and resource or " \
-               "resource_group given at the same time, you should "\
-               "use just the resource and resource_group settings.",
+      self.log("In section '%s', site_name and " %  self.config_section +
+               "resource or  resource_group given at the same time, " +
+               "you should use just the resource and resource_group settings.",               
                level = logging.WARNING)
     
     

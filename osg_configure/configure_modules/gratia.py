@@ -93,7 +93,12 @@ in your config.ini file."""
         self.options['probes'].default_value = \
             self.__itb_defaults['probes']
 
-    self.getOptions(configuration)
+    self.getOptions(configuration, 
+                    ignore_options = ['itb-jobmanager-gratia',
+                                      'itb-gridftp-gratia',
+                                      'osg-jobmanager-gratia',
+                                      'osg-gridftp-gratia',
+                                      'enabled'])
     
     if utilities.blank(self.options['probes'].value):
       self.log('GratiaConfiguration.parseConfiguration completed')
