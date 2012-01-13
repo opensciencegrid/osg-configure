@@ -103,7 +103,7 @@ class BaseConfiguration(object):
       file_location = configfile.get_option_location(kwargs['option'],
                                                      kwargs['section'])
       if file_location is not None:
-        message = "Using %s in section %s located in %s: " % (kwargs['option'],
+        message = "Option '%s' in section '%s' located in %s: " % (kwargs['option'],
                                                               kwargs['section'],
                                                               file_location)      
     message += mesg
