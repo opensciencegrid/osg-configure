@@ -138,7 +138,7 @@ in your config.ini file."""
         self.options['resource'].value = attributes['OSG_SITE_NAME']
          
     if ('OSG_HOSTNAME' not in attributes):
-      self.log('Hostname of this machine not specified.  Please give this '\
+      self.log('Hostname of this machine not specified. Please give this '\
                'in the host_name option in the Site Information section', 
                level = logging.ERROR)
       self.log("GratiaConfiguration.configure completed")

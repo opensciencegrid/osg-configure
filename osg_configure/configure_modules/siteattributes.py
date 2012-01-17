@@ -27,10 +27,12 @@ class SiteAttributes(BaseConfiguration):
                                         mapping = 'OSG_GROUP'),
                     'host_name' : 
                       configfile.Option(name = 'host_name',
+                                        default_value = '',
                                         mapping = 'OSG_HOSTNAME'),
                     'site_name' : 
                       configfile.Option(name = 'site_name',
                                         required = configfile.Option.OPTIONAL,
+                                        default_value = '',
                                         mapping = 'OSG_SITE_NAME'),
                     'sponsor' : 
                       configfile.Option(name = 'sponsor',
@@ -132,12 +134,12 @@ class SiteAttributes(BaseConfiguration):
         (not utilities.blank(self.options['resource'].value) or
          not utilities.blank(self.options['resource_group'].value))):
       self.log("In section '%s', site_name and " %  self.config_section +
-               "resource or  resource_group given at the same time, " +
+               "resource or resource_group given at the same time, " +
                "you should use just the resource and resource_group settings.",               
                level = logging.WARNING)
     
     
-    if  self.options['latitude'].value > 90 or self.options['latitude'].value < -90:
+    if self.options['latitude'].value > 90 or self.options['latitude'].value < -90:
       self.log("Latitude must be between -90 and 90, got %s" % 
                 self.options['latitude'].value,
                section = self.config_section,
@@ -145,7 +147,7 @@ class SiteAttributes(BaseConfiguration):
                level = logging.ERROR)    
       attributes_ok = False
   
-    if  self.options['longitude'].value > 180 or self.options['longitude'].value < -180:
+    if self.options['longitude'].value > 180 or self.options['longitude'].value < -180:
       self.log("Longitude must be between -180 and 180, got %s" % 
                 self.options['longitude'].value,
                section = self.config_section,
@@ -177,13 +179,13 @@ class SiteAttributes(BaseConfiguration):
       try:
         socket.gethostbyname(match.group(1))
       except socket.herror:
-        self.log("Can't resolve domain in  email: %s" % self.options['email'].value,
+        self.log("Can't resolve domain in email: %s" % self.options['email'].value,
                  section = self.config_section,
                  option = 'email',
                  level = logging.WARNING,
                  exception = True)
       except socket.gaierror:
-        self.log("Can't resolve domain in  email: %s" % self.options['email'].value,
+        self.log("Can't resolve domain in email: %s" % self.options['email'].value,
                  section = self.config_section,
                  option = 'email',
                  level = logging.WARNING,
@@ -205,7 +207,7 @@ class SiteAttributes(BaseConfiguration):
       vo_name = vo.split(':')[0]
       if vo_name not in vo_names:
         if vo_name.upper() in cap_vo_names:
-          self.log("VO name  %s has the wrong capitialization" % vo_name,
+          self.log("VO name %s has the wrong capitialization" % vo_name,
                    section = self.config_section,
                    option = 'sponsor',
                    level = logging.WARNING)
