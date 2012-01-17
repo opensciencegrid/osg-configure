@@ -508,6 +508,11 @@ def main():
   if os.getuid() != 0:
     error_exit("You must be root when running %s" % sys.argv[0])
     
+  if 'VDT_LOCATION' in os.environ:
+    error_exit("$VDT_LOCATION exists in the environment, it looks like " +
+               "the setup.sh from a pacman install exists in the environment " + 
+               "exiting to avoid errors")
+    
   if options.debug == True:
     sys.stdout.write("Writing debug information to /var/log/osg/osg-configure.log")
     log_level = logging.DEBUG
