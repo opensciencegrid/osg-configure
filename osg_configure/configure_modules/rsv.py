@@ -2,7 +2,7 @@
 
 """ Module to handle attributes and configuration for RSV service """
 
-import os, re, pwd, sys, shutil, ConfigParser, logging
+import os, re, pwd, sys, glob, shutil, ConfigParser, logging
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
@@ -31,18 +31,22 @@ class RsvConfiguration(BaseConfiguration):
                                         required = configfile.Option.OPTIONAL),
                     'ce_hosts' : 
                       configfile.Option(name = 'ce_hosts',
+                                        default_value = '',
                                         required = configfile.Option.OPTIONAL),
                     'gridftp_hosts' : 
                       configfile.Option(name = 'gridftp_hosts',
+                                        default_value = '',
                                         required = configfile.Option.OPTIONAL),
                     'gridftp_dir' : 
                       configfile.Option(name = 'gridftp_dir',
                                         default_value = '/tmp'),
                     'gums_hosts' : 
                       configfile.Option(name = 'gums_hosts',
+                                        default_value = '',
                                         required = configfile.Option.OPTIONAL),
                     'srm_hosts' : 
                       configfile.Option(name = 'srm_hosts',
+                                        default_value = '',
                                         required = configfile.Option.OPTIONAL),
                     'srm_dir' : 
                       configfile.Option(name = 'srm_dir',
@@ -73,6 +77,10 @@ class RsvConfiguration(BaseConfiguration):
                       configfile.Option(name = 'gratia_collector',
                                         required = configfile.Option.OPTIONAL,
                                         default_value = 'rsv.grid.iu.edu:8880'),
+                    'condor_location' : 
+                      configfile.Option(name = 'condor_location',
+                                        default_value = '',
+                                        required = configfile.Option.OPTIONAL),
                     'enable_nagios' : 
                       configfile.Option(name = 'enable_nagios',
                                         type = bool),
@@ -182,6 +190,9 @@ class RsvConfiguration(BaseConfiguration):
     # check Gratia list
     attributes_ok &= self.__check_gratia_settings()
 
+    # Make sure that the condor_location is valid if it is supplied
+    attributes_ok &= self.__check_condor_location()
+
     self.log('RsvConfiguration.checkAttributes completed')    
     return attributes_ok 
 
@@ -236,6 +247,9 @@ class RsvConfiguration(BaseConfiguration):
 
     # Fix the Gratia ProbeConfig file to point at the appropriate collector
     self.__set_gratia_collector(self.options['gratia_collector'].value)
+
+    if not self.__configure_condor_location():
+      return False
 
     self.log('RsvConfiguration.configure completed')
     return True
@@ -658,6 +672,62 @@ class RsvConfiguration(BaseConfiguration):
       if not self.__enable_metrics(ce, gratia):
         return False
 
+    return True
+
+
+  def __check_condor_location(self):
+    """ Make sure that a supplied Condor location is valid """
+
+    if not self.options['condor_location'].value:
+      self.log("Skipping condor_location validation because it is empty")
+      return True
+
+    condor_bin = os.path.join(self.options['condor_location'].value, "bin")
+    condor_sbin = os.path.join(self.options['condor_location'].value, "sbin")
+
+    if not os.path.exists(condor_bin) or not os.path.exists(condor_sbin):
+      self.log("There is not a bin/ or sbin/ subdirectory at the supplied " +
+               "condor_location (%s)" % (self.options['condor_location'].value),
+               level=logging.ERROR)
+      return False
+
+    return True
+
+
+  def __configure_condor_location(self):
+    """ Put the Condor location into the necessary places """
+
+    if not self.options['condor_location'].value:
+      self.log("Skipping condor_location configuration because it is empty")
+      return True
+
+    condor_dir = self.options['condor_location'].value
+
+    # Put the location into the condor-cron-env.sh file so that the condor-cron
+    # wrappers and init script have the binaries in their PATH
+    conf_file = os.path.join('/', 'etc', 'sysconfig', 'condor-cron')
+    try:
+      fp = open(conf_file, 'w')
+      fp.write("PATH=%s/bin:%s/sbin:$PATH\n" % (condor_dir,
+                                                condor_dir))
+      fp.write("export PATH\n")
+      fp.close()
+    except IOError, err:
+      self.log("Error trying to write to file (%s): %s" % (conf_file, err))
+      return False
+
+    # Adjust the Condor-Cron configuration
+    conf_file = os.path.join('/', 'etc', 'condor-cron', 'config.d', 'condor_location')
+    local_dir = glob.glob(os.path.join(condor_dir, "local.*"))[0]
+    try:
+      fp = open(conf_file, 'w')
+      fp.write("RELEASE_DIR = %s" % condor_dir)
+      fp.close()
+    except IOError, err:
+      self.log("Error trying to write to file (%s): %s" % (conf_file, err))
+      return False
+      
+    
     return True
   
       
