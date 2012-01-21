@@ -2,7 +2,7 @@
 
 """ Module to handle attributes and configuration for RSV service """
 
-import os, re, pwd, sys, glob, shutil, ConfigParser, logging
+import os, re, pwd, sys, shutil, ConfigParser, logging
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
@@ -697,31 +697,31 @@ class RsvConfiguration(BaseConfiguration):
   def __configure_condor_location(self):
     """ Put the Condor location into the necessary places """
 
-    if not self.options['condor_location'].value:
-      self.log("Skipping condor_location configuration because it is empty")
-      return True
+    # Note: make sure that we write empty files if condor_location is not set
+    # so that we can reverse the action of someone setting condor_location
 
     condor_dir = self.options['condor_location'].value
 
     # Put the location into the condor-cron-env.sh file so that the condor-cron
     # wrappers and init script have the binaries in their PATH
-    conf_file = os.path.join('/', 'etc', 'sysconfig', 'condor-cron')
+    sysconf_file = os.path.join('/', 'etc', 'sysconfig', 'condor-cron')
     try:
-      fp = open(conf_file, 'w')
-      fp.write("PATH=%s/bin:%s/sbin:$PATH\n" % (condor_dir,
-                                                condor_dir))
-      fp.write("export PATH\n")
+      fp = open(sysconf_file, 'w')
+      if self.options['condor_location'].value:
+        fp.write("PATH=%s/bin:%s/sbin:$PATH\n" % (condor_dir,
+                                                  condor_dir))
+        fp.write("export PATH\n")
       fp.close()
     except IOError, err:
-      self.log("Error trying to write to file (%s): %s" % (conf_file, err))
+      self.log("Error trying to write to file (%s): %s" % (sysconf_file, err))
       return False
 
     # Adjust the Condor-Cron configuration
     conf_file = os.path.join('/', 'etc', 'condor-cron', 'config.d', 'condor_location')
-    local_dir = glob.glob(os.path.join(condor_dir, "local.*"))[0]
     try:
       fp = open(conf_file, 'w')
-      fp.write("RELEASE_DIR = %s" % condor_dir)
+      if self.options['condor_location'].value:
+        fp.write("RELEASE_DIR = %s" % condor_dir)
       fp.close()
     except IOError, err:
       self.log("Error trying to write to file (%s): %s" % (conf_file, err))
