@@ -118,7 +118,8 @@ class StorageConfiguration(BaseConfiguration):
                                   'etc',
                                   'grid3-locations.txt')
     if not validation.valid_file(grid3_location):
-      grid3_source = os.path.join('etc',
+      grid3_source = os.path.join('/',
+                                  'etc',
                                   'osg',
                                   'grid3-locations.txt')
       if not validation.valid_file(grid3_source):
