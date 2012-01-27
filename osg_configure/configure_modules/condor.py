@@ -39,11 +39,6 @@ class CondorConfiguration(JobManagerConfiguration):
                     'util_contact' : 
                       configfile.Option(name = 'util_contact',
                                         mapping = 'OSG_UTIL_CONTACT'),
-                    'seg_enabled' : 
-                      configfile.Option(name = 'seg_enabled',
-                                        required = configfile.Option.OPTIONAL,
-                                        type = bool,
-                                        default_value = False),
                     'accept_limited' : 
                       configfile.Option(name = 'accept_limited',
                                         required = configfile.Option.OPTIONAL,

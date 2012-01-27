@@ -123,28 +123,24 @@ class StorageConfiguration(BaseConfiguration):
                                   'osg',
                                   'grid3-locations.txt')
       if not validation.valid_file(grid3_source):
-        status = False
         self.log("Can't get grid3-location file at %s" % (grid3_source), 
-                 level = logging.ERROR)
+                 level = logging.WARNING)
         self.log("You will need to manually create one at %s" %  (grid3_location),
-                 level = logging.ERROR)
-        return status
+                 level = logging.WARNING)
       
       try:
         shutil.copyfile(grid3_source, grid3_location)        
       except IOError:
-        status = False
         self.log("Can't copy grid3-location file from %s to %s" % (grid3_source, 
                                                                    grid3_location),
-                 level = logging.ERROR)
+                 level = logging.WARNING)
       try:
-        if status is not False:
+        if validation.valid_file(grid3_location):
           os.chmod(grid3_location, 0666)        
       except IOError:
-        status = False
         self.log("Can't set permissions on grid3-location file at %s" % \
                             (grid3_location),
-                 level = logging.ERROR)
+                 level = logging.WARNING)
   
     self.log("StorageConfiguration.configure completed")    
     return status
