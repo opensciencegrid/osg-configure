@@ -130,18 +130,18 @@ class NetworkConfiguration(BaseConfiguration):
                            self.options['source_state_file'].value 
       source_settings_sh += "export GLOBUS_TCP_SOURCE_RANGE=%s\n" % \
                             self.options['source_range'].value 
-      source_settings_csh = "setenv GLOBUS_TCP_SOURCE_RANGE_STATE_FILE=%s\n" % \
+      source_settings_csh = "setenv GLOBUS_TCP_SOURCE_RANGE_STATE_FILE %s\n" % \
                             self.options['source_state_file'].value 
-      source_settings_csh += "setenv GLOBUS_TCP_SOURCE_RANGE=%s\n" % \
+      source_settings_csh += "setenv GLOBUS_TCP_SOURCE_RANGE %s\n" % \
                              self.options['source_range'].value 
     if not utilities.blank(self.options['port_range'].value):
       port_settings_sh = "export GLOBUS_TCP_PORT_RANGE_STATE_FILE=%s\n" % \
                            self.options['port_state_file'].value 
       port_settings_sh += "export GLOBUS_TCP_PORT_RANGE=%s\n" % \
                             self.options['port_range'].value 
-      port_settings_csh = "setenv GLOBUS_TCP_PORT_RANGE_STATE_FILE=%s\n" % \
+      port_settings_csh = "setenv GLOBUS_TCP_PORT_RANGE_STATE_FILE %s\n" % \
                             self.options['port_state_file'].value 
-      port_settings_csh += "setenv GLOBUS_TCP_PORT_RANGE=%s\n" % \
+      port_settings_csh += "setenv GLOBUS_TCP_PORT_RANGE %s\n" % \
                              self.options['port_range'].value 
     buffer = "#!/bin/sh\n" + header + source_settings_sh + port_settings_sh
     filename = os.path.join('/', 'var', 'lib', 'osg' , 'globus-firewall')
