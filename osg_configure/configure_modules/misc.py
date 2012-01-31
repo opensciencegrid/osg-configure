@@ -154,9 +154,15 @@ class MiscConfiguration(BaseConfiguration):
       if not result:
         self.log("Can't generate user-vo-map, manual intervention is needed",
                  level = logging.ERROR)
+        if invalid_lines == []:
+          self.log("gums-host-cron or edg-mkgridmap generated an empty " + 
+                   USER_VO_MAP_LOCATION + " file, please check the " +
+                   "appropriate configuration and or log messages",
+                   level = logging.ERROR)
+          raise exceptions.ConfigureError(error_mesg)
         self.log("Invalid lines in user-vo-map file:",
                  level = logging.ERROR)
-        self.log(invalid_lines,
+        self.log("\n".join(invalid_lines),
                  level = logging.ERROR)
         raise exceptions.ConfigureError(error_mesg)
       
