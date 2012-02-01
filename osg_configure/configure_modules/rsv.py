@@ -855,9 +855,7 @@ class RsvConfiguration(BaseConfiguration):
     metrics to enable """
 
     if not os.path.exists(self.rsv_meta_dir):
-      self.log("In RSV configuration, meta dir (%s) does " \
-               "not exist." % self.rsv_meta_dir,
-               level = logging.WARNING)
+      self.log("In RSV configuration, meta dir (%s) does not exist." % self.rsv_meta_dir)
       return
       
     files = os.listdir(self.rsv_meta_dir)
