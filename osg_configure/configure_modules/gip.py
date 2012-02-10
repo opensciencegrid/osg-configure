@@ -109,6 +109,7 @@ class GipConfiguration(BaseConfiguration):
     self.config_section = "GIP"
     self.vo_dir = "VONAME"  # default to allowing substitution in vo_dir
     self._valid_batch_opt = ['pbs', 'lsf', 'condor', 'sge', 'forwarding']
+    self.gip_user = 'tomcat'
     self.log('GipConfiguration.__init__ completed')
     
   def _check_entry(self, config, section, option, status, kind):
@@ -257,7 +258,7 @@ class GipConfiguration(BaseConfiguration):
                  option = 'user',
                  level = logging.ERROR)
         raise exceptions.SettingError(err_msg)
-      
+      self.gip_user = username
     self.log('GipConfiguration.parseConfiguration completed')
 
   def checkSC(self, config, section):
@@ -387,54 +388,25 @@ class GipConfiguration(BaseConfiguration):
     """
     self.log('GipConfiguration.configure started')
 
-    # disable for now
-    self.log("Skipping GIP configuration.")
-    return
-
-    glite_dir = os.path.join(utilities.get_vdt_location(),
-                             'glite')
-    if not os.path.exists(glite_dir):
-      self.log("glite directory (%s) does not exist.  Skipping GIP configuration." % glite_dir)
-      return
-
     try:
-      osg_info_wrapper = os.path.join(utilities.get_vdt_location(),
-                                      'gip', 
-                                      'libexec',
-                                      'osg-info-wrapper')
-
-      cemon_exec_filename = os.path.join(glite_dir,
-                                         'etc', 
-                                         'glite-ce-ce-plugin',
-                                         'glite-ce-info')
-      cemon_exec_file = open(cemon_exec_filename, 'w')
-      cemon_exec_file.write('#!/bin/sh\n')
-      cemon_exec_file.write(osg_info_wrapper + '\n')
-    except Exception, e:
-      self.log("Can't write to " + cemon_exec_filename,
-               exception = True,
-               level = logging.ERROR)
-      raise exceptions.ConfigurationError("Can't write to %s: %s" % (cemon_exec_filename, e))
-
-    try:
-      daemon_pwent = pwd.getpwnam('daemon')
+      gip_pwent = pwd.getpwnam(self.gip_user)
     except Exception, e:
       self.log("Couldn't find username daemon",
                exception = True,
                level = logging.ERROR)
       raise exceptions.ConfigurationError("Couldn't find username daemon: %s" % e)
 
-    (daemon_uid, daemon_gid)  = daemon_pwent[2:4]
-    gip_tmpdir = os.path.join(os.path.expandvars("$GIP_LOCATION"), 'var', 'tmp')
-    gip_logdir = os.path.join(os.path.expandvars("$GIP_LOCATION"), 'var', 'logs')
+    (gip_uid, gip_gid)  = gip_pwent[2:4]
+    gip_tmpdir = os.path.join('/', 'var', 'tmp', 'gip')
+    gip_logdir = os.path.join('/', 'var', 'log', 'gip')
 
     try:
       if not os.path.exists(gip_tmpdir) or not os.path.isdir(gip_tmpdir):
         self.log("%s is not present or is not a directory, " % gip_tmpdir +
-                 "pacman didn't install gip correctly",
+                 "gip did not install correctly",
                  level = logging.ERROR)
-        raise exceptions.ConfigurationError("GIP install directory not setup: %s" % gip_tmpdir)
-      os.chown(gip_tmpdir, daemon_uid, daemon_gid)
+        raise exceptions.ConfigurationError("GIP tmp directory not setup: %s" % gip_tmpdir)
+      os.chown(gip_tmpdir, gip_uid, gip_gid)
     except Exception, e:
       self.log("Can't set permissions on " + gip_tmpdir,
                exception = True,
@@ -444,10 +416,10 @@ class GipConfiguration(BaseConfiguration):
     try:
       if not os.path.exists(gip_logdir) or not os.path.isdir(gip_logdir):
         self.log("%s is not present or is not a directory, " % gip_logdir +
-                 "pacman didn't install gip correctly",
+                 "gip did not install correctly",
                  level = logging.ERROR)
-        raise exceptions.ConfigurationError("GIP install directory not setup: %s" % gip_logdir)
-      os.chown(gip_logdir, daemon_uid, daemon_gid)
+        raise exceptions.ConfigurationError("GIP log directory not setup: %s" % gip_logdir)
+      os.chown(gip_logdir, gip_uid, gip_gid)
     except Exception, e:
       self.log("Can't set permissions on " + gip_logdir,
                exception = True,

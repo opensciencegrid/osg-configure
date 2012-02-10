@@ -229,13 +229,13 @@ class SiteAttributes(BaseConfiguration):
             self.log(vo_mesg, level = logging.ERROR)
             attributes_ok = False
           else:
-            self.log("VO name %s not found" % vo_name,
+            self.log("Can't currently check VOs in sponsor setting because " + 
+                     "the /var/lib/osg/user-vo-map is empty. If you are " + 
+                     "configuring osg components, this may be resolved when " +
+                     "osg-configure runs the appropriate script to generate " +
+                     "this file later in the configuration process",
                      section = self.config_section,
                      option = 'sponsor',
-                     level = logging.WARNING)
-            self.log("/var/lib/osg/user-vo-map may be missing or empty " +
-                     "please verify your gums or edg-mkgridmap " +
-                     "settings are correct",
                      level = logging.WARNING)
             
 
