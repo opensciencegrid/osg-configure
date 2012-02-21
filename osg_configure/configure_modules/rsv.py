@@ -99,6 +99,7 @@ class RsvConfiguration(BaseConfiguration):
     self.__gratia_metric_map = {}
     self.__enable_rsv_downloads = False
     self.__meta = ConfigParser.RawConfigParser()
+    self.use_service_cert = True
     self.grid_group = 'OSG'
     self.site_name = 'Generic Site'
     self.config_section = "RSV"
@@ -291,25 +292,27 @@ class RsvConfiguration(BaseConfiguration):
     blank_service_vals = (utilities.blank(self.options['service_cert'].value) and
                           utilities.blank(self.options['service_key'].value) and
                           utilities.blank(self.options['service_proxy'].value))
+
     default_service_vals = (self.options['service_cert'].value == 
                             self.options['service_cert'].default_value)
     default_service_vals &= (self.options['service_key'].value == 
                              self.options['service_key'].default_value)
     default_service_vals &= (self.options['service_proxy'].value == 
                              self.options['service_proxy'].default_value)
+
     blank_user_proxy = utilities.blank(self.options['user_proxy'].value)
-    if (not  blank_user_proxy and default_service_vals):
+
+    if (not blank_user_proxy and default_service_vals):
       self.log('User proxy specified and service_cert, service_key, ' +
                'service_proxy at default values, assuming user_proxy ' +
-               'takes precedence in ' + self.config_section + ' section',
-               level = logging.WARNING)
-    elif not (blank_user_proxy or (blank_service_vals or blank_service_vals)):
+               'takes precedence in ' + self.config_section + ' section')
+      self.use_service_cert = False
+    elif not blank_user_proxy and not blank_service_vals:
       self.log("You cannot specify user_proxy with any of (service_cert, " +
                "service_key, service_proxy).  They are mutually exclusive " +
                "options in %s section." % self.config_section,
                level = logging.ERROR)
       check_value = False
-            
 
     # Make sure that either a service cert or user cert is selected
     if not ((self.options['service_cert'].value and
@@ -770,11 +773,11 @@ class RsvConfiguration(BaseConfiguration):
       config.add_section('rsv')
 
     # Set the appropriate options in the rsv.conf file
-    if self.options['service_cert'].value:
+    if self.use_service_cert:
       config.set('rsv', 'service-cert', self.options['service_cert'].value)
       config.set('rsv', 'service-key', self.options['service_key'].value)
       config.set('rsv', 'service-proxy', self.options['service_proxy'].value)
-    elif self.options['user_proxy'].value:
+    else:
       config.set('rsv', 'proxy-file', self.options['user_proxy'].value)
 
       # Remove these keys or they will override the proxy-file setting in rsv-control
