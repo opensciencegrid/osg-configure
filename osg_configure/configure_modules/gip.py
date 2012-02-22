@@ -388,13 +388,18 @@ class GipConfiguration(BaseConfiguration):
     """
     self.log('GipConfiguration.configure started')
 
+    if not self.enabled:
+      self.log('Not enabled, exiting...')         
+      self.log('GipConfiguration.configure completed')   
+      return 
+    
     try:
       gip_pwent = pwd.getpwnam(self.gip_user)
     except Exception, e:
-      self.log("Couldn't find username daemon",
+      self.log("Couldn't find username %s" % self.gip_user,
                exception = True,
                level = logging.ERROR)
-      raise exceptions.ConfigurationError("Couldn't find username daemon: %s" % e)
+      raise exceptions.ConfigurationError("Couldn't find username %s: %s" % (self.gip_user, e))
 
     (gip_uid, gip_gid)  = gip_pwent[2:4]
     gip_tmpdir = os.path.join('/', 'var', 'tmp', 'gip')
