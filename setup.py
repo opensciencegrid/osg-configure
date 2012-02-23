@@ -14,7 +14,7 @@ def get_version():
   
 setup(name='osg-configure',
       version=get_version(),
-      description='Package for configure-osg and associated scripts',
+      description='Package for osg-configure and associated scripts',
       author='Suchandra Thapa',
       author_email='sthapa@ci.uchicago.edu',
       url='http://www.opensciencegrid.org',
