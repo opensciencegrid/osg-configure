@@ -238,3 +238,13 @@ class CondorConfiguration(JobManagerConfiguration):
     
     return True
 
+  @staticmethod
+  def getCondorLocation(self, configfile):
+    """
+    Get the condor location based on the information in a configParser 
+    object (configfile argument) and environment variables if possible
+    """
+    return configfile.Option(name = 'job_manager_home',
+                             value = utilities.get_condor_location(),
+                             mapping = 'OSG_JOB_MANAGER_HOME')
+    

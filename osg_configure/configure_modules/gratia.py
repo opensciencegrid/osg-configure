@@ -9,6 +9,7 @@ from osg_configure.modules import utilities
 from osg_configure.modules import validation
 from osg_configure.modules import configfile
 from osg_configure.modules.configurationbase import BaseConfiguration
+from osg_configure.configure_modules import CondorConfiguration
 
 __all__ = ['GratiaConfiguration']
 
@@ -50,9 +51,10 @@ in your config.ini file."""
                                     'jobmanager:gratia-osg-prod.opensciencegrid.org:80'}     
     
     self.__job_managers = ['pbs', 'sge', 'lsf', 'condor']
-    self.log("GratiaConfiguration.__init__ completed")
-    
+    self.__probe_config = {}
     self.grid_group = 'OSG'
+
+    self.log("GratiaConfiguration.__init__ completed")
       
   def parseConfiguration(self, configuration):
     """
@@ -92,7 +94,22 @@ in your config.ini file."""
       elif self.grid_group == 'OSG-ITB':
         self.options['probes'].default_value = \
             self.__itb_defaults['probes']
-
+      
+      # grab configuration information for various jobmanagers
+      probes = self.getInstalledProbes()
+      for probe in probes:
+        if probe == 'condor':
+          self.__probe_config['condor'] = {'condor_location' : 
+                                            CondorConfiguration.getCondorLocation()}
+        elif probe == 'pbs':
+          log_option = configfile.Option(name = 'log_directory',
+                                         required = configfile.Option.OPTIONAL,
+                                         default_value = '')
+          log_dir = configfile.get_option(configfile,
+                                          'PBS',
+                                          log_option)
+          self.__probe_config['pbs'] = {'log_directory' : log_option.value}
+          
     self.getOptions(configuration, 
                     ignore_options = ['itb-jobmanager-gratia',
                                       'itb-gridftp-gratia',
@@ -162,6 +179,10 @@ in your config.ini file."""
                               probe_host, 
                               self.options['resource'].value,
                               hostname)
+      if probe == 'condor':
+        self.__configureCondorProbe()
+      elif probe == 'pbs':
+        self.__configurePBSProbe()
 
 
     self.log("GratiaConfiguration.configure completed")
@@ -375,6 +396,42 @@ in your config.ini file."""
     self.options['probes'].value = probes
     self.__parse_probes(probes) 
     
+    return True
+  
+  def __configureCondorProbe(self):
+    """
+    Do condor probe specific configuration
+    """    
+    if (self.__probe_config['condor']['condor_location'] is None or
+        self.__probe_config['condor']['condor_location'] == ''):
+      return True
+    condor_location = self.__probe_config['condor']['condor_location']
+    re_obj = re.compile('^(\s*)CondorLocation\s*=.*$', re.MULTILINE)  
+    config_file = os.path.join('/', 'etc', 'gratia', 'condor',  'ProbeConfig')   
+    buffer = file(config_file).read()
+    (buffer, count) = re_obj.subn("\1CondorLocation=\"%s\"\n" % condor_location, buffer, 1)
+    if count == 0:
+      buffer = buffer.replace('/>', "    CondorLocation=\"%s\"\n/>" % condor_location)
+    if not utilities.atomic_write(PBSConfiguration.GRAM_CONFIG_FILE, buffer):
+      return False    
+    return True
+  
+  def __configurePBSProbe(self):
+    """
+    Do pbs probe specific configuration
+    """
+    if (self.__probe_config['pbs']['log_directory'] is None or
+        self.__probe_config['pbs']['log_directory'] == ''):
+      return True
+    log_directory = self.__probe_config['pbs']['log_directory']
+    re_obj = re.compile('^\s*pbsAcctLogDir\s*=.*$', re.MULTILINE)  
+    config_file = os.path.join('/', 'etc', 'gratia', 'pbs-lsf',  'urCollector.conf')   
+    buffer = file(config_file).read()
+    (buffer, count) = re_obj.subn("\1pbsAcctLogDir = \"%s\"\n" % log_directory, buffer, 1)
+    if count == 0:
+      buffer += "pbsAcctLogDir = \"%s\"\n" % log_directory
+    if not utilities.atomic_write(PBSConfiguration.GRAM_CONFIG_FILE, buffer):
+      return False    
     return True
 
     
