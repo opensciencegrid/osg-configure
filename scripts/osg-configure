@@ -514,7 +514,8 @@ def main():
                "exiting to avoid errors")
     
   if options.debug == True:
-    sys.stdout.write("Writing debug information to /var/log/osg/osg-configure.log")
+    sys.stdout.write("Writing debug information to " +
+                     "/var/log/osg/osg-configure.log\n")
     log_level = logging.DEBUG
   
   configure_module = options.module
