@@ -17,7 +17,7 @@ class SGEConfiguration(JobManagerConfiguration):
   """Class to handle attributes related to sge job manager configuration"""
 
   SGE_CONFIG_FILE = '/etc/grid-services/available/jobmanager-sge'
-  GRAM_CONFIG_FILE = '/etc/globus/globus-pbs.conf'
+  GRAM_CONFIG_FILE = '/etc/globus/globus-sge.conf'
   
   def __init__(self, *args, **kwargs):
     # pylint: disable-msg=W0142
@@ -93,7 +93,7 @@ class SGEConfiguration(JobManagerConfiguration):
     self.options['home'] = configfile.Option(name = 'job_manager_home',
                                              value = self.options['sge_root'].value,
                                              mapping = 'OSG_JOB_MANAGER_HOME')
-    self.options['osg_sge_location'] = configfile.Option(name = 'osg_sge_location',
+    self.options['osg_sge_location'] = configfile.Option(name = 'sge_location',
                                                          value = self.options['sge_root'].value,
                                                          mapping = 'OSG_SGE_LOCATION')
     # used to see if we need to enable the default fork manager, if we don't 
