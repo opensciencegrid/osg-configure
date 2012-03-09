@@ -172,6 +172,7 @@ def configure_system(modules, logger, configure_module=None, force=False):
 
   if utilities.ce_installed() and not configfile.jobmanager_enabled(config):
     logger.error("The osg-ce package is installed but no jobmanager is enabled!")
+    error_exit("You must enable a job manager on a CE installation")
 
   for module in modules:
     try:

@@ -93,8 +93,8 @@ class StorageConfiguration(BaseConfiguration):
 
     # make sure locations exist
     if not self.__check_app_dir(self.options['app_dir'].value):
-      self.log("The app_dir directory should exist and have permissions " +
-               "of 1777 or 777 on OSG installations.",
+      self.log("The app_dir and app_dir/etc directories should exist and " +
+               "have permissions of 1777 or 777 on OSG installations.",
                section = self.config_section,
                option = 'app_dir',
                level = logging.ERROR)
