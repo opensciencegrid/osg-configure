@@ -39,7 +39,7 @@ class SiteAttributes(BaseConfiguration):
                                         mapping = 'OSG_SPONSOR'),
                     'site_policy' : 
                       configfile.Option(name = 'site_policy',
-                                        required = configfile.Option.OPTIONAL,                                        
+                                        required = configfile.Option.OPTIONAL,
                                         default_value = '',
                                         mapping = 'OSG_SITE_INFO'),
                     'contact' : 

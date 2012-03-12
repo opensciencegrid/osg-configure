@@ -156,7 +156,6 @@ class TestSiteAttributesSettings(unittest.TestCase):
 
     mandatory = ['host_name',
                  'sponsor',
-                 'site_policy',
                  'contact',
                  'email',
                  'city',
