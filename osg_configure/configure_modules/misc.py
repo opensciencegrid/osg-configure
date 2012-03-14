@@ -217,6 +217,14 @@ class MiscConfiguration(BaseConfiguration):
       gums_properties  = authz_re.sub(replacement, gums_properties)
     utilities.atomic_write(GUMS_CLIENT_LOCATION, gums_properties)
     
+    self.__update_lcmaps_file()
+    
+    
+  def __update__lcmaps_file(self):
+    """
+    Update lcmaps file and give appropriate messages if lcmaps.db.rpmnew exists
+    """
+    
     self.log("Updating " + LCMAPS_DB_LOCATION, level = logging.INFO)
     lcmaps_db = open(LCMAPS_DB_LOCATION).read()
     endpoint_re = re.compile(r'^\s*"--endpoint\s+https://.*/gums/services.*"\s*$',
@@ -225,9 +233,27 @@ class MiscConfiguration(BaseConfiguration):
     replacement += "/gums/services/GUMSXACMLAuthorizationServicePort\""
     lcmaps_db  = endpoint_re.sub(replacement, lcmaps_db)
     utilities.atomic_write(LCMAPS_DB_LOCATION, lcmaps_db)
-    
-    
 
+    rpmnew_file = LCMAPS_DB_LOCATION + ".rpmnew"
+    warning_mesasge = """It appears that you've updated the lcmaps RPM and the configuration has changed. 
+If you have ever edited /etc/lcmaps.db by hand (most people don't), then you should:
+   1. Edit /etc/lcmaps.db.rpmnew to make your changes again
+   2. mv /etc/lcmaps.db.rpmnew /etc/lcmaps.db
+If you haven't edited /etc/lcmaps.db by hand, then you can just use the new configuration:
+   1. mv /etc/lcmaps.db.rpmnew /etc/lcmaps.db"""
+    if validation.valid_file(rpmnew_file):
+      self.log(warning_message, level = logging.WARNING)
+    else:
+      return
+    
+    lcmaps_db = open(rpmnew_file).read()
+    endpoint_re = re.compile(r'^\s*"--endpoint\s+https://.*/gums/services.*"\s*$',
+                             re.MULTILINE)
+    replacement = "             \"--endpoint https://%s:8443" % (self.options['gums_host'].value)
+    replacement += "/gums/services/GUMSXACMLAuthorizationServicePort\""
+    lcmaps_db  = endpoint_re.sub(replacement, lcmaps_db)
+    utilities.atomic_write(rpmnew_file, lcmaps_db)
+      
   
   def __disable_callout(self):
     """
