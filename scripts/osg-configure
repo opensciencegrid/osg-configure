@@ -232,13 +232,13 @@ def configure_system(modules, logger, configure_module=None, force=False):
         
   if configure_module is not None:
     # check whether the module we want to configure is present
-    if configure_module not in [x.moduleName().lower() for x in modules]:
+    if configure_module.lower() not in [x.moduleName().lower() for x in modules]:
       error_exit("%s specified but that module is not present" % configure_module) 
     
   for module in modules:
     logger.debug("Configuring %s" % (module.__class__.__name__))
     if configure_module is not None:
-      if module.moduleName().lower() != configure_module:
+      if module.moduleName().lower() != configure_module.lower():
         logger.debug("Skipping %s configuration" % (module.__class__.__name__))
         continue
     try:
