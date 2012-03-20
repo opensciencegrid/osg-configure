@@ -167,7 +167,7 @@ class CondorConfiguration(JobManagerConfiguration):
         return False
     else:
       if not self.disable_accept_limited(CondorConfiguration.CONDOR_CONFIG_FILE):
-        self.log('Error writing to ' + CondorConfiguration.GRAM_CONFIG_FILE,
+        self.log('Error writing to ' + CondorConfiguration.CONDOR_CONFIG_FILE,
                  level = logging.ERROR)
         self.log('CondorConfiguration.configure completed')
         return False
