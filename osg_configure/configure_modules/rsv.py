@@ -116,11 +116,16 @@ class RsvConfiguration(BaseConfiguration):
     self.log('RsvConfiguration.parseConfiguration started')    
 
     self.checkConfig(configuration)
-
+    
     if not configuration.has_section(self.config_section):
       self.enabled = False
       self.log("%s section not in config file" % self.config_section)    
       self.log('RsvConfiguration.parseConfiguration completed')    
+      return True
+
+    if not utilities.rpm_installed('rsv-core'):
+      self.enabled = False
+      self.log('rsv-core rpm not installed, disabling RSV configuration')
       return True
 
     if not self.setStatus(configuration):

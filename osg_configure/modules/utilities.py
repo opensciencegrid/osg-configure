@@ -357,3 +357,34 @@ def ce_installed():
   if ts.dbMatch('name', 'osg-ce').count() == 1:
     return True
   return False
+
+def rpm_installed(rpm_name = None):
+  """
+  Check to see if given rpm is installed
+  
+  Arguments:
+  rpm_name - a string with rpm name to check or a Iteratable with rpms that
+             should be checked
+             
+  Returns:
+  True if rpms are installed, False otherwise
+  """
+  
+  if rpm_name is None:
+    return True
+  
+  if typeof(rpm_name) is types.StringType:
+    ts = rpm.TransactionSet()
+    if ts.dbMatch('name', rpm_name).count() == 1:
+      return True
+    return False
+  
+  # check with iterable type
+  try:
+    for name in rpm_name:
+      ts = rpm.TransactionSet()
+      if ts.dbMatch('name', name).count() != 1:
+        return False
+  except:
+    return False
+    

@@ -114,8 +114,24 @@ class TestUtilities(unittest.TestCase):
                            ['osg', 'LIGO', 'cdf'], 
                            "Correct vos not found")
       
+    def test_rpm_install(self):
+      """
+      Test rpm_installed function
+      """
+      rpm_name = 'foo'
+      self.assertFalse(utilities.rpm_installed(rpm_name),
+                       'foo is not installed, but rpm_installed returned True')
+      rpm_name = 'filesystem'
+      self.assert_(utilities.rpm_install(rpm_name),
+                   'filesystem is installed, but rpm_installed returned False')
 
-
+      rpm_names = ['filesystem', 'foo']
+      self.assertFalse(utilities.rpm_installed(rpm_names),
+                       'foo is not installed, but rpm_installed returned True')
+      rpm_names = ['filesystem', 'glibc']
+      self.assert_(utilities.rpm_installed(rpm_names),
+                  'filesystem and glibc are installed, but rpm_installed returned False')
+      
 if __name__ == '__main__':
     unittest.main()
 
