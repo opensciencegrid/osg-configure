@@ -1,5 +1,5 @@
 from distutils.core import setup
-import glob,re
+import glob,re, os
 
 config_files = glob.glob('config/*.ini')
 
@@ -12,6 +12,16 @@ def get_version():
   match = re.search("VERSION\s+=\s+'(.*)'", buffer)
   return match.group(1)
   
+def get_test_files():
+  """
+  Gets the unit tests and configs for them
+  """
+  files = []
+  for root, subFolders, files in os.walk('tests'):
+    for name in files:
+      files.append(os.path.join(root,file))  
+  return filter(lambda x: '.svn' not in x, files)
+
 setup(name='osg-configure',
       version=get_version(),
       description='Package for osg-configure and associated scripts',
@@ -21,5 +31,6 @@ setup(name='osg-configure',
       packages=['osg_configure', 'osg_configure.modules', 'osg_configure.configure_modules'],      
       scripts=['scripts/osg-configure'],
       data_files=[('/etc/osg/config.d', config_files),
-                  ('/etc/osg/', ['data_files/grid3-locations.txt'])]
+                  ('/etc/osg/', ['data_files/grid3-locations.txt']),
+                  ('/usr/share/osg-configure', get_test_files())]
       )
