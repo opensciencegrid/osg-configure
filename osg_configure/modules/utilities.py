@@ -20,7 +20,8 @@ __all__ = ['using_prima',
            'create_map_file',
            'fetch_crl',
            'ce_installed',
-           'atomic_write']
+           'atomic_write',
+           'rpm_installed']
   
 CONFIG_DIRECTORY = "/etc/osg"
 
@@ -354,7 +355,7 @@ def ce_installed():
   True if osg-ce metapackage rpm is installed, False otherwise
   """
   ts = rpm.TransactionSet()
-  if ts.dbMatch('name', 'osg-ce').count() == 1:
+  if ts.dbMatch('name', 'osg-ce').count() in (1,2):
     return True
   return False
 
@@ -373,18 +374,18 @@ def rpm_installed(rpm_name = None):
   if rpm_name is None:
     return True
   
-  if typeof(rpm_name) is types.StringType:
-    ts = rpm.TransactionSet()
-    if ts.dbMatch('name', rpm_name).count() == 1:
+  ts = rpm.TransactionSet()
+  if type(rpm_name) is types.StringType:
+    if ts.dbMatch('name', rpm_name).count() in (1,2):
       return True
     return False
   
   # check with iterable type
   try:
     for name in rpm_name:
-      ts = rpm.TransactionSet()
-      if ts.dbMatch('name', name).count() != 1:
+      if ts.dbMatch('name', name).count() not in (1,2):
         return False
+    return True
   except:
     return False
     
