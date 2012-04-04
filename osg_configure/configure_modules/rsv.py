@@ -70,6 +70,11 @@ class RsvConfiguration(BaseConfiguration):
                       configfile.Option(name = 'user_proxy',
                                         default_value = '',
                                         required = configfile.Option.OPTIONAL),
+                    'legacy_proxy' : 
+                      configfile.Option(name = 'legacy_proxy',
+                                        required = configfile.Option.OPTIONAL,
+                                        type = bool,
+                                        default_value = False),
                     'enable_gratia' : 
                       configfile.Option(name = 'enable_gratia',
                                         type = bool),
@@ -789,6 +794,11 @@ class RsvConfiguration(BaseConfiguration):
       config.remove_option('rsv', 'service-cert')
       config.remove_option('rsv', 'service-key')
       config.remove_option('rsv', 'service-proxy')
+
+    if self.options['legacy_proxy'].value:
+      config.set('rsv', 'legacy-proxy', 'True')
+    else:
+      config.remove_option('rsv', 'legacy-proxy')
 
     # Write back to disk
     config_fp = open(config_file, 'w')
