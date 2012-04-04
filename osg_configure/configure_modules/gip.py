@@ -193,6 +193,8 @@ class GipConfiguration(BaseConfiguration):
       self.log('GipConfiguration.parseConfiguration completed')
       self.enabled = False
       return
+    else:
+      self.enabled = True
     
     self.checkConfig(configuration)
 
@@ -399,38 +401,41 @@ class GipConfiguration(BaseConfiguration):
       self.log("Couldn't find username %s" % self.gip_user,
                exception = True,
                level = logging.ERROR)
-      raise exceptions.ConfigurationError("Couldn't find username %s: %s" % (self.gip_user, e))
+      raise exceptions.ConfigureError("Couldn't find username %s: %s" % (self.gip_user, e))
 
     (gip_uid, gip_gid)  = gip_pwent[2:4]
     gip_tmpdir = os.path.join('/', 'var', 'tmp', 'gip')
     gip_logdir = os.path.join('/', 'var', 'log', 'gip')
 
     try:
-      if not os.path.exists(gip_tmpdir) or not os.path.isdir(gip_tmpdir):
-        self.log("%s is not present or is not a directory, " % gip_tmpdir +
-                 "gip did not install correctly",
+      if not os.path.exists(gip_tmpdir):
+        self.log("%s is not present, recreating" % gip_logdir)
+        os.mkdir(gip_tmpdir)
+      if not os.path.isdir(gip_tmpdir):
+        self.log("%s is not a directory, " % gip_tmpdir +
+                 "please remove it and recreate it as a directory ",
                  level = logging.ERROR)
-        raise exceptions.ConfigurationError("GIP tmp directory not setup: %s" % gip_tmpdir)
+        raise exceptions.ConfigureError("GIP tmp directory not setup: %s" % gip_tmpdir)
       os.chown(gip_tmpdir, gip_uid, gip_gid)
     except Exception, e:
       self.log("Can't set permissions on " + gip_tmpdir,
                exception = True,
                level = logging.ERROR)
-      raise exceptions.ConfigurationError("Can't set permissions on %s: %s" % (gip_tmpdir, e))
+      raise exceptions.ConfigureError("Can't set permissions on %s: %s" % (gip_tmpdir, e))
 
     try:
       if not os.path.exists(gip_logdir) or not os.path.isdir(gip_logdir):
         self.log("%s is not present or is not a directory, " % gip_logdir +
                  "gip did not install correctly",
                  level = logging.ERROR)
-        raise exceptions.ConfigurationError("GIP log directory not setup: %s" % gip_logdir)
+        raise exceptions.ConfigureError("GIP log directory not setup: %s" % gip_logdir)
       os.chown(gip_logdir, gip_uid, gip_gid)
     except Exception, e:
       self.log("Can't set permissions on " + gip_logdir,
                exception = True,
                level = logging.ERROR)
-      raise exceptions.ConfigurationError("Can't set permissions on %s: %s" % \
-                                          (gip_logdir, e))        
+      raise exceptions.ConfigureError("Can't set permissions on %s: %s" % \
+                                      (gip_logdir, e))        
 
     self.log('GipConfiguration.configure completed')   
     
