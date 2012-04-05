@@ -16,11 +16,11 @@ def get_test_files():
   """
   Gets the unit tests and configs for them
   """
-  files = []
+  fileList = []
   for root, subFolders, files in os.walk('tests'):
     for name in files:
-      files.append(os.path.join(root,file))  
-  return filter(lambda x: '.svn' not in x, files)
+      fileList.append(os.path.join(root,name))  
+  return filter(lambda x: '.svn' not in x, fileList)
 
 setup(name='osg-configure',
       version=get_version(),

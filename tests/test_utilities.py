@@ -122,7 +122,7 @@ class TestUtilities(unittest.TestCase):
       self.assertFalse(utilities.rpm_installed(rpm_name),
                        'foo is not installed, but rpm_installed returned True')
       rpm_name = 'filesystem'
-      self.assert_(utilities.rpm_install(rpm_name),
+      self.assert_(utilities.rpm_installed(rpm_name),
                    'filesystem is installed, but rpm_installed returned False')
 
       rpm_names = ['filesystem', 'foo']
