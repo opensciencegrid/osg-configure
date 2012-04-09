@@ -8,7 +8,7 @@ sys.path.insert(0, pathname)
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import xml_utilities
-from osg_configure.utilities import get_test_config
+from osg_configure.modules.utilities import get_test_config
 
 pathname = os.path.join('../scripts', 'osg-configure')
 if not os.path.exists(pathname):

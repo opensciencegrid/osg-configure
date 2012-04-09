@@ -9,7 +9,7 @@ sys.path.insert(0, pathname)
 from osg_configure.modules import utilities
 from osg_configure.modules import exceptions
 from osg_configure.configure_modules import squid
-from osg_configure.utilities import get_test_config
+from osg_configure.modules.utilities import get_test_config
 
 global_logger = logging.getLogger('test squid configuration')
 console = logging.StreamHandler()

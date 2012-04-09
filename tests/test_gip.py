@@ -34,7 +34,7 @@ from osg_configure.configure_modules import localsettings
 from osg_configure.modules import exceptions
 from osg_configure.modules import configfile
 
-from osg_configure.utilities import get_test_config
+from osg_configure.modules.utilities import get_test_config
 
 
 
