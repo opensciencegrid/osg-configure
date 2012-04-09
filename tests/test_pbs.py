@@ -9,6 +9,7 @@ sys.path.insert(0, pathname)
 from osg_configure.modules import utilities
 from osg_configure.modules import exceptions
 from osg_configure.configure_modules import pbs
+from osg_configure.utilities import get_test_config
 
 global_logger = logging.getLogger('test pbs configuration')
 console = logging.StreamHandler()
@@ -25,7 +26,7 @@ class TestPBS(unittest.TestCase):
     Test configuration parsing
     """
     
-    config_file = os.path.abspath("./configs/pbs/pbs1.ini")
+    config_file = get_test_config("pbs/pbs1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -58,7 +59,7 @@ class TestPBS(unittest.TestCase):
     Test PBS section parsing when set to disabled
     """
     
-    config_file = os.path.abspath("./configs/pbs/pbs_disabled.ini")
+    config_file = get_test_config("pbs/pbs_disabled.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -78,7 +79,7 @@ class TestPBS(unittest.TestCase):
     Test PBS section parsing when set to Ignore
     """
     
-    config_file = os.path.abspath("./configs/pbs/ignored.ini")
+    config_file = get_test_config("pbs/ignored.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -98,7 +99,7 @@ class TestPBS(unittest.TestCase):
     """
     Test the checkAttributes function to see if it catches missing pbs location
     """
-    config_file = os.path.abspath("./configs/pbs/missing_location.ini")
+    config_file = get_test_config("pbs/missing_location.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -117,7 +118,7 @@ class TestPBS(unittest.TestCase):
     """
     Test the checkAttributes function to see if it works on valid settings
     """
-    config_file = os.path.abspath("./configs/pbs/check_ok.ini")
+    config_file = get_test_config("pbs/check_ok.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -135,7 +136,7 @@ class TestPBS(unittest.TestCase):
     """
     Test the checkAttributes function to see if it works on valid settings
     """
-    config_file = os.path.abspath("./configs/pbs/check_ok2.ini")
+    config_file = get_test_config("pbs/check_ok2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -153,7 +154,7 @@ class TestPBS(unittest.TestCase):
     """
     Test the checkAttributes function to see if it catches invalid job contacts
     """
-    config_file = os.path.abspath("./configs/pbs/invalid_job_contact.ini")
+    config_file = get_test_config("pbs/invalid_job_contact.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -173,7 +174,7 @@ class TestPBS(unittest.TestCase):
     Test the checkAttributes function to see if it catches invalid
     utility contacts
     """
-    config_file = os.path.abspath("./configs/pbs/invalid_utility_contact.ini")
+    config_file = get_test_config("pbs/invalid_utility_contact.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 

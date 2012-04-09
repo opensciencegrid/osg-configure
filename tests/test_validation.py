@@ -8,16 +8,21 @@ sys.path.insert(0, pathname)
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import validation
+from osg_configure.utilities import get_test_config
 
 pathname = os.path.join('../scripts', 'osg-configure')
-
+if not os.path.exists(pathname):
+  pathname = os.path.join('/', 'usr', 'sbin', 'osg-configure')
+  if not os.path.exists(pathname):
+    raise Exception("Can't find osg-configure script")
+  
 try:
     has_configure_osg = False
     fp = open(pathname, 'r')
     configure_osg = imp.load_module('test_module', fp, pathname, ('', '', 1))
     has_configure_osg = True
 except:
-    raise
+    raise Exception("Can't import osg-configure script")
 
 
 class TestValidation(unittest.TestCase):
@@ -80,7 +85,7 @@ class TestValidation(unittest.TestCase):
       """
       Check the valid_file functionality
       """
-      test_file = "configs/utilities/valid_boolean.ini"
+      test_file = get_test_config("configs/utilities/valid_boolean.ini")
       message = "%s not marked as a valid file location" % test_file
       self.failUnless(validation.valid_location(test_file), message)
       
@@ -124,7 +129,7 @@ class TestValidation(unittest.TestCase):
       """
       Test functionality of valid_boolean function
       """
-      config_file = os.path.abspath('./configs/utilities/valid_boolean.ini')
+      config_file = get_test_config('utilities/valid_boolean.ini')
       config = ConfigParser.SafeConfigParser()
       config.read(config_file)
       self.failIf(validation.valid_boolean(config, 'Test', 'invalid_bool'),

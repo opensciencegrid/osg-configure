@@ -9,6 +9,7 @@ sys.path.insert(0, pathname)
 from osg_configure.modules import utilities
 from osg_configure.modules import exceptions
 from osg_configure.configure_modules import storage
+from osg_configure.utilities import get_test_config
 
 global_logger = logging.getLogger('test storage configuration')
 console = logging.StreamHandler()
@@ -26,7 +27,7 @@ class TestLocalSettings(unittest.TestCase):
     Test storage parsing
     """
     
-    config_file = os.path.abspath("./configs/storage/storage1.ini")
+    config_file = get_test_config("storage/storage1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -62,7 +63,7 @@ class TestLocalSettings(unittest.TestCase):
     Test storage parsing with negative values
     """
     
-    config_file = os.path.abspath("./configs/storage/storage2.ini")
+    config_file = get_test_config("storage/storage2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -103,7 +104,7 @@ class TestLocalSettings(unittest.TestCase):
                  'worker_node_temp',
                  'data_dir']
     for option in mandatory:
-      config_file = os.path.abspath("./configs/storage/storage1.ini")
+      config_file = get_test_config("storage/storage1.ini")
       configuration = ConfigParser.SafeConfigParser()
       configuration.read(config_file)
       configuration.remove_option('Storage', option)

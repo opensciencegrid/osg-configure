@@ -8,8 +8,13 @@ sys.path.insert(0, pathname)
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import xml_utilities
+from osg_configure.utilities import get_test_config
 
 pathname = os.path.join('../scripts', 'osg-configure')
+if not os.path.exists(pathname):
+  pathname = os.path.join('/', 'usr', 'sbin', 'osg-configure')
+  if not os.path.exists(pathname):
+    raise Exception("Can't find osg-configure script")
 
 try:
     has_configure_osg = False
@@ -17,7 +22,7 @@ try:
     configure_osg = imp.load_module('test_module', fp, pathname, ('', '', 1))
     has_configure_osg = True
 except:
-    raise
+    raise Exception("Can't import osg-configure script")
 
 
 class TestXMLUtilities(unittest.TestCase):
@@ -28,7 +33,7 @@ class TestXMLUtilities(unittest.TestCase):
       from xml files
       """
       
-      xml_file = 'test_files/subscriptions.xml'
+      xml_file = get_test_config('test_files/subscriptions.xml')
       self.failUnlessEqual(xml_utilities.get_elements('foo', xml_file), 
                            [], 
                            'Got invalid elements')

@@ -9,6 +9,7 @@ sys.path.insert(0, pathname)
 from osg_configure.modules import utilities
 from osg_configure.modules import exceptions
 from osg_configure.configure_modules import siteattributes
+from osg_configure.utilities import get_test_config
 
 global_logger = logging.getLogger('test siteattributes configuration')
 console = logging.StreamHandler()
@@ -26,7 +27,7 @@ class TestSiteAttributesSettings(unittest.TestCase):
     Test siteattributes parsing
     """
     
-    config_file = os.path.abspath("./configs/siteattributes/siteattributes1.ini")
+    config_file = get_test_config("siteattributes/siteattributes1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -64,7 +65,7 @@ class TestSiteAttributesSettings(unittest.TestCase):
     Test siteattributes parsing
     """
     
-    config_file = os.path.abspath("./configs/siteattributes/siteattributes2.ini")
+    config_file = get_test_config("siteattributes/siteattributes2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -103,7 +104,7 @@ class TestSiteAttributesSettings(unittest.TestCase):
     Test siteattributes parsing
     """
     
-    config_file = os.path.abspath("./configs/siteattributes/siteattributes3.ini")
+    config_file = get_test_config("siteattributes/siteattributes3.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -143,7 +144,7 @@ class TestSiteAttributesSettings(unittest.TestCase):
     """
     Test the parsing when attributes are missing, should get exceptions
     """
-    config_file = os.path.abspath("./configs/siteattributes/siteattributes2.ini")
+    config_file = get_test_config("siteattributes/siteattributes2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -163,7 +164,7 @@ class TestSiteAttributesSettings(unittest.TestCase):
                  'longitude',
                  'latitude']
     for option in mandatory:
-      config_file = os.path.abspath("./configs/siteattributes/siteattributes1.ini")
+      config_file = get_test_config("siteattributes/siteattributes1.ini")
       configuration = ConfigParser.SafeConfigParser()
       configuration.read(config_file)
       configuration.remove_option('Site Information', option)
@@ -179,7 +180,7 @@ class TestSiteAttributesSettings(unittest.TestCase):
     """
     
     
-    config_file = os.path.abspath("./configs/siteattributes/" \
+    config_file = get_test_config("siteattributes/" \
                                   "invalid_latitude1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -194,7 +195,7 @@ class TestSiteAttributesSettings(unittest.TestCase):
     self.failIf(settings.checkAttributes(attributes),
                 "Invalid latitude ignored")
     
-    config_file = os.path.abspath("./configs/siteattributes/" \
+    config_file = get_test_config("siteattributes/" \
                                   "invalid_latitude2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -214,7 +215,7 @@ class TestSiteAttributesSettings(unittest.TestCase):
     """
     
     
-    config_file = os.path.abspath("./configs/siteattributes/" \
+    config_file = get_test_config("siteattributes/" \
                                   "invalid_longitude1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -229,7 +230,7 @@ class TestSiteAttributesSettings(unittest.TestCase):
     self.failIf(settings.checkAttributes(attributes),
                 "Invalid latitude ignored")
     
-    config_file = os.path.abspath("./configs/siteattributes/" \
+    config_file = get_test_config("siteattributes/" \
                                   "invalid_longitude2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -249,7 +250,7 @@ class TestSiteAttributesSettings(unittest.TestCase):
     """
     
     
-    config_file = os.path.abspath("./configs/siteattributes/" \
+    config_file = get_test_config("siteattributes/" \
                                   "invalid_hostname.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -270,7 +271,7 @@ class TestSiteAttributesSettings(unittest.TestCase):
     """
     
     
-    config_file = os.path.abspath("./configs/siteattributes/" \
+    config_file = get_test_config("siteattributes/" \
                                   "invalid_email.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -292,7 +293,7 @@ class TestSiteAttributesSettings(unittest.TestCase):
     """
     
     
-    config_file = os.path.abspath("./configs/siteattributes/" \
+    config_file = get_test_config("siteattributes/" \
                                   "invalid_sponsor1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -314,7 +315,7 @@ class TestSiteAttributesSettings(unittest.TestCase):
     """
     
     
-    config_file = os.path.abspath("./configs/siteattributes/" \
+    config_file = get_test_config("siteattributes/" \
                                   "invalid_sponsor2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -336,7 +337,7 @@ class TestSiteAttributesSettings(unittest.TestCase):
     """
     
     
-    config_file = os.path.abspath("./configs/siteattributes/" \
+    config_file = get_test_config("siteattributes/" \
                                   "invalid_sponsor2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -356,7 +357,7 @@ class TestSiteAttributesSettings(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    config_file = os.path.abspath("./configs/siteattributes/valid_settings.ini")
+    config_file = get_test_config("siteattributes/valid_settings.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -375,7 +376,7 @@ class TestSiteAttributesSettings(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    config_file = os.path.abspath("./configs/siteattributes/siteattributes3.ini")
+    config_file = get_test_config("siteattributes/siteattributes3.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 

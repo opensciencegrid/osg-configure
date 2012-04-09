@@ -9,6 +9,7 @@ sys.path.insert(0, pathname)
 from osg_configure.modules import utilities
 from osg_configure.modules import exceptions
 from osg_configure.configure_modules import lsf
+from osg_configure.utilities import get_test_config
 
 global_logger = logging.getLogger('test lsf configuration')
 console = logging.StreamHandler()
@@ -25,7 +26,7 @@ class TestLSF(unittest.TestCase):
     Test configuration parsing
     """
     
-    config_file = os.path.abspath("./configs/lsf/lsf1.ini")
+    config_file = get_test_config("lsf/lsf1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -58,7 +59,7 @@ class TestLSF(unittest.TestCase):
     Test parsing when disabled
     """
     
-    config_file = os.path.abspath("./configs/lsf/lsf_disabled.ini")
+    config_file = get_test_config("lsf/lsf_disabled.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -78,7 +79,7 @@ class TestLSF(unittest.TestCase):
     Test parsing when ignored
     """
     
-    config_file = os.path.abspath("./configs/lsf/ignored.ini")
+    config_file = get_test_config("lsf/ignored.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -98,7 +99,7 @@ class TestLSF(unittest.TestCase):
     """
     Test the checkAttributes function to see if it catches missing LSF location
     """
-    config_file = os.path.abspath("./configs/lsf/missing_location.ini")
+    config_file = get_test_config("lsf/missing_location.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -117,7 +118,7 @@ class TestLSF(unittest.TestCase):
     """
     Test the checkAttributes function to see if it works on valid settings
     """
-    config_file = os.path.abspath("./configs/lsf/check_ok.ini")
+    config_file = get_test_config("lsf/check_ok.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -135,7 +136,7 @@ class TestLSF(unittest.TestCase):
     """
     Test the checkAttributes function to see if it works on valid settings
     """
-    config_file = os.path.abspath("./configs/lsf/check_ok2.ini")
+    config_file = get_test_config("lsf/check_ok2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -153,7 +154,7 @@ class TestLSF(unittest.TestCase):
     """
     Test the checkAttributes function to see if it catches invalid job contacts
     """
-    config_file = os.path.abspath("./configs/lsf/invalid_job_contact.ini")
+    config_file = get_test_config("lsf/invalid_job_contact.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -173,7 +174,7 @@ class TestLSF(unittest.TestCase):
     Test the checkAttributes function to see if it catches invalid
     utility contacts
     """
-    config_file = os.path.abspath("./configs/lsf/invalid_utility_contact.ini")
+    config_file = get_test_config("lsf/invalid_utility_contact.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 

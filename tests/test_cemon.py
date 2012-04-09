@@ -8,6 +8,7 @@ sys.path.insert(0, pathname)
 
 from osg_configure.modules import exceptions
 from osg_configure.configure_modules import cemon
+from osg_configure.utilities import get_test_config
 
 global_logger = logging.getLogger('test cemon configuration')
 console = logging.StreamHandler()
@@ -24,7 +25,7 @@ class TestLocalSettings(unittest.TestCase):
     Test cemon parsing
     """
     
-    config_file = os.path.abspath("./configs/cemon/cemon.ini")
+    config_file = get_test_config("cemon/cemon.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -54,7 +55,7 @@ class TestLocalSettings(unittest.TestCase):
     Test cemon parsing to make sure it picks up ITB defaults
     """
     
-    config_file = os.path.abspath("./configs/cemon/itb_defaults.ini")
+    config_file = get_test_config("cemon/itb_defaults.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -86,7 +87,7 @@ class TestLocalSettings(unittest.TestCase):
     Test cemon parsing to make sure it picks up production defaults
     """
     
-    config_file = os.path.abspath("./configs/cemon/prod_defaults.ini")
+    config_file = get_test_config("cemon/prod_defaults.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -119,7 +120,7 @@ class TestLocalSettings(unittest.TestCase):
     when the cemon section is missing
     """
     
-    config_file = os.path.abspath("./configs/cemon/itb_defaults2.ini")
+    config_file = get_test_config("cemon/itb_defaults2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -153,7 +154,7 @@ class TestLocalSettings(unittest.TestCase):
     when the cemon section is missing
     """
     
-    config_file = os.path.abspath("./configs/cemon/prod_defaults2.ini")
+    config_file = get_test_config("cemon/prod_defaults2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -185,7 +186,7 @@ class TestLocalSettings(unittest.TestCase):
     Test cemon parsing when set to disabled
     """
     
-    config_file = os.path.abspath("./configs/cemon/disabled.ini")
+    config_file = get_test_config("cemon/disabled.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -206,7 +207,7 @@ class TestLocalSettings(unittest.TestCase):
     Test cemon parsing when set to ignored
     """
     
-    config_file = os.path.abspath("./configs/cemon/ignored.ini")
+    config_file = get_test_config("cemon/ignored.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -227,7 +228,7 @@ class TestLocalSettings(unittest.TestCase):
     Test cemon parsing when ignoring just bdii or ress
     """
     
-    config_file = os.path.abspath("./configs/cemon/ignore_ress.ini")
+    config_file = get_test_config("cemon/ignore_ress.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -240,7 +241,7 @@ class TestLocalSettings(unittest.TestCase):
     self.failUnlessEqual(settings.ress_servers, {}, 
                          "Should not have ress subscriptions when being ignored")
 
-    config_file = os.path.abspath("./configs/cemon/ignore_bdii.ini")
+    config_file = os.path.abspath("cemon/ignore_bdii.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -259,7 +260,7 @@ class TestLocalSettings(unittest.TestCase):
     ress servers
     """
         
-    config_file = os.path.abspath("./configs/cemon/invalid_ress1.ini")
+    config_file = get_test_config("cemon/invalid_ress1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -274,7 +275,7 @@ class TestLocalSettings(unittest.TestCase):
     ress servers
     """
         
-    config_file = os.path.abspath("./configs/cemon/invalid_ress2.ini")
+    config_file = get_test_config("cemon/invalid_ress2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -294,7 +295,7 @@ class TestLocalSettings(unittest.TestCase):
     ress servers
     """
         
-    config_file = os.path.abspath("./configs/cemon/invalid_ress3.ini")
+    config_file = get_test_config("cemon/invalid_ress3.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -314,7 +315,7 @@ class TestLocalSettings(unittest.TestCase):
     bdii servers
     """
         
-    config_file = os.path.abspath("./configs/cemon/invalid_bdii1.ini")
+    config_file = get_test_config("cemon/invalid_bdii1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -329,7 +330,7 @@ class TestLocalSettings(unittest.TestCase):
     bdii servers
     """
         
-    config_file = os.path.abspath("./configs/cemon/invalid_bdii2.ini")
+    config_file = get_test_config("cemon/invalid_bdii2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -349,7 +350,7 @@ class TestLocalSettings(unittest.TestCase):
     bdii servers
     """
         
-    config_file = os.path.abspath("./configs/cemon/invalid_bdii3.ini")
+    config_file = get_test_config("cemon/invalid_bdii3.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -368,7 +369,7 @@ class TestLocalSettings(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    config_file = os.path.abspath("./configs/cemon/check_ok.ini")
+    config_file = get_test_config("cemon/check_ok.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -387,7 +388,7 @@ class TestLocalSettings(unittest.TestCase):
     Test the checkAttributes function to see if it oks a disabled section
     """
         
-    config_file = os.path.abspath("./configs/cemon/disabled.ini")
+    config_file = get_test_config("cemon/disabled.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -407,7 +408,7 @@ class TestLocalSettings(unittest.TestCase):
     Test the checkAttributes function to see if it oks the itb defaults
     """
         
-    config_file = os.path.abspath("./configs/cemon/itb_defaults.ini")
+    config_file = get_test_config("cemon/itb_defaults.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -426,7 +427,7 @@ class TestLocalSettings(unittest.TestCase):
     Test the checkAttributes function to see if it oks the production defaults
     """
         
-    config_file = os.path.abspath("./configs/cemon/prod_defaults.ini")
+    config_file = get_test_config("cemon/prod_defaults.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -446,7 +447,7 @@ class TestLocalSettings(unittest.TestCase):
     set when the cemon section is missing
     """
         
-    config_file = os.path.abspath("./configs/cemon/itb_defaults2.ini")
+    config_file = get_test_config("cemon/itb_defaults2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -466,7 +467,7 @@ class TestLocalSettings(unittest.TestCase):
     set when the cemon section is missing
     """
         
-    config_file = os.path.abspath("./configs/cemon/prod_defaults2.ini")
+    config_file = get_test_config("cemon/prod_defaults2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -486,7 +487,7 @@ class TestLocalSettings(unittest.TestCase):
     set when the cemon section is missing
     """
         
-    config_file = os.path.abspath("./configs/cemon/multiple_ress.ini")
+    config_file = get_test_config("cemon/multiple_ress.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -505,7 +506,7 @@ class TestLocalSettings(unittest.TestCase):
     set when the cemon section is missing
     """
         
-    config_file = os.path.abspath("./configs/cemon/multiple_bdii.ini")
+    config_file = get_test_config("cemon/multiple_bdii.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 

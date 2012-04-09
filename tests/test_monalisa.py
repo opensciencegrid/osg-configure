@@ -9,6 +9,7 @@ sys.path.insert(0, pathname)
 from osg_configure.modules import utilities
 from osg_configure.modules import exceptions
 from osg_configure.configure_modules import monalisa
+from osg_configure.utilities import get_test_config
 
 global_logger = logging.getLogger('test monalisa configuration')
 console = logging.StreamHandler()
@@ -25,7 +26,7 @@ class TestLocalSettings(unittest.TestCase):
     Test monalisa parsing
     """
     
-    config_file = os.path.abspath("./configs/monalisa/monalisa1.ini")
+    config_file = get_test_config("monalisa/monalisa1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -84,7 +85,7 @@ class TestLocalSettings(unittest.TestCase):
     Test monalisa parsing with negative values
     """
     
-    config_file = os.path.abspath("./configs/monalisa/monalisa2.ini")
+    config_file = get_test_config("monalisa/monalisa2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -121,7 +122,7 @@ class TestLocalSettings(unittest.TestCase):
     Test monalisa parsing when disabled
     """
     
-    config_file = os.path.abspath("./configs/monalisa/monalisa_disabled.ini")
+    config_file = get_test_config("monalisa/monalisa_disabled.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -143,7 +144,7 @@ class TestLocalSettings(unittest.TestCase):
     Test monalisa parsing when set to ignore
     """
     
-    config_file = os.path.abspath("./configs/monalisa/ignored.ini")
+    config_file = get_test_config("monalisa/ignored.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -166,7 +167,7 @@ class TestLocalSettings(unittest.TestCase):
     Test monalisa parsing
     """
     
-    config_file = os.path.abspath("./configs/monalisa/monalisa_defaults.ini")
+    config_file = get_test_config("monalisa/monalisa_defaults.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -214,7 +215,7 @@ class TestLocalSettings(unittest.TestCase):
     """
         
     
-    config_file = os.path.abspath("./configs/monalisa/bad_port.ini")
+    config_file = get_test_config("monalisa/bad_port.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -223,7 +224,7 @@ class TestLocalSettings(unittest.TestCase):
                       settings.parseConfiguration,
                       configuration)
                             
-    config_file = os.path.abspath("./configs/monalisa/bad_host.ini")
+    config_file = get_test_config("monalisa/bad_host.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -237,7 +238,7 @@ class TestLocalSettings(unittest.TestCase):
     self.failIf(settings.checkAttributes(attributes), 
                 "Invalid ganglia host not flagged")    
 
-    config_file = os.path.abspath("./configs/monalisa/monalisa1.ini")
+    config_file = get_test_config("monalisa/monalisa1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -256,7 +257,7 @@ class TestLocalSettings(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    config_file = os.path.abspath("./configs/monalisa/valid_settings.ini")
+    config_file = get_test_config("monalisa/valid_settings.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 

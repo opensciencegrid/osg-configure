@@ -9,6 +9,7 @@ sys.path.insert(0, pathname)
 from osg_configure.modules import utilities
 from osg_configure.modules import exceptions
 from osg_configure.configure_modules import misc
+from osg_configure.utilities import get_test_config
 
 global_logger = logging.getLogger('test misc configuration')
 console = logging.StreamHandler()
@@ -25,7 +26,7 @@ class TestLocalSettings(unittest.TestCase):
     Test misc parsing
     """
     
-    config_file = os.path.abspath("./configs/misc/misc1.ini")
+    config_file = get_test_config("misc/misc1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -67,7 +68,7 @@ class TestLocalSettings(unittest.TestCase):
     Test misc parsing with negative values
     """
     
-    config_file = os.path.abspath("./configs/misc/misc2.ini")
+    config_file = get_test_config("misc/misc2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -109,7 +110,7 @@ class TestLocalSettings(unittest.TestCase):
     Test misc parsing with negative values
     """
     
-    config_file = os.path.abspath("./configs/misc/misc_xacml.ini")
+    config_file = get_test_config("misc/misc_xacml.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -129,7 +130,7 @@ class TestLocalSettings(unittest.TestCase):
                                           settings.options['authorization_method'].value,
                                           'xacml'))
 
-    config_file = os.path.abspath("./configs/misc/misc_gridmap.ini")
+    config_file = get_test_config("misc/misc_gridmap.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -149,7 +150,7 @@ class TestLocalSettings(unittest.TestCase):
                                           settings.options['authorization_method'].value,
                                           'gridmap'))
 
-    config_file = os.path.abspath("./configs/misc/misc_local_gridmap.ini")
+    config_file = get_test_config("misc/misc_local_gridmap.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -176,7 +177,7 @@ class TestLocalSettings(unittest.TestCase):
         
     mandatory = ['gums_host']
     for option in mandatory:
-      config_file = os.path.abspath("./configs/misc/misc1.ini")
+      config_file = get_test_config("misc/misc1.ini")
       configuration = ConfigParser.SafeConfigParser()
       configuration.read(config_file)
       configuration.remove_option('Misc Services', option)
@@ -192,7 +193,7 @@ class TestLocalSettings(unittest.TestCase):
     """
         
 
-    config_file = os.path.abspath("./configs/misc/misc_xacml_missing_gums.ini")
+    config_file = get_test_config("misc/misc_xacml_missing_gums.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -208,7 +209,7 @@ class TestLocalSettings(unittest.TestCase):
     """
         
 
-    config_file = os.path.abspath("./configs/misc/misc_xacml_bad_gums.ini")
+    config_file = get_test_config("misc/misc_xacml_bad_gums.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -227,7 +228,7 @@ class TestLocalSettings(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    config_file = os.path.abspath("./configs/misc/valid_settings.ini")
+    config_file = get_test_config("misc/valid_settings.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -246,7 +247,7 @@ class TestLocalSettings(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    config_file = os.path.abspath("./configs/misc/valid_settings2.ini")
+    config_file = get_test_config("misc/valid_settings2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -265,7 +266,7 @@ class TestLocalSettings(unittest.TestCase):
     Test the checkAttributes function to see if it flags bad attributes
     """
         
-    config_file = os.path.abspath("./configs/misc/invalid_settings1.ini")
+    config_file = get_test_config("misc/invalid_settings1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 

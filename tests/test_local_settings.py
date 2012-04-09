@@ -9,6 +9,7 @@ sys.path.insert(0, pathname)
 from osg_configure.modules import utilities
 from osg_configure.modules import exceptions
 from osg_configure.configure_modules import localsettings
+from osg_configure.utilities import get_test_config
 
 global_logger = logging.getLogger('test localsettings configuration')
 console = logging.StreamHandler()
@@ -25,7 +26,7 @@ class TestLocalSettings(unittest.TestCase):
     Test install locations parsing
     """
     
-    config_file = os.path.abspath("./configs/localsettings/local_settings1.ini")
+    config_file = get_test_config("localsettings/local_settings1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.optionxform = str
     configuration.read(config_file)

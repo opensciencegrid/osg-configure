@@ -9,6 +9,7 @@ sys.path.insert(0, pathname)
 from osg_configure.modules import utilities
 from osg_configure.modules import exceptions
 from osg_configure.configure_modules import network
+from osg_configure.utilities import get_test_config
 
 global_logger = logging.getLogger('test network configuration')
 console = logging.StreamHandler()
@@ -25,7 +26,7 @@ class TestLocalSettings(unittest.TestCase):
     Test misc parsing
     """
     
-    config_file = os.path.abspath("./configs/network/check_blank.ini")
+    config_file = get_test_config("network/check_blank.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -37,7 +38,7 @@ class TestLocalSettings(unittest.TestCase):
     self.assertTrue(settings.checkAttributes({}),
                     "Flagged blank file as invalid")
  
-    config_file = os.path.abspath("./configs/network/check_ok1.ini")
+    config_file = get_test_config("network/check_ok1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -64,7 +65,7 @@ class TestLocalSettings(unittest.TestCase):
     self.assertTrue(settings.checkAttributes({}),
                     "Flagged blank file as invalid")
     
-    config_file = os.path.abspath("./configs/network/check_ok2.ini")
+    config_file = get_test_config("network/check_ok2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -91,7 +92,7 @@ class TestLocalSettings(unittest.TestCase):
     self.assertTrue(settings.checkAttributes({}),
                     "Flagged blank file as invalid")
 
-    config_file = os.path.abspath("./configs/network/check_ok3.ini")
+    config_file = get_test_config("network/check_ok3.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -124,7 +125,7 @@ class TestLocalSettings(unittest.TestCase):
     Test checks for missing state files
     """
     
-    config_file = os.path.abspath("./configs/network/missing_source_state.ini")
+    config_file = get_test_config("network/missing_source_state.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -140,7 +141,7 @@ class TestLocalSettings(unittest.TestCase):
                      "should have been flagged")
 
 
-    config_file = os.path.abspath("./configs/network/missing_port_state.ini")
+    config_file = get_test_config("network/missing_port_state.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -161,7 +162,7 @@ class TestLocalSettings(unittest.TestCase):
     Test checks for missing port ranges when state file is specified
     """
     
-    config_file = os.path.abspath("./configs/network/missing_source_range.ini")
+    config_file = get_test_config("network/missing_source_range.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -177,7 +178,7 @@ class TestLocalSettings(unittest.TestCase):
                      "should have been flagged")
 
 
-    config_file = os.path.abspath("./configs/network/missing_port_range.ini")
+    config_file = get_test_config("network/missing_port_range.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -197,7 +198,7 @@ class TestLocalSettings(unittest.TestCase):
     Test checks for invalid source ranges (e.g. ab,28)
     """
     
-    config_file = os.path.abspath("./configs/network/invalid_source_range1.ini")
+    config_file = get_test_config("network/invalid_source_range1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -212,7 +213,7 @@ class TestLocalSettings(unittest.TestCase):
                      "In %s, invalid source range " % config_file +
                      "should have been flagged")
 
-    config_file = os.path.abspath("./configs/network/invalid_source_range2.ini")
+    config_file = get_test_config("network/invalid_source_range2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -227,7 +228,7 @@ class TestLocalSettings(unittest.TestCase):
                      "In %s, invalid source range " % config_file +
                      "should have been flagged")
 
-    config_file = os.path.abspath("./configs/network/invalid_source_range3.ini")
+    config_file = get_test_config("network/invalid_source_range3.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -248,7 +249,7 @@ class TestLocalSettings(unittest.TestCase):
     Test checks for invalid port range
     """
 
-    config_file = os.path.abspath("./configs/network/invalid_port_range1.ini")
+    config_file = get_test_config("network/invalid_port_range1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -263,7 +264,7 @@ class TestLocalSettings(unittest.TestCase):
                      "In %s, invalid port range " % config_file +
                      "should have been flagged")
 
-    config_file = os.path.abspath("./configs/network/invalid_port_range2.ini")
+    config_file = get_test_config("network/invalid_port_range2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -278,7 +279,7 @@ class TestLocalSettings(unittest.TestCase):
                      "In %s, invalid port range " % config_file +
                      "should have been flagged")
 
-    config_file = os.path.abspath("./configs/network/invalid_port_range3.ini")
+    config_file = get_test_config("network/invalid_port_range3.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 

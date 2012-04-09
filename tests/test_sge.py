@@ -9,6 +9,7 @@ sys.path.insert(0, pathname)
 from osg_configure.modules import utilities
 from osg_configure.modules import exceptions
 from osg_configure.configure_modules import sge
+from osg_configure.utilities import get_test_config
 
 global_logger = logging.getLogger('test sge configuration')
 console = logging.StreamHandler()
@@ -25,7 +26,7 @@ class TestSGE(unittest.TestCase):
     Test configuration parsing
     """
     
-    config_file = os.path.abspath("./configs/sge/sge1.ini")
+    config_file = get_test_config("sge/sge1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -60,7 +61,7 @@ class TestSGE(unittest.TestCase):
     Test parsing disabled configuration
     """
     
-    config_file = os.path.abspath("./configs/sge/sge_disabled.ini")
+    config_file = get_test_config("sge/sge_disabled.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -80,7 +81,7 @@ class TestSGE(unittest.TestCase):
     Test parsing ignored configuration
     """
     
-    config_file = os.path.abspath("./configs/sge/ignored.ini")
+    config_file = get_test_config("sge/ignored.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -107,7 +108,7 @@ class TestSGE(unittest.TestCase):
                  'job_contact',
                  'util_contact']
     for option in mandatory:
-      config_file = os.path.abspath("./configs/sge/sge1.ini")
+      config_file = get_test_config("sge/sge1.ini")
       configuration = ConfigParser.SafeConfigParser()
       configuration.read(config_file)
       configuration.remove_option('SGE', option)
@@ -125,7 +126,7 @@ class TestSGE(unittest.TestCase):
     """
 
 
-    config_file = os.path.abspath("./configs/sge/missing_root.ini")
+    config_file = get_test_config("sge/missing_root.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -145,7 +146,7 @@ class TestSGE(unittest.TestCase):
     """
 
 
-    config_file = os.path.abspath("./configs/sge/missing_cell.ini")
+    config_file = get_test_config("sge/missing_cell.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -165,7 +166,7 @@ class TestSGE(unittest.TestCase):
     """
 
 
-    config_file = os.path.abspath("./configs/sge/check_ok.ini")
+    config_file = get_test_config("sge/check_ok.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -185,7 +186,7 @@ class TestSGE(unittest.TestCase):
     """
 
 
-    config_file = os.path.abspath("./configs/sge/check_ok2.ini")
+    config_file = get_test_config("sge/check_ok2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -206,7 +207,7 @@ class TestSGE(unittest.TestCase):
     """
 
 
-    config_file = os.path.abspath("./configs/sge/invalid_job_contact.ini")
+    config_file = get_test_config("sge/invalid_job_contact.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -227,7 +228,7 @@ class TestSGE(unittest.TestCase):
     utility contacts
     """
 
-    config_file = os.path.abspath("./configs/sge/invalid_utility_contact.ini")
+    config_file = get_test_config("sge/invalid_utility_contact.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 

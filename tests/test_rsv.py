@@ -9,6 +9,7 @@ sys.path.insert(0, pathname)
 from osg_configure.modules import utilities
 from osg_configure.modules import exceptions
 from osg_configure.configure_modules import rsv
+from osg_configure.utilities import get_test_config
 
 global_logger = logging.getLogger('test_rsv configuration')
 console = logging.StreamHandler()
@@ -27,7 +28,7 @@ class TestRSVSettings(unittest.TestCase):
     Test rsv parsing
     """
     
-    config_file = os.path.abspath("./configs/rsv/rsv1.ini")
+    config_file = get_test_config("rsv/rsv1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -67,7 +68,7 @@ class TestRSVSettings(unittest.TestCase):
     Test rsv parsing
     """
     
-    config_file = os.path.abspath("./configs/rsv/rsv2.ini")
+    config_file = get_test_config("rsv/rsv2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -107,7 +108,7 @@ class TestRSVSettings(unittest.TestCase):
     Test rsv parsing
     """
     
-    config_file = os.path.abspath("./configs/rsv/multiple_hosts.ini")
+    config_file = get_test_config("rsv/multiple_hosts.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -148,7 +149,7 @@ class TestRSVSettings(unittest.TestCase):
     Test parsing when ignored
     """
     
-    config_file = os.path.abspath("./configs/rsv/ignored.ini")
+    config_file = get_test_config("rsv/ignored.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -168,7 +169,7 @@ class TestRSVSettings(unittest.TestCase):
     Test parsing when disabled
     """
     
-    config_file = os.path.abspath("./configs/rsv/disabled.ini")
+    config_file = get_test_config("rsv/disabled.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -189,7 +190,7 @@ class TestRSVSettings(unittest.TestCase):
     Test the parsing when attributes are missing, should get exceptions
     """
 
-    config_file = os.path.abspath("./configs/rsv/rsv2.ini")
+    config_file = get_test_config("rsv/rsv2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -203,7 +204,7 @@ class TestRSVSettings(unittest.TestCase):
     mandatory = ['enable_gratia',
                  'enable_nagios']
     for option in mandatory:
-      config_file = os.path.abspath("./configs/rsv/rsv1.ini")
+      config_file = get_test_config("rsv/rsv1.ini")
       configuration = ConfigParser.SafeConfigParser()
       configuration.read(config_file)
       configuration.remove_option('RSV', option)
@@ -220,7 +221,7 @@ class TestRSVSettings(unittest.TestCase):
     """
     
     
-    config_file = os.path.abspath("./configs/rsv/" \
+    config_file = get_test_config("rsv/" \
                                   "invalid_key.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -241,7 +242,7 @@ class TestRSVSettings(unittest.TestCase):
     Test the checkAttributes with a missing rsv key file
     """
     
-    config_file = os.path.abspath("./configs/rsv/" \
+    config_file = get_test_config("rsv/" \
                                   "missing_key.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -262,7 +263,7 @@ class TestRSVSettings(unittest.TestCase):
     Test the checkAttributes with invalid cert file
     """
     
-    config_file = os.path.abspath("./configs/rsv/" \
+    config_file = get_test_config("rsv/" \
                                   "invalid_cert.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -283,7 +284,7 @@ class TestRSVSettings(unittest.TestCase):
     Test the checkAttributes with a missing rsv cert file
     """
     
-    config_file = os.path.abspath("./configs/rsv/" \
+    config_file = get_test_config("rsv/" \
                                   "missing_cert.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -305,7 +306,7 @@ class TestRSVSettings(unittest.TestCase):
     """
     
     
-    config_file = os.path.abspath("./configs/rsv/" \
+    config_file = get_test_config("rsv/" \
                                   "invalid_proxy.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -326,7 +327,7 @@ class TestRSVSettings(unittest.TestCase):
     Test the checkAttributes with a missing proxy cert file
     """
         
-    config_file = os.path.abspath("./configs/rsv/" \
+    config_file = get_test_config("rsv/" \
                                   "missing_proxy.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -347,7 +348,7 @@ class TestRSVSettings(unittest.TestCase):
     Test the checkAttributes with invalid gratia probes
     """
     
-    config_file = os.path.abspath("./configs/rsv/" \
+    config_file = get_test_config("rsv/" \
                                   "invalid_gratia1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -363,7 +364,7 @@ class TestRSVSettings(unittest.TestCase):
     self.failIf(settings.checkAttributes(attributes),
                 "Invalid gratia probe ignored")
 
-    config_file = os.path.abspath("./configs/rsv/" \
+    config_file = get_test_config("rsv/" \
                                   "invalid_gratia2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -384,7 +385,7 @@ class TestRSVSettings(unittest.TestCase):
     Test the checkAttributes with invalid ce host
     """
     
-    config_file = os.path.abspath("./configs/rsv/" \
+    config_file = get_test_config("rsv/" \
                                   "invalid_ce_host.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -405,7 +406,7 @@ class TestRSVSettings(unittest.TestCase):
     Test the checkAttributes with invalid gums host
     """
     
-    config_file = os.path.abspath("./configs/rsv/" \
+    config_file = get_test_config("rsv/" \
                                   "invalid_gums_host.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -426,7 +427,7 @@ class TestRSVSettings(unittest.TestCase):
     Test the checkAttributes with invalid gridftp host
     """
     
-    config_file = os.path.abspath("./configs/rsv/" \
+    config_file = get_test_config("rsv/" \
                                   "invalid_gridftp_host.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -447,7 +448,7 @@ class TestRSVSettings(unittest.TestCase):
     Test the checkAttributes with invalid srm host
     """
     
-    config_file = os.path.abspath("./configs/rsv/" \
+    config_file = get_test_config("rsv/" \
                                   "invalid_srm_host.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -468,7 +469,7 @@ class TestRSVSettings(unittest.TestCase):
     Test the checkAttributes function to see if it works on valid settings
     """
 
-    config_file = os.path.abspath("./configs/rsv/rsv1.ini")
+    config_file = get_test_config("rsv/rsv1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
     settings = rsv.RsvConfiguration(logger=global_logger)
@@ -486,7 +487,7 @@ class TestRSVSettings(unittest.TestCase):
     """
     Test the checkAttributes function to see if it works on valid settings
     """
-    config_file = os.path.abspath("./configs/rsv/rsv2.ini")
+    config_file = get_test_config("rsv/rsv2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 

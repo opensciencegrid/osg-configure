@@ -8,6 +8,7 @@ sys.path.insert(0, pathname)
 
 from osg_configure.modules import exceptions
 from osg_configure.configure_modules import gratia
+from osg_configure.utilities import get_test_config
 
 global_logger = logging.getLogger('test gratia configuration')
 console = logging.StreamHandler()
@@ -24,7 +25,7 @@ class TestLocalSettings(unittest.TestCase):
     Test gratia parsing
     """
     
-    config_file = os.path.abspath("./configs/gratia/gratia.ini")
+    config_file = get_test_config("gratia/gratia.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -54,7 +55,7 @@ class TestLocalSettings(unittest.TestCase):
     Make sure gratia picks up the itb defaults 
     """
     
-    config_file = os.path.abspath("./configs/gratia/itb_default.ini")
+    config_file = get_test_config("gratia/itb_default.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -83,7 +84,7 @@ class TestLocalSettings(unittest.TestCase):
     Make sure gratia picks up the itb defaults 
     """
     
-    config_file = os.path.abspath("./configs/gratia/prod_default.ini")
+    config_file = get_test_config("gratia/prod_default.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -112,7 +113,7 @@ class TestLocalSettings(unittest.TestCase):
     section is missing 
     """
     
-    config_file = os.path.abspath("./configs/gratia/itb_default2.ini")
+    config_file = get_test_config("gratia/itb_default2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -135,7 +136,7 @@ class TestLocalSettings(unittest.TestCase):
                                             options[var].value, 
                                             variables[var]))
 
-    config_file = os.path.abspath("./configs/gratia/itb_default3.ini")
+    config_file = get_test_config("gratia/itb_default3.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -164,7 +165,7 @@ class TestLocalSettings(unittest.TestCase):
     section is missing 
     """
     
-    config_file = os.path.abspath("./configs/gratia/prod_default2.ini")
+    config_file = get_test_config("gratia/prod_default2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -192,7 +193,7 @@ class TestLocalSettings(unittest.TestCase):
     Test gratia parsing with negative values
     """
     
-    config_file = os.path.abspath("./configs/gratia/disabled.ini")
+    config_file = get_test_config("gratia/disabled.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -211,7 +212,7 @@ class TestLocalSettings(unittest.TestCase):
     Test gratia parsing when section is ignored
     """
     
-    config_file = os.path.abspath("./configs/gratia/ignored.ini")
+    config_file = get_test_config("gratia/ignored.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -231,7 +232,7 @@ class TestLocalSettings(unittest.TestCase):
     probes
     """
         
-    config_file = os.path.abspath("./configs/gratia/invalid_probe1.ini")
+    config_file = get_test_config("gratia/invalid_probe1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -251,7 +252,7 @@ class TestLocalSettings(unittest.TestCase):
     probes
     """
         
-    config_file = os.path.abspath("./configs/gratia/invalid_probe2.ini")
+    config_file = get_test_config("gratia/invalid_probe2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -270,7 +271,7 @@ class TestLocalSettings(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    config_file = os.path.abspath("./configs/gratia/check_ok.ini")
+    config_file = get_test_config("gratia/check_ok.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -289,7 +290,7 @@ class TestLocalSettings(unittest.TestCase):
     Test the checkAttributes function to see if it oks a disabled section
     """
         
-    config_file = os.path.abspath("./configs/gratia/disabled.ini")
+    config_file = get_test_config("gratia/disabled.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -307,7 +308,7 @@ class TestLocalSettings(unittest.TestCase):
     """
     Test the ITB defaults and make sure that they are valid
     """
-    config_file = os.path.abspath("./configs/gratia/itb_default.ini")
+    config_file = get_test_config("gratia/itb_default.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -325,7 +326,7 @@ class TestLocalSettings(unittest.TestCase):
     """
     Test the production defaults and make sure that they are valid
     """
-    config_file = os.path.abspath("./configs/gratia/prod_default.ini")
+    config_file = get_test_config("gratia/prod_default.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -344,7 +345,7 @@ class TestLocalSettings(unittest.TestCase):
     Test the ITB defaults and make sure that they are valid when the
     gratia section is missing
     """
-    config_file = os.path.abspath("./configs/gratia/itb_default2.ini")
+    config_file = get_test_config("gratia/itb_default2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -363,7 +364,7 @@ class TestLocalSettings(unittest.TestCase):
     Test the production defaults and make sure that they are valid when the 
     gratia section is missing
     """
-    config_file = os.path.abspath("./configs/gratia/prod_default2.ini")
+    config_file = get_test_config("gratia/prod_default2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 

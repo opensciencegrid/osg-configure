@@ -8,6 +8,7 @@ sys.path.insert(0, pathname)
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import configfile
+from osg_configure.utilities import get_test_config
 
 pathname = os.path.join('../scripts', 'osg-configure')
 

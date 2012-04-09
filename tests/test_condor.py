@@ -8,6 +8,7 @@ sys.path.insert(0, pathname)
 
 from osg_configure.modules import exceptions
 from osg_configure.configure_modules import condor
+from osg_configure.utilities import get_test_config
 
 global_logger = logging.getLogger('test condor configuration')
 console = logging.StreamHandler()
@@ -25,7 +26,7 @@ class TestCondor(unittest.TestCase):
     Test condor parsing
     """
     
-    config_file = os.path.abspath("./configs/condor/condor1.ini")
+    config_file = get_test_config("condor/condor1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -59,7 +60,7 @@ class TestCondor(unittest.TestCase):
     Test condor parsing when disabled
     """
     
-    config_file = os.path.abspath("./configs/condor/condor_disabled.ini")
+    config_file = get_test_config("condor/condor_disabled.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -79,7 +80,7 @@ class TestCondor(unittest.TestCase):
     Test condor parsing when ignored
     """
     
-    config_file = os.path.abspath("./configs/condor/ignored.ini")
+    config_file = get_test_config("condor/ignored.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -100,7 +101,7 @@ class TestCondor(unittest.TestCase):
     Test handling of defaults when parsing a configuration
     """
     
-    config_file = os.path.abspath("./configs/condor/condor_defaults1.ini")
+    config_file = get_test_config("condor/condor_defaults1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -151,7 +152,7 @@ class TestCondor(unittest.TestCase):
 
     # check to make sure that config values take precedence over 
     # environment variables
-    config_file = os.path.abspath("./configs/condor/condor1.ini")
+    config_file = get_test_config("condor/condor1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
     os.environ['CONDOR_LOCATION'] = '/my/condor1'
@@ -175,7 +176,7 @@ class TestCondor(unittest.TestCase):
                          'Wrong value obtained for OSG_CONDOR_CONFIG')
 
     # check to see if jobmanager home values get used in preference to other values
-    config_file = os.path.abspath("./configs/condor/condor_defaults2.ini")
+    config_file = get_test_config("condor/condor_defaults2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
     os.environ['CONDOR_LOCATION'] = '/my/condor1'
@@ -205,7 +206,7 @@ class TestCondor(unittest.TestCase):
     """
     
 
-    config_file = os.path.abspath("./configs/condor/missing_location.ini")
+    config_file = get_test_config("condor/missing_location.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -249,7 +250,7 @@ class TestCondor(unittest.TestCase):
     """
     
 
-    config_file = os.path.abspath("./configs/condor/check_ok.ini")
+    config_file = get_test_config("condor/check_ok.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -269,7 +270,7 @@ class TestCondor(unittest.TestCase):
     """
     
 
-    config_file = os.path.abspath("./configs/condor/check_ok2.ini")
+    config_file = get_test_config("condor/check_ok2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -290,7 +291,7 @@ class TestCondor(unittest.TestCase):
     """
     
 
-    config_file = os.path.abspath("./configs/condor/invalid_job_contact.ini")
+    config_file = get_test_config("condor/invalid_job_contact.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -311,7 +312,7 @@ class TestCondor(unittest.TestCase):
     """
     
 
-    config_file = os.path.abspath("./configs/condor/invalid_utility_contact.ini")
+    config_file = get_test_config("condor/invalid_utility_contact.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 

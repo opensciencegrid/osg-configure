@@ -9,6 +9,7 @@ sys.path.insert(0, pathname)
 from osg_configure.modules import exceptions
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
+from osg_configure.utilities import get_test_config
 
 pathname = os.path.join('../scripts', 'osg-configure')
 
@@ -26,8 +27,8 @@ class TestUtilities(unittest.TestCase):
       """
       Check to make sure that write_attribute_file writes out files properly
       """
-      attribute_file = os.path.abspath("./test_files/temp_attributes.conf")
-      attribute_standard = os.path.abspath("./test_files/attributes_output.conf")
+      attribute_file = get_test_config("test_files/temp_attributes.conf")
+      attribute_standard = get_test_config("test_files/attributes_output.conf")
       try:
         attributes = {'Foo' : 123,
                       'test_attr' : 'abc-234#$',
@@ -109,7 +110,7 @@ class TestUtilities(unittest.TestCase):
       Test get_vos function
       """  
       
-      vo_file = os.path.abspath('./test_files/sample-vos.txt')
+      vo_file = get_test_config('test_files/sample-vos.txt')
       self.failUnlessEqual(utilities.get_vos(vo_file), 
                            ['osg', 'LIGO', 'cdf'], 
                            "Correct vos not found")

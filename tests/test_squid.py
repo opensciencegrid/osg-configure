@@ -9,6 +9,7 @@ sys.path.insert(0, pathname)
 from osg_configure.modules import utilities
 from osg_configure.modules import exceptions
 from osg_configure.configure_modules import squid
+from osg_configure.utilities import get_test_config
 
 global_logger = logging.getLogger('test squid configuration')
 console = logging.StreamHandler()
@@ -25,7 +26,7 @@ class TestSquidSettings(unittest.TestCase):
     Test squid parsing
     """
     
-    config_file = os.path.abspath("./configs/squid/squid1.ini")
+    config_file = get_test_config("squid/squid1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -56,7 +57,7 @@ class TestSquidSettings(unittest.TestCase):
     Test squid parsing
     """
     
-    config_file = os.path.abspath("./configs/squid/squid2.ini")
+    config_file = get_test_config("squid/squid2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -87,7 +88,7 @@ class TestSquidSettings(unittest.TestCase):
     Test parsing when disabled
     """
     
-    config_file = os.path.abspath("./configs/squid/squid_disabled.ini")
+    config_file = get_test_config("squid/squid_disabled.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -118,7 +119,7 @@ class TestSquidSettings(unittest.TestCase):
     Test parsing when ignored
     """
     
-    config_file = os.path.abspath("./configs/squid/ignored.ini")
+    config_file = get_test_config("squid/ignored.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -157,7 +158,7 @@ class TestSquidSettings(unittest.TestCase):
 
     mandatory = ['location']
     for option in mandatory:
-      config_file = os.path.abspath("./configs/squid/squid1.ini")
+      config_file = get_test_config("squid/squid1.ini")
       configuration = ConfigParser.SafeConfigParser()
       configuration.read(config_file)
       configuration.remove_option('Squid', option)
@@ -174,7 +175,7 @@ class TestSquidSettings(unittest.TestCase):
     """
         
 
-    config_file = os.path.abspath("./configs/squid/squid_bad_mem.ini")
+    config_file = get_test_config("squid/squid_bad_mem.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -189,7 +190,7 @@ class TestSquidSettings(unittest.TestCase):
     """
         
 
-    config_file = os.path.abspath("./configs/squid/squid_bad_cache.ini")
+    config_file = get_test_config("squid/squid_bad_cache.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -206,7 +207,7 @@ class TestSquidSettings(unittest.TestCase):
     """
         
 
-    config_file = os.path.abspath("./configs/squid/squid_bad_host.ini")
+    config_file = get_test_config("squid/squid_bad_host.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -227,7 +228,7 @@ class TestSquidSettings(unittest.TestCase):
     """
         
 
-    config_file = os.path.abspath("./configs/squid/squid_bad_port.ini")
+    config_file = get_test_config("squid/squid_bad_port.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -247,7 +248,7 @@ class TestSquidSettings(unittest.TestCase):
     """
         
 
-    config_file = os.path.abspath("./configs/squid/squid_missing_location.ini")
+    config_file = get_test_config("squid/squid_missing_location.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -266,7 +267,7 @@ class TestSquidSettings(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    config_file = os.path.abspath("./configs/squid/valid_settings.ini")
+    config_file = get_test_config("squid/valid_settings.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 

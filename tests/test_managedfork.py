@@ -9,6 +9,7 @@ sys.path.insert(0, pathname)
 from osg_configure.modules import utilities
 from osg_configure.modules import exceptions
 from osg_configure.configure_modules import managedfork
+from osg_configure.utilities import get_test_config
 
 global_logger = logging.getLogger('test managedfork configuration')
 console = logging.StreamHandler()
@@ -25,7 +26,7 @@ class TestManagedFork(unittest.TestCase):
     Test managedfork parsing
     """
     
-    config_file = os.path.abspath("./configs/managedfork/managedfork1.ini")
+    config_file = get_test_config("managedfork/managedfork1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -49,7 +50,7 @@ class TestManagedFork(unittest.TestCase):
     Test managedfork parsing when disabled
     """
     
-    config_file = os.path.abspath("./configs/managedfork/managedfork_disabled.ini")
+    config_file = get_test_config("managedfork/managedfork_disabled.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -71,7 +72,7 @@ class TestManagedFork(unittest.TestCase):
     Test managedfork parsing when ignored
     """
     
-    config_file = os.path.abspath("./configs/managedfork/ignored.ini")
+    config_file = get_test_config("managedfork/ignored.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -93,7 +94,7 @@ class TestManagedFork(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    config_file = os.path.abspath("./configs/managedfork/check_ok.ini")
+    config_file = get_test_config("managedfork/check_ok.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -113,7 +114,7 @@ class TestManagedFork(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    config_file = os.path.abspath("./configs/managedfork/check_accept_limited_true.ini")
+    config_file = get_test_config("managedfork/check_accept_limited_true.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -133,7 +134,7 @@ class TestManagedFork(unittest.TestCase):
     Test the checkAttributes function to see if it oks good attributes
     """
         
-    config_file = os.path.abspath("./configs/managedfork/check_accept_limited_false.ini")
+    config_file = get_test_config("managedfork/check_accept_limited_false.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
