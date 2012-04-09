@@ -21,7 +21,8 @@ __all__ = ['using_prima',
            'fetch_crl',
            'ce_installed',
            'atomic_write',
-           'rpm_installed']
+           'rpm_installed',           
+           'get_test_config']
   
 CONFIG_DIRECTORY = "/etc/osg"
 
@@ -388,4 +389,32 @@ def rpm_installed(rpm_name = None):
     return True
   except:
     return False
+  
+def get_test_config(config_file = ''):
+  """
+  Try to figure out whether where the config files for unit tests are located, preferring the ones in the local 
+  directory
+  
+  Arguments:
+  config_file - name of config file being checked, can be an empty string or set to None
+  
+  Returns:
+  the prefixed config file if config_file is non-empty, otherwise just the 
+  prefix, returns None if no path exists
+  """
+  
+  
+  config_prefix = './'
+  sys_prefix = os.path.join('/', 'usr', 'share', 'osg-configure', 'tests', 'configs')
+  
+  
+  if config_file == '' or config_file is None:
+    return None 
+
+  file_name = os.path.join('.', config_file)
+  if not os.path.exists(file_name):
+    file_name = os.path.join(sys_prefix, file_name)
+    if os.path.exists(file_name):
+      return os.path.abspath(file_name)
+  return None
     
