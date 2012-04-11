@@ -197,7 +197,7 @@ class RsvConfiguration(BaseConfiguration):
     attributes_ok &= self.__validate_host_list(self.__gums_hosts, "gums_hosts")
     attributes_ok &= self.__validate_host_list(self.__srm_hosts, "srm_hosts")
     attributes_ok &= self.__check_gridftp_settings()
-
+    attributes_ok &= self.__check_srm_settings()
     # check Gratia list
     attributes_ok &= self.__check_gratia_settings()
 
@@ -966,6 +966,55 @@ class RsvConfiguration(BaseConfiguration):
                level = logging.ERROR)
       raise exceptions.ConfigureError("Error configuring gratia")
 
+    return True
+  
+  def __check_srm_settings(self):
+    """
+    Check srm settings to make sure settings are consistent and properly
+    set
+    """
+    if (self.__srm_hosts == [] or 
+        self.__srm_hosts is None or 
+        utilities.blank(self.options['srm_hosts'].value)):
+      return True
+
+    if self.options['srm_dir'].value.upper() == 'DEFAULT':
+        self.log("srm_dir has to be set and can't be set to DEFAULT for each "+ 
+                 "srm host defined (set to %s)" % dir,
+                 option = 'srm_dir',
+                 section = 'rsv',
+                 level = logging.ERROR)
+      
+    srm_dirs = split_list(self.options['srm_dir'].value)    
+    if len(self.__srm_hosts) != len(srm_dirs):
+      self.log("When enabling SRM metrics you must specify the same number " +
+               "of entries in the srm_dir variable as you have in the " +
+               "srm_hosts section.  There are %i host entries and %i " \
+               "srm_dir entries." % (len(self.__srm_hosts), len(srm_dirs)),
+               level = logging.ERROR)
+      return False
+    for dir in srm_dirs:
+      if dir.upper() == 'DEFAULT':
+        self.log("srm_dir has to be set and can't be set to DEFAULT for each "+ 
+                 "srm host defined (set to %s)" % dir,
+                 option = 'srm_dir',
+                 section = 'rsv',
+                 level = logging.ERROR)
+        
+    
+    srm_ws_paths = []
+    if not utilities.blank(self.options['srm_webservice_path'].value):      
+      srm_ws_paths = split_list(self.options['srm_webservice_path'].value)
+      if len(self.__srm_hosts) != len(srm_ws_paths):
+        self.log("If you set srm_webservice_path when enabling SRM metrics " +
+                 "you must specify the same number of entries in the " +
+                 "srm_webservice_path variable as you have in the srm_hosts " +
+                 "section.  There are %i host entries and %i " \
+                 "srm_webservice_path entries." % (len(self.__srm_hosts), 
+                                                   len(srm_ws_paths)),
+                 level = logging.ERROR)
+        return False
+      
     return True
 
 
