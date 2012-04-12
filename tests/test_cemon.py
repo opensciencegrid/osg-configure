@@ -241,7 +241,7 @@ class TestLocalSettings(unittest.TestCase):
     self.failUnlessEqual(settings.ress_servers, {}, 
                          "Should not have ress subscriptions when being ignored")
 
-    config_file = os.path.abspath("cemon/ignore_bdii.ini")
+    config_file = get_test_config("cemon/ignore_bdii.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 

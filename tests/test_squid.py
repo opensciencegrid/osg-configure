@@ -131,7 +131,6 @@ class TestSquidSettings(unittest.TestCase):
  
 
     attributes = settings.getAttributes()
-    print attributes
     self.failUnlessEqual(len(attributes), 4, 
                          "Ignored configuration should have 4 attributes")
     

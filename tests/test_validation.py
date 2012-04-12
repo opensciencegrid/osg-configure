@@ -72,7 +72,7 @@ class TestValidation(unittest.TestCase):
       Check the valid_location functionality
       """
 
-      test_location = os.path.abspath("./configs")
+      test_location = get_test_config("cemon/ignore_bdii.ini")
       self.failUnless(validation.valid_location(test_location), 
                       "%s not marked as a valid location" % test_location)
 
@@ -85,7 +85,7 @@ class TestValidation(unittest.TestCase):
       """
       Check the valid_file functionality
       """
-      test_file = get_test_config("configs/utilities/valid_boolean.ini")
+      test_file = get_test_config("utilities/valid_boolean.ini")
       message = "%s not marked as a valid file location" % test_file
       self.failUnless(validation.valid_location(test_file), message)
       
@@ -111,11 +111,11 @@ class TestValidation(unittest.TestCase):
       Test functionality of valid_user_vo_file function
       """
       
-      test_file = os.path.abspath("./test_files/valid-user-vo-map.txt")
+      test_file = get_test_config("./test_files/valid-user-vo-map.txt")
       self.failUnless(validation.valid_user_vo_file(test_file, False), 
                       "Valid file flagged as invalid")
       
-      test_file = os.path.abspath("./test_files/invalid-user-vo-map.txt")
+      test_file = get_test_config("./test_files/invalid-user-vo-map.txt")
       self.failIf(validation.valid_user_vo_file(test_file, False), 
                   "Invalid file flagged as valid")
       bad_lines = validation.valid_user_vo_file(test_file, True)[1]
@@ -149,8 +149,8 @@ class TestValidation(unittest.TestCase):
       """
       
       binary = "/bin/ls"
-      text = os.path.abspath("./test_files/subscriptions.xml")
-      missing = os.path.abspath("./test_files/foo")
+      text = get_test_config("test_files/subscriptions.xml")
+      missing = "./test_files/foo"
       
       self.failIf(validation.valid_executable(missing), 
                   "Non-existent file is not a valid executable")

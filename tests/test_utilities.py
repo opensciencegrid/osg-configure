@@ -27,7 +27,7 @@ class TestUtilities(unittest.TestCase):
       """
       Check to make sure that write_attribute_file writes out files properly
       """
-      attribute_file = get_test_config("test_files/temp_attributes.conf")
+      attribute_file = ("/tmp/temp_attributes.conf")
       attribute_standard = get_test_config("test_files/attributes_output.conf")
       try:
         attributes = {'Foo' : 123,

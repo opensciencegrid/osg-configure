@@ -404,17 +404,18 @@ def get_test_config(config_file = ''):
   """
   
   
-  config_prefix = './'
+  config_prefix = './configs'
   sys_prefix = os.path.join('/', 'usr', 'share', 'osg-configure', 'tests', 'configs')
   
   
   if config_file == '' or config_file is None:
     return None 
 
-  file_name = os.path.join('.', config_file)
-  if not os.path.exists(file_name):
-    file_name = os.path.join(sys_prefix, file_name)
-    if os.path.exists(file_name):
-      return os.path.abspath(file_name)
+  file_name = os.path.join(config_prefix, config_file)
+  if os.path.exists(file_name):
+    return os.path.abspath(file_name)
+  file_name = os.path.join(sys_prefix, file_name)
+  if os.path.exists(file_name):
+    return os.path.abspath(file_name)
   return None
     
