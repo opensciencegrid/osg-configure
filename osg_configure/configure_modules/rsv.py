@@ -110,6 +110,7 @@ class RsvConfiguration(BaseConfiguration):
     self.config_section = "RSV"
     self.rsv_control = os.path.join('/', 'usr', 'bin', 'rsv-control')
     self.rsv_meta_dir = os.path.join('/', 'etc', 'rsv', 'meta', 'metrics')
+    (self.uid, self.gid) = pwd.getpwnam(self.__rsv_user)[2:4]
     self.log('RsvConfiguration.__init__ completed')
 
   def parseConfiguration(self, configuration):
@@ -840,8 +841,7 @@ class RsvConfiguration(BaseConfiguration):
 
     # The Nagios conf file contains a password so set it to mode 0400 owned by rsv
     pw_file = os.path.join('/', 'etc', 'rsv', 'rsv-nagios.conf')
-    (uid,gid) = pwd.getpwnam(self.__rsv_user)[2:4]
-    os.chown(pw_file, uid, gid)
+    os.chown(pw_file, self.uid, self.gid)
     os.chmod(pw_file, 0400)
     
     # Add the configuration file 
@@ -959,6 +959,31 @@ class RsvConfiguration(BaseConfiguration):
     conf = re.sub(r'(\s*)EnableProbe\s*=.*', r'\1EnableProbe="1"', conf, 1)
     conf = re.sub(r'(\s*)Grid\s*=.*', r'\1Grid="' + self.grid_group + '"', conf, 1)
     conf = re.sub(r'(\s*)SiteName\s*=.*', r'\1SiteName="' + self.site_name + '"', conf, 1)
+
+    # Set logging to whatever is appropriate.  We'll just go with level=1, rotate=7 for now
+    conf = re.sub(r'(\s*)LogLevel\s*=.*', r'\1LogLevel="1"', conf, 1)
+    conf = re.sub(r'(\s*)LogRotate\s*=.*', r'\1LogRotate="7"', conf, 1)
+
+    # Also, set up the directories to use the proper log/data/working dirs
+    parent_dir = os.path.join('/', 'var', 'log', 'gratia', 'rsv')
+
+    def make_dir(path):
+      if not os.path.exists(path):
+        os.makedirs(path, 0755)
+      os.chown(path, self.uid, self.gid)
+
+    log_folder = os.path.join(parent_dir, 'logs')
+    make_dir(log_folder)
+    conf = re.sub(r'(\s*)LogFolder\s*=.*', r'\1LogFolder="' + log_folder + '"', conf, 1)
+
+    data_folder = os.path.join(parent_dir, 'data')
+    make_dir(data_folder)
+    conf = re.sub(r'(\s*)DataFolder\s*=.*', r'\1DataFolder="' + data_folder + '"', conf, 1)
+
+    working_folder = os.path.join(parent_dir, 'tmp')
+    make_dir(working_folder)
+    conf = re.sub(r'(\s*)WorkingFolder\s*=.*', r'\1WorkingFolder="' + working_folder + '"', conf, 1)
+  
 
     if not utilities.atomic_write(probe_conf, conf):
       self.log("Error while configuring metric probe: can't " +
