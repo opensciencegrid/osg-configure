@@ -109,7 +109,15 @@ in your config.ini file."""
                                           'PBS',
                                           log_option)
           self.__probe_config['pbs'] = {'log_directory' : log_option.value}
-          
+
+          accounting_log_option = configfile.Option(name = 'accounting_log_directory',
+                                         required = configfile.Option.OPTIONAL,
+                                         default_value = '')
+          accounting_log_dir = configfile.get_option(configuration,
+                                          'PBS',
+                                          accounting_log_option)
+          self.__probe_config['pbs'] = {'accounting_log_directory' : accounting_log_option.value}
+
     self.getOptions(configuration, 
                     ignore_options = ['itb-jobmanager-gratia',
                                       'itb-gridftp-gratia',
@@ -424,10 +432,10 @@ in your config.ini file."""
     """
     Do pbs probe specific configuration
     """
-    if (self.__probe_config['pbs']['log_directory'] is None or
-        self.__probe_config['pbs']['log_directory'] == ''):
+    if (self.__probe_config['pbs']['accounting_log_directory'] is None or
+        self.__probe_config['pbs']['accounting_log_directory'] == ''):
       return True
-    log_directory = self.__probe_config['pbs']['log_directory']
+    accounting_log_directory = self.__probe_config['pbs']['accounting_log_directory']
     re_obj = re.compile('^\s*pbsAcctLogDir\s*=.*$', re.MULTILINE)  
     config_location = os.path.join('/', 
                                'etc',
@@ -435,11 +443,11 @@ in your config.ini file."""
                                'pbs-lsf',
                                'urCollector.conf')   
     buffer = file(config_location).read()
-    (buffer, count) = re_obj.subn(r'pbsAcctLogDir = "%s"' % log_directory,
+    (buffer, count) = re_obj.subn(r'pbsAcctLogDir = "%s"' % accounting_log_directory,
                                   buffer, 
                                   1)
     if count == 0:
-      buffer += "pbsAcctLogDir = \"%s\"\n" % log_directory
+      buffer += "pbsAcctLogDir = \"%s\"\n" % accounting_log_directory
     if not utilities.atomic_write(config_location, buffer):
       return False    
     return True

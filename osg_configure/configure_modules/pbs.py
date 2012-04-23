@@ -44,6 +44,10 @@ class PBSConfiguration(JobManagerConfiguration):
                       configfile.Option(name = 'log_directory',
                                         required = configfile.Option.OPTIONAL,
                                         default_value = ''),
+                    'accounting_log_directory' : 
+                      configfile.Option(name = 'accounting_log_directory',
+                                        required = configfile.Option.OPTIONAL,
+                                        default_value = ''),
                     'pbs_server' : 
                       configfile.Option(name = 'pbs_server',
                                         required = configfile.Option.OPTIONAL,
@@ -266,7 +270,7 @@ class PBSConfiguration(JobManagerConfiguration):
       (buffer, count) = re_obj.subn(new_setting, buffer, 1)
       if count == 0:
         buffer += new_setting + "\n"
-    
+
     if not utilities.atomic_write(PBSConfiguration.GRAM_CONFIG_FILE, buffer):
       return False
     
