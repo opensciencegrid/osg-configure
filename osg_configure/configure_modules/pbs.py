@@ -259,10 +259,10 @@ class PBSConfiguration(JobManagerConfiguration):
           not validation.valid_directory(self.options['log_directory'].value)):
         mesg = "%s is not a valid directory location " % self.options['log_directory'].value
         mesg += "for pbs log files"
-        self.logMessage(mesg, 
-                        section = self.config_section,
-                        option = 'log_directory',
-                        level = logging.ERROR)
+        self.log(mesg, 
+                 section = self.config_section,
+                 option = 'log_directory',
+                 level = logging.ERROR)
         return False
 
       new_setting = "log_path=\"%s\"" % self.options['log_directory'].value

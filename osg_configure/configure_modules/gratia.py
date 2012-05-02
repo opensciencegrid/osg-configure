@@ -111,11 +111,11 @@ in your config.ini file."""
           self.__probe_config['pbs'] = {'log_directory' : log_option.value}
 
           accounting_log_option = configfile.Option(name = 'accounting_log_directory',
-                                         required = configfile.Option.OPTIONAL,
-                                         default_value = '')
+                                                    required = configfile.Option.OPTIONAL,
+                                                    default_value = '')
           accounting_log_dir = configfile.get_option(configuration,
-                                          'PBS',
-                                          accounting_log_option)
+                                                     'PBS',
+                                                     accounting_log_option)
           self.__probe_config['pbs'] = {'accounting_log_directory' : accounting_log_option.value}
 
     self.getOptions(configuration, 
