@@ -11,6 +11,12 @@ from osg_configure.modules import configfile
 from osg_configure.modules.utilities import get_test_config
 
 pathname = os.path.join('../scripts', 'osg-configure')
+pathname = os.path.abspath(pathname)
+
+if not os.path.exists(pathname):
+  pathname = os.path.join('/', 'usr', 'sbin', 'osg-configure')
+  if not os.path.exists(pathname):
+    raise Exception("Can't find osg-configure script")
 
 try:
     has_configure_osg = False
