@@ -132,8 +132,7 @@ class RsvConfiguration(BaseConfiguration):
     if not utilities.rpm_installed('rsv-core'):
       self.enabled = False
       self.log('rsv-core rpm not installed, disabling RSV configuration')
-      if configuration.has_section(self.config_section):
-        
+      if configuration.has_section(self.config_section):        
         self.log('Your configuration has configuration information for RSV ' +
                  'but RSV is not installed. RSV configuration will be ' +
                  'ignored.',
