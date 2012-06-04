@@ -18,7 +18,7 @@ global_logger.addHandler(console)
 
 RSV_META_DIR = './configs/rsv/meta'
 
-class TestRSVSettings(unittest.TestCase):
+class TestRSV(unittest.TestCase):
   """
   Unit test class to test RsvConfiguration class
   """

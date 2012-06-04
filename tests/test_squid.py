@@ -16,7 +16,7 @@ console = logging.StreamHandler()
 console.setLevel(logging.ERROR)
 global_logger.addHandler(console)
 
-class TestSquidSettings(unittest.TestCase):
+class TestSquid(unittest.TestCase):
   """
   Unit test class to test SquidConfiguration class
   """

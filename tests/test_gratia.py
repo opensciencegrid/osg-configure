@@ -15,7 +15,7 @@ console = logging.StreamHandler()
 console.setLevel(logging.ERROR)
 global_logger.addHandler(console)
 
-class TestLocalSettings(unittest.TestCase):
+class TestGratia(unittest.TestCase):
   """
   Unit test class to test GratiaConfiguration class
   """

@@ -16,7 +16,7 @@ console = logging.StreamHandler()
 console.setLevel(logging.ERROR)
 global_logger.addHandler(console)
 
-class TestLocalSettings(unittest.TestCase):
+class TestMonalisa(unittest.TestCase):
   """
   Unit test class to test MonalisaConfiguration class
   """

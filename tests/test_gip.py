@@ -38,7 +38,7 @@ from osg_configure.modules.utilities import get_test_config
 
 
 
-class TestConfigureOsg(unittest.TestCase):
+class TestGip(unittest.TestCase):
 
   def test_configure_osg(self):
     """

@@ -17,7 +17,7 @@ console.setLevel(logging.ERROR)
 global_logger.addHandler(console)
 
 
-class TestLocalSettings(unittest.TestCase):
+class TestStorage(unittest.TestCase):
   """
   Unit test class to test StorageConfiguration class
   """

@@ -15,7 +15,7 @@ console = logging.StreamHandler()
 console.setLevel(logging.ERROR)
 global_logger.addHandler(console)
 
-class TestLocalSettings(unittest.TestCase):
+class TestCEMon(unittest.TestCase):
   """
   Unit test class to test CemonConfiguration class
   """
