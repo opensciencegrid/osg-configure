@@ -110,7 +110,8 @@ class RsvConfiguration(BaseConfiguration):
     self.config_section = "RSV"
     self.rsv_control = os.path.join('/', 'usr', 'bin', 'rsv-control')
     self.rsv_meta_dir = os.path.join('/', 'etc', 'rsv', 'meta', 'metrics')
-    (self.uid, self.gid) = pwd.getpwnam(self.__rsv_user)[2:4]
+    self.uid = None
+    self.gid = None
     self.log('RsvConfiguration.__init__ completed')
 
   def parseConfiguration(self, configuration):
@@ -144,6 +145,7 @@ class RsvConfiguration(BaseConfiguration):
       return True
 
     self.getOptions(configuration, ignore_options = ['enabled'])
+    (self.uid, self.gid) = pwd.getpwnam(self.__rsv_user)[2:4]
 
     # If we're on a CE, get the grid group if possible
     if configuration.has_section('Site Information'): 
