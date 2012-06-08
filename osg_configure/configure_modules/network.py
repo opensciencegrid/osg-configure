@@ -73,8 +73,7 @@ class NetworkConfiguration(BaseConfiguration):
         self.log("Invalid location: %s" % self.options[name].value,
                  option = name,
                  section = self.config_section,
-                 level = logging.ERROR)
-        attributes_ok = False
+                 level = logging.WARNING)
 
     for name in ['source_range', 'port_range']:
       if utilities.blank(self.options[name].value):
