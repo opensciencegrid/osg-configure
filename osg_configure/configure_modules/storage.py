@@ -42,6 +42,7 @@ class StorageConfiguration(BaseConfiguration):
                                         mapping = 'OSG_DATA'),
                     'worker_node_temp' : 
                       configfile.Option(name = 'worker_node_temp',
+                                        required = configfile.Option.OPTIONAL,
                                         mapping = 'OSG_WN_TMP'),
                     'site_read' : 
                       configfile.Option(name = 'site_read',
@@ -99,7 +100,16 @@ class StorageConfiguration(BaseConfiguration):
                option = 'app_dir',
                level = logging.ERROR)
       attributes_ok = False
-    
+
+    # WN_TMP may be blank if the job manager dynamically generates it but 
+    # warni just in case
+    if  utilities.blank(self.options['worker_node_temp'].value):
+      self.log("worker_node_temp is blank, this is okay if you've set your " +
+               "job manager to set this dynamically, otherwise jobs may " +
+               "fail to run",
+               section = self.config_section,
+               option = 'worker_node_temp',
+               level = logging.WARNING)    
     self.log('StorageConfiguration.checkAttributes completed')    
     return attributes_ok 
 
