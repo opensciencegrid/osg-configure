@@ -412,11 +412,11 @@ def get_test_config(config_file = ''):
   if config_file == '' or config_file is None:
     return None 
 
-  file_name = os.path.join(config_prefix, config_file)
-  if os.path.exists(file_name):
-    return os.path.abspath(file_name)
-  file_name = os.path.join(sys_prefix, file_name)
-  if os.path.exists(file_name):
-    return os.path.abspath(file_name)
+  test_location = os.path.join(config_prefix, config_file)
+  if os.path.exists(test_location):
+    return os.path.abspath(test_location)
+  test_location = os.path.join(sys_prefix, config_file)
+  if os.path.exists(test_location):
+    return os.path.abspath(test_location)
   return None
     
