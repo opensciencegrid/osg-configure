@@ -125,7 +125,7 @@ class TestValidation(unittest.TestCase):
                            "got\n%s" % (bad_lines) +
                            "\nexpected\n%s" % (standard_lines))
       
-    def test_valid_bookean(self):
+    def test_valid_boolean(self):
       """
       Test functionality of valid_boolean function
       """
