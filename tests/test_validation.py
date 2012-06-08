@@ -165,11 +165,11 @@ class TestValidation(unittest.TestCase):
       Test functionality of valid_file function
       """
 
-      filename = './configs/utilities/newline.ini'
+      filename = get_test_config('utilities/newline.ini')
       self.failIf(validation.valid_ini_file(filename),
                   "Didn't detect newline in %s"  % filename)
 
-      filename = './configs/utilities/valid_boolean.ini'
+      filename = get_test_config('utilities/valid_boolean.ini')
       self.failUnless(validation.valid_ini_file(filename),
                       "Got error on valid file %s" % filename)
       
@@ -180,15 +180,15 @@ class TestValidation(unittest.TestCase):
       go
       """
 
-      filename = './configs/utilities/invalid_ref1.ini'
+      filename = get_test_config('utilities/invalid_ref1.ini')
       self.failIf(validation.valid_ini_file(filename),
                   "Didn't detect invalid reference in %s" % filename)
 
-      filename = './configs/utilities/invalid_ref2.ini'
+      filename = get_test_config('utilities/invalid_ref2.ini')
       self.failIf(validation.valid_ini_file(filename),
                   "Didn't detect invalid reference in %s" % filename)
 
-      filename = './configs/utilities/valid_ref1.ini'
+      filename = get_test_config('utilities/valid_ref1.ini')
       self.failUnless(validation.valid_ini_file(filename),
                       "Got error on valid file %s" % filename)
 

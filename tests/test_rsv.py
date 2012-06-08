@@ -16,8 +16,11 @@ console = logging.StreamHandler()
 console.setLevel(logging.ERROR)
 global_logger.addHandler(console)
 
-RSV_META_DIR = './configs/rsv/meta'
-
+if os.path.exists('./configs/rsv/meta'):
+  RSV_META_DIR = './configs/rsv/meta'
+elif os.path.exists('/usr/share/osg-configure/tests/configs/rsv/meta'):
+  RSV_META_DIR = '/usr/share/osg-configure/tests/configs/rsv/meta'
+  
 class TestRSV(unittest.TestCase):
   """
   Unit test class to test RsvConfiguration class
@@ -28,6 +31,9 @@ class TestRSV(unittest.TestCase):
     Test rsv parsing
     """
     
+    # need to have rsv installed to get rsv tests working
+    if not utilities.rpm_installed('rsv-core'):
+      return
     config_file = get_test_config("rsv/rsv1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -48,8 +54,8 @@ class TestRSV(unittest.TestCase):
                  'srm_hosts' : 'test.com:60443',
                  'srm_dir' : '/srm/dir',
                  'srm_webservice_path' : 'srm/v2/server',
-                 'service_cert' : './configs/rsv/rsv1.ini',
-                 'service_key' : './configs/rsv/rsv1.ini',
+                 'service_cert' : '/etc/redhat-release',
+                 'service_key' : '/etc/redhat-release',
                  'service_proxy' : '/tmp/rsvproxy',
                  'enable_gratia' : True,
                  'enable_nagios' : True}
@@ -68,6 +74,9 @@ class TestRSV(unittest.TestCase):
     Test rsv parsing
     """
     
+    # need to have rsv installed to get rsv tests working
+    if not utilities.rpm_installed('rsv-core'):
+      return
     config_file = get_test_config("rsv/rsv2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -88,8 +97,8 @@ class TestRSV(unittest.TestCase):
                  'srm_hosts' : 'my.host.com, my2.host.com',
                  'srm_dir' : '/srm/dir, /srm/dir2',
                  'srm_webservice_path' : 'srm/v2/server,',
-                 'service_cert' : './configs/rsv/rsv1.ini',
-                 'service_key' : './configs/rsv/rsv1.ini',
+                 'service_cert' : '/etc/redhat-release',
+                 'service_key' : '/etc/redhat-release',
                  'service_proxy' : '/tmp/rsvproxy',
                  'enable_gratia' : False,
                  'enable_nagios' : False}
@@ -108,6 +117,9 @@ class TestRSV(unittest.TestCase):
     Test rsv parsing
     """
     
+    # need to have rsv installed to get rsv tests working
+    if not utilities.rpm_installed('rsv-core'):
+      return
     config_file = get_test_config("rsv/multiple_hosts.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -149,6 +161,9 @@ class TestRSV(unittest.TestCase):
     Test parsing when ignored
     """
     
+    # need to have rsv installed to get rsv tests working
+    if not utilities.rpm_installed('rsv-core'):
+      return
     config_file = get_test_config("rsv/ignored.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -169,6 +184,9 @@ class TestRSV(unittest.TestCase):
     Test parsing when disabled
     """
     
+    # need to have rsv installed to get rsv tests working
+    if not utilities.rpm_installed('rsv-core'):
+      return
     config_file = get_test_config("rsv/disabled.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -190,6 +208,9 @@ class TestRSV(unittest.TestCase):
     Test the parsing when attributes are missing, should get exceptions
     """
 
+    # need to have rsv installed to get rsv tests working
+    if not utilities.rpm_installed('rsv-core'):
+      return
     config_file = get_test_config("rsv/rsv2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -221,6 +242,9 @@ class TestRSV(unittest.TestCase):
     """
     
     
+    # need to have rsv installed to get rsv tests working
+    if not utilities.rpm_installed('rsv-core'):
+      return
     config_file = get_test_config("rsv/" \
                                   "invalid_key.ini")
     configuration = ConfigParser.SafeConfigParser()
@@ -242,6 +266,9 @@ class TestRSV(unittest.TestCase):
     Test the checkAttributes with a missing rsv key file
     """
     
+    # need to have rsv installed to get rsv tests working
+    if not utilities.rpm_installed('rsv-core'):
+      return
     config_file = get_test_config("rsv/" \
                                   "missing_key.ini")
     configuration = ConfigParser.SafeConfigParser()
@@ -263,6 +290,9 @@ class TestRSV(unittest.TestCase):
     Test the checkAttributes with invalid cert file
     """
     
+    # need to have rsv installed to get rsv tests working
+    if not utilities.rpm_installed('rsv-core'):
+      return
     config_file = get_test_config("rsv/" \
                                   "invalid_cert.ini")
     configuration = ConfigParser.SafeConfigParser()
@@ -284,6 +314,9 @@ class TestRSV(unittest.TestCase):
     Test the checkAttributes with a missing rsv cert file
     """
     
+    # need to have rsv installed to get rsv tests working
+    if not utilities.rpm_installed('rsv-core'):
+      return
     config_file = get_test_config("rsv/" \
                                   "missing_cert.ini")
     configuration = ConfigParser.SafeConfigParser()
@@ -306,6 +339,9 @@ class TestRSV(unittest.TestCase):
     """
     
     
+    # need to have rsv installed to get rsv tests working
+    if not utilities.rpm_installed('rsv-core'):
+      return
     config_file = get_test_config("rsv/" \
                                   "invalid_proxy.ini")
     configuration = ConfigParser.SafeConfigParser()
@@ -327,6 +363,9 @@ class TestRSV(unittest.TestCase):
     Test the checkAttributes with a missing proxy cert file
     """
         
+    # need to have rsv installed to get rsv tests working
+    if not utilities.rpm_installed('rsv-core'):
+      return
     config_file = get_test_config("rsv/" \
                                   "missing_proxy.ini")
     configuration = ConfigParser.SafeConfigParser()
@@ -348,6 +387,9 @@ class TestRSV(unittest.TestCase):
     Test the checkAttributes with invalid gratia probes
     """
     
+    # need to have rsv installed to get rsv tests working
+    if not utilities.rpm_installed('rsv-core'):
+      return
     config_file = get_test_config("rsv/" \
                                   "invalid_gratia1.ini")
     configuration = ConfigParser.SafeConfigParser()
@@ -385,6 +427,9 @@ class TestRSV(unittest.TestCase):
     Test the checkAttributes with invalid ce host
     """
     
+    # need to have rsv installed to get rsv tests working
+    if not utilities.rpm_installed('rsv-core'):
+      return
     config_file = get_test_config("rsv/" \
                                   "invalid_ce_host.ini")
     configuration = ConfigParser.SafeConfigParser()
@@ -406,6 +451,9 @@ class TestRSV(unittest.TestCase):
     Test the checkAttributes with invalid gums host
     """
     
+    # need to have rsv installed to get rsv tests working
+    if not utilities.rpm_installed('rsv-core'):
+      return
     config_file = get_test_config("rsv/" \
                                   "invalid_gums_host.ini")
     configuration = ConfigParser.SafeConfigParser()
@@ -427,6 +475,9 @@ class TestRSV(unittest.TestCase):
     Test the checkAttributes with invalid gridftp host
     """
     
+    # need to have rsv installed to get rsv tests working
+    if not utilities.rpm_installed('rsv-core'):
+      return
     config_file = get_test_config("rsv/" \
                                   "invalid_gridftp_host.ini")
     configuration = ConfigParser.SafeConfigParser()
@@ -448,6 +499,9 @@ class TestRSV(unittest.TestCase):
     Test the checkAttributes with invalid srm host
     """
     
+    # need to have rsv installed to get rsv tests working
+    if not utilities.rpm_installed('rsv-core'):
+      return
     config_file = get_test_config("rsv/" \
                                   "invalid_srm_host.ini")
     configuration = ConfigParser.SafeConfigParser()
@@ -469,6 +523,9 @@ class TestRSV(unittest.TestCase):
     Test the checkAttributes function to see if it works on valid settings
     """
 
+    # need to have rsv installed to get rsv tests working
+    if not utilities.rpm_installed('rsv-core'):
+      return
     config_file = get_test_config("rsv/rsv1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -487,6 +544,9 @@ class TestRSV(unittest.TestCase):
     """
     Test the checkAttributes function to see if it works on valid settings
     """
+    # need to have rsv installed to get rsv tests working
+    if not utilities.rpm_installed('rsv-core'):
+      return
     config_file = get_test_config("rsv/rsv2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)

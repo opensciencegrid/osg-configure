@@ -392,11 +392,12 @@ def rpm_installed(rpm_name = None):
   
 def get_test_config(config_file = ''):
   """
-  Try to figure out whether where the config files for unit tests are located, preferring the ones in the local 
-  directory
+  Try to figure out whether where the config files for unit tests are located,
+  preferring the ones in the local directory
   
   Arguments:
-  config_file - name of config file being checked, can be an empty string or set to None
+  config_file - name of config file being checked, can be an empty string or 
+    set to None
   
   Returns:
   the prefixed config file if config_file is non-empty, otherwise just the 

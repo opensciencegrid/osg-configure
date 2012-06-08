@@ -8,6 +8,7 @@ sys.path.insert(0, pathname)
 
 from osg_configure.modules import exceptions
 from osg_configure.configure_modules import cemon
+from  osg_configure.modules import utilities
 from osg_configure.modules.utilities import get_test_config
 
 global_logger = logging.getLogger('test cemon configuration')
@@ -55,6 +56,9 @@ class TestCEMon(unittest.TestCase):
     Test cemon parsing to make sure it picks up ITB defaults
     """
     
+    # need to be on a CE to get CE defaults
+    if not utilities.ce_installed():
+      return
     config_file = get_test_config("cemon/itb_defaults.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -87,6 +91,9 @@ class TestCEMon(unittest.TestCase):
     Test cemon parsing to make sure it picks up production defaults
     """
     
+    # need to be on a CE to get CE defaults
+    if not utilities.ce_installed():
+      return
     config_file = get_test_config("cemon/prod_defaults.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -120,6 +127,9 @@ class TestCEMon(unittest.TestCase):
     when the cemon section is missing
     """
     
+    # need to be on a CE to get CE defaults
+    if not utilities.ce_installed():
+      return
     config_file = get_test_config("cemon/itb_defaults2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -154,6 +164,9 @@ class TestCEMon(unittest.TestCase):
     when the cemon section is missing
     """
     
+    # need to be on a CE to get CE defaults
+    if not utilities.ce_installed():
+      return
     config_file = get_test_config("cemon/prod_defaults2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -408,6 +421,10 @@ class TestCEMon(unittest.TestCase):
     Test the checkAttributes function to see if it oks the itb defaults
     """
         
+    # need to be on a CE to get CE defaults
+    if not utilities.ce_installed():
+      return
+    
     config_file = get_test_config("cemon/itb_defaults.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -427,6 +444,9 @@ class TestCEMon(unittest.TestCase):
     Test the checkAttributes function to see if it oks the production defaults
     """
         
+    # need to be on a CE to get CE defaults
+    if not utilities.ce_installed():
+      return
     config_file = get_test_config("cemon/prod_defaults.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)

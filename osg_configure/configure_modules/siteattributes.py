@@ -125,7 +125,7 @@ class SiteAttributes(BaseConfiguration):
     
     # host_name must be a valid dns name, check this by getting it's ip adddress
     if not validation.valid_domain(self.options['host_name'].value, True):
-      self.log("hostname %s can't be resolved" % self.options['host_name'],
+      self.log("hostname %s can't be resolved" % self.options['host_name'].value,
                option = 'host_name',
                section = self.config_section,
                level = logging.ERROR)

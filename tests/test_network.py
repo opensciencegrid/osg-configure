@@ -51,8 +51,8 @@ class TestNetwork(unittest.TestCase):
     options = settings.options
     variables = {'source_range' : '2048,4096',
                  'port_range' : '9182,16384',
-                 'source_state_file' : './configs/network/check_ok1.ini',
-                 'port_state_file' : './configs/network/check_ok1.ini'}
+                 'source_state_file' : '/etc/redhat-release',
+                 'port_state_file' : '/etc/redhat-release'}
     for var in variables:      
       self.failUnless(options.has_key(var), 
                       "Option %s missing" % var)
@@ -78,7 +78,7 @@ class TestNetwork(unittest.TestCase):
     options = settings.options
     variables = {'source_range' : '2048,4096',
                  'port_range' : '',
-                 'source_state_file' : './configs/network/check_ok2.ini',
+                 'source_state_file' : '/etc/redhat-release',
                  'port_state_file' : ''}
     for var in variables:      
       self.failUnless(options.has_key(var), 
@@ -106,7 +106,7 @@ class TestNetwork(unittest.TestCase):
     variables = {'source_range' : '',
                  'port_range' : '9182,16384',
                  'source_state_file' : '',
-                 'port_state_file' : './configs/network/check_ok3.ini'}
+                 'port_state_file' : '/etc/redhat-release'}
     for var in variables:      
       self.failUnless(options.has_key(var), 
                       "Option %s missing" % var)

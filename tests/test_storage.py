@@ -27,6 +27,10 @@ class TestStorage(unittest.TestCase):
     Test storage parsing
     """
     
+    # StorageConfiguration is not enabled on non-ce installs
+    if not utilities.ce_installed():
+      return
+
     config_file = get_test_config("storage/storage1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -63,6 +67,9 @@ class TestStorage(unittest.TestCase):
     Test storage parsing with negative values
     """
     
+    # StorageConfiguration is not enabled on non-ce installs
+    if not utilities.ce_installed():
+      return
     config_file = get_test_config("storage/storage2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -99,6 +106,9 @@ class TestStorage(unittest.TestCase):
     """
         
 
+    # StorageConfiguration is not enabled on non-ce installs
+    if not utilities.ce_installed():
+      return
     mandatory = ['se_available',
                  'app_dir',
                  'worker_node_temp',

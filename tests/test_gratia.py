@@ -6,6 +6,7 @@ import os, imp, sys, unittest, ConfigParser, logging
 pathname = os.path.realpath('../')
 sys.path.insert(0, pathname)
 
+from osg_configure.modules import utilities
 from osg_configure.modules import exceptions
 from osg_configure.configure_modules import gratia
 from osg_configure.modules.utilities import get_test_config
@@ -55,6 +56,10 @@ class TestGratia(unittest.TestCase):
     Make sure gratia picks up the itb defaults 
     """
     
+    # need to be on a CE to get CE defaults
+    if not utilities.ce_installed():
+      return
+
     config_file = get_test_config("gratia/itb_default.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -84,6 +89,10 @@ class TestGratia(unittest.TestCase):
     Make sure gratia picks up the itb defaults 
     """
     
+    # need to be on a CE to get CE defaults
+    if not utilities.ce_installed():
+      return
+
     config_file = get_test_config("gratia/prod_default.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -113,6 +122,9 @@ class TestGratia(unittest.TestCase):
     section is missing 
     """
     
+    # need to be on a CE to get CE defaults
+    if not utilities.ce_installed():
+      return
     config_file = get_test_config("gratia/itb_default2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -165,6 +177,9 @@ class TestGratia(unittest.TestCase):
     section is missing 
     """
     
+    # need to be on a CE to get CE defaults
+    if not utilities.ce_installed():
+      return
     config_file = get_test_config("gratia/prod_default2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)

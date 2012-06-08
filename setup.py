@@ -23,7 +23,7 @@ def get_data_files():
       fileList.append(os.path.join(root,name))  
   temp = filter(lambda x: '.svn' not in x, fileList)
   temp = filter(lambda x: not os.path.isdir(x), temp)
-  temp = map(lambda x: (x.replace('tests', '/usr/share/osg-configure', 1), x),
+  temp = map(lambda x: (x.replace('tests', '/usr/share/osg-configure/tests', 1), x),
              temp)
   file_mappings = {}
   for (dest, source) in temp:

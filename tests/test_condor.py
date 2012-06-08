@@ -227,8 +227,8 @@ class TestCondor(unittest.TestCase):
     """
     
 
-    for filename in ["./configs/condor/missing_config1.ini", 
-                     "./configs/condor/missing_config2.ini"]:
+    for filename in [get_test_config("condor/missing_config1.ini"),
+                     get_test_config("condor/missing_config2.ini")]:
       config_file = os.path.abspath(filename)
       configuration = ConfigParser.SafeConfigParser()
       configuration.read(config_file)

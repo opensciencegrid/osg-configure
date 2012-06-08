@@ -127,8 +127,8 @@ class TestConfigFile(unittest.TestCase):
       """
       Test the get option location method in configfile module
       """
-      config_directory = './configs/config-test1.d'
-      location = './configs/config-test1.d/00-test.ini'
+      config_directory = get_test_config('config-test1.d')
+      location = get_test_config('config-test1.d/00-test.ini')
       opt_location = configfile.get_option_location('first_opt', 
                                                     'Common',
                                                     config_directory = config_directory)
@@ -137,7 +137,7 @@ class TestConfigFile(unittest.TestCase):
                            "Didn't get the correct location for first_opt:" +
                            "got %s expected %s" % (opt_location, location))
       
-      location = './configs/config-test1.d/10-test.ini'
+      location = get_test_config('config-test1.d/10-test.ini')
       opt_location = configfile.get_option_location('second_opt', 
                                                     'Common',
                                                     config_directory = config_directory)
@@ -160,22 +160,22 @@ class TestConfigFile(unittest.TestCase):
       Test the list of files that the module things it's reading and the order
       that the files are read in
       """
-      config_directory = './configs/config-test1.d'
-      file_order = ['./configs/config-test1.d/00-test.ini',
-                    './configs/config-test1.d/10-test.ini',
-                    './configs/config-test1.d/A-test.ini',
-                    './configs/config-test1.d/atest.ini']
+      config_directory = get_test_config('config-test1.d')
+      file_order = [get_test_config('config-test1.d/00-test.ini'),
+                    get_test_config('config-test1.d/10-test.ini'),
+                    get_test_config('config-test1.d/A-test.ini'),
+                    get_test_config('config-test1.d/atest.ini')]
       file_list = configfile.get_file_list(config_directory = config_directory) 
       self.failUnlessEqual(file_order,
                            file_list, 
                            "Didn't get the files in the correct order: " +
                            " %s\n instead of\n %s" % (file_list, file_order))
       
-      config_directory = './configs/config-test2.d'
-      file_order = ['./configs/config-test2.d/00-test.ini',
-                    './configs/config-test2.d/10-test.ini',
-                    './configs/config-test2.d/A-test.ini',
-                    './configs/config-test2.d/atest.ini']
+      config_directory = get_test_config('config-test2.d')
+      file_order = [get_test_config('config-test2.d/00-test.ini'),
+                    get_test_config('config-test2.d/10-test.ini'),
+                    get_test_config('config-test2.d/A-test.ini'),
+                    get_test_config('config-test2.d/atest.ini')]
       file_list = configfile.get_file_list(config_directory = config_directory) 
       self.failUnlessEqual(file_order,
                            file_list, 
@@ -187,16 +187,16 @@ class TestConfigFile(unittest.TestCase):
       Test configurations to make sure that they are properly understood as being for a CE
       """
       
-      config_dirs = ['./configs/config-ce-pbs.d', 
-                     './configs/config-ce-condor.d',
-                     './configs/config-ce-lsf.d',
-                     './configs/config-ce-sge.d']
+      config_dirs = [get_test_config('config-ce-pbs.d'), 
+                     get_test_config('config-ce-condor.d'),
+                     get_test_config('config-ce-lsf.d'),
+                     get_test_config('config-ce-sge.d')]
       for dir in config_dirs:
         config = configfile.read_config_files(config_directory = dir)
         self.failUnless(configfile.jobmanager_enabled(config), 
                         "%s has an enabled jobmanager" % dir)
 
-      config = configfile.read_config_files(config_directory = './configs/config-nonce.d')
+      config = configfile.read_config_files(config_directory = get_test_config('config-nonce.d'))
       self.failIf(configfile.jobmanager_enabled(config), 
                   "jobmanager_enabled returned true on a config without an enabled jobmanager")
           
