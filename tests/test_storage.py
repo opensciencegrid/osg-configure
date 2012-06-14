@@ -117,7 +117,6 @@ class TestStorage(unittest.TestCase):
       return
     mandatory = ['se_available',
                  'app_dir',
-                 'worker_node_temp',
                  'data_dir']
     for option in mandatory:
       config_file = get_test_config("storage/storage1.ini")
