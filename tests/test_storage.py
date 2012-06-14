@@ -11,10 +11,16 @@ from osg_configure.modules import exceptions
 from osg_configure.configure_modules import storage
 from osg_configure.modules.utilities import get_test_config
 
-global_logger = logging.getLogger('test storage configuration')
-console = logging.StreamHandler()
-console.setLevel(logging.ERROR)
-global_logger.addHandler(console)
+global_logger = logging.getLogger(__name__)
+if sys.version_info[0] >= 2 and sys.version_info[1] > 6:
+  global_logger.addHandler(logging.NullHandler())
+else:
+  # NullHandler is only in python 2.7 and above
+  class NullHandler(logging.Handler):
+    def emit(self, record):
+        pass
+            
+  global_logger.addHandler(NullHandler()))
 
 
 class TestStorage(unittest.TestCase):
@@ -126,4 +132,7 @@ class TestStorage(unittest.TestCase):
 
     
 if __name__ == '__main__':
-    unittest.main()
+  console = logging.StreamHandler()
+  console.setLevel(logging.ERROR)
+  global_logger.addHandler(console)  
+  unittest.main()

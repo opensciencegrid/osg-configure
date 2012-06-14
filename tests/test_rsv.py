@@ -11,9 +11,16 @@ from osg_configure.modules import exceptions
 from osg_configure.configure_modules import rsv
 from osg_configure.modules.utilities import get_test_config
 
-global_logger = logging.getLogger('test_rsv configuration')
-console = logging.StreamHandler()
-console.setLevel(logging.ERROR)
+global_logger = logging.getLogger(__name__)
+if sys.version_info[0] >= 2 and sys.version_info[1] > 6:
+  global_logger.addHandler(logging.NullHandler())
+else:
+  # NullHandler is only in python 2.7 and above
+  class NullHandler(logging.Handler):
+    def emit(self, record):
+        pass
+            
+  global_logger.addHandler(NullHandler())
 global_logger.addHandler(console)
 
 if os.path.exists('./configs/rsv/meta'):
@@ -563,4 +570,7 @@ class TestRSV(unittest.TestCase):
                     "Correct configuration incorrectly flagged as incorrect")
 
 if __name__ == '__main__':
-    unittest.main()
+  console = logging.StreamHandler()
+  console.setLevel(logging.ERROR)
+  global_logger.addHandler(console)  
+  unittest.main()
