@@ -70,7 +70,7 @@ class NetworkConfiguration(BaseConfiguration):
         continue
       
       if not validation.valid_location(self.options[name].value):
-        self.log("Invalid location: %s" % self.options[name].value,
+        self.log("File is not present: %s" % self.options[name].value,
                  option = name,
                  section = self.config_section,
                  level = logging.WARNING)
