@@ -21,7 +21,6 @@ else:
         pass
             
   global_logger.addHandler(NullHandler())
-global_logger.addHandler(console)
 
 if os.path.exists('./configs/rsv/meta'):
   RSV_META_DIR = './configs/rsv/meta'

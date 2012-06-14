@@ -126,43 +126,6 @@ class TestNetwork(unittest.TestCase):
                     "Flagged blank file as invalid")
   
 
-  def testMissingStateFile(self):
-    """
-    Test checks for missing state files
-    """
-    
-    config_file = get_test_config("network/missing_source_state.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-
-    settings = network.NetworkConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
-
-    self.assertFalse(settings.checkAttributes({}),
-                     "In %s, missing source state file " % config_file +
-                     "should have been flagged")
-
-
-    config_file = get_test_config("network/missing_port_state.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-
-    settings = network.NetworkConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
-
-    self.assertFalse(settings.checkAttributes({}),
-                     "In %s, missing source state file " % config_file +
-                     "should have been flagged")
-    
-
   def testMissingRange(self):
     """
     Test checks for missing port ranges when state file is specified

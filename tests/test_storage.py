@@ -20,7 +20,7 @@ else:
     def emit(self, record):
         pass
             
-  global_logger.addHandler(NullHandler()))
+  global_logger.addHandler(NullHandler())
 
 
 class TestStorage(unittest.TestCase):
