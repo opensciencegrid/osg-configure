@@ -528,7 +528,7 @@ def main():
         
   # setup logging
   try:
-    logger = logging.getLogger('osg-configure')
+    logger = logging.getLogger(__name__)
     formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
     handler = logging.FileHandler(LOG_FILE, 'a')
     logger.setLevel(log_level)
