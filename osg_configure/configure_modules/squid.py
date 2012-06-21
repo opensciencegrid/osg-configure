@@ -87,7 +87,7 @@ class SquidConfiguration(BaseConfiguration):
 
     if len(self.options['location'].value.split(':')) != 2:
       self.log("Bad host specification, got %s expected hostname:port " \
-               "(e.g. localhost:3128" % self.options['location'].value,
+               "(e.g. localhost:3128)" % self.options['location'].value,
                section = self.config_section,
                option = 'location',
                level = logging.ERROR)
