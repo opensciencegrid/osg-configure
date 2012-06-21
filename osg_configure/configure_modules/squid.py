@@ -92,6 +92,7 @@ class SquidConfiguration(BaseConfiguration):
                option = 'location',
                level = logging.ERROR)
       attributes_ok = False
+      return attributes_ok
     (hostname, port) = self.options['location'].value.split(':')
     if not validation.valid_domain(hostname, True):
       self.log("Invalid hostname for squid location: %s" % \
