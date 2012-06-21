@@ -226,6 +226,20 @@ class TestSquid(unittest.TestCase):
     self.failIf(settings.checkAttributes(attributes), 
                 "Did not notice invalid host")
 
+    config_file = get_test_config("squid/squid_bad_host2.ini")
+    configuration = ConfigParser.SafeConfigParser()
+    configuration.read(config_file)
+
+    settings = squid.SquidConfiguration(logger=global_logger)
+    try:
+      settings.parseConfiguration(configuration)
+    except Exception, e:
+      self.fail("Received exception while parsing configuration")
+
+    attributes = settings.getAttributes()
+    self.failIf(settings.checkAttributes(attributes), 
+                "Did not notice invalid host")
+
   def testBadPort(self):
     """
     Test the checkAttributes function when port for the squid proxy is 

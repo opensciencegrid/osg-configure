@@ -85,6 +85,13 @@ class SquidConfiguration(BaseConfiguration):
       self.log('SquidConfiguration.checkAttributes completed')
       return attributes_ok
 
+    if len(self.options['location'].value.split(':')) != 2:
+      self.log("Bad host specification, got %s expected hostname:port " \
+               "(e.g. localhost:3128" % self.options['location'].value,
+               section = self.config_section,
+               option = 'location',
+               level = logging.ERROR)
+      attributes_ok = False
     (hostname, port) = self.options['location'].value.split(':')
     if not validation.valid_domain(hostname, True):
       self.log("Invalid hostname for squid location: %s" % \
