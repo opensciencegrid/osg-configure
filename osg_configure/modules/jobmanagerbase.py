@@ -67,10 +67,12 @@ class JobManagerConfiguration(BaseConfiguration):
       if utilities.atomic_write(filename, buffer):
         return True
       else:
-        self.log('Error writing to enabling accept_limited',
+        self.log('Error writing to %s enabling accept_limited' % filename,
                  level = logging.ERROR)
         return False
-
+    # accept limited already enabled, do nothing
+    return True
+  
   def disable_accept_limited(self, filename):
     """
     Update the globus jobmanager configuration so that it does not allow 
