@@ -39,6 +39,8 @@ class StorageConfiguration(BaseConfiguration):
                                         mapping = 'OSG_APP'),
                     'data_dir' : 
                       configfile.Option(name = 'data_dir',
+                                        default_value = 'UNAVAILABLE',
+                                        required = configfile.Option.OPTIONAL,
                                         mapping = 'OSG_DATA'),
                     'worker_node_temp' : 
                       configfile.Option(name = 'worker_node_temp',
