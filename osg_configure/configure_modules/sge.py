@@ -16,7 +16,7 @@ __all__ = ['SGEConfiguration']
 class SGEConfiguration(JobManagerConfiguration):
   """Class to handle attributes related to sge job manager configuration"""
 
-  SGE_CONFIG_FILE = '/etc/grid-services/available/jobmanager-sge'
+  SGE_CONFIG_FILE = '/etc/grid-services/available/jobmanager-sge-seg'
   GRAM_CONFIG_FILE = '/etc/globus/globus-sge.conf'
   
   def __init__(self, *args, **kwargs):
@@ -247,7 +247,7 @@ class SGEConfiguration(JobManagerConfiguration):
     Returns True if successful, False otherwise
     """    
     buffer = open(SGEConfiguration.GRAM_CONFIG_FILE).read()
-    bin_location = os.path.join(self.options['sge_location'].value,
+    bin_location = os.path.join(self.options['sge_root'].value,
                                 'bin',
                                 'qsub')
     if validation.valid_file(bin_location):
@@ -257,7 +257,7 @@ class SGEConfiguration(JobManagerConfiguration):
                                     1)
       if count == 0:
         buffer += "qsub=\"%s\"\n" % bin_location
-    bin_location = os.path.join(self.options['sge_location'].value,
+    bin_location = os.path.join(self.options['sge_root'].value,
                                 'bin',
                                 'qstat')
     if validation.valid_file(bin_location):
@@ -267,7 +267,7 @@ class SGEConfiguration(JobManagerConfiguration):
                                     1)
       if count == 0:
         buffer += "qstat=\"%s\"\n" % bin_location
-    bin_location = os.path.join(self.options['sge_location'].value,
+    bin_location = os.path.join(self.options['sge_root'].value,
                                 'bin',
                                 'qdel')
     if validation.valid_file(bin_location):
@@ -339,3 +339,4 @@ class SGEConfiguration(JobManagerConfiguration):
         
     if not utilities.atomic_write(SGEConfiguration.GRAM_CONFIG_FILE, buffer):
       return False
+    return True

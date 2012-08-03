@@ -262,3 +262,4 @@ class LSFConfiguration(JobManagerConfiguration):
     
     if not utilities.atomic_write(LSFConfiguration.GRAM_CONFIG_FILE, buffer):
       return False
+    return True
