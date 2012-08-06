@@ -278,6 +278,16 @@ class SGEConfiguration(JobManagerConfiguration):
       if count == 0:
         buffer += "qdel=\"%s\"\n" % bin_location 
     
+    bin_location = os.path.join(self.options['sge_root'].value,
+                                'bin',
+                                'qconf')
+    if validation.valid_file(bin_location):
+      re_obj = re.compile('^qconf=.*$', re.MULTILINE)
+      (buffer, count) = re_obj.subn("qconf=\"%s\"" % bin_location,
+                                    buffer,
+                                    1)
+      if count == 0:
+        buffer += "qconf=\"%s\"\n" % bin_location 
     new_setting = "sge_cell=\"%s\"" % self.options['sge_cell'].value
     re_obj = re.compile('^sge_cell=.*$', re.MULTILINE)
     (buffer, count) = re_obj.subn(new_setting, buffer, 1)
