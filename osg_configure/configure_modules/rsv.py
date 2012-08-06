@@ -35,7 +35,7 @@ class RsvConfiguration(BaseConfiguration):
                                         required = configfile.Option.OPTIONAL),
                     'gridftp_hosts' : 
                       configfile.Option(name = 'gridftp_hosts',
-                                        default_value = '',
+                                        default_value = None,
                                         required = configfile.Option.OPTIONAL),
                     'gridftp_dir' : 
                       configfile.Option(name = 'gridftp_dir',

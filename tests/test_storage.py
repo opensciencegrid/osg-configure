@@ -66,6 +66,7 @@ class TestStorage(unittest.TestCase):
                            "expected %s" % (var, 
                                             attributes[var], 
                                             variables[var]))
+    self.assertTrue(settings.parseConfiguration([]))
     
 
   def testParsing2(self):
@@ -105,7 +106,46 @@ class TestStorage(unittest.TestCase):
                            "expected %s" % (var,                                             
                                             attributes[var],
                                             variables[var]))
+    self.assertTrue(settings.parseConfiguration([]))
+
+  def testParsing2(self):
+    """
+    Test storage parsing with negative values
+    """
     
+    # StorageConfiguration is not enabled on non-ce installs
+    if not utilities.ce_installed():
+      return
+    config_file = get_test_config("storage/storage2.ini")
+    configuration = ConfigParser.SafeConfigParser()
+    configuration.read(config_file)
+
+    settings = storage.StorageConfiguration(logger=global_logger)
+    try:
+      settings.parseConfiguration(configuration)
+    except Exception, e:
+      self.fail("Received exception while parsing configuration: %s" % e)
+ 
+
+    attributes = settings.getAttributes()
+    variables = {'OSG_STORAGE_ELEMENT' : 'False',
+                 'OSG_DEFAULT_SE' : 'test.domain.org',
+                 'OSG_GRID' : './configs/storage1',
+                 'OSG_APP' : './configs/storage2',
+                 'OSG_DATA' : 'UNAVAILABLE',
+                 'OSG_SITE_READ' : './configs/storage5',
+                 'OSG_SITE_WRITE' : './configs/storage6'}
+    for var in variables:      
+      self.failUnless(attributes.has_key(var), 
+                      "Attribute %s missing" % var)
+      self.failUnlessEqual(attributes[var], 
+                           variables[var], 
+                           "Wrong value obtained for %s, got %s but " \
+                           "expected %s" % (var,                                             
+                                            attributes[var],
+                                            variables[var]))
+    self.assertTrue(settings.parseConfiguration([]))
+                
   def testMissingAttribute(self):
     """
     Test the checkAttributes function 
