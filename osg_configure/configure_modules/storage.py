@@ -111,7 +111,7 @@ class StorageConfiguration(BaseConfiguration):
                "fail to run",
                section = self.config_section,
                option = 'worker_node_temp',
-               level = logging.WARNING)    
+               level = logging.WARNING)
     self.log('StorageConfiguration.checkAttributes completed')    
     return attributes_ok 
 

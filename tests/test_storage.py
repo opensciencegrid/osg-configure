@@ -7,6 +7,7 @@ pathname = os.path.realpath('../')
 sys.path.insert(0, pathname)
 
 from osg_configure.modules import utilities
+from osg_configure.modules import validation
 from osg_configure.modules import exceptions
 from osg_configure.configure_modules import storage
 from osg_configure.modules.utilities import get_test_config
@@ -52,7 +53,7 @@ class TestStorage(unittest.TestCase):
     variables = {'OSG_STORAGE_ELEMENT' : 'True',
                  'OSG_DEFAULT_SE' : 'test.domain.org',
                  'OSG_GRID' : '/tmp',
-                 'OSG_APP' : '/etc',
+                 'OSG_APP' : '/tmp',
                  'OSG_DATA' : '/var',
                  'OSG_WN_TMP' : '/usr',
                  'OSG_SITE_READ' : '/bin',
@@ -66,12 +67,20 @@ class TestStorage(unittest.TestCase):
                            "expected %s" % (var, 
                                             attributes[var], 
                                             variables[var]))
-    self.assertTrue(settings.parseConfiguration([]))
-    
+    if not validation.valid_directory('/tmp/etc'):
+      # handle cases where this is not run under osg test framework
+      os.mkdir('/tmp/etc')
+      os.chmod('/tmp/etc', 0777)      
+      self.assertTrue(settings.checkAttributes(attributes))
+      os.rmdir('/tmp/etc')
+    else:
+      self.assertTrue(settings.checkAttributes(attributes))
+      
+
 
   def testParsing2(self):
     """
-    Test storage parsing with negative values
+    Test storage parsing
     """
     
     # StorageConfiguration is not enabled on non-ce installs
@@ -92,7 +101,7 @@ class TestStorage(unittest.TestCase):
     variables = {'OSG_STORAGE_ELEMENT' : 'False',
                  'OSG_DEFAULT_SE' : 'test.domain.org',
                  'OSG_GRID' : '/usr',
-                 'OSG_APP' : '/etc',
+                 'OSG_APP' : '/tmp',
                  'OSG_DATA' : '/usr/bin',
                  'OSG_WN_TMP' : '/usr/sbin',
                  'OSG_SITE_READ' : '/tmp',
@@ -106,11 +115,18 @@ class TestStorage(unittest.TestCase):
                            "expected %s" % (var,                                             
                                             attributes[var],
                                             variables[var]))
-    self.assertTrue(settings.parseConfiguration([]))
+    if not validation.valid_directory('/tmp/etc'):
+      # handle cases where this is not run under osg test framework
+      os.mkdir('/tmp/etc')
+      os.chmod('/tmp/etc', 0777)      
+      self.assertTrue(settings.checkAttributes(attributes))
+      os.rmdir('/tmp/etc')
+    else:
+      self.assertTrue(settings.checkAttributes(attributes))
 
   def testParsing3(self):
     """
-    Test storage parsing with negative values
+    Test storage parsing
     """
     
     # StorageConfiguration is not enabled on non-ce installs
@@ -144,7 +160,7 @@ class TestStorage(unittest.TestCase):
                            "expected %s" % (var,                                             
                                             attributes[var],
                                             variables[var]))
-    self.assertTrue(settings.parseConfiguration([]))
+    self.assertTrue(settings.checkAttributes(attributes))
                 
   def testMissingAttribute(self):
     """
@@ -156,8 +172,7 @@ class TestStorage(unittest.TestCase):
     if not utilities.ce_installed():
       return
     mandatory = ['se_available',
-                 'app_dir',
-                 'data_dir']
+                 'app_dir']
     for option in mandatory:
       config_file = get_test_config("storage/storage1.ini")
       configuration = ConfigParser.SafeConfigParser()
