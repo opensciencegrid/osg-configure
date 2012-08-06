@@ -160,7 +160,14 @@ class TestStorage(unittest.TestCase):
                            "expected %s" % (var,                                             
                                             attributes[var],
                                             variables[var]))
-    self.assertTrue(settings.checkAttributes(attributes))
+    if not validation.valid_directory('/tmp/etc'):
+      # handle cases where this is not run under osg test framework
+      os.mkdir('/tmp/etc')
+      os.chmod('/tmp/etc', 0777)      
+      self.assertTrue(settings.checkAttributes(attributes))
+      os.rmdir('/tmp/etc')
+    else:
+      self.assertTrue(settings.checkAttributes(attributes))
                 
   def testMissingAttribute(self):
     """
