@@ -35,7 +35,7 @@ class RsvConfiguration(BaseConfiguration):
                                         required = configfile.Option.OPTIONAL),
                     'gridftp_hosts' : 
                       configfile.Option(name = 'gridftp_hosts',
-                                        default_value = None,
+                                        default_value = '',
                                         required = configfile.Option.OPTIONAL),
                     'gridftp_dir' : 
                       configfile.Option(name = 'gridftp_dir',
@@ -164,12 +164,19 @@ class RsvConfiguration(BaseConfiguration):
     self.__srm_hosts = split_list(self.options['srm_hosts'].value)
 
     # If the gridftp hosts are not defined then they default to the CE hosts
-    if self.options['gridftp_hosts'].value is not None:
-      self.__gridftp_hosts = split_list(self.options['gridftp_hosts'].value)
+    if self.options['gridftp_hosts'].value == '':
+      # check to see if the setting is in the config file
+      if configuration.has_option(self.config_section, 'gridftp_hosts'):
+        # present and set to default so we don't want gridftp tests
+        self.__gridftp_hosts = []
+      else:
+        # option is commented out, use ce_hosts setting
+        self.__gridftp_hosts = self.__ce_hosts
     else:
-      self.__gridftp_hosts = self.__ce_hosts
+      self.__gridftp_hosts = split_list(self.options['gridftp_hosts'].value)
 
-    if self.options['gratia_probes'].value is not None:
+    
+    if self.options['gratia_probes'].value != '':
       self.__gratia_probes_2d = self.split_2d_list(self.options['gratia_probes'].value)
 
     self.log('RsvConfiguration.parseConfiguration completed')    
