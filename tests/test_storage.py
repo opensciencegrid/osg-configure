@@ -51,12 +51,12 @@ class TestStorage(unittest.TestCase):
     attributes = settings.getAttributes()
     variables = {'OSG_STORAGE_ELEMENT' : 'True',
                  'OSG_DEFAULT_SE' : 'test.domain.org',
-                 'OSG_GRID' : './configs/storage1',
-                 'OSG_APP' : './configs/storage2',
-                 'OSG_DATA' : './configs/storage3',
-                 'OSG_WN_TMP' : './configs/storage4',
-                 'OSG_SITE_READ' : './configs/storage5',
-                 'OSG_SITE_WRITE' : './configs/storage6'}
+                 'OSG_GRID' : '/tmp',
+                 'OSG_APP' : '/etc',
+                 'OSG_DATA' : '/var',
+                 'OSG_WN_TMP' : '/usr',
+                 'OSG_SITE_READ' : '/bin',
+                 'OSG_SITE_WRITE' : '/usr/bin'}
     for var in variables:      
       self.failUnless(attributes.has_key(var), 
                       "Attribute %s missing" % var)
@@ -91,12 +91,12 @@ class TestStorage(unittest.TestCase):
     attributes = settings.getAttributes()
     variables = {'OSG_STORAGE_ELEMENT' : 'False',
                  'OSG_DEFAULT_SE' : 'test.domain.org',
-                 'OSG_GRID' : './configs/storage1',
-                 'OSG_APP' : './configs/storage2',
-                 'OSG_DATA' : './configs/storage3',
-                 'OSG_WN_TMP' : './configs/storage4',
-                 'OSG_SITE_READ' : './configs/storage5',
-                 'OSG_SITE_WRITE' : './configs/storage6'}
+                 'OSG_GRID' : '/usr',
+                 'OSG_APP' : '/etc',
+                 'OSG_DATA' : '/usr/bin',
+                 'OSG_WN_TMP' : '/usr/sbin',
+                 'OSG_SITE_READ' : '/tmp',
+                 'OSG_SITE_WRITE' : '/var'}
     for var in variables:      
       self.failUnless(attributes.has_key(var), 
                       "Attribute %s missing" % var)
@@ -108,7 +108,7 @@ class TestStorage(unittest.TestCase):
                                             variables[var]))
     self.assertTrue(settings.parseConfiguration([]))
 
-  def testParsing2(self):
+  def testParsing3(self):
     """
     Test storage parsing with negative values
     """
@@ -116,7 +116,7 @@ class TestStorage(unittest.TestCase):
     # StorageConfiguration is not enabled on non-ce installs
     if not utilities.ce_installed():
       return
-    config_file = get_test_config("storage/storage2.ini")
+    config_file = get_test_config("storage/storage3.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -130,11 +130,11 @@ class TestStorage(unittest.TestCase):
     attributes = settings.getAttributes()
     variables = {'OSG_STORAGE_ELEMENT' : 'False',
                  'OSG_DEFAULT_SE' : 'test.domain.org',
-                 'OSG_GRID' : './configs/storage1',
-                 'OSG_APP' : './configs/storage2',
+                 'OSG_GRID' : '/etc',
+                 'OSG_APP' : '/tmp',
                  'OSG_DATA' : 'UNAVAILABLE',
-                 'OSG_SITE_READ' : './configs/storage5',
-                 'OSG_SITE_WRITE' : './configs/storage6'}
+                 'OSG_SITE_READ' : '/var',
+                 'OSG_SITE_WRITE' : '/usr'}
     for var in variables:      
       self.failUnless(attributes.has_key(var), 
                       "Attribute %s missing" % var)
