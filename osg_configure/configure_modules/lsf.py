@@ -172,9 +172,9 @@ class LSFConfiguration(JobManagerConfiguration):
         return False
 
     if self.options['seg_enabled'].value:
-      self.enable_seg('pbs', PBSConfiguration.PBS_CONFIG_FILE)
+      self.enable_seg('lsf', LSFConfiguration.PBS_CONFIG_FILE)
     else:
-      self.disable_seg('pbs', PBSConfiguration.PBS_CONFIG_FILE)
+      self.disable_seg('lsf', LSFConfiguration.PBS_CONFIG_FILE)
     
     if not self.setupGramConfig():
       self.log('Error writing to ' + LSFConfiguration.GRAM_CONFIG_FILE,
