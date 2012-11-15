@@ -384,6 +384,11 @@ class CemonConfiguration(BaseConfiguration):
       # create empty gridmap file
       open(gridmap_location,'w').close()
       os.chmod(gridmap_location, 0644)
+    else:
+      perms = stat.S_IMODE(os.stat(gridmap_location).st_mode)
+      if not (perms & (stat.S_IROTH & stat.S_IXOTH)):
+        os.chmod(gridmap_location, perms | stat.S_IROTH | stat.S_IXOTH)
+      
       
   @classmethod
   def __check_vomsdir(cls):
