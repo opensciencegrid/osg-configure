@@ -2,7 +2,7 @@
 
 """ Module to handle attributes and configuration for misc. sevices """
 
-import os, sys, types, re, logging
+import re, logging
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
