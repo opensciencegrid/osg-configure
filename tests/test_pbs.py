@@ -18,7 +18,7 @@ else:
   # NullHandler is only in python 2.7 and above
   class NullHandler(logging.Handler):
     def emit(self, record):
-        pass
+      pass
             
   global_logger.addHandler(NullHandler())
 

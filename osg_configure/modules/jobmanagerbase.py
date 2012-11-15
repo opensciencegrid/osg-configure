@@ -5,7 +5,6 @@
 import re, logging
 
 from osg_configure.modules.configurationbase import BaseConfiguration
-from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
 from osg_configure.modules import validation
 
@@ -61,10 +60,10 @@ class JobManagerConfiguration(BaseConfiguration):
     if filename is None:
       return False
 
-    buffer = open(filename).read()
-    if 'accept_limited' not in buffer:
-      buffer = 'accept_limited,' + buffer
-      if utilities.atomic_write(filename, buffer):
+    contents = open(filename).read()
+    if 'accept_limited' not in contents:
+      contents = 'accept_limited,' + contents
+      if utilities.atomic_write(filename, contents):
         return True
       else:
         self.log('Error writing to %s enabling accept_limited' % filename,
@@ -84,19 +83,19 @@ class JobManagerConfiguration(BaseConfiguration):
     if filename is None:
       return False
 
-    buffer = open(filename).read()
-    if buffer.startswith('accept_limited,'):
-      buffer = buffer.replace('accept_limited,','',1)
-      if utilities.atomic_write(filename, buffer):
+    contents = open(filename).read()
+    if contents.startswith('accept_limited,'):
+      contents = contents.replace('accept_limited,','',1)
+      if utilities.atomic_write(filename, contents):
         return True
       else:
         self.log('Error disabling accept_limited',
                  level = logging.ERROR)
         return False
       
-    if ',accept_limited' in buffer:
-      buffer = buffer.replace(',accept_limited','',1)
-      if utilities.atomic_write(filename, buffer):
+    if ',accept_limited' in contents:
+      contents = contents.replace(',accept_limited','',1)
+      if utilities.atomic_write(filename, contents):
         return True
       else:
         self.log('Error disabling accept_limited',
@@ -119,10 +118,10 @@ class JobManagerConfiguration(BaseConfiguration):
     if seg_module not in self.lrms:
       return False
     
-    buffer = open(filename).read()
-    if '-seg-module' not in buffer:
-      buffer = buffer + '-seg-module ' + seg_module
-      if utilities.atomic_write(filename, buffer):
+    contents = open(filename).read()
+    if '-seg-module' not in contents:
+      contents = contents + '-seg-module ' + seg_module
+      if utilities.atomic_write(filename, contents):
         return True
       else:
         self.log('Error enabling SEG in ' + filename,
@@ -147,10 +146,10 @@ class JobManagerConfiguration(BaseConfiguration):
     if seg_module not in self.lrms:
       return False
 
-    buffer = open(filename).read()
-    if '-seg-module' in buffer:
-      buffer = re.sub('-seg-module\s+.*?\s', '', buffer, 1)
-      if utilities.atomic_write(filename, buffer):
+    contents = open(filename).read()
+    if '-seg-module' in contents:
+      contents = re.sub('-seg-module\s+.*?\s', '', contents, 1)
+      if utilities.atomic_write(filename, contents):
         return True
       else:
         self.log('Error disabling SEG in ' + filename,
@@ -184,6 +183,16 @@ class JobManagerConfiguration(BaseConfiguration):
                  "jobmanager",
                  level = logging.ERROR)
         return False
+      result = utilities.run_script(['/usr/sbin/globus-gatekeeper-admin',
+                                     '-e',
+                                     'jobmanager-fork-poll',
+                                     '-n',
+                                     'jobmanager-fork'])    
+      if not result:
+        self.log("Could not set the jobmanager-fork-poll to the default " +
+                 "jobmanager",
+                 level = logging.ERROR)
+        return False
     elif default == 'managed-fork':
       self.log("Setting managed fork manager to be the default jobmanager")
       result = utilities.run_script(['/usr/sbin/globus-gatekeeper-admin',
@@ -191,6 +200,16 @@ class JobManagerConfiguration(BaseConfiguration):
                                      'jobmanager-managedfork',
                                      '-n',
                                      'jobmanager'])    
+      if not result:
+        self.log("Could not set the jobmanager-managedfork to the default " +
+                 "jobmanager",
+                 level = logging.ERROR)
+        return False
+      result = utilities.run_script(['/usr/sbin/globus-gatekeeper-admin',
+                                     '-e',
+                                     'jobmanager-managedfork',
+                                     '-n',
+                                     'jobmanager-fork'])    
       if not result:
         self.log("Could not set the jobmanager-managedfork to the default " +
                  "jobmanager",

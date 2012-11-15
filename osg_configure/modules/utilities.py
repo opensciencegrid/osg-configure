@@ -2,10 +2,9 @@
 
 """ Module to hold various utility functions """
 
-import re, socket, os, types, pwd, sys, glob, ConfigParser, stat
+import re, socket, os, types, sys, glob, stat
 import tempfile, subprocess, rpm
 
-from osg_configure.modules import exceptions
 from osg_configure.modules import validation
 
 __all__ = ['using_prima',
@@ -325,11 +324,11 @@ def atomic_write(filename = None, contents = None, **kwargs):
     (config_fd, temp_name) = tempfile.mkstemp(dir=os.path.dirname(filename))
     mode = kwargs.get('mode', None)
     if mode is None:
-        if validation.valid_file(filename):
-          mode = stat.S_IMODE(os.stat(filename).st_mode)
-        else:
-          # give file 0644 permissions by default 
-          mode = 420
+      if validation.valid_file(filename):
+        mode = stat.S_IMODE(os.stat(filename).st_mode)
+      else:
+        # give file 0644 permissions by default 
+        mode = 420
     try:
       try:
         os.write(config_fd, contents)
@@ -343,7 +342,7 @@ def atomic_write(filename = None, contents = None, **kwargs):
       raise 
     os.rename(temp_name, filename)
     os.chmod(filename, mode)
-  except Exception, e:
+  except Exception:
     return False
   return True
 

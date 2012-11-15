@@ -4,7 +4,6 @@
 
 import os, logging, re
 
-from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile
 from osg_configure.modules import validation
@@ -89,22 +88,22 @@ class NetworkConfiguration(BaseConfiguration):
         attributes_ok = False
       
     if (not utilities.blank(self.options['source_state_file'].value) and
-        utilities.blank(self.options['source_range'].value)):
-        self.log("If you specify a source_state_file, " +
-                 "source_range must be given",
-                 option = 'source_state_file',
-                 section = self.config_section,
-                 level = logging.ERROR)
-        attributes_ok = False
+      utilities.blank(self.options['source_range'].value)):
+      self.log("If you specify a source_state_file, " +
+               "source_range must be given",
+               option = 'source_state_file',
+               section = self.config_section,
+               level = logging.ERROR)
+      attributes_ok = False
         
     if (not utilities.blank(self.options['port_state_file'].value) and
-        utilities.blank(self.options['port_range'].value)):
-        self.log("If you specify a port_state_file, " +
-                 "port_range must be given",
-                 option = 'port_state_file',
-                 section = self.config_section,
-                 level = logging.ERROR)
-        attributes_ok = False
+      utilities.blank(self.options['port_range'].value)):
+      self.log("If you specify a port_state_file, " +
+               "port_range must be given",
+               option = 'port_state_file',
+               section = self.config_section,
+               level = logging.ERROR)
+      attributes_ok = False
 
     self.log('NetworkConfiguration.checkAttributes completed')        
     return attributes_ok 
@@ -142,20 +141,20 @@ class NetworkConfiguration(BaseConfiguration):
                             self.options['port_state_file'].value 
       port_settings_csh += "setenv GLOBUS_TCP_PORT_RANGE %s\n" % \
                              self.options['port_range'].value 
-    buffer = "#!/bin/sh\n" + header + source_settings_sh + port_settings_sh
+    contents = "#!/bin/sh\n" + header + source_settings_sh + port_settings_sh
     filename = os.path.join('/', 'var', 'lib', 'osg' , 'globus-firewall')
-    if not utilities.atomic_write(filename, buffer):
+    if not utilities.atomic_write(filename, contents):
       self.log("Error writing to %s" % filename,
                level = logging.ERROR)
       status = False
     filename = os.path.join('/', 'etc', 'profile.d', 'osg.sh')
-    if not utilities.atomic_write(filename, buffer):
+    if not utilities.atomic_write(filename, contents):
       self.log("Error writing to %s" % filename,
                level = logging.ERROR)
       status = False
-    buffer = "#!/bin/csh\n" + header + source_settings_csh + port_settings_csh
+    contents = "#!/bin/csh\n" + header + source_settings_csh + port_settings_csh
     filename = os.path.join('/', 'etc', 'profile.d', 'osg.csh')
-    if not utilities.atomic_write(filename, buffer):
+    if not utilities.atomic_write(filename, contents):
       self.log("Error writing to %s" % filename,
                level = logging.ERROR)
       status = False

@@ -3,12 +3,11 @@
 """ Module to handle attributes related to the pbs jobmanager 
 configuration """
 
-import ConfigParser, os, re, logging
+import os, re, logging
 
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile
 from osg_configure.modules import validation
-from osg_configure.modules import exceptions
 from osg_configure.modules.jobmanagerbase import JobManagerConfiguration
 
 __all__ = ['PBSConfiguration']
@@ -216,43 +215,43 @@ class PBSConfiguration(JobManagerConfiguration):
     
     Returns True if successful, False otherwise
     """    
-    buffer = open(PBSConfiguration.GRAM_CONFIG_FILE).read()
+    contents = open(PBSConfiguration.GRAM_CONFIG_FILE).read()
     bin_location = os.path.join(self.options['pbs_location'].value,
                                 'bin',
                                 'qsub')
     if validation.valid_file(bin_location):
       re_obj = re.compile('^qsub=.*$', re.MULTILINE)
-      (buffer, count) = re_obj.subn("qsub=\"%s\"" % bin_location,
-                                    buffer,
+      (contents, count) = re_obj.subn("qsub=\"%s\"" % bin_location,
+                                    contents,
                                     1)
       if count == 0:
-        buffer += "qsub=\"%s\"\n" % bin_location
+        contents += "qsub=\"%s\"\n" % bin_location
     bin_location = os.path.join(self.options['pbs_location'].value,
                                 'bin',
                                 'qstat')
     if validation.valid_file(bin_location):
       re_obj = re.compile('^qstat=.*$', re.MULTILINE)
-      (buffer, count) = re_obj.subn("qstat=\"%s\"" % bin_location, buffer, 1)
+      (contents, count) = re_obj.subn("qstat=\"%s\"" % bin_location, contents, 1)
       if count == 0:
-        buffer += "qstat=\"%s\"\n" % bin_location
+        contents += "qstat=\"%s\"\n" % bin_location
     bin_location = os.path.join(self.options['pbs_location'].value,
                                 'bin',
                                 'qdel')
     if validation.valid_file(bin_location):
       re_obj = re.compile('^qdel=.*$', re.MULTILINE)
-      (buffer, count) = re_obj.subn("qdel=\"%s\"" % bin_location,
-                                    buffer,
+      (contents, count) = re_obj.subn("qdel=\"%s\"" % bin_location,
+                                    contents,
                                     1)
       if count == 0:
-        buffer += "qdel=\"%s\"\n" % bin_location
+        contents += "qdel=\"%s\"\n" % bin_location
     if self.options['pbs_server'].value != '':
       re_obj = re.compile('^pbs_default=.*$', re.MULTILINE)
-      (buffer, count) = re_obj.subn("pbs_default=\"%s\"" % 
+      (contents, count) = re_obj.subn("pbs_default=\"%s\"" % 
                                     self.options['pbs_server'].value, 
-                                    buffer,
+                                    contents,
                                     1)
       if count == 0:
-        buffer += "pbs_default=\"%s\"\n" % self.options['pbs_server'].value
+        contents += "pbs_default=\"%s\"\n" % self.options['pbs_server'].value
         
     if self.options['seg_enabled'].value:
       if (self.options['log_directory'].value is None or
@@ -267,11 +266,11 @@ class PBSConfiguration(JobManagerConfiguration):
 
       new_setting = "log_path=\"%s\"" % self.options['log_directory'].value
       re_obj = re.compile('^log_path=.*$', re.MULTILINE)
-      (buffer, count) = re_obj.subn(new_setting, buffer, 1)
+      (contents, count) = re_obj.subn(new_setting, contents, 1)
       if count == 0:
-        buffer += new_setting + "\n"
+        contents += new_setting + "\n"
 
-    if not utilities.atomic_write(PBSConfiguration.GRAM_CONFIG_FILE, buffer):
+    if not utilities.atomic_write(PBSConfiguration.GRAM_CONFIG_FILE, contents):
       return False
     
     return True

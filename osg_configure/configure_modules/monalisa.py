@@ -138,79 +138,79 @@ class MonalisaConfiguration(BaseConfiguration):
     self.log('MonalisaConfiguration.configure completed')
     return True
     
-    if not self.enabled:
-      self.log('Not enabled, exiting.')
-      self.log('MonalisaConfiguration.configure completed')
-      return True
+#    if not self.enabled:
+#      self.log('Not enabled, exiting.')
+#      self.log('MonalisaConfiguration.configure completed')
+#      return True
 
-    if self.ignored:
-      self.log("%s configuration ignored" % self.config_section)
-      return True
-
-    arguments = ['--server', 'y']
-  
-    if self.attributes['OSG_GANGLIA_SUPPORT'] == 'Y':
-      arguments.append('--ganglia-used')
-      arguments.append('y')
-      arguments.append("--ganglia-host")
-      arguments.append(self.attributes['OSG_GANGLIA_HOST'])
-      arguments.append("--ganglia-port") 
-      arguments.append(self.attributes['OSG_GANGLIA_PORT'])
-    else:
-      arguments.append('--ganglia-used')
-      arguments.append('n')
-    arguments.append('--farm')
-    arguments.append(attributes['OSG_SITE_NAME'])
-    arguments.append('--monitor-group')
-    if self.options['monitor_group'].value is None:
-      arguments.append(attributes['OSG_GROUP'])
-    else:
-      arguments.append(self.attributes['monitor_group'])
-    arguments.append('--contact-name')
-    arguments.append(attributes['OSG_CONTACT_NAME'])
-    arguments.append('--contact-email')
-    arguments.append(attributes['OSG_CONTACT_EMAIL'])
-    arguments.append('--city')
-    arguments.append(attributes['OSG_SITE_CITY'])
-    arguments.append('--country')
-    arguments.append(attributes['OSG_SITE_COUNTRY'])
-    arguments.append('--latitude')
-    arguments.append(attributes['OSG_SITE_LATITUDE'])
-    arguments.append('--longitude')
-    arguments.append(attributes['OSG_SITE_LONGITUDE'])
-    arguments.append('--vo-modules')
-    arguments.append(self.options['use_vo_modules'].value)
-    arguments.append('--vdt-install')
-    arguments.append(utilities.get_vdt_location())
-    if attributes['OSG_JOB_MANAGER'].upper() == 'PBS':
-      arguments.append('--pbs-location')
-      arguments.append(attributes['OSG_PBS_LOCATION'])
-    elif attributes['OSG_JOB_MANAGER'].upper() == 'LSF':
-      arguments.append('--lsf-location')
-      arguments.append(attributes['OSG_LSF_LOCATION'])
-    elif attributes['OSG_JOB_MANAGER'].upper() == 'SGE':
-      arguments.append('--sge-location')
-      arguments.append(attributes['OSG_SGE_LOCATION'])
-    elif attributes['OSG_JOB_MANAGER'].upper() == 'CONDOR':
-      arguments.append('--condor-location')
-      arguments.append(attributes['OSG_CONDOR_LOCATION'])
-      arguments.append('--condor-config')
-      arguments.append(attributes['OSG_CONDOR_CONFIG'])
-    
-      
-    arguments.append('--user')
-    arguments.append(self.attributes['user'])
-    arguments.append('--auto-update')
-    if self.attributes['auto_update']:
-      arguments.append('y')
-    else:    
-      arguments.append('n')    
-    arguments.append('--noprompt')
-    self.log("Running configure_monalisa with: %s" % (" ".join(arguments)))
-    if not utilities.configure_service('configure_monalisa', arguments):
-      self.log("Error while configuring monalisa", level = logging.ERROR)
-      raise exceptions.ConfigureError("Error configuring MonaLisa")
-    self.log('MonalisaConfiguration.configure completed')
+#    if self.ignored:
+#      self.log("%s configuration ignored" % self.config_section)
+#      return True
+#
+#    arguments = ['--server', 'y']
+#  
+#    if self.options['ganglia_support']:
+#      arguments.append('--ganglia-used')
+#      arguments.append('y')
+#      arguments.append("--ganglia-host")
+#      arguments.append(self.options['ganglia_host'])
+#      arguments.append("--ganglia-port") 
+#      arguments.append(self.options['ganglia_port'])
+#    else:
+#      arguments.append('--ganglia-used')
+#      arguments.append('n')
+#    arguments.append('--farm')
+#    arguments.append(attributes['OSG_SITE_NAME'])
+#    arguments.append('--monitor-group')
+#    if self.options['monitor_group'].value is None:
+#      arguments.append(attributes['OSG_GROUP'])
+#    else:
+#      arguments.append(self.options['monitor_group'])
+#    arguments.append('--contact-name')
+#    arguments.append(attributes['OSG_CONTACT_NAME'])
+#    arguments.append('--contact-email')
+#    arguments.append(attributes['OSG_CONTACT_EMAIL'])
+#    arguments.append('--city')
+#    arguments.append(attributes['OSG_SITE_CITY'])
+#    arguments.append('--country')
+#    arguments.append(attributes['OSG_SITE_COUNTRY'])
+#    arguments.append('--latitude')
+#    arguments.append(attributes['OSG_SITE_LATITUDE'])
+#    arguments.append('--longitude')
+#    arguments.append(attributes['OSG_SITE_LONGITUDE'])
+#    arguments.append('--vo-modules')
+#    arguments.append(self.options['use_vo_modules'].value)
+#    arguments.append('--vdt-install')
+#    arguments.append('/usr')
+#    if attributes['OSG_JOB_MANAGER'].upper() == 'PBS':
+#      arguments.append('--pbs-location')
+#      arguments.append(attributes['OSG_PBS_LOCATION'])
+#    elif attributes['OSG_JOB_MANAGER'].upper() == 'LSF':
+#      arguments.append('--lsf-location')
+#      arguments.append(attributes['OSG_LSF_LOCATION'])
+#    elif attributes['OSG_JOB_MANAGER'].upper() == 'SGE':
+#      arguments.append('--sge-location')
+#      arguments.append(attributes['OSG_SGE_LOCATION'])
+#    elif attributes['OSG_JOB_MANAGER'].upper() == 'CONDOR':
+#      arguments.append('--condor-location')
+#      arguments.append(attributes['OSG_CONDOR_LOCATION'])
+#      arguments.append('--condor-config')
+#      arguments.append(attributes['OSG_CONDOR_CONFIG'])
+#    
+#      
+#    arguments.append('--user')
+#    arguments.append(self.options['user'])
+#    arguments.append('--auto-update')
+#    if self.options['auto_update']:
+#      arguments.append('y')
+#    else:    
+#      arguments.append('n')    
+#    arguments.append('--noprompt')
+#    self.log("Running configure_monalisa with: %s" % (" ".join(arguments)))
+#    if not utilities.configure_service('configure_monalisa', arguments):
+#      self.log("Error while configuring monalisa", level = logging.ERROR)
+#      raise exceptions.ConfigureError("Error configuring MonaLisa")
+#    self.log('MonalisaConfiguration.configure completed')
     return True
   
   def moduleName(self):

@@ -125,7 +125,7 @@ class MiscConfiguration(BaseConfiguration):
     # run fetch-crl script
     if not utilities.fetch_crl():
       self.log("Error while running fetch-crl script", level = logging.ERROR)
-      raise exceptions.ConfigureError(error_mesg) 
+      raise exceptions.ConfigureError('fetch-crl returned non-zero exit code') 
         
 
     using_gums = False
@@ -159,12 +159,13 @@ class MiscConfiguration(BaseConfiguration):
                    USER_VO_MAP_LOCATION + " file, please check the " +
                    "appropriate configuration and or log messages",
                    level = logging.ERROR)
-          raise exceptions.ConfigureError(error_mesg)
+          raise exceptions.ConfigureError('Error when generating osg-vo-map file')
         self.log("Invalid lines in user-vo-map file:",
                  level = logging.ERROR)
         self.log("\n".join(invalid_lines),
                  level = logging.ERROR)
-        raise exceptions.ConfigureError(error_mesg)
+        raise exceptions.ConfigureError("Error when invoking gums-host-cron " +
+                                        "or edg-mkgridmap")
       
       
     # Call configure_vdt_cleanup (enabling or disabling as necessary)
@@ -277,9 +278,6 @@ configuration:
     Configure osg-cleanup
     """
 
-    # Form the arguments
-    arguments = []
-    
     # Do basic error checking to validate that this is a cron string
     if len(re.split("\s+", self.options['cleanup_cron_time'].value)) != 5:
       err_msg = "Error: the value of cleanup_cron_time must be a 5 part " \

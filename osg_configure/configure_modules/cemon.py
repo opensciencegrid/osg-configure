@@ -4,7 +4,7 @@
 """This module provides a class to handle attributes and configuration
  for CEMON subscriptions"""
 
-import os, ConfigParser, re, urlparse, tempfile, logging
+import os, re, urlparse, logging, stat
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
@@ -108,6 +108,18 @@ class CemonConfiguration(BaseConfiguration):
       self.log("CemonConfiguration.configure completed")
       return True
     
+    self.log("Checking gridmap file")
+    try:
+      self.__setup_gridmap()
+    except IOError:
+      raise exceptions.ConfigureError("Can't create empty gridmap file for CEMon")
+    
+    self.log("Checking vomsdir")
+    try:
+      self.__check_vomsdir()
+    except IOError:
+      raise exceptions.ConfigureError("Error checking /etc/grid-security/vomsdir")
+      
     self.log("Making BDII subscriptions")
     for subscription in self.bdii_servers:
       dialect = self.bdii_servers[subscription]
@@ -140,7 +152,7 @@ class CemonConfiguration(BaseConfiguration):
     if self.ignored:
       self.log('Ignored, returning True')
       self.log("CemonConfiguration.checkAttributes completed")
-      return attributes_ok
+      return True
     
     valid = True
     self.log("Checking BDII subscriptions")
@@ -202,9 +214,9 @@ class CemonConfiguration(BaseConfiguration):
     subscription = "subscription-%s-%s-%s" % (consumer_host, consumer_topic, consumer_dialect)
     subscription = re.sub(r"[^\d\w\-]", "_", subscription)
     if re.match(r"(?i)raw$", consumer_dialect):
-        policy_rate = 300
+      policy_rate = 300
     else:
-        policy_rate = 600
+      policy_rate = 600
     config_path = self.CEMON_CONFIG_FILE
     try:
       config_file = open(config_path)
@@ -213,7 +225,7 @@ class CemonConfiguration(BaseConfiguration):
       finally:
         config_file.close()
     except IOError, e:
-      self.log("Error reading from configuration file at %s" % (config_path, e),
+      self.log("Error reading from configuration file at %s" % config_path,
                exception = True,
                level = logging.ERROR)
       return False
@@ -221,14 +233,14 @@ class CemonConfiguration(BaseConfiguration):
     # Simple check to see if we have already installed a subscription for this
     # host/topic/dialect combination
     if re.search(r'id="%s"' % subscription, contents):
-        self.log("A consumer subscription for host '%s' on %s "
-                 "with %s already exists in '%s'" %
-                  (consumer_host, 
-                   consumer_topic, 
-                   consumer_dialect,
-                   config_path),
-                 level = logging.ERROR)
-        return False
+      self.log("A consumer subscription for host '%s' on %s "
+               "with %s already exists in '%s'" %
+                (consumer_host, 
+                 consumer_topic, 
+                 consumer_dialect,
+                 config_path),
+               level = logging.ERROR)
+      return False
 
     # Add in the subscription information
     add = '''
@@ -249,15 +261,15 @@ class CemonConfiguration(BaseConfiguration):
     # truncated. For the LDIF dialect, Leigh G requested a slightly
     # different query/action.
     if re.match(r"(?i)raw$", consumer_dialect):
-        pass # Do nothing -- no contents
+      pass # Do nothing -- no contents
     elif consumer_dialect == "LDIF":
-        add += '''
+      add += '''
         <query queryLanguage="ClassAd"><![CDATA[true]]></query>
         <action name="SendNotification" doActionWhenQueryIs="true" />
         <action name="SendExpiredNotification" doActionWhenQueryIs="false" />
 '''
     else:
-        add += '''
+      add += '''
         <query queryLanguage="ClassAd"><![CDATA[GlueCEStateWaitingJobs<2]]></query>
         <action name="SendNotification" doActionWhenQueryIs="true" />
         <action name="SendExpiredNotification" doActionWhenQueryIs="false" />
@@ -316,7 +328,8 @@ class CemonConfiguration(BaseConfiguration):
       valid = False
     return valid
 
-  def __parse_servers(self, servers):
+  @classmethod
+  def __parse_servers(cls, servers):
     """
     Take a list of servers and parse it into a list of 
     (server, subscription_type) tuples
@@ -359,3 +372,39 @@ class CemonConfiguration(BaseConfiguration):
     self.options['bdii_servers'].value = bdii_servers
     self.ress_servers = self.__parse_servers(ress_servers)
     self.bdii_servers = self.__parse_servers(bdii_servers)
+  
+  @classmethod
+  def __setup_gridmap(cls):
+    """
+    Method to check and ensure that a gridmap file at /etc/grid-security/gridmap 
+    exists, create an empty file if necessary
+    """
+    gridmap_location = '/etc/grid-security/grid-mapfile'
+    if not os.path.exists(gridmap_location):
+      # create empty gridmap file
+      open(gridmap_location,'w').close()
+      os.chmod(gridmap_location, 0644)
+      
+  @classmethod
+  def __check_vomsdir(cls):
+    """
+    Method to check and ensure that  /etc/grid-security/vomsdir has the 
+    correct permissions
+    """
+    vomsdir_location = '/etc/grid-security/vomsdir'
+    if os.path.exists(vomsdir_location) and os.path.isdir(vomsdir_location):
+      perms = stat.S_IMODE(os.stat(vomsdir_location).st_mode)
+      if not (perms & (stat.S_IROTH & stat.S_IXOTH)):
+        os.chmod(vomsdir_location, perms | stat.S_IROTH | stat.S_IXOTH)
+      for entry in os.listdir(vomsdir_location):
+        subdir = os.path.join(vomsdir_location, entry)
+        if os.path.isdir(subdir):
+          subdir_perms = stat.S_IMODE(os.stat(subdir).st_mode)
+          if not (subdir_perms & (stat.S_IROTH & stat.S_IXOTH)):
+            os.chmod(subdir, subdir_perms | stat.S_IROTH | stat.S_IXOTH)
+        
+              
+        
+      
+      
+    
