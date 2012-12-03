@@ -419,3 +419,25 @@ def get_test_config(config_file = ''):
     return os.path.abspath(test_location)
   return None
     
+def make_directory(dir_name, perms = 0755, uid = None, gid = None):
+  """
+  Create a directory with specified permissions and uid/gid.  Will use the 
+  current user's uid and gid if not specified.
+  
+  returns True is successful
+  """
+  
+  if uid is None:
+    uid = os.getuid()
+  if gid is None:
+    gid = os.getgid()
+  try:
+    os.makedirs(dir_name, perms)
+    os.chown(dir_name, uid, gid)
+    return True
+  except IOError:
+    return False
+    
+  
+    
+    

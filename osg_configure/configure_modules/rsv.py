@@ -2,7 +2,7 @@
 
 """ Module to handle attributes and configuration for RSV service """
 
-import os, re, pwd, sys, shutil, ConfigParser, logging
+import os, re, pwd, shutil, ConfigParser, logging
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
@@ -404,11 +404,11 @@ class RsvConfiguration(BaseConfiguration):
     self.log("Resetting all metrics and consumers to disabled")
 
     parent_dir = os.path.join('/', 'etc', 'rsv')
-    for file in os.listdir(parent_dir):
-      if not re.search('\.conf$', file):
+    for filename in os.listdir(parent_dir):
+      if not re.search('\.conf$', filename):
         continue
 
-      if file == "rsv.conf" or file == "rsv-nagios.conf":
+      if filename == "rsv.conf" or filename == "rsv-nagios.conf":
         continue
 
       path = os.path.join(parent_dir, file)
@@ -417,8 +417,8 @@ class RsvConfiguration(BaseConfiguration):
 
     # Remove any host specific metric configuration
     parent_dir = os.path.join('/', 'etc', 'rsv', 'metrics')
-    for dir in os.listdir(parent_dir):
-      path = os.path.join(parent_dir, dir)
+    for directory in os.listdir(parent_dir):
+      path = os.path.join(parent_dir, directory)
       if not os.path.isdir(path):
         continue
 
@@ -427,8 +427,11 @@ class RsvConfiguration(BaseConfiguration):
     return True    
 
 
-  def __get_metrics_by_type(self, type, enabled=True):
-    """ Examine meta info and return the metrics that are enabled by default for the defined type """
+  def __get_metrics_by_type(self, metric_type, enabled=True):
+    """
+    Examine meta info and return the metrics that are enabled by default 
+    for the defined type
+    """
 
     metrics = []
     
@@ -448,13 +451,17 @@ class RsvConfiguration(BaseConfiguration):
     return metrics
 
 
-  def __enable_metrics(self, host, metrics, args=[]):
+  def __enable_metrics(self, host, metrics, args = None):
     """ Given a host and array of metrics, enable them via rsv-control """
 
+    # need this to prevent weird behaviour if [] as a default argument in function def
+    args = args or []
     if not metrics:
       return True
 
-    if not utilities.run_script([self.rsv_control, "-v0", "--enable", "--host", host] + args + metrics):
+    if not utilities.run_script([self.rsv_control, "-v0", "--enable", "--host", host] +
+                                args + 
+                                metrics):
       self.log("ERROR: Attempt to enable metrics via rsv-control failed",
                level = logging.ERROR)
       self.log("Host: %s" % host,
@@ -502,18 +509,18 @@ class RsvConfiguration(BaseConfiguration):
                level = logging.ERROR)
       raise exceptions.ConfigureError("Failed to configure RSV")
 
-    gridftp_metrics = self.__get_metrics_by_type("OSG-GridFTP")
+    gridftp_metrics = self.__get_metrics_by_type("GridFTP")
 
     count = 0
     for gridftp_host in self.__gridftp_hosts:
       self.log("Enabling GridFTP metrics for host '%s'" % gridftp_host)
 
       if len(gridftp_dirs) == 1:
-        dir = gridftp_dirs[0]
+        directories = gridftp_dirs[0]
       else:
-        dir = gridftp_dirs[count]
+        directories = gridftp_dirs[count]
 
-      args = ["--arg", "destination-dir=%s" % dir]
+      args = ["--arg", "destination-dir=%s" % directories]
 
       if not self.__enable_metrics(gridftp_host, gridftp_metrics, args):
         return False
@@ -611,7 +618,9 @@ class RsvConfiguration(BaseConfiguration):
 
 
   def __map_gratia_metric(self, gratia_type):
-
+    """
+    Map gratia type to rsv metric 
+    """
     # The first time through we will populate the map.  It will be cached as a
     # data member in this class so that we don't have to do this each time
     if not self.__gratia_metric_map:
@@ -638,16 +647,16 @@ class RsvConfiguration(BaseConfiguration):
     # While checking the Gratia settings we will translate them to a list of
     # the actual probes to enable.
     status_check = True
-    for list in self.__gratia_probes_2d:
+    for item_list in self.__gratia_probes_2d:
       tmp = []
-      for type in list:
-        metric = self.__map_gratia_metric(type)
+      for metric_type in item_list:
+        metric = self.__map_gratia_metric(metric_type)
         if metric:
           tmp.append(metric)
         else:
           status_check = False
           self.log("In %s section, gratia_probes setting: Probe %s is " \
-                   "not a valid probe" % (self.config_section , type),
+                   "not a valid probe" % (self.config_section , metric_type),
                    level = logging.ERROR)
 
       tmp_2d.append(tmp)
@@ -678,7 +687,7 @@ class RsvConfiguration(BaseConfiguration):
                level = logging.ERROR)
       self.log("Number of CE hosts: %s" % num_ces,
                level = logging.ERROR)
-      self.log("Number of Gratia host definitions: %2" % num_gratia,
+      self.log("Number of Gratia host definitions: %s" % num_gratia,
                level = logging.ERROR)
       self.log("They must match, or you must have only one Gratia host " +
                "definition (which will be used for all hosts",
@@ -734,12 +743,12 @@ class RsvConfiguration(BaseConfiguration):
     # wrappers and init script have the binaries in their PATH
     sysconf_file = os.path.join('/', 'etc', 'sysconfig', 'condor-cron')
     try:
-      fp = open(sysconf_file, 'w')
+      sysconf = open(sysconf_file, 'w')
       if self.options['condor_location'].value:
-        fp.write("PATH=%s/bin:%s/sbin:$PATH\n" % (condor_dir,
-                                                  condor_dir))
-        fp.write("export PATH\n")
-      fp.close()
+        sysconf.write("PATH=%s/bin:%s/sbin:$PATH\n" % (condor_dir,
+                                                       condor_dir))
+        sysconf.write("export PATH\n")
+      sysconf.close()
     except IOError, err:
       self.log("Error trying to write to file (%s): %s" % (sysconf_file, err))
       return False
@@ -747,10 +756,10 @@ class RsvConfiguration(BaseConfiguration):
     # Adjust the Condor-Cron configuration
     conf_file = os.path.join('/', 'etc', 'condor-cron', 'config.d', 'condor_location')
     try:
-      fp = open(conf_file, 'w')
+      config = open(conf_file, 'w')
       if self.options['condor_location'].value:
-        fp.write("RELEASE_DIR = %s" % condor_dir)
-      fp.close()
+        config.write("RELEASE_DIR = %s" % condor_dir)
+      config.close()
     except IOError, err:
       self.log("Error trying to write to file (%s): %s" % (conf_file, err))
       return False
@@ -892,17 +901,17 @@ class RsvConfiguration(BaseConfiguration):
       
     files = os.listdir(self.rsv_meta_dir)
 
-    for file in files:
-      if re.search('\.meta$', file):
-        self.__meta.read(os.path.join(self.rsv_meta_dir, file))
+    for filename in files:
+      if re.search('\.meta$', filename):
+        self.__meta.read(os.path.join(self.rsv_meta_dir, filename))
 
     return
 
-  def split_2d_list(self, list):
+  def split_2d_list(self, item_list):
     """ 
-    Split a comma/whitespace separated list of list of items.
-    Each list needs to be enclosed in parentheses and separated by whitespace and/or a comma.
-    Parentheses are optional if only one list is supplied.
+    Split a comma/whitespace separated item_list of item_list of items.
+    Each item_list needs to be enclosed in parentheses and separated by whitespace and/or a comma.
+    Parentheses are optional if only one item_list is supplied.
     
     Valid examples include:
     (1,2,3),(4,5)
@@ -915,30 +924,30 @@ class RsvConfiguration(BaseConfiguration):
     (1,2, (3, 4)  # missing a right parenthesis
     """
 
-    if not list:
+    if not item_list:
       return [[]]
           
-    original_list = list
+    original_list = item_list
 
-    # If there are no parentheses then just treat this like a normal comma-separated list
+    # If there are no parentheses then just treat this like a normal comma-separated item_list
     # and return it as a 2-D array (with only one element in one direction)
-    if not re.search("\(", list) and not re.search("\)", list):
-      return [split_list(list)]
+    if not re.search("\(", item_list) and not re.search("\)", item_list):
+      return [split_list(item_list)]
 
     # We want to grab parenthesized chunks
     pattern = re.compile("\s*\(([^()]+)\)\s*,?")
     array = []
     while 1:
-      match = re.match(pattern, list)
+      match = re.match(pattern, item_list)
       if not match:
         # If we don't have a match then we are either finished processing, or there is
         # a syntax error.  So if we have anything left in the string we will bail
-        if re.search("\S", list):
-          self.log("ERROR: syntax error in parenthesized list",
+        if re.search("\S", item_list):
+          self.log("ERROR: syntax error in parenthesized item_list",
                    level = logging.ERROR)
-          self.log("ERROR: Supplied list:\n\t%s" % original_list,
+          self.log("ERROR: Supplied item_list:\n\t%s" % original_list,
                    level = logging.ERROR)
-          self.log("ERROR: Leftover after parsing:\n\t%s" % list,
+          self.log("ERROR: Leftover after parsing:\n\t%s" % item_list,
                    level = logging.ERROR)
           return False
         else:
@@ -948,7 +957,7 @@ class RsvConfiguration(BaseConfiguration):
     
       # Remove what we just matched so that we get the next chunk on the next iteration
       match_length = len(match.group(0))
-      list = list[match_length:]
+      item_list = item_list[match_length:]
 
     # We shouldn't reach here, but just in case...
     return array
@@ -981,27 +990,25 @@ class RsvConfiguration(BaseConfiguration):
     # Also, set up the directories to use the proper log/data/working dirs
     parent_dir = os.path.join('/', 'var', 'log', 'gratia', 'rsv')
 
-    def make_dir(path):
-      if not os.path.exists(path):
-        os.makedirs(path, 0755)
-      os.chown(path, self.uid, self.gid)
-
     log_folder = os.path.join(parent_dir, 'logs')
-    make_dir(log_folder)
+    utilities.make_directory(log_folder, 0755, self.uid, self.gid)
     conf = re.sub(r'(\s*)LogFolder\s*=.*', r'\1LogFolder="' + log_folder + '"', conf, 1)
 
     data_folder = os.path.join(parent_dir, 'data')
-    make_dir(data_folder)
+    utilities.make_directory(data_folder, 0755, self.uid, self.gid)
     conf = re.sub(r'(\s*)DataFolder\s*=.*', r'\1DataFolder="' + data_folder + '"', conf, 1)
 
     working_folder = os.path.join(parent_dir, 'tmp')
-    make_dir(working_folder)
-    conf = re.sub(r'(\s*)WorkingFolder\s*=.*', r'\1WorkingFolder="' + working_folder + '"', conf, 1)
+    utilities.make_directory(working_folder, 0755, self.uid, self.gid)
+    conf = re.sub(r'(\s*)WorkingFolder\s*=.*', 
+                  r'\1WorkingFolder="' + working_folder + '"', 
+                  conf,
+                  1)
   
 
     if not utilities.atomic_write(probe_conf, conf):
       self.log("Error while configuring metric probe: can't " +
-               "write to %s" % probe_file,
+               "write to %s" % probe_conf,
                level = logging.ERROR)
       raise exceptions.ConfigureError("Error configuring gratia")
 
@@ -1018,11 +1025,11 @@ class RsvConfiguration(BaseConfiguration):
       return True
 
     if self.options['srm_dir'].value.upper() == 'DEFAULT':
-        self.log("srm_dir has to be set and can't be set to DEFAULT for each "+ 
-                 "srm host defined (set to %s)" % dir,
-                 option = 'srm_dir',
-                 section = 'rsv',
-                 level = logging.ERROR)
+      self.log("srm_dir has to be set and can't be set to DEFAULT for each "+ 
+               "srm host defined (set to %s)" % dir,
+               option = 'srm_dir',
+               section = 'rsv',
+               level = logging.ERROR)
       
     srm_dirs = split_list(self.options['srm_dir'].value)    
     if len(self.__srm_hosts) != len(srm_dirs):
@@ -1032,10 +1039,10 @@ class RsvConfiguration(BaseConfiguration):
                "srm_dir entries." % (len(self.__srm_hosts), len(srm_dirs)),
                level = logging.ERROR)
       return False
-    for dir in srm_dirs:
-      if dir.upper() == 'DEFAULT':
+    for directory in srm_dirs:
+      if directory.upper() == 'DEFAULT':
         self.log("srm_dir has to be set and can't be set to DEFAULT for each "+ 
-                 "srm host defined (set to %s)" % dir,
+                 "srm host defined (set to %s)" % directory,
                  option = 'srm_dir',
                  section = 'rsv',
                  level = logging.ERROR)
@@ -1057,15 +1064,15 @@ class RsvConfiguration(BaseConfiguration):
     return True
 
 
-def split_list(list):
+def split_list(item_list):
   """ Split a comma separated list of items """
 
   # Special case - when the list just contains UNAVAILABLE we want to ignore it
-  if utilities.blank(list):
+  if utilities.blank(item_list):
     return []
   
   items = []
-  for entry in list.split(','):
+  for entry in item_list.split(','):
     items.append(entry.strip())
     
   return items
