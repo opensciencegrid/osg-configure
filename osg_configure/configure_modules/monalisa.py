@@ -5,8 +5,6 @@ and setup """
 
 import logging
 
-from osg_configure.modules import exceptions
-from osg_configure.modules import utilities
 from osg_configure.modules import configfile
 from osg_configure.modules import validation
 from osg_configure.modules.configurationbase import BaseConfiguration
@@ -40,17 +38,17 @@ class MonalisaConfiguration(BaseConfiguration):
     self.options = {'enabled' : 
                       configfile.Option(name = 'enabled',
                                         default_value = False,
-                                        type = bool,
+                                        opt_type = bool,
                                         mapping = 'OSG_MONALISA_SERVICE'),
                     'use_vo_modules' : 
                       configfile.Option(name = 'use_vo_modules',
                                         required = configfile.Option.OPTIONAL,
                                         default_value = True,
-                                        type = bool,
+                                        opt_type = bool,
                                         mapping = 'OSG_VO_MODULES'),
                     'ganglia_support' : 
                       configfile.Option(name = 'ganglia_support',
-                                        type = bool,
+                                        opt_type = bool,
                                         required = configfile.Option.OPTIONAL,
                                         mapping = 'OSG_GANGLIA_SUPPORT'),
                     'ganglia_host' : 
@@ -60,7 +58,7 @@ class MonalisaConfiguration(BaseConfiguration):
                     'ganglia_port' : 
                       configfile.Option(name = 'ganglia_port',
                                         default_value = 8649,
-                                        type = int,
+                                        opt_type = int,
                                         required = configfile.Option.OPTIONAL,
                                         mapping = 'OSG_GANGLIA_PORT'),
                     'monitor_group' : 
@@ -74,7 +72,7 @@ class MonalisaConfiguration(BaseConfiguration):
                     'auto_update' : 
                       configfile.Option(name = 'auto_update',
                                         required = configfile.Option.OPTIONAL,
-                                        type = bool,
+                                        opt_type = bool,
                                         default_value = False)}
     self.config_section = "MonaLisa"
     self.log('MonalisaConfiguration.__init__ completed')    
@@ -211,7 +209,7 @@ class MonalisaConfiguration(BaseConfiguration):
 #      self.log("Error while configuring monalisa", level = logging.ERROR)
 #      raise exceptions.ConfigureError("Error configuring MonaLisa")
 #    self.log('MonalisaConfiguration.configure completed')
-    return True
+#    return True
   
   def moduleName(self):
     """Return a string with the name of the module"""
@@ -229,7 +227,7 @@ class MonalisaConfiguration(BaseConfiguration):
     """
     return [self.config_section]
 
-  def getAttributes(self):
+  def getAttributes(self, converter = str):
     """
     Get attributes for the osg attributes file using the dict in self.options
 

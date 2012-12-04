@@ -354,8 +354,8 @@ def ce_installed():
   Returns:
   True if osg-ce metapackage rpm is installed, False otherwise
   """
-  ts = rpm.TransactionSet()
-  if ts.dbMatch('name', 'osg-ce').count() in (1,2):
+  trans_set = rpm.TransactionSet()
+  if trans_set.dbMatch('name', 'osg-ce').count() in (1, 2):
     return True
   return False
 
@@ -374,16 +374,16 @@ def rpm_installed(rpm_name = None):
   if rpm_name is None:
     return True
   
-  ts = rpm.TransactionSet()
+  trans_set = rpm.TransactionSet()
   if type(rpm_name) is types.StringType:
-    if ts.dbMatch('name', rpm_name).count() in (1,2):
+    if trans_set.dbMatch('name', rpm_name).count() in (1, 2):
       return True
     return False
   
   # check with iterable type
   try:
     for name in rpm_name:
-      if ts.dbMatch('name', name).count() not in (1,2):
+      if trans_set.dbMatch('name', name).count() not in (1, 2):
         return False
     return True
   except:

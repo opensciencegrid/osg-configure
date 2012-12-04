@@ -6,6 +6,7 @@ import ConfigParser, logging
 
 from osg_configure.modules import configfile
 from osg_configure.modules import utilities
+from osg_configure.modules import exceptions
 
 __all__ = ['BaseConfiguration']
 
@@ -144,7 +145,7 @@ class BaseConfiguration(object):
                               self.config_section, 
                               option)
         self.log("Got %s" % option.value)
-      except Exception, ex:
+      except Exception:
         self.log("Received exception when parsing option",
                  option = option.name,
                  section = self.config_section,

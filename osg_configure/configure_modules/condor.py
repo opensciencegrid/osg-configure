@@ -3,12 +3,11 @@
 """ Module to handle attributes and configuration related to the condor 
 jobmanager configuration """
 
-import os, ConfigParser, types, logging, re
+import os, logging, re
 
 from osg_configure.modules import utilities
 from osg_configure.modules import validation
 from osg_configure.modules import configfile
-from osg_configure.modules import exceptions
 from osg_configure.modules.jobmanagerbase import JobManagerConfiguration
 
 __all__ = ['CondorConfiguration']
@@ -42,7 +41,7 @@ class CondorConfiguration(JobManagerConfiguration):
                     'accept_limited' : 
                       configfile.Option(name = 'accept_limited',
                                         required = configfile.Option.OPTIONAL,
-                                        type = bool,
+                                        opt_type = bool,
                                         default_value = False)}
     self.__set_default = True
     self.log('CondorConfiguration.__init__ completed')    
@@ -178,8 +177,8 @@ class CondorConfiguration(JobManagerConfiguration):
       return False
       
     if self.__set_default:
-        self.log('Configuring gatekeeper to use regular fork service')
-        self.set_default_jobmanager('fork')
+      self.log('Configuring gatekeeper to use regular fork service')
+      self.set_default_jobmanager('fork')
       
     self.log('CondorConfiguration.configure completed')
     return True    
@@ -202,38 +201,38 @@ class CondorConfiguration(JobManagerConfiguration):
     
     Returns True if successful, False otherwise
     """    
-    buffer = open(CondorConfiguration.GRAM_CONFIG_FILE).read()
+    buf = open(CondorConfiguration.GRAM_CONFIG_FILE).read()
     bin_location = os.path.join(self.options['condor_location'].value,
                                 'bin',
                                 'condor_submit')
     if validation.valid_file(bin_location):
       re_obj = re.compile('^condor_submit=.*$', re.MULTILINE)
-      (buffer, count) = re_obj.subn("condor_submit=\"%s\"" % bin_location, 
-                                    buffer,
-                                    1)
+      (buf, count) = re_obj.subn("condor_submit=\"%s\"" % bin_location, 
+                                 buf,
+                                 1)
       if count == 0:
-        buffer += "condor_submit=\"%s\"\n" % bin_location
+        buf += "condor_submit=\"%s\"\n" % bin_location
     bin_location = os.path.join(self.options['condor_location'].value,
                                 'bin',
                                 'condor_rm')
     if validation.valid_file(bin_location):
       re_obj = re.compile('^condor_rm=.*$', re.MULTILINE)
-      (buffer, count) = re_obj.subn("condor_rm=\"%s\"" % bin_location,
-                                    buffer,
-                                    1)
+      (buf, count) = re_obj.subn("condor_rm=\"%s\"" % bin_location,
+                                 buf,
+                                 1)
       if count == 0:
-        buffer += "condor_rm=\"%s\"\n" % bin_location
+        buf += "condor_rm=\"%s\"\n" % bin_location
     if not utilities.blank(self.options['condor_config'].value):
       re_obj = re.compile('^condor_config=.*$', re.MULTILINE)
-      (buffer, count) = re_obj.subn("condor_config=\"%s\"" % 
-                                    self.options['condor_config'].value,
-                                    buffer,
-                                    1)
+      (buf, count) = re_obj.subn("condor_config=\"%s\"" % 
+                                 self.options['condor_config'].value,
+                                 buf,
+                                 1)
       if count == 0:
-        buffer += "condor_config=\"%s\"\n" % self.options['condor_config'].value
+        buf += "condor_config=\"%s\"\n" % self.options['condor_config'].value
         
     
-    if not utilities.atomic_write(CondorConfiguration.GRAM_CONFIG_FILE, buffer):
+    if not utilities.atomic_write(CondorConfiguration.GRAM_CONFIG_FILE, buf):
       return False
     
     return True

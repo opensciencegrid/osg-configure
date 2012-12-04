@@ -2,7 +2,7 @@
 
 """ Module to hold various utility functions """
 
-import glob, ConfigParser, types, os, rpm
+import glob, ConfigParser, os
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
@@ -79,7 +79,7 @@ def get_option_location(option, section, **kwargs):
       config.readfp(open(fn, 'r'))
       if config.has_option(section, option):
         return fn
-    except ConfigPaser.Error, e:
+    except ConfigParser.Error, e:
       raise Exception("Can't parse %s:\n%s" % (fn, e))
       
   return None
@@ -116,11 +116,11 @@ def get_option(config, section, option = None):
     try:
           
       if not utilities.blank(config.get(section, option.name)):
-        if option.type == bool:
+        if option.opt_type == bool:
           option.value = config.getboolean(section, option.name)
-        elif option.type == int:
+        elif option.opt_type == int:
           option.value = config.getint(section, option.name)
-        elif option.type == float:
+        elif option.opt_type == float:
           option.value = config.getfloat(section, option.name)        
         else:
           option.value = config.get(section, option.name)          
@@ -168,6 +168,9 @@ def jobmanager_enabled(configuration):
   return False
   
 class Option(object):
+  """
+  Class to encapsulate options as used by osg_configure
+  """
   MANDATORY = 1
   OPTIONAL = 2
 
@@ -177,7 +180,7 @@ class Option(object):
     
     Keyword args:
     value - option value
-    type - option type from types module or built-in type, use None if not given
+    opt_type - option type from types module or built-in type, use None if not given
     default_value - option's default value
     mapping - option's mapping in osg attributes file, None if option should
               not be written to file
@@ -186,10 +189,10 @@ class Option(object):
     name - option name                  
     """
     
-    self.type = kwargs.get('type', str)
-    if self.type == str:
+    self.opt_type = kwargs.get('type', str)
+    if self.opt_type == str:
       self.value = kwargs.get('value', '')
-    elif self.type == int or self.type == float:
+    elif self.opt_type == int or self.opt_type == float:
       self.value = kwargs.get('value', 0)
       
     self.default_value = kwargs.get('default_value', None)
@@ -200,14 +203,14 @@ class Option(object):
   def __setattr__(self, name, value):
     """
     Check type when setting value and enforce requirements for self.value if
-    self.type is specified
+    self.opt_type is specified
     """
-    if name == 'value' and self.type is not None:
-      if type(value) == self.type:      
+    if name == 'value' and self.opt_type is not None:
+      if type(value) == self.opt_type:      
         self.__dict__[name] = value
       else:
         # raises ValueError if conversion can't be done
-        self.__dict__[name] =  self.type(value)
+        self.__dict__[name] =  self.opt_type(value)
     else:
       self.__dict__[name] = value
       

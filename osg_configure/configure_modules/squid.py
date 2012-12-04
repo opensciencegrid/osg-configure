@@ -2,9 +2,8 @@
 
 """ Module to handle squid configuration and setup """
 
-import ConfigParser, os, logging
+import logging
 
-from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile
 from osg_configure.modules import validation
@@ -31,13 +30,13 @@ class SquidConfiguration(BaseConfiguration):
                       configfile.Option(name = 'cache_size',
                                         required = configfile.Option.OPTIONAL,
                                         default_value = 0,
-                                        type = int,
+                                        opt_type = int,
                                         mapping = 'OSG_SQUID_CACHE_SIZE'),
                     'memory_size' : 
                       configfile.Option(name = 'memory_size',
                                         required = configfile.Option.OPTIONAL,
                                         default_value = 0,
-                                        type = int,
+                                        opt_type = int,
                                         mapping = 'OSG_SQUID_MEM_CACHE')}
     self.config_section = 'Squid'
     self.log('SquidConfiguration.__init__ completed')
@@ -145,7 +144,7 @@ class SquidConfiguration(BaseConfiguration):
     """Returns the sections from the configuration file that this module handles"""
     return [self.config_section]
 
-  def getAttributes(self):
+  def getAttributes(self, converter = str):
     """
     Get attributes for the osg attributes file using the dict in self.options
 

@@ -2,10 +2,8 @@
 
 """ Module to handle attributes related to the site location and details """
 
-import os, logging
+import logging
 
-from osg_configure.modules import exceptions
-from osg_configure.modules import utilities
 from osg_configure.modules import configfile
 from osg_configure.modules import validation
 from osg_configure.modules.configurationbase import BaseConfiguration

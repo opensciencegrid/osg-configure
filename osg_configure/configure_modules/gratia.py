@@ -2,7 +2,7 @@
 
 """ Module to handle attributes and configuration for Gratia """
 
-import os, sys, ConfigParser, re, tempfile, logging
+import os, sys, re, logging
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
@@ -105,17 +105,13 @@ in your config.ini file."""
           log_option = configfile.Option(name = 'log_directory',
                                          required = configfile.Option.OPTIONAL,
                                          default_value = '')
-          log_dir = configfile.get_option(configuration,
-                                          'PBS',
-                                          log_option)
+          configfile.get_option(configuration, 'PBS', log_option)
           self.__probe_config['pbs'] = {'log_directory' : log_option.value}
 
           accounting_log_option = configfile.Option(name = 'accounting_log_directory',
                                                     required = configfile.Option.OPTIONAL,
                                                     default_value = '')
-          accounting_log_dir = configfile.get_option(configuration,
-                                                     'PBS',
-                                                     accounting_log_option)
+          configfile.get_option(configuration, 'PBS', accounting_log_option)
           self.__probe_config['pbs'] = {'accounting_log_directory' : accounting_log_option.value}
 
     self.getOptions(configuration, 
@@ -272,35 +268,35 @@ in your config.ini file."""
       probe = 'gridftp-transfer'
     
     try:  
-      buffer = open(probe_file).read()
-      buffer = re.sub(r'(\s*)ProbeName\s*=.*',
-                      r'\1ProbeName="' + "%s:%s" % (probe, hostname) + '"',
-                      buffer,
-                      1)
-      buffer = re.sub(r'(\s*)SiteName\s*=.*',
-                      r'\1SiteName="' + site + '"',
-                      buffer,
-                      1)
-      buffer = re.sub(r'(\s*)Grid\s*=.*',
-                      r'\1Grid="' + self.grid_group + '"',
-                      buffer,
-                      1)
-      buffer = re.sub(r'(\s*)EnableProbe\s*=.*',
-                      r'\1EnableProbe="1"',
-                      buffer,
-                      1)
-      for x in ['SSLHost', 'SOAPHost', 'SSLRegistrationHost', 'CollectorHost']:
-        buffer = re.sub(r'(\s*)' + x + '\s*=.*',
-                        r'\1' + x + '="' + probe_host + '"',
-                        buffer,
-                        1)  
+      buf = open(probe_file).read()
+      buf = re.sub(r'(\s*)ProbeName\s*=.*',
+                   r'\1ProbeName="' + "%s:%s" % (probe, hostname) + '"',
+                   buf,
+                   1)
+      buf = re.sub(r'(\s*)SiteName\s*=.*',
+                   r'\1SiteName="' + site + '"',
+                   buf,
+                   1)
+      buf = re.sub(r'(\s*)Grid\s*=.*',
+                   r'\1Grid="' + self.grid_group + '"',
+                   buf,
+                   1)
+      buf = re.sub(r'(\s*)EnableProbe\s*=.*',
+                   r'\1EnableProbe="1"',
+                   buf,
+                   1)
+      for var in ['SSLHost', 'SOAPHost', 'SSLRegistrationHost', 'CollectorHost']:
+        buf = re.sub(r'(\s*)' + var + '\s*=.*',
+                     r'\1' + var + '="' + probe_host + '"',
+                     buf,
+                     1)  
 
-      if not utilities.atomic_write(probe_file, buffer, mode=420):
+      if not utilities.atomic_write(probe_file, buf, mode=420):
         self.log("Error while configuring gratia probes: " +
                  "can't write to %s" % probe_file,
                  level = logging.ERROR)
         raise exceptions.ConfigureError("Error configuring gratia")
-    except IOError, OSError:
+    except(IOError, OSError):
       self.log("Error while configuring gratia probes",
                exception = True,
                level = logging.ERROR)
@@ -417,14 +413,14 @@ in your config.ini file."""
     condor_location = self.__probe_config['condor']['condor_location']
     re_obj = re.compile('^(\s*)CondorLocation\s*=.*$', re.MULTILINE)  
     config_location = os.path.join('/', 'etc', 'gratia', 'condor',  'ProbeConfig')
-    buffer = file(config_location).read()
-    (buffer, count) = re_obj.subn(r'\1CondorLocation="%s"' % condor_location,
-                                  buffer,
+    buf = file(config_location).read()
+    (buf, count) = re_obj.subn(r'\1CondorLocation="%s"' % condor_location,
+                                  buf,
                                   1)
     if count == 0:
-      buffer = buffer.replace('/>', 
+      buf = buf.replace('/>', 
                               "    CondorLocation=\"%s\"\n/>" % condor_location)
-    if not utilities.atomic_write(config_location, buffer):
+    if not utilities.atomic_write(config_location, buf):
       return False    
     return True
   
@@ -442,13 +438,13 @@ in your config.ini file."""
                                'gratia',
                                'pbs-lsf',
                                'urCollector.conf')   
-    buffer = file(config_location).read()
-    (buffer, count) = re_obj.subn(r'pbsAcctLogDir = "%s"' % accounting_log_directory,
-                                  buffer, 
+    buf = file(config_location).read()
+    (buf, count) = re_obj.subn(r'pbsAcctLogDir = "%s"' % accounting_log_directory,
+                                  buf, 
                                   1)
     if count == 0:
-      buffer += "pbsAcctLogDir = \"%s\"\n" % accounting_log_directory
-    if not utilities.atomic_write(config_location, buffer):
+      buf += "pbsAcctLogDir = \"%s\"\n" % accounting_log_directory
+    if not utilities.atomic_write(config_location, buf):
       return False    
     return True
 

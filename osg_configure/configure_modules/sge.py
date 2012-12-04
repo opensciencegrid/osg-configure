@@ -2,12 +2,11 @@
 
 """ Module to handle attributes related to the sge jobmanager configuration """
 
-import ConfigParser, os, re, types, logging
+import os, re, logging
 
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile
 from osg_configure.modules import validation
-from osg_configure.modules import exceptions
 from osg_configure.modules.jobmanagerbase import JobManagerConfiguration
 
 __all__ = ['SGEConfiguration']
@@ -39,7 +38,7 @@ class SGEConfiguration(JobManagerConfiguration):
                     'seg_enabled' : 
                       configfile.Option(name = 'seg_enabled',
                                         required = configfile.Option.OPTIONAL,
-                                        type = bool,
+                                        opt_type = bool,
                                         default_value = False),
                     'log_directory' : 
                       configfile.Option(name = 'log_directory',
@@ -52,7 +51,7 @@ class SGEConfiguration(JobManagerConfiguration):
                     'validate_queues' : 
                       configfile.Option(name = 'validate_queues',
                                         required = configfile.Option.OPTIONAL,
-                                        type = bool,
+                                        opt_type = bool,
                                         default_value = False),
                     'available_queues' : 
                       configfile.Option(name = 'available_queues',
@@ -61,7 +60,7 @@ class SGEConfiguration(JobManagerConfiguration):
                     'accept_limited' : 
                       configfile.Option(name = 'accept_limited',
                                         required = configfile.Option.OPTIONAL,
-                                        type = bool,
+                                        opt_type = bool,
                                         default_value = False)}               
     self.__set_default = True
     self.config_section = "SGE"
@@ -207,6 +206,11 @@ class SGEConfiguration(JobManagerConfiguration):
         self.log('SGEConfiguration.configure completed')
         return False
 
+    if self.options['seg_enabled'].value:
+      self.enable_seg('sge', SGEConfiguration.SGE_CONFIG_FILE)
+    else:
+      self.disable_seg('sge', SGEConfiguration.SGE_CONFIG_FILE)
+
     if not self.setupGramConfig():
       self.log('Error writing to ' + SGEConfiguration.GRAM_CONFIG_FILE,
                level = logging.ERROR)
@@ -215,16 +219,7 @@ class SGEConfiguration(JobManagerConfiguration):
     if self.__set_default:
       self.log('Configuring gatekeeper to use regular fork service')
       self.set_default_jobmanager('fork')
-
-    if self.options['seg_enabled'].value:
-      self.enable_seg('sge', SGEConfiguration.SGE_CONFIG_FILE)
-      #TODO: do other SEG configuration
-    else:
-      self.disable_seg('sge', SGEConfiguration.SGE_CONFIG_FILE)
-      #TODO: do other SEG configuration
-
-    # TODO: do other globus job manager configuration, e.g. paths etc.s      
-
+    
     self.log('SGEConfiguration.configure started')    
     return True
   
@@ -246,59 +241,59 @@ class SGEConfiguration(JobManagerConfiguration):
     
     Returns True if successful, False otherwise
     """    
-    buffer = open(SGEConfiguration.GRAM_CONFIG_FILE).read()
+    buf = open(SGEConfiguration.GRAM_CONFIG_FILE).read()
     bin_location = os.path.join(self.options['sge_root'].value,
                                 'bin',
                                 'qsub')
     if validation.valid_file(bin_location):
       re_obj = re.compile('^qsub=.*$', re.MULTILINE)
-      (buffer, count) = re_obj.subn("qsub=\"%s\"" % bin_location,
-                                    buffer,
-                                    1)
+      (buf, count) = re_obj.subn("qsub=\"%s\"" % bin_location,
+                                 buf,
+                                 1)
       if count == 0:
-        buffer += "qsub=\"%s\"\n" % bin_location
+        buf += "qsub=\"%s\"\n" % bin_location
     bin_location = os.path.join(self.options['sge_root'].value,
                                 'bin',
                                 'qstat')
     if validation.valid_file(bin_location):
       re_obj = re.compile('^qstat=.*$', re.MULTILINE)
-      (buffer, count) = re_obj.subn("qstat=\"%s\"" % bin_location,
-                                    buffer,
-                                    1)
+      (buf, count) = re_obj.subn("qstat=\"%s\"" % bin_location,
+                                 buf,
+                                 1)
       if count == 0:
-        buffer += "qstat=\"%s\"\n" % bin_location
+        buf += "qstat=\"%s\"\n" % bin_location
     bin_location = os.path.join(self.options['sge_root'].value,
                                 'bin',
                                 'qdel')
     if validation.valid_file(bin_location):
       re_obj = re.compile('^qdel=.*$', re.MULTILINE)
-      (buffer, count) = re_obj.subn("qdel=\"%s\"" % bin_location,
-                                    buffer,
-                                    1)
+      (buf, count) = re_obj.subn("qdel=\"%s\"" % bin_location,
+                                 buf,
+                                 1)
       if count == 0:
-        buffer += "qdel=\"%s\"\n" % bin_location 
+        buf += "qdel=\"%s\"\n" % bin_location 
     
     bin_location = os.path.join(self.options['sge_root'].value,
                                 'bin',
                                 'qconf')
     if validation.valid_file(bin_location):
       re_obj = re.compile('^qconf=.*$', re.MULTILINE)
-      (buffer, count) = re_obj.subn("qconf=\"%s\"" % bin_location,
-                                    buffer,
-                                    1)
+      (buf, count) = re_obj.subn("qconf=\"%s\"" % bin_location,
+                                 buf,
+                                 1)
       if count == 0:
-        buffer += "qconf=\"%s\"\n" % bin_location 
+        buf += "qconf=\"%s\"\n" % bin_location 
     new_setting = "sge_cell=\"%s\"" % self.options['sge_cell'].value
     re_obj = re.compile('^sge_cell=.*$', re.MULTILINE)
-    (buffer, count) = re_obj.subn(new_setting, buffer, 1)
+    (buf, count) = re_obj.subn(new_setting, buf, 1)
     if count == 0:
-      buffer += new_setting + "\n" 
+      buf += new_setting + "\n" 
     
     new_setting = "sge_root=\"%s\"" % self.options['sge_root'].value
     re_obj = re.compile('^sge_root=.*$', re.MULTILINE)
-    (buffer, count) = re_obj.subn(new_setting, buffer, 1)
+    (buf, count) = re_obj.subn(new_setting, buf, 1)
     if count == 0:
-      buffer += new_setting + "\n" 
+      buf += new_setting + "\n" 
 
     if self.options['seg_enabled'].value:
       if (self.options['log_directory'].value is None or
@@ -313,40 +308,40 @@ class SGEConfiguration(JobManagerConfiguration):
 
       new_setting = "log_path=\"%s\"" % self.options['log_directory'].value
       re_obj = re.compile('^log_path=.*$', re.MULTILINE)
-      (buffer, count) = re_obj.subn(new_setting, buffer, 1)
+      (buf, count) = re_obj.subn(new_setting, buf, 1)
       if count == 0:
-        buffer += new_setting + "\n" 
+        buf += new_setting + "\n" 
     
     if self.options['default_queue'].value != '':
       re_obj = re.compile('^default_queue=.*$', re.MULTILINE)
-      (buffer, count) = re_obj.subn("default_queue=\"%s\"" % 
-                                    self.options['default_queue'].value,
-                                    buffer,
-                                    1)
+      (buf, count) = re_obj.subn("default_queue=\"%s\"" % 
+                                 self.options['default_queue'].value,
+                                 buf,
+                                 1)
       if count == 0:
-        buffer += "default_queue=\"%s\"\n" % self.options['default_queue'].value
+        buf += "default_queue=\"%s\"\n" % self.options['default_queue'].value
       
       re_obj = re.compile('^validate_queues=.*$', re.MULTILINE)
       if self.options['validate_queues'].value:
-        (buffer, count) = re_obj.subn('validate_queues=yes', buffer, 1)
+        (buf, count) = re_obj.subn('validate_queues=yes', buf, 1)
         if count == 0:
-          buffer += "validate_queues=yes\n"
+          buf += "validate_queues=yes\n"
       else:
-        (buffer, count) = re_obj.subn('validate_queues=no', buffer, 1)
+        (buf, count) = re_obj.subn('validate_queues=no', buf, 1)
         if count == 0:
-          buffer += "validate_queues=no\n"
+          buf += "validate_queues=no\n"
 
     if self.options['available_queues'].value != '':
       re_obj = re.compile('^available_queues=.*$', re.MULTILINE)
-      (buffer, count) = re_obj.subn("available_queues=\"%s\"" % 
-                                    self.options['available_queues'].value,
-                                    buffer,
-                                    1)
+      (buf, count) = re_obj.subn("available_queues=\"%s\"" % 
+                                 self.options['available_queues'].value,
+                                 buf,
+                                 1)
       if count == 0:
-        buffer += 'available_queues="'
-        buffer += self.options['available_queues'].value
-        buffer += '"\n'
+        buf += 'available_queues="'
+        buf += self.options['available_queues'].value
+        buf += '"\n'
         
-    if not utilities.atomic_write(SGEConfiguration.GRAM_CONFIG_FILE, buffer):
+    if not utilities.atomic_write(SGEConfiguration.GRAM_CONFIG_FILE, buf):
       return False
     return True

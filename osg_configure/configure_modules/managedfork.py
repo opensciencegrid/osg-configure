@@ -3,11 +3,10 @@
 """ Module to handle attributes related to the Managed Fork jobmanager configuration """
 
 
-import os, tempfile, ConfigParser, logging
+import os, logging
 
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile
-from osg_configure.modules import exceptions
 from osg_configure.modules.jobmanagerbase import JobManagerConfiguration
 from osg_configure.modules.configurationbase import BaseConfiguration
 
@@ -55,13 +54,13 @@ class ManagedForkConfiguration(JobManagerConfiguration):
                     'enabled' : 
                       configfile.Option(name = 'enabled',
                                         required = configfile.Option.OPTIONAL,
-                                        type = bool,
+                                        opt_type = bool,
                                         default_value = False,
                                         mapping = 'OSG_MANAGEDFORK'),
                     'accept_limited' : 
                       configfile.Option(name = 'accept_limited',
                                         required = configfile.Option.OPTIONAL,
-                                        type = bool,
+                                        opt_type = bool,
                                         default_value = False)}
     self.section_present = False
     self.config_section = "Managed Fork"
@@ -198,7 +197,7 @@ class ManagedForkConfiguration(JobManagerConfiguration):
     """Returns the sections from the configuration file that this module handles"""
     return [self.config_section]
   
-  def getAttributes(self):
+  def getAttributes(self, converter = str):
     """
     Get attributes for the osg attributes file using the dict in self.options
 

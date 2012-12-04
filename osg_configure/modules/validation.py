@@ -204,6 +204,7 @@ def valid_ini_file(filename):
       for option in configuration.options(section):
         value = configuration.get(section, option)
         if "\n" in value:
+          # pylint: disable-msg=E1103
           error_line = value.split('\n')[1]
           sys.stderr.write("INI syntax error in section %s: " % section)
           sys.stderr.write("The following line starts with a space: %s" % error_line)

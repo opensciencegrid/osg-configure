@@ -37,7 +37,7 @@ class PBSConfiguration(JobManagerConfiguration):
                     'seg_enabled' : 
                       configfile.Option(name = 'seg_enabled',
                                         required = configfile.Option.OPTIONAL,
-                                        type = bool,
+                                        opt_type = bool,
                                         default_value = False),
                     'log_directory' : 
                       configfile.Option(name = 'log_directory',
@@ -54,7 +54,7 @@ class PBSConfiguration(JobManagerConfiguration):
                     'accept_limited' : 
                       configfile.Option(name = 'accept_limited',
                                         required = configfile.Option.OPTIONAL,
-                                        type = bool,
+                                        opt_type = bool,
                                         default_value = False)}
     self.config_section = "PBS"
     self.__set_default = True

@@ -56,11 +56,11 @@ class SiteAttributes(BaseConfiguration):
                                         mapping = 'OSG_SITE_COUNTRY'),
                     'longitude' : 
                       configfile.Option(name = 'longitude',
-                                        type = float,
+                                        opt_type = float,
                                         mapping = 'OSG_SITE_LONGITUDE'),
                     'latitude' : 
                       configfile.Option(name = 'latitude',
-                                        type = float,
+                                        opt_type = float,
                                         mapping = 'OSG_SITE_LATITUDE'),
                     'resource' : 
                       configfile.Option(name = 'resource',

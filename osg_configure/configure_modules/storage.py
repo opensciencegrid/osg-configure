@@ -4,7 +4,6 @@
 
 import os, shutil, stat, logging
 
-from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile
 from osg_configure.modules import validation
@@ -22,7 +21,7 @@ class StorageConfiguration(BaseConfiguration):
     self.log('StorageConfiguration.__init__ started')
     self.options = {'se_available' : 
                       configfile.Option(name = 'se_available',
-                                        type = bool,
+                                        opt_type = bool,
                                         default_value = False,
                                         mapping = 'OSG_STORAGE_ELEMENT'),
                     'default_se' : 

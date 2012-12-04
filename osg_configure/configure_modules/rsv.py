@@ -23,7 +23,7 @@ class RsvConfiguration(BaseConfiguration):
     self.options = {'enable_local_probes' : 
                       configfile.Option(name = 'enable_local_probes',
                                         required = configfile.Option.OPTIONAL,
-                                        type = bool,
+                                        opt_type = bool,
                                         default_value = True),
                     'gratia_probes' : 
                       configfile.Option(name = 'gratia_probes',
@@ -73,11 +73,11 @@ class RsvConfiguration(BaseConfiguration):
                     'legacy_proxy' : 
                       configfile.Option(name = 'legacy_proxy',
                                         required = configfile.Option.OPTIONAL,
-                                        type = bool,
+                                        opt_type = bool,
                                         default_value = False),
                     'enable_gratia' : 
                       configfile.Option(name = 'enable_gratia',
-                                        type = bool),
+                                        opt_type = bool),
                     'gratia_collector' : 
                       configfile.Option(name = 'gratia_collector',
                                         required = configfile.Option.OPTIONAL,
@@ -88,11 +88,11 @@ class RsvConfiguration(BaseConfiguration):
                                         required = configfile.Option.OPTIONAL),
                     'enable_nagios' : 
                       configfile.Option(name = 'enable_nagios',
-                                        type = bool),
+                                        opt_type = bool),
                     'nagios_send_nsca' : 
                       configfile.Option(name = 'nagios_send_nsca',
                                         required = configfile.Option.OPTIONAL,
-                                        type = bool,
+                                        opt_type = bool,
                                         default_value = False)}
 
     self.__rsv_user = "rsv"
@@ -411,7 +411,7 @@ class RsvConfiguration(BaseConfiguration):
       if filename == "rsv.conf" or filename == "rsv-nagios.conf":
         continue
 
-      path = os.path.join(parent_dir, file)
+      path = os.path.join(parent_dir, filename)
       self.log("Removing %s as part of reset" % path)
       os.unlink(path)
 
@@ -440,7 +440,7 @@ class RsvConfiguration(BaseConfiguration):
         continue
 
       if self.__meta.has_option(metric, "service-type"):
-        if self.__meta.get(metric, "service-type") == type:
+        if self.__meta.get(metric, "service-type") == metric_type:
           if not enabled:
             metrics.append(metric)
           else:

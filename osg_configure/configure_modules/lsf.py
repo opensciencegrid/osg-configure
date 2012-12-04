@@ -3,12 +3,11 @@
 """ Module to handle attributes related to the lsf jobmanager 
 configuration """
 
-import ConfigParser, os, re, types, logging
+import os, re, logging
 
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile
 from osg_configure.modules import validation
-from osg_configure.modules import exceptions
 from osg_configure.modules.jobmanagerbase import JobManagerConfiguration
 
 __all__ = ['LSFConfiguration']
@@ -38,7 +37,7 @@ class LSFConfiguration(JobManagerConfiguration):
                     'seg_enabled' : 
                       configfile.Option(name = 'seg_enabled',
                                         required = configfile.Option.OPTIONAL,
-                                        type = bool,
+                                        opt_type = bool,
                                         default_value = False),
                     'log_directory' : 
                       configfile.Option(name = 'log_directory',
@@ -46,7 +45,7 @@ class LSFConfiguration(JobManagerConfiguration):
                                         default_value = ''),
                     'accept_limited' : configfile.Option(name = 'accept_limited',
                                                       required = configfile.Option.OPTIONAL,
-                                                      type = bool,
+                                                      opt_type = bool,
                                                       default_value = False)}    
     self.config_section = 'LSF'
     self.__set_default = True
@@ -172,9 +171,9 @@ class LSFConfiguration(JobManagerConfiguration):
         return False
 
     if self.options['seg_enabled'].value:
-      self.enable_seg('lsf', LSFConfiguration.PBS_CONFIG_FILE)
+      self.enable_seg('lsf', LSFConfiguration.LSF_CONFIG_FILE)
     else:
-      self.disable_seg('lsf', LSFConfiguration.PBS_CONFIG_FILE)
+      self.disable_seg('lsf', LSFConfiguration.LSF_CONFIG_FILE)
     
     if not self.setupGramConfig():
       self.log('Error writing to ' + LSFConfiguration.GRAM_CONFIG_FILE,
@@ -206,42 +205,42 @@ class LSFConfiguration(JobManagerConfiguration):
     
     Returns True if successful, False otherwise
     """    
-    buffer = open(LSFConfiguration.GRAM_CONFIG_FILE).read()
+    buf = open(LSFConfiguration.GRAM_CONFIG_FILE).read()
     bin_location = os.path.join(self.options['lsf_location'].value,
                                 'bin',
                                 'qsub')
     if validation.valid_file(bin_location):
       re_obj = re.compile('^qsub=.*$', re.MULTILINE)
-      (buffer, count) = re_obj.subn("qsub=\"%s\"" % bin_location, 
-                                    buffer, 
-                                    1)
+      (buf, count) = re_obj.subn("qsub=\"%s\"" % bin_location, 
+                                 buf, 
+                                 1)
       if count == 0:
-        buffer += "qsub=\"%s\"\n" % bin_location
+        buf += "qsub=\"%s\"\n" % bin_location
     bin_location = os.path.join(self.options['lsf_location'].value,
                                 'bin',
                                 'qstat')
     if validation.valid_file(bin_location):
       re_obj = re.compile('^qstat=.*$', re.MULTILINE)
-      (buffer, count) = re_obj.subn("qstat=\"%s\"" % bin_location,
-                                    buffer,
-                                    1)
+      (buf, count) = re_obj.subn("qstat=\"%s\"" % bin_location,
+                                 buf,
+                                 1)
       if count == 0:
-        buffer += "qstat=\"%s\"\n" % bin_location
+        buf += "qstat=\"%s\"\n" % bin_location
     bin_location = os.path.join(self.options['lsf_location'].value,
                                 'bin',
                                 'qdel')
     if validation.valid_file(bin_location):
       re_obj = re.compile('^qstat=.*$', re.MULTILINE)
-      (buffer, count) = re_obj.subn("qdel=\"%s\"" % bin_location, buffer, 1)
+      (buf, count) = re_obj.subn("qdel=\"%s\"" % bin_location, buf, 1)
       if count == 0:
-        buffer += "qdel=\"%s\"\n" % bin_location
+        buf += "qdel=\"%s\"\n" % bin_location
     if self.options['lsf_server'].value is not None:
       re_obj = re.compile('^qstat=.*$', re.MULTILINE)
-      (buffer, count) = re_obj.subn("lsf_default=\"%s\"" % bin_location,
-                                    buffer,
-                                    1)
+      (buf, count) = re_obj.subn("lsf_default=\"%s\"" % bin_location,
+                                 buf,
+                                 1)
       if count == 0:
-        buffer += "lsf_default=\"%s\"\n" % self.options['lsf_server'].value
+        buf += "lsf_default=\"%s\"\n" % self.options['lsf_server'].value
         
     if self.options['seg_enabled'].value:
       if (self.options['log_directory'].value is None or
@@ -256,10 +255,10 @@ class LSFConfiguration(JobManagerConfiguration):
 
       new_setting = "log_path=\"%s\"" % self.options['log_directory'].value
       re_obj = re.compile('^log_path=.*$', re.MULTILINE)
-      (buffer, count) = re_obj.subn(new_setting, buffer, 1)
+      (buf, count) = re_obj.subn(new_setting, buf, 1)
       if count == 0:
-        buffer += new_setting + "\n"
+        buf += new_setting + "\n"
     
-    if not utilities.atomic_write(LSFConfiguration.GRAM_CONFIG_FILE, buffer):
+    if not utilities.atomic_write(LSFConfiguration.GRAM_CONFIG_FILE, buf):
       return False
     return True

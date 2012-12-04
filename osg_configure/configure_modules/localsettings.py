@@ -3,7 +3,6 @@
 """ Module to handle site specific local settings """
 
 from osg_configure.modules.configurationbase import BaseConfiguration
-import sys
 
 __all__ = ['LocalSettings']
 
@@ -61,9 +60,3 @@ class LocalSettings(BaseConfiguration):
   def parseSections(self):
     """Returns the sections from the configuration file that this module handles"""
     return [self.config_section]
-
-  def getAttributes(self):
-    """
-    Return attributes as a dict
-    """
-    return self.attributes

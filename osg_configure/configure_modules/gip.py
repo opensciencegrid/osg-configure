@@ -6,7 +6,6 @@ import re, os, pwd, logging
 from osg_configure.modules import exceptions
 from osg_configure.modules.configurationbase import BaseConfiguration
 from osg_configure.modules import utilities
-from osg_configure.modules import configfile
 from osg_configure.modules import validation
 
 __all__ = ['GipConfiguration']
@@ -30,7 +29,6 @@ SC_ENTRIES = { \
    "name": (REQUIRED, STRING),
    "cpu_vendor": (REQUIRED, STRING),
    "cpu_model": (REQUIRED, STRING),
-   "cores_per_node": (REQUIRED, POSITIVE_INT),
    "cores_per_node": (REQUIRED, POSITIVE_INT),
    "node_count": (REQUIRED, POSITIVE_INT),
    "cpus_per_node": (REQUIRED, POSITIVE_INT),
