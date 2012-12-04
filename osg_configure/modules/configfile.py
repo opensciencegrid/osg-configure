@@ -189,7 +189,7 @@ class Option(object):
     name - option name                  
     """
     
-    self.opt_type = kwargs.get('type', str)
+    self.opt_type = kwargs.get('opt_type', str)
     if self.opt_type == str:
       self.value = kwargs.get('value', '')
     elif self.opt_type == int or self.opt_type == float:

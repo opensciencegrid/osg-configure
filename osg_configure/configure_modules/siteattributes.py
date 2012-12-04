@@ -143,7 +143,7 @@ class SiteAttributes(BaseConfiguration):
     
     if self.options['latitude'].value > 90 or self.options['latitude'].value < -90:
       self.log("Latitude must be between -90 and 90, got %s" % 
-                self.options['latitude'].value,
+               self.options['latitude'].value,
                section = self.config_section,
                option = 'latitude',
                level = logging.ERROR)    
@@ -151,7 +151,7 @@ class SiteAttributes(BaseConfiguration):
   
     if self.options['longitude'].value > 180 or self.options['longitude'].value < -180:
       self.log("Longitude must be between -180 and 180, got %s" % 
-                self.options['longitude'].value,
+               self.options['longitude'].value,
                section = self.config_section,
                option = 'longitude',
                level = logging.ERROR)    
@@ -286,7 +286,7 @@ class SiteAttributes(BaseConfiguration):
     """Returns the sections from the configuration file that this module handles"""
     return [self.config_section]
 
-  def getAttributes(self):
+  def getAttributes(self, converter = str):
     """
     Get attributes for the osg attributes file using the dict in self.options
 

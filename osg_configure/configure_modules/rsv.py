@@ -991,15 +991,24 @@ class RsvConfiguration(BaseConfiguration):
     parent_dir = os.path.join('/', 'var', 'log', 'gratia', 'rsv')
 
     log_folder = os.path.join(parent_dir, 'logs')
-    utilities.make_directory(log_folder, 0755, self.uid, self.gid)
+    if not os.path.exists(log_folder):
+      utilities.make_directory(log_folder, 0755, self.uid, self.gid)
+    elif os.path.isdir(log_folder):
+      os.chown(log_folder, self.uid, self.gid)
     conf = re.sub(r'(\s*)LogFolder\s*=.*', r'\1LogFolder="' + log_folder + '"', conf, 1)
 
     data_folder = os.path.join(parent_dir, 'data')
-    utilities.make_directory(data_folder, 0755, self.uid, self.gid)
+    if not os.path.exists(data_folder):
+      utilities.make_directory(data_folder, 0755, self.uid, self.gid)
+    elif os.path.isdir(data_folder):
+      os.chown(data_folder, self.uid, self.gid)
     conf = re.sub(r'(\s*)DataFolder\s*=.*', r'\1DataFolder="' + data_folder + '"', conf, 1)
 
     working_folder = os.path.join(parent_dir, 'tmp')
-    utilities.make_directory(working_folder, 0755, self.uid, self.gid)
+    if not os.path.exists(working_folder):
+      utilities.make_directory(working_folder, 0755, self.uid, self.gid)
+    elif os.path.isdir(working_folder):
+      os.chown(working_folder, self.uid, self.gid)
     conf = re.sub(r'(\s*)WorkingFolder\s*=.*', 
                   r'\1WorkingFolder="' + working_folder + '"', 
                   conf,
