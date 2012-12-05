@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 
-import os, imp, sys, unittest, ConfigParser, logging
+import os, sys, unittest, ConfigParser, logging
 
 # setup system library path
 pathname = os.path.realpath('../')
 sys.path.insert(0, pathname)
 
-from osg_configure.modules import utilities
 from osg_configure.modules import exceptions
 from osg_configure.configure_modules import siteattributes
 from osg_configure.modules.utilities import get_test_config
@@ -18,7 +17,7 @@ else:
   # NullHandler is only in python 2.7 and above
   class NullHandler(logging.Handler):
     def emit(self, record):
-        pass
+      pass
             
   global_logger.addHandler(NullHandler())
 

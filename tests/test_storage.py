@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os, imp, sys, unittest, ConfigParser, logging
+import os, sys, unittest, ConfigParser, logging
 
 # setup system library path
 pathname = os.path.realpath('../')
@@ -19,7 +19,7 @@ else:
   # NullHandler is only in python 2.7 and above
   class NullHandler(logging.Handler):
     def emit(self, record):
-        pass
+      pass
             
   global_logger.addHandler(NullHandler())
 
