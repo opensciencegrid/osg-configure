@@ -3,7 +3,6 @@
 import os
 import re
 import logging
-import sets
 
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile
@@ -351,9 +350,9 @@ class SGEConfiguration(JobManagerConfiguration):
     """Return a list of  system services needed for module to work
     """
     if not self.enabled or self.ignored:
-      return sets.Set()
+      return set()
         
-    services = sets.Set(['globus-gatekeeper', 'globus-gridftp-server'])
+    services = set(['globus-gatekeeper', 'globus-gridftp-server'])
     if self.options['seg_enabled'].value:
-      services.update('globus-scheduler-event-generator')
+      services.add('globus-scheduler-event-generator')
     return services 

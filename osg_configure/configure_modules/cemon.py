@@ -6,7 +6,6 @@ import re
 import urlparse
 import logging
 import stat
-import sets
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
@@ -415,9 +414,9 @@ class CemonConfiguration(BaseConfiguration):
     """
     
     if not self.enabled or self.ignored:
-      return sets.Set()
+      return set()
     
-    return sets.Set(['tomcat5'])
+    return set(['tomcat5'])
         
       
       

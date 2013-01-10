@@ -4,7 +4,6 @@ jobmanager configuration """
 import os
 import logging
 import re
-import sets
 
 from osg_configure.modules import utilities
 from osg_configure.modules import validation
@@ -254,6 +253,6 @@ class CondorConfiguration(JobManagerConfiguration):
     """Return a list of  system services needed for module to work
     """
     if not self.enabled or self.ignored:
-      return sets.Set()
+      return set()
         
-    return sets.Set(['globus-gatekeeper', 'globus-gridftp-server'])
+    return set(['globus-gatekeeper', 'globus-gridftp-server'])

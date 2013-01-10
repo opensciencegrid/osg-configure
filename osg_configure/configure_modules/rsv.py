@@ -6,7 +6,6 @@ import shutil
 import logging
 import ConfigParser
 import pwd
-import sets
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
@@ -1081,9 +1080,9 @@ class RsvConfiguration(BaseConfiguration):
     """
     
     if not self.enabled or self.ignored:
-      return sets.Set()
+      return set()
       
-    return sets.Set(['rsv', 'condor-cron'])
+    return set(['rsv', 'condor-cron'])
 
 def split_list(item_list):
   """ Split a comma separated list of items """

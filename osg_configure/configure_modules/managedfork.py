@@ -2,7 +2,6 @@
 
 import os
 import logging
-import sets
 
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile
@@ -217,8 +216,9 @@ class ManagedForkConfiguration(JobManagerConfiguration):
   def enabledServices(self):
     """Return a list of  system services needed for module to work
     """
-    if self.enabled and not self.ignored:
-      return sets.Set(['condor', 'globus-gatekeeper'])
-    else:
-      return sets.Set()
+    
+    if not self.enabled or self.ignored:
+      return set()
+
+    return set(['condor-cron', 'globus-gatekeeper'])
   

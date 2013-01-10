@@ -4,7 +4,6 @@ import os
 import re
 import sys
 import logging
-import sets
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
@@ -455,7 +454,7 @@ in your config.ini file."""
     """
     
     if not self.enabled or self.ignored:
-      return sets.Set()
+      return set()
     
-    return sets.Set(['gratia-probes-cron'])
+    return set(['gratia-probes-cron'])
     

@@ -2,7 +2,6 @@
 
 import re
 import logging
-import sets
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
@@ -312,13 +311,13 @@ configuration:
     """
     
     if not self.enabled or self.ignored:
-      return sets.Set()
+      return set()
     
-    services = sets.Set(['fetch-crl-cron', 'fetch-crl-boot'])
+    services = set(['fetch-crl-cron', 'fetch-crl-boot'])
     if self.options['authorization_method'].value == 'xacml':
-      services.update('gums-client-cron')
+      services.add('gums-client-cron')
     elif self.options['authorization_method'].value == 'gridmap':
-      services.update('edg-mkgridmap')
+      services.add('edg-mkgridmap')
     if self.options['enable_cleanup'].value:
-      services.update('osg-cleanup-cron')
+      services.add('osg-cleanup-cron')
     return services
