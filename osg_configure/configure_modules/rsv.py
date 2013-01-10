@@ -6,6 +6,7 @@ import shutil
 import logging
 import ConfigParser
 import pwd
+import sets
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
@@ -1078,10 +1079,11 @@ class RsvConfiguration(BaseConfiguration):
   def enabledServices(self):
     """Return a list of  system services needed for module to work
     """
-    if self.enabled and not self.ignored:
-      return ['rsv', 'condor-cron']
-    else:
-      return []
+    
+    if not self.enabled or self.ignored:
+      return sets.Set()
+      
+    return sets.Set(['rsv', 'condor-cron'])
 
 def split_list(item_list):
   """ Split a comma separated list of items """

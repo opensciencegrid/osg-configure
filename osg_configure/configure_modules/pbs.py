@@ -4,6 +4,7 @@ configuration """
 import os
 import re
 import logging
+import sets
 
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile
@@ -278,12 +279,13 @@ class PBSConfiguration(JobManagerConfiguration):
   def enabledServices(self):
     """Return a list of  system services needed for module to work
     """
-    if self.enabled and not self.ignored:
-      services = ['globus-gatekeeper', 'globus-gridftp-server']
-      if self.options['seg_enabled'].value:
-        services.append('globus-scheduler-event-generator')
-      return services 
-    else:
-      return []
+    
+    if not self.enabled or self.ignored:
+      return sets.Set()
+        
+    services = sets.Set(['globus-gatekeeper', 'globus-gridftp-server'])
+    if self.options['seg_enabled'].value:
+      services.update('globus-scheduler-event-generator')
+    return services 
          
       

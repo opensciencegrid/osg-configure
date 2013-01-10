@@ -8,7 +8,7 @@ import sys
 import unittest
 import ConfigParser
 import logging
-
+import sets
 
 # setup system library path
 pathname = os.path.realpath('../')
@@ -54,9 +54,9 @@ class TestCEMon(unittest.TestCase):
                  'bdii_servers' : 'http://is1.grid.iu.edu:14001[RAW], http://is2.grid.iu.edu:14001[RAW]' }
 
     for var in variables:      
-      self.failUnless(options.has_key(var), 
+      self.assertTrue(options.has_key(var), 
                       "Option %s missing" % var)
-      self.failUnlessEqual(options[var].value, 
+      self.assertEqual(options[var].value, 
                            variables[var], 
                            "Wrong value obtained for %s, got %s but " \
                            "expected %s" % (var, 
@@ -89,9 +89,9 @@ class TestCEMon(unittest.TestCase):
                                   'http://is2.grid.iu.edu:14001[RAW]'}
 
     for var in variables:      
-      self.failUnless(options.has_key(var), 
+      self.assertTrue(options.has_key(var), 
                       "Option %s missing" % var)
-      self.failUnlessEqual(options[var].value, 
+      self.assertEqual(options[var].value, 
                            variables[var], 
                            "Wrong value obtained for %s, got %s but " \
                            "expected %s" % (var, 
@@ -124,9 +124,9 @@ class TestCEMon(unittest.TestCase):
                                   'http://is2.grid.iu.edu:14001[RAW]'}
 
     for var in variables:      
-      self.failUnless(options.has_key(var), 
+      self.assertTrue(options.has_key(var), 
                       "Option %s missing" % var)
-      self.failUnlessEqual(options[var].value, 
+      self.assertEqual(options[var].value, 
                            variables[var], 
                            "Wrong value obtained for %s, got %s but " \
                            "expected %s" % (var, 
@@ -160,9 +160,9 @@ class TestCEMon(unittest.TestCase):
                                   'http://is2.grid.iu.edu:14001[RAW]'}
 
     for var in variables:      
-      self.failUnless(options.has_key(var), 
+      self.assertTrue(options.has_key(var), 
                       "Option %s missing" % var)
-      self.failUnlessEqual(options[var].value, 
+      self.assertEqual(options[var].value, 
                            variables[var], 
                            "Wrong value obtained for %s, got %s but " \
                            "expected %s" % (var, 
@@ -197,9 +197,9 @@ class TestCEMon(unittest.TestCase):
                                   'http://is2.grid.iu.edu:14001[RAW]'}
 
     for var in variables:      
-      self.failUnless(options.has_key(var), 
+      self.assertTrue(options.has_key(var), 
                       "Option %s missing" % var)
-      self.failUnlessEqual(options[var].value, 
+      self.assertEqual(options[var].value, 
                            variables[var], 
                            "Wrong value obtained for %s, got %s but " \
                            "expected %s" % (var, 
@@ -222,9 +222,9 @@ class TestCEMon(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    self.failUnlessEqual(settings.options['ress_servers'].value, '', 
+    self.assertEqual(settings.options['ress_servers'].value, '', 
                          "Disabled configuration should have no attributes")
-    self.failUnlessEqual(settings.options['bdii_servers'].value, '', 
+    self.assertEqual(settings.options['bdii_servers'].value, '', 
                          "Disabled configuration should have no attributes")
 
   def testParsingIgnored(self):
@@ -243,9 +243,9 @@ class TestCEMon(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    self.failUnlessEqual(settings.options['ress_servers'].value, '', 
+    self.assertEqual(settings.options['ress_servers'].value, '', 
                          "Disabled configuration should have no attributes")
-    self.failUnlessEqual(settings.options['bdii_servers'].value, '', 
+    self.assertEqual(settings.options['bdii_servers'].value, '', 
                          "Disabled configuration should have no attributes")
 
   def testIgnoredServices(self):
@@ -263,7 +263,7 @@ class TestCEMon(unittest.TestCase):
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e)
  
-    self.failUnlessEqual(settings.ress_servers, {}, 
+    self.assertEqual(settings.ress_servers, {}, 
                          "Should not have ress subscriptions when being ignored")
 
     config_file = get_test_config("cemon/ignore_bdii.ini")
@@ -276,7 +276,7 @@ class TestCEMon(unittest.TestCase):
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e)
 
-    self.failUnlessEqual(settings.bdii_servers, {}, 
+    self.assertEqual(settings.bdii_servers, {}, 
                          "Should not have BDII subscriptions when being ignored")
 
   def testInvalidRess1(self):
@@ -290,9 +290,9 @@ class TestCEMon(unittest.TestCase):
     configuration.read(config_file)
 
     settings = cemon.CemonConfiguration(logger=global_logger)
-    self.failUnlessRaises(exceptions.SettingError, 
-                          settings.parseConfiguration,
-                          configuration = configuration)
+    self.assertRaises(exceptions.SettingError, 
+                      settings.parseConfiguration,
+                      configuration = configuration)
 
   def testInvalidRess2(self):
     """
@@ -311,7 +311,7 @@ class TestCEMon(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes), 
+    self.assertFalse(settings.checkAttributes(attributes), 
                 "Did not notice invalid ress server")
 
   def testInvalidRess3(self):
@@ -331,7 +331,7 @@ class TestCEMon(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes), 
+    self.assertFalse(settings.checkAttributes(attributes), 
                 "Did not notice invalid ress server")
 
   def testInvalidBDII1(self):
@@ -345,9 +345,9 @@ class TestCEMon(unittest.TestCase):
     configuration.read(config_file)
 
     settings = cemon.CemonConfiguration(logger=global_logger)
-    self.failUnlessRaises(exceptions.SettingError, 
-                          settings.parseConfiguration,
-                          configuration = configuration)
+    self.assertRaises(exceptions.SettingError, 
+                      settings.parseConfiguration,
+                      configuration = configuration)
 
   def testInvalidBDII2(self):
     """
@@ -366,8 +366,8 @@ class TestCEMon(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes), 
-                "Did not notice invalid bdii server")
+    self.assertFalse(settings.checkAttributes(attributes), 
+                     "Did not notice invalid bdii server")
 
   def testInvalidBDII3(self):
     """
@@ -386,8 +386,8 @@ class TestCEMon(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes), 
-                "Did not notice invalid bdii server")
+    self.assertFalse(settings.checkAttributes(attributes), 
+                     "Did not notice invalid bdii server")
 
   def testValidSettings(self):
     """
@@ -405,7 +405,7 @@ class TestCEMon(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failUnless(settings.checkAttributes(attributes), 
+    self.assertTrue(settings.checkAttributes(attributes), 
                     "Correct settings incorrectly flagged as invalid")
     
   def testValidSettings2(self):
@@ -424,7 +424,7 @@ class TestCEMon(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failUnless(settings.checkAttributes(attributes), 
+    self.assertTrue(settings.checkAttributes(attributes), 
                     "Disabled section incorrectly flagged as invalid")
 
 
@@ -448,7 +448,7 @@ class TestCEMon(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failUnless(settings.checkAttributes(attributes), 
+    self.assertTrue(settings.checkAttributes(attributes), 
                     "ITB defaults incorrectly flagged as invalid")
 
   def testValidProductionDefaults(self):
@@ -470,7 +470,7 @@ class TestCEMon(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failUnless(settings.checkAttributes(attributes), 
+    self.assertTrue(settings.checkAttributes(attributes), 
                     "production defaults incorrectly flagged as invalid")
 
   def testMissingCEITBDefaults(self):
@@ -490,7 +490,7 @@ class TestCEMon(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failUnless(settings.checkAttributes(attributes), 
+    self.assertTrue(settings.checkAttributes(attributes), 
                     "ITB defaults incorrectly flagged as invalid")
 
   def testMissingProductionDefaults(self):
@@ -510,7 +510,7 @@ class TestCEMon(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failUnless(settings.checkAttributes(attributes), 
+    self.assertTrue(settings.checkAttributes(attributes), 
                     "production defaults incorrectly flagged as invalid")
 
   def testMultipleRessServers(self):
@@ -529,7 +529,7 @@ class TestCEMon(unittest.TestCase):
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e)
  
-    self.failUnless(len(settings.ress_servers) == 3, 
+    self.assertTrue(len(settings.ress_servers) == 3, 
                     "Did not parse ress servers correctly")
 
   def testMultipleBDIIServers(self):
@@ -548,7 +548,7 @@ class TestCEMon(unittest.TestCase):
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e)
  
-    self.failUnless(len(settings.bdii_servers) == 3, 
+    self.assertTrue(len(settings.bdii_servers) == 3, 
                     "Did not parse bdii servers correctly")
 
   def testServiceList(self):
@@ -566,7 +566,7 @@ class TestCEMon(unittest.TestCase):
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e)
     services = settings.enabledServices()
-    expected_services = ['tomcat5']
+    expected_services = sets.Set(['tomcat5'])    
     self.assertEqual(services, expected_services,
                      "List of enabled services incorrect, " +
                      "got %s but expected %s" % (services, expected_services))

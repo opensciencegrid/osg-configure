@@ -1,8 +1,8 @@
-#!/usr/bin/python
-
 """ Base class for all configuration classes """
 
-import ConfigParser, logging
+import ConfigParser
+import logging
+import sets
 
 from osg_configure.modules import configfile
 from osg_configure.modules import utilities
@@ -192,5 +192,5 @@ class BaseConfiguration(object):
   def enabledServices(self):
     """Return a list of  system services needed for module to work
     """
-    return []
+    return sets.Set()
     

@@ -8,6 +8,7 @@ import sys
 import unittest
 import ConfigParser
 import logging
+import sets
 
 # setup system library path 
 pathname = os.path.realpath('../')
@@ -214,7 +215,8 @@ class TestPBS(unittest.TestCase):
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e)
     services = settings.enabledServices()
-    expected_services = ['globus-gatekeeper', 'globus-gridftp-server']
+    expected_services = sets.Set(['globus-gatekeeper',
+                                  'globus-gridftp-server'])
     self.assertEqual(services, expected_services,
                      "List of enabled services incorrect, " +
                      "got %s but expected %s" % (services, expected_services))
@@ -229,9 +231,9 @@ class TestPBS(unittest.TestCase):
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e)
     services = settings.enabledServices()
-    expected_services = ['globus-gatekeeper', 
-                         'globus-gridftp-server',
-                         'globus-scheduler-event-generator']
+    expected_services = sets.Set(['globus-gatekeeper', 
+                                  'globus-gridftp-server',
+                                  'globus-scheduler-event-generator'])
     self.assertEqual(services, expected_services,
                      "List of enabled services incorrect, " +
                      "got %s but expected %s" % (services, expected_services))
@@ -246,7 +248,7 @@ class TestPBS(unittest.TestCase):
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e)
     services = settings.enabledServices()
-    expected_services = []
+    expected_services = sets.Set()
     self.assertEqual(services, expected_services,
                      "List of enabled services incorrect, " +
                      "got %s but expected %s" % (services, expected_services))    
@@ -261,7 +263,7 @@ class TestPBS(unittest.TestCase):
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e)
     services = settings.enabledServices()
-    expected_services = []
+    expected_services = sets.Set()
     self.assertEqual(services, expected_services,
                      "List of enabled services incorrect, " +
                      "got %s but expected %s" % (services, expected_services))        

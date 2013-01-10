@@ -1,8 +1,7 @@
-#!/usr/bin/python
-
 """ Base class for all job manager configuration classes """
 
-import re, logging
+import re
+import logging
 
 from osg_configure.modules.configurationbase import BaseConfiguration
 from osg_configure.modules import utilities

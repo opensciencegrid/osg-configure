@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 """ Module to hold various utility functions """
 
 import re

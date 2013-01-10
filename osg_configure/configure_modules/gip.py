@@ -1,3 +1,5 @@
+"""Class for verifying gip information"""
+
 import os
 import re
 import pwd

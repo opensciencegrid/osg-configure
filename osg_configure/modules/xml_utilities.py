@@ -1,8 +1,7 @@
-#!/usr/bin/python
-
 """ Module to hold various xml related functions """
 
 import xml.dom.minidom
+import xml.parsers
 
 __all__ = ['get_elements']
 

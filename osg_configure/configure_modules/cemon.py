@@ -6,6 +6,7 @@ import re
 import urlparse
 import logging
 import stat
+import sets
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
@@ -412,10 +413,11 @@ class CemonConfiguration(BaseConfiguration):
   def enabledServices(self):
     """Return a list of  system services needed for module to work
     """
-    if self.enabled and not self.ignored:
-      return ['tomcat5']
-    else:
-      return []
+    
+    if not self.enabled or self.ignored:
+      return sets.Set()
+    
+    return sets.Set(['tomcat5'])
         
       
       

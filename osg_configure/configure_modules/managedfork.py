@@ -1,8 +1,8 @@
 """ Module to handle attributes related to the Managed Fork jobmanager configuration """
 
-
 import os
 import logging
+import sets
 
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile
@@ -218,7 +218,7 @@ class ManagedForkConfiguration(JobManagerConfiguration):
     """Return a list of  system services needed for module to work
     """
     if self.enabled and not self.ignored:
-      return ['condor', 'globus-gatekeeper']
+      return sets.Set(['condor', 'globus-gatekeeper'])
     else:
-      return []
+      return sets.Set()
   

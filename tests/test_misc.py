@@ -8,6 +8,7 @@ import sys
 import unittest
 import ConfigParser
 import logging
+import sets
 
 # setup system library path
 pathname = os.path.realpath('../')
@@ -297,7 +298,7 @@ class TestMisc(unittest.TestCase):
     Test to make sure right services get returned
     """
     
-    config_file = get_test_config("misc/valid_settings.ini")
+    config_file = get_test_config("misc/misc_xacml.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
@@ -307,11 +308,29 @@ class TestMisc(unittest.TestCase):
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e)
     services = settings.enabledServices()
-    expected_services = ['globus-gatekeeper']
+    expected_services = sets.Set(['fetch-crl-cron', 
+                                  'fetch-crl-boot', 
+                                  'gums-client-cron'])
     self.assertEqual(services, expected_services,
                      "List of enabled services incorrect, " +
                      "got %s but expected %s" % (services, expected_services))
     
+    config_file = get_test_config("misc/misc_gridmap.ini")
+    configuration = ConfigParser.SafeConfigParser()
+    configuration.read(config_file)
+
+    settings = misc.MiscConfiguration(logger=global_logger)
+    try:
+      settings.parseConfiguration(configuration)
+    except Exception, e:
+      self.fail("Received exception while parsing configuration: %s" % e)
+    services = settings.enabledServices()
+    expected_services = sets.Set(['fetch-crl-cron', 
+                                  'fetch-crl-boot', 
+                                  'edg-mkgridmap'])
+    self.assertEqual(services, expected_services,
+                     "List of enabled services incorrect, " +
+                     "got %s but expected %s" % (services, expected_services))
     
 
 if __name__ == '__main__':

@@ -4,6 +4,7 @@ import os
 import re
 import sys
 import logging
+import sets
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
@@ -452,8 +453,9 @@ in your config.ini file."""
   def enabledServices(self):
     """Return a list of  system services needed for module to work
     """
-    if self.enabled and not self.ignored:
-      return ['gratia-probes-cron']
-    else:
-      return []
+    
+    if not self.enabled or self.ignored:
+      return sets.Set()
+    
+    return sets.Set(['gratia-probes-cron'])
     

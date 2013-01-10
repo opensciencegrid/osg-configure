@@ -1,6 +1,15 @@
 #!/usr/bin/python
 
-import os, sys, optparse, time, ConfigParser, StringIO, re, atexit, shutil, logging
+import os
+import sys
+import optparse
+import time
+import ConfigParser
+import re
+import atexit
+import shutil
+import logging
+import sets
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
@@ -324,10 +333,9 @@ def list_enabled_services(modules, logger):
       error_exit("Error while parsing configuration: %s" % exception)
   
   sys.stdout.write("System services associated with current configuration:\n")
-  services = {}
+  services = sets.Set()
   for module in modules:
-    for service in module.enabledServices():
-      services[service] =  1
+    services.union(module.enabledServices())
   for service in services:
     sys.stdout.write(service + "\n")
   

@@ -1,8 +1,8 @@
-#!/usr/bin/python
-
 """ Module to hold various utility functions """
 
-import glob, ConfigParser, os
+import glob
+import ConfigParser
+import os
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities

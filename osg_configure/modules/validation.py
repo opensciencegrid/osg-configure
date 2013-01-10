@@ -1,8 +1,11 @@
-#!/usr/bin/python
-
 """ Module to hold various validation functions """
 
-import re, socket, os, pwd, ConfigParser, sys
+import re
+import socket
+import os
+import pwd
+import ConfigParser
+import sys
 
 __all__ = ['valid_domain', 
            'valid_email', 

@@ -2,6 +2,7 @@
 
 import re
 import logging
+import sets
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
@@ -309,14 +310,15 @@ configuration:
   def enabledServices(self):
     """Return a list of  system services needed for module to work
     """
-    if self.enabled and not self.ignored:
-      services = ['fetch-crl-cron', 'fetch-crl-boot']
-      if self.options['authorization_method'].value == 'xacml':
-        services.append('gums-client-cron')
-      elif self.options['authorization_method'].value == 'gridmap':
-        services.append('edg-mkgridmap')
-      if self.options['enable_cleanup'].value:
-        services.append('osg-cleanup-cron')
-      return services
-    else:
-      return []
+    
+    if not self.enabled or self.ignored:
+      return sets.Set()
+    
+    services = sets.Set(['fetch-crl-cron', 'fetch-crl-boot'])
+    if self.options['authorization_method'].value == 'xacml':
+      services.update('gums-client-cron')
+    elif self.options['authorization_method'].value == 'gridmap':
+      services.update('edg-mkgridmap')
+    if self.options['enable_cleanup'].value:
+      services.update('osg-cleanup-cron')
+    return services
