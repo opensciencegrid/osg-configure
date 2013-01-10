@@ -1,8 +1,9 @@
-#!/usr/bin/python
-
 """ Module to handle attributes and configuration for Gratia """
 
-import os, sys, re, logging
+import os
+import re
+import sys
+import logging
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities

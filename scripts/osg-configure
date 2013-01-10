@@ -110,17 +110,7 @@ def write_attributes(attributes,
   local_site_attributes -- local site attributes from ini file
   job_environment_attributes -- attributes for the job environment
   """
-  # write out osg-attributes.conf
-  # This does not write gip attributes since that needs to be done in the 
-  # gip configure method in order for configure_gip to work
-  # commented out per SOFTWARE-133
-#  try:
-#    filename = os.path.join(OUTPUT_DIRECTORY, "osg-attributes.conf")
-#    utilities.write_attribute_file(filename, attributes)
-#  except IOError, exception:
-#    error_exit("Error writing attributes to osg-attributes.conf", exception)
-     
-    
+
   # write out osg-local-job-environment.conf
   try:
     filename = os.path.join(OUTPUT_DIRECTORY, "osg-local-job-environment.conf")
@@ -318,9 +308,6 @@ def list_enabled_services(modules, logger):
   if modules == []:
     error_exit("No modules found, exiting")
 
-  if option is None:
-    error_exit('No option given, exiting')
-    
   try:
     config = configfile.read_config_files()
   except IOError, e:
@@ -336,7 +323,7 @@ def list_enabled_services(modules, logger):
     except ConfigParser.ParsingError, exception:
       error_exit("Error while parsing configuration: %s" % exception)
   
-  sys.stdout.write("System services associated with current configuration:")
+  sys.stdout.write("System services associated with current configuration:\n")
   services = {}
   for module in modules:
     for service in module.enabledServices():
@@ -376,32 +363,15 @@ def verify_system(modules, logger):
     except exceptions.SettingError, exception:
       error_exit("Error in %s while parsing configuration" % (module.__class__.__name__),
                  exception)
-#    except ConfigParser.InterpolationSyntaxError, exception:
-#      error_exit("Error while parsing configuration, check your variables for " +
-#                 "a missing s after the paranthesis")
     except ConfigParser.ParsingError, exception:
       error_exit("Error while parsing configuration: %s" % exception)
       
   attributes = {}
   local_attributes = {}
-  # Commented out per SOFTWARE-133
-  # legacyConfig = None
   for module in modules:
     if  module.__class__.__name__ == 'LocalSettings':
       local_attributes.update(module.getAttributes())
-    if module.__class__.__name__ == 'LegacyConfiguration':
-      # need to configuration LegacyConfiguration after other modules
-      # since it derives it's settings from other modules
-      # and uses the attributes dictionary for this
-      #legacyConfig = module
-      #Commented out per SOFTWARE-133
-      continue
-    else:
-      attributes.update(module.getAttributes())
-
-  # Commented out per SOFTWARE-133
-  # legacyConfig.configure(attributes)
-  # attributes.update(legacyConfig.getAttributes())
+    attributes.update(module.getAttributes())
       
   if not check_configuration(modules, attributes, logger):
     error_exit("Invalid attributes found, exiting")
@@ -497,6 +467,12 @@ def main():
                     const=QUERY,
                     dest='mode',
                     help='Query to see where a particular option is defined')
+  parser.add_option('--enabled-services',
+                    action='store_const',
+                    const=ENABLED_SERVICES,
+                    dest='mode',
+                    help='List system services that should be enabled ' +
+                         'given current configuration')
   parser.add_option('-o',
                     '--option',
                     action='store',
@@ -519,12 +495,6 @@ def main():
                     dest='verbose',
                     default=False,
                     help='Output all log messages to the console')
-  parser.add_option('--enabled-services',
-                    action='store_const',
-                    const=QUERY,
-                    dest='mode',
-                    help='List system services that should be enabled ' +
-                         'given current configuration')
   (options, args) = parser.parse_args()
   log_level = logging.INFO
 

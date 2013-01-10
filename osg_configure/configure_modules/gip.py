@@ -1,7 +1,7 @@
-""" Module to handle attributes related to the GIP """
-
-import re, os, pwd, logging
-
+import os
+import re
+import pwd
+import logging
 
 from osg_configure.modules import exceptions
 from osg_configure.modules.configurationbase import BaseConfiguration

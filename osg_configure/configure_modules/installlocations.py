@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 """ Module to handle attributes related to the site location and details """
 
 import logging

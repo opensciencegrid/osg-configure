@@ -1,9 +1,8 @@
-#!/usr/bin/env python
-
 """ Module to handle attributes related to the Managed Fork jobmanager configuration """
 
 
-import os, logging
+import os
+import logging
 
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile

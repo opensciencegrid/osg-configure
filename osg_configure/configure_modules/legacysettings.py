@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 """ Module to handle legacy attributes """
 
 from osg_configure.modules.configurationbase import BaseConfiguration

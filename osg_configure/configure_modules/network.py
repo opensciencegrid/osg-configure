@@ -1,8 +1,8 @@
-#!/usr/bin/python
-
 """ Module to handle attributes related to the site location and details """
 
-import os, logging, re
+import os
+import re
+import logging
 
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile

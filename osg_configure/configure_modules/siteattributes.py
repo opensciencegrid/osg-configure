@@ -1,8 +1,8 @@
-#!/usr/bin/python
-
 """ Module to handle attributes related to the site location and details """
 
-import re, socket, logging
+import socket
+import re
+import logging
 
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile
@@ -93,7 +93,7 @@ class SiteAttributes(BaseConfiguration):
     self.getOptions(configuration)
     self.log('SiteAttributes.parseConfiguration completed')
 
-# pylint: disable-msg=W0613
+  # pylint: disable-msg=W0613
   def checkAttributes(self, attributes):
     """Check attributes currently stored and make sure that they are consistent"""
     self.log('SiteAttributes.checkAttributes started')

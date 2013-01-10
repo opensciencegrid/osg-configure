@@ -2,8 +2,16 @@
 
 """ Module to hold various utility functions """
 
-import re, socket, os, types, sys, glob, stat
-import tempfile, subprocess, rpm
+import re
+import socket
+import os
+import types
+import sys
+import glob
+import stat
+import tempfile
+import subprocess
+import rpm
 
 from osg_configure.modules import validation
 

@@ -1,10 +1,11 @@
-#!/usr/bin/python
-
-
 """This module provides a class to handle attributes and configuration
  for CEMON subscriptions"""
 
-import os, re, urlparse, logging, stat
+import os
+import re
+import urlparse
+import logging
+import stat
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities

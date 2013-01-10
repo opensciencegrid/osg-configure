@@ -1,8 +1,7 @@
-#!/usr/bin/python
-
 """ Module to handle attributes and configuration for misc. sevices """
 
-import re, logging
+import re
+import logging
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
@@ -311,6 +310,13 @@ configuration:
     """Return a list of  system services needed for module to work
     """
     if self.enabled and not self.ignored:
-      return ['fetch-crl-cron', 'fetch-crl-boot']
+      services = ['fetch-crl-cron', 'fetch-crl-boot']
+      if self.options['authorization_method'].value == 'xacml':
+        services.append('gums-client-cron')
+      elif self.options['authorization_method'].value == 'gridmap':
+        services.append('edg-mkgridmap')
+      if self.options['enable_cleanup'].value:
+        services.append('osg-cleanup-cron')
+      return services
     else:
       return []

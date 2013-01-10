@@ -1,8 +1,11 @@
-#!/usr/bin/env python
-
 """ Module to handle attributes and configuration for RSV service """
 
-import os, re, pwd, shutil, ConfigParser, logging
+import os
+import re
+import shutil
+import logging
+import ConfigParser
+import pwd
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
@@ -1076,7 +1079,7 @@ class RsvConfiguration(BaseConfiguration):
     """Return a list of  system services needed for module to work
     """
     if self.enabled and not self.ignored:
-      return ['rsv']
+      return ['rsv', 'condor-cron']
     else:
       return []
 

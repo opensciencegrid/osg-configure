@@ -273,7 +273,7 @@ class TestSGE(unittest.TestCase):
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e)
     services = settings.enabledServices()
-    expected_services = ['globus-gatekeeper']
+    expected_services = ['globus-gatekeeper', 'globus-gridftp-server']
     self.assertEqual(services, expected_services,
                      "List of enabled services incorrect, " +
                      "got %s but expected %s" % (services, expected_services))
@@ -289,7 +289,9 @@ class TestSGE(unittest.TestCase):
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e)
     services = settings.enabledServices()
-    expected_services = ['globus-gatekeeper', 'globus-scheduler-event-generator']
+    expected_services = ['globus-gatekeeper', 
+                         'globus-gridftp-server',
+                         'globus-scheduler-event-generator']
     self.assertEqual(services, expected_services,
                      "List of enabled services incorrect, " +
                      "got %s but expected %s" % (services, expected_services))

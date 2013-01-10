@@ -1,9 +1,9 @@
-#!/usr/bin/python
-
 """ Module to handle attributes related to the pbs jobmanager 
 configuration """
 
-import os, re, logging
+import os
+import re
+import logging
 
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile
@@ -279,7 +279,7 @@ class PBSConfiguration(JobManagerConfiguration):
     """Return a list of  system services needed for module to work
     """
     if self.enabled and not self.ignored:
-      services = ['globus-gatekeeper']
+      services = ['globus-gatekeeper', 'globus-gridftp-server']
       if self.options['seg_enabled'].value:
         services.append('globus-scheduler-event-generator')
       return services 

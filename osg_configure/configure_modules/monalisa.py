@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 """ Module to handle attributes related to the monalisa configuration
 and setup """
 

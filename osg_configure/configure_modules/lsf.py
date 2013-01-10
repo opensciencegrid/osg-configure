@@ -1,9 +1,9 @@
-#!/usr/bin/python
-
 """ Module to handle attributes related to the lsf jobmanager 
 configuration """
 
-import os, re, logging
+import os
+import re
+import logging
 
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile
@@ -262,3 +262,14 @@ class LSFConfiguration(JobManagerConfiguration):
     if not utilities.atomic_write(LSFConfiguration.GRAM_CONFIG_FILE, buf):
       return False
     return True
+
+  def enabledServices(self):
+    """Return a list of  system services needed for module to work
+    """
+    if self.enabled and not self.ignored:
+      services = ['globus-gatekeeper', 'globus-gridftp-server']
+      if self.options['seg_enabled'].value:
+        services.append('globus-scheduler-event-generator')
+      return services 
+    else:
+      return []  

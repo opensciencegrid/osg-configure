@@ -1,8 +1,9 @@
-#!/usr/bin/python
-
 """ Module to handle attributes related to the storage """
 
-import os, shutil, stat, logging
+import os
+import shutil
+import stat
+import logging
 
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile

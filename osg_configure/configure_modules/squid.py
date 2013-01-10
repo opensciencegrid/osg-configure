@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 """ Module to handle squid configuration and setup """
 
 import logging

@@ -1,9 +1,9 @@
-#!/usr/bin/python
-
 """ Module to handle attributes and configuration related to the condor 
 jobmanager configuration """
 
-import os, logging, re
+import os
+import logging
+import re
 
 from osg_configure.modules import utilities
 from osg_configure.modules import validation
@@ -253,6 +253,6 @@ class CondorConfiguration(JobManagerConfiguration):
     """Return a list of  system services needed for module to work
     """
     if self.enabled and not self.ignored:
-      return ['globus-gatekeeper']
+      return ['globus-gatekeeper', 'globus-gridftp-server']
     else:
       return []

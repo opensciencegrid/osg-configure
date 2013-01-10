@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 """ Module to handle site specific local settings """
 
 from osg_configure.modules.configurationbase import BaseConfiguration
