@@ -8,7 +8,6 @@ import sys
 import unittest
 import ConfigParser
 import logging
-import sets
 
 
 # setup system library path 
@@ -592,7 +591,7 @@ class TestRSV(unittest.TestCase):
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e)
     services = settings.enabledServices()
-    expected_services = sets.Set(['rsv', 'condor-cron'])
+    expected_services = set(['rsv', 'condor-cron'])
     self.assertEqual(services, expected_services,
                      "List of enabled services incorrect, " +
                      "got %s but expected %s" % (services, expected_services))
@@ -608,7 +607,7 @@ class TestRSV(unittest.TestCase):
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e)
     services = settings.enabledServices()
-    expected_services = sets.Set()
+    expected_services = set()
     self.assertEqual(services, expected_services,
                      "List of enabled services incorrect, " +
                      "got %s but expected %s" % (services, expected_services))    
@@ -623,7 +622,7 @@ class TestRSV(unittest.TestCase):
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e)
     services = settings.enabledServices()
-    expected_services = sets.Set()
+    expected_services = set()
     self.assertEqual(services, expected_services,
                      "List of enabled services incorrect, " +
                      "got %s but expected %s" % (services, expected_services))

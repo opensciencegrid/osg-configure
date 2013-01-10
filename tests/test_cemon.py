@@ -8,7 +8,6 @@ import sys
 import unittest
 import ConfigParser
 import logging
-import sets
 
 # setup system library path
 pathname = os.path.realpath('../')
@@ -566,7 +565,7 @@ class TestCEMon(unittest.TestCase):
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e)
     services = settings.enabledServices()
-    expected_services = sets.Set(['tomcat5'])    
+    expected_services = set(['tomcat5'])    
     self.assertEqual(services, expected_services,
                      "List of enabled services incorrect, " +
                      "got %s but expected %s" % (services, expected_services))
