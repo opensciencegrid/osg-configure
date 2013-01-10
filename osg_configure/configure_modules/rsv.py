@@ -1072,6 +1072,13 @@ class RsvConfiguration(BaseConfiguration):
       
     return True
 
+  def enabledServices(self):
+    """Return a list of  system services needed for module to work
+    """
+    if self.enabled and not self.ignored:
+      return ['rsv']
+    else:
+      return []
 
 def split_list(item_list):
   """ Split a comma separated list of items """

@@ -213,3 +213,13 @@ class ManagedForkConfiguration(JobManagerConfiguration):
       attributes['OSG_MANAGEDFORK'] = 'N'
     self.log("%s.getAttributes completed" % self.__class__)
     return attributes
+  
+  
+  def enabledServices(self):
+    """Return a list of  system services needed for module to work
+    """
+    if self.enabled and not self.ignored:
+      return ['condor', 'globus-gatekeeper']
+    else:
+      return []
+  

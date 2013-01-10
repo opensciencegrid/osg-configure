@@ -1,6 +1,14 @@
-#!/usr/bin/env python
+"""Unit tests to test cemon configuration class"""
 
-import os, imp, sys, unittest, ConfigParser, logging
+#pylint: disable=W0703
+#pylint: disable=R0904
+
+import os
+import sys
+import unittest
+import ConfigParser
+import logging
+
 
 # setup system library path
 pathname = os.path.realpath('../')
@@ -17,7 +25,7 @@ if sys.version_info[0] >= 2 and sys.version_info[1] > 6:
 else:
   class NullHandler(logging.Handler):
     def emit(self, record):
-        pass
+      pass
   global_logger.addHandler(NullHandler())
 
 class TestCEMon(unittest.TestCase):
@@ -542,6 +550,37 @@ class TestCEMon(unittest.TestCase):
  
     self.failUnless(len(settings.bdii_servers) == 3, 
                     "Did not parse bdii servers correctly")
+
+  def testServiceList(self):
+    """
+    Test to make sure right services get returned
+    """
+    
+    config_file = get_test_config("cemon/cemon.ini")
+    configuration = ConfigParser.SafeConfigParser()
+    configuration.read(config_file)
+
+    settings = cemon.CemonConfiguration(logger=global_logger)
+    try:
+      settings.parseConfiguration(configuration)
+    except Exception, e:
+      self.fail("Received exception while parsing configuration: %s" % e)
+    services = settings.enabledServices()
+    expected_services = ['tomcat5']
+    self.assertEqual(services, expected_services,
+                     "List of enabled services incorrect, " +
+                     "got %s but expected %s" % (services, expected_services))
+    
+    
+    config_file = get_test_config("cemon/disabled.ini")
+    configuration = ConfigParser.SafeConfigParser()
+    configuration.read(config_file)
+
+    settings = cemon.CemonConfiguration(logger=global_logger)
+    try:
+      settings.parseConfiguration(configuration)
+    except Exception, e:
+      self.fail("Received exception while parsing configuration: %s" % e)
 
 if __name__ == '__main__':
   console = logging.StreamHandler()

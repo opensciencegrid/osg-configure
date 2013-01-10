@@ -189,3 +189,8 @@ class BaseConfiguration(object):
     return dict(zip([item.mapping for item in self.options.values() if item.isMappable()],
                     [converter(item.value) for item in self.options.values() if item.isMappable()]))
     
+  def enabledServices(self):
+    """Return a list of  system services needed for module to work
+    """
+    return []
+    

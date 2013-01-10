@@ -1,6 +1,12 @@
-#!/usr/bin/env python
+"""Unit tests to test functions in utility module"""
 
-import os, imp, sys, unittest
+#pylint: disable=W0703
+#pylint: disable=R0904
+
+import os
+import sys
+import unittest
+import imp 
 
 # setup system library path
 pathname = os.path.realpath('../')
@@ -26,6 +32,7 @@ except:
   raise
 
 class TestUtilities(unittest.TestCase):
+  """Unit test class for utilities module"""
 
   def test_write_attribute_file(self):
     """

@@ -249,3 +249,10 @@ class CondorConfiguration(JobManagerConfiguration):
     configfile.get_option(configuration, 'Condor', location)
     return location.value
     
+  def enabledServices(self):
+    """Return a list of  system services needed for module to work
+    """
+    if self.enabled and not self.ignored:
+      return ['globus-gatekeeper']
+    else:
+      return []

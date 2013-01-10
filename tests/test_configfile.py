@@ -1,6 +1,13 @@
-#!/usr/bin/env python
+"""Unit tests to test configfile functions"""
 
-import os, imp, sys, unittest, ConfigParser
+#pylint: disable=W0703
+#pylint: disable=R0904
+
+import os
+import sys
+import unittest
+import ConfigParser
+import imp
 
 # setup system library path
 pathname = os.path.realpath('../')
@@ -191,15 +198,15 @@ class TestConfigFile(unittest.TestCase):
                    get_test_config('config-ce-condor.d'),
                    get_test_config('config-ce-lsf.d'),
                    get_test_config('config-ce-sge.d')]
-    for dir in config_dirs:
-      config = configfile.read_config_files(config_directory = dir)
+    for directory in config_dirs:
+      config = configfile.read_config_files(config_directory = directory)
       self.failUnless(configfile.jobmanager_enabled(config), 
-                      "%s has an enabled jobmanager" % dir)
+                      "%s has an enabled jobmanager" % directory)
 
     config = configfile.read_config_files(config_directory = get_test_config('config-nonce.d'))
     self.failIf(configfile.jobmanager_enabled(config), 
                 "jobmanager_enabled returned true on a config without an enabled jobmanager")
           
 if __name__ == '__main__':
-    unittest.main()
+  unittest.main()
 

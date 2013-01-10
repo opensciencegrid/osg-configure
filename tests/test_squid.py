@@ -1,12 +1,18 @@
-#!/usr/bin/env python
+"""Unit tests to test squid configuration"""
 
-import os, imp, sys, unittest, ConfigParser, logging
+#pylint: disable=W0703
+#pylint: disable=R0904
+
+import os
+import sys
+import unittest
+import ConfigParser
+import logging
 
 # setup system library path
 pathname = os.path.realpath('../')
 sys.path.insert(0, pathname)
 
-from osg_configure.modules import utilities
 from osg_configure.modules import exceptions
 from osg_configure.configure_modules import squid
 from osg_configure.modules.utilities import get_test_config
@@ -18,7 +24,7 @@ else:
   # NullHandler is only in python 2.7 and above
   class NullHandler(logging.Handler):
     def emit(self, record):
-        pass
+      pass
             
   global_logger.addHandler(NullHandler())
 
@@ -220,7 +226,7 @@ class TestSquid(unittest.TestCase):
     try:
       settings.parseConfiguration(configuration)
     except Exception, e:
-      self.fail("Received exception while parsing configuration")
+      self.fail("Received exception while parsing configuration: %s" % e)
 
     attributes = settings.getAttributes()
     self.failIf(settings.checkAttributes(attributes), 
@@ -255,7 +261,7 @@ class TestSquid(unittest.TestCase):
     try:
       settings.parseConfiguration(configuration)
     except Exception, e:
-      self.fail("Received exception while parsing configuration")
+      self.fail("Received exception while parsing configuration: %s" % e)
 
     attributes = settings.getAttributes()
     self.failIf(settings.checkAttributes(attributes), 
@@ -275,7 +281,7 @@ class TestSquid(unittest.TestCase):
     try:
       settings.parseConfiguration(configuration)
     except Exception, e:
-      self.fail("Received exception while parsing configuration")
+      self.fail("Received exception while parsing configuration: %s" % e)
 
     attributes = settings.getAttributes()
     self.failIf(settings.checkAttributes(attributes), 

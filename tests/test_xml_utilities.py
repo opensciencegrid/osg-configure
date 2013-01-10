@@ -1,6 +1,13 @@
-#!/usr/bin/env python
+"""Unit tests to test xml related functions"""
 
-import os, imp, sys, unittest
+#pylint: disable=W0703
+#pylint: disable=R0904
+
+import os
+import sys
+import unittest
+import imp
+
 
 # setup system library path
 pathname = os.path.realpath('../')
@@ -25,7 +32,8 @@ except:
 
 
 class TestXMLUtilities(unittest.TestCase):
-
+  """Unit test class to test functions in xml_utilities module"""
+  
   def test_get_elements(self):
     """
     Check to make sure that get_elements properly gets information 

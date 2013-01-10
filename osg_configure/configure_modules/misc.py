@@ -302,7 +302,15 @@ configuration:
     # Writing this file seems a little hacky, but I'm not sure of a better way
     filehandle = open('/etc/cron.d/osg-cleanup', 'w')
     filehandle.write('%s root [ ! -f /var/lock/subsys/osg-cleanup-cron ] || /usr/sbin/osg-cleanup\n' %
-             (self.options['cleanup_cron_time'].value))
+                     (self.options['cleanup_cron_time'].value))
     filehandle.close()
     
     return True
+
+  def enabledServices(self):
+    """Return a list of  system services needed for module to work
+    """
+    if self.enabled and not self.ignored:
+      return ['fetch-crl-cron', 'fetch-crl-boot']
+    else:
+      return []

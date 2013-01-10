@@ -448,4 +448,11 @@ in your config.ini file."""
       return False    
     return True
 
+  def enabledServices(self):
+    """Return a list of  system services needed for module to work
+    """
+    if self.enabled and not self.ignored:
+      return ['gratia-probes-cron']
+    else:
+      return []
     

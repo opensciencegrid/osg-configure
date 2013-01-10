@@ -1,6 +1,13 @@
-#!/usr/bin/env python
+"""Unit tests to test validation module"""
 
-import os, imp, sys, unittest, ConfigParser
+#pylint: disable=W0703
+#pylint: disable=R0904
+
+import os
+import sys
+import unittest
+import ConfigParser
+import imp
 
 # setup system library path
 pathname = os.path.realpath('../')
@@ -25,7 +32,8 @@ except:
 
 
 class TestValidation(unittest.TestCase):
-
+  """Unit test class for testing validation module"""
+  
   def test_valid_domain(self):
     """
     Check the valid_domain functionality
@@ -55,7 +63,6 @@ class TestValidation(unittest.TestCase):
     """
     Check the valid email functionality
     """
-    failed = False
     test_email = "fake@email@testing"
     self.failIf(validation.valid_email(test_email),
                 "fake@email@testing marked as a valid email address")

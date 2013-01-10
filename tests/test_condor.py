@@ -1,12 +1,20 @@
-#!/usr/bin/env python
+"""Unit tests to test condor configuration"""
 
-import os, imp, sys, unittest, ConfigParser, logging
+#pylint: disable=W0703
+#pylint: disable=R0904
+
+
+import os
+import sys
+import unittest
+import ConfigParser
+import logging
+
 
 # setup system library path
 pathname = os.path.realpath('../')
 sys.path.insert(0, pathname)
 
-from osg_configure.modules import exceptions
 from osg_configure.configure_modules import condor
 from osg_configure.modules.utilities import get_test_config
 
@@ -17,7 +25,7 @@ else:
   # NullHandler is only in python 2.7 and above
   class NullHandler(logging.Handler):
     def emit(self, record):
-        pass
+      pass
       
   global_logger.addHandler(NullHandler())
 
@@ -331,7 +339,43 @@ class TestCondor(unittest.TestCase):
     attributes = settings.getAttributes()
     self.failIf(settings.checkAttributes(attributes), 
                 "Did not notice invalid host in utility_contact option")
+
+  def testServiceList(self):
+    """
+    Test to make sure right services get returned
+    """
     
+    config_file = get_test_config("condor/check_ok.ini")
+    configuration = ConfigParser.SafeConfigParser()
+    configuration.read(config_file)
+
+    settings = condor.CondorConfiguration(logger=global_logger)
+    try:
+      settings.parseConfiguration(configuration)
+    except Exception, e:
+      self.fail("Received exception while parsing configuration: %s" % e)
+    services = settings.enabledServices()
+    expected_services = ['globus-gatekeeper']
+    self.assertEqual(services, expected_services,
+                     "List of enabled services incorrect, " +
+                     "got %s but expected %s" % (services, expected_services))
+    
+    
+    config_file = get_test_config("condor/condor_disabled.ini")
+    configuration = ConfigParser.SafeConfigParser()
+    configuration.read(config_file)
+
+    settings = condor.CondorConfiguration(logger=global_logger)
+    try:
+      settings.parseConfiguration(configuration)
+    except Exception, e:
+      self.fail("Received exception while parsing configuration: %s" % e)
+    services = settings.enabledServices()
+    expected_services = []
+    self.assertEqual(services, expected_services,
+                     "List of enabled services incorrect, " +
+                     "got %s but expected %s" % (services, expected_services))
+          
 if __name__ == '__main__':
   console = logging.StreamHandler()
   console.setLevel(logging.ERROR)

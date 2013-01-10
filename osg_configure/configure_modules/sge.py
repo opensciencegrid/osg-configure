@@ -345,3 +345,14 @@ class SGEConfiguration(JobManagerConfiguration):
     if not utilities.atomic_write(SGEConfiguration.GRAM_CONFIG_FILE, buf):
       return False
     return True
+  
+  def enabledServices(self):
+    """Return a list of  system services needed for module to work
+    """
+    if self.enabled and not self.ignored:
+      services = ['globus-gatekeeper']
+      if self.options['seg_enabled'].value:
+        services.append('globus-scheduler-event-generator')
+      return services 
+    else:
+      return []  

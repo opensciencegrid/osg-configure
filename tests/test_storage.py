@@ -1,6 +1,13 @@
-#!/usr/bin/env python
+"""Unit tests to test storage configuration"""
 
-import os, sys, unittest, ConfigParser, logging
+#pylint: disable=W0703
+#pylint: disable=R0904
+
+import os
+import sys
+import unittest
+import ConfigParser
+import logging
 
 # setup system library path
 pathname = os.path.realpath('../')

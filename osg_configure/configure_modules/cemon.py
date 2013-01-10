@@ -407,8 +407,14 @@ class CemonConfiguration(BaseConfiguration):
           subdir_perms = stat.S_IMODE(os.stat(subdir).st_mode)
           if not (subdir_perms & (stat.S_IROTH & stat.S_IXOTH)):
             os.chmod(subdir, subdir_perms | stat.S_IROTH | stat.S_IXOTH)
-        
-              
+    
+  def enabledServices(self):
+    """Return a list of  system services needed for module to work
+    """
+    if self.enabled and not self.ignored:
+      return ['tomcat5']
+    else:
+      return []
         
       
       

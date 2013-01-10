@@ -1,6 +1,13 @@
-#!/usr/bin/env python
+"""Unit tests to test lsf configuration """
 
-import os, sys, unittest, ConfigParser, logging
+#pylint: disable=W0703
+#pylint: disable=R0904
+
+import os
+import sys
+import unittest
+import ConfigParser
+import logging
 
 # setup system library path 
 pathname = os.path.realpath('../')
@@ -192,6 +199,42 @@ class TestLSF(unittest.TestCase):
     self.failIf(settings.checkAttributes(attributes), 
                 "Did not notice invalid host in utility_contact option")
     
+  def testServiceList(self):
+    """
+    Test to make sure right services get returned
+    """
+    
+    config_file = get_test_config("lsf/check_ok.ini")
+    configuration = ConfigParser.SafeConfigParser()
+    configuration.read(config_file)
+
+    settings = lsf.LSFConfiguration(logger=global_logger)
+    try:
+      settings.parseConfiguration(configuration)
+    except Exception, e:
+      self.fail("Received exception while parsing configuration: %s" % e)
+    services = settings.enabledServices()
+    expected_services = ['globus-gatekeeper']
+    self.assertEqual(services, expected_services,
+                     "List of enabled services incorrect, " +
+                     "got %s but expected %s" % (services, expected_services))
+    
+    
+    config_file = get_test_config("lsf/lsf_disabled.ini")
+    configuration = ConfigParser.SafeConfigParser()
+    configuration.read(config_file)
+
+    settings = lsf.LSFConfiguration(logger=global_logger)
+    try:
+      settings.parseConfiguration(configuration)
+    except Exception, e:
+      self.fail("Received exception while parsing configuration: %s" % e)
+    services = settings.enabledServices()
+    expected_services = []
+    self.assertEqual(services, expected_services,
+                     "List of enabled services incorrect, " +
+                     "got %s but expected %s" % (services, expected_services))
+              
 if __name__ == '__main__':
   console = logging.StreamHandler()
   console.setLevel(logging.ERROR)
