@@ -334,7 +334,7 @@ def list_enabled_services(modules, logger):
   sys.stdout.write("System services associated with current configuration:\n")
   services = set()
   for module in modules:
-    services &= module.enabledServices()
+    services |= module.enabledServices()
   for service in services:
     sys.stdout.write(service + "\n")
   
