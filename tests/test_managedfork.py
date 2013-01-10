@@ -173,7 +173,7 @@ class TestManagedFork(unittest.TestCase):
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e)
     services = settings.enabledServices()
-    expected_services = set(['globus-gatekeeper'])
+    expected_services = set(['globus-gatekeeper', 'condor'])
     self.assertEqual(services, expected_services,
                      "List of enabled services incorrect, " +
                      "got %s but expected %s" % (services, expected_services))

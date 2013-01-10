@@ -220,7 +220,7 @@ class TestPBS(unittest.TestCase):
                      "List of enabled services incorrect, " +
                      "got %s but expected %s" % (services, expected_services))
     
-    config_file = get_test_config("pbs/sge_enabled.ini")
+    config_file = get_test_config("pbs/seg_enabled.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
