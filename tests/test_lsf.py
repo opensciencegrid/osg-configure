@@ -56,11 +56,11 @@ class TestLSF(unittest.TestCase):
                'OSG_JOB_MANAGER' : 'LSF'}
     for option in options:
       value = options[option]
-      self.failUnless(attributes.has_key(option), 
+      self.assertTrue(attributes.has_key(option), 
                       "Attribute %s missing" % option)
       err_msg = "Wrong value obtained for %s, " \
                 "got %s instead of %s" % (option, attributes[option], value)
-      self.failUnlessEqual(attributes[option], value, err_msg)
+      self.assertEqual(attributes[option], value, err_msg)
 
 
 
@@ -82,8 +82,9 @@ class TestLSF(unittest.TestCase):
  
 
     attributes = settings.getAttributes()
-    self.failUnlessEqual(len(attributes), 0, 
-                         "Disabled configuration should have no attributes")
+    self.assertEqual(len(attributes), 
+                     0, 
+                     "Disabled configuration should have no attributes")
     
   def testParsingIgnored(self):
     """
@@ -102,8 +103,9 @@ class TestLSF(unittest.TestCase):
  
 
     attributes = settings.getAttributes()
-    self.failUnlessEqual(len(attributes), 0, 
-                         "Ignored configuration should have no attributes")
+    self.assertEqual(len(attributes), 
+                     0, 
+                     "Ignored configuration should have no attributes")
 
                            
   def testMissingLSFLocation(self):
@@ -121,8 +123,8 @@ class TestLSF(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()    
-    self.failIf(settings.checkAttributes(attributes), 
-                "Did not notice missing LSF location")
+    self.assertFalse(settings.checkAttributes(attributes), 
+                     "Did not notice missing LSF location")
 
 
   def testValidSettings(self):
@@ -140,7 +142,7 @@ class TestLSF(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failUnless(settings.checkAttributes(attributes), 
+    self.assertTrue(settings.checkAttributes(attributes), 
                     "Correct settings incorrectly flagged as invalid")
 
   def testValidSettings2(self):
@@ -158,7 +160,7 @@ class TestLSF(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failUnless(settings.checkAttributes(attributes), 
+    self.assertTrue(settings.checkAttributes(attributes), 
                     "Correct settings incorrectly flagged as invalid")
     
   def testInvalidJobContact(self):
@@ -177,8 +179,8 @@ class TestLSF(unittest.TestCase):
       self.fail("Received exception while parsing configuration")
  
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes), 
-                "Did not notice invalid host in jobcontact option")
+    self.assertFalse(settings.checkAttributes(attributes), 
+                     "Did not notice invalid host in jobcontact option")
 
   def testInvalidUtilityContact(self):
     """
@@ -196,8 +198,8 @@ class TestLSF(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes), 
-                "Did not notice invalid host in utility_contact option")
+    self.assertFalse(settings.checkAttributes(attributes), 
+                     "Did not notice invalid host in utility_contact option")
     
   def testServiceList(self):
     """

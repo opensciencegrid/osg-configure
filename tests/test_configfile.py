@@ -46,7 +46,7 @@ class TestConfigFile(unittest.TestCase):
     option = configfile.Option(name = 'foo')
     
     # do missing options get flagged
-    self.failUnlessRaises(exceptions.SettingError, 
+    self.assertRaises(exceptions.SettingError, 
                           configfile.get_option,
                           config = config,
                           section = section,
@@ -54,7 +54,7 @@ class TestConfigFile(unittest.TestCase):
     option.required = configfile.Option.OPTIONAL
     
     # do optional settings get handled correctly if they are missing
-    self.failUnlessEqual(None, 
+    self.assertEqual(None, 
                          configfile.get_option(config, 
                                                section, 
                                                option), 
@@ -64,32 +64,32 @@ class TestConfigFile(unittest.TestCase):
     option.value = ''
     # make sure defaults get used 
     configfile.get_option(config, section, option)
-    self.failUnlessEqual('test', 
-                         option.value,
-                         "Default value not obtained, got %s, expected %s" %
+    self.assertEqual('test', 
+                     option.value,
+                     "Default value not obtained, got %s, expected %s" %
                          (option.value, 'test'))
     # get integer option
     config.set(section, option.name, '1')
     option.opt_type = int
     configfile.get_option(config, section, option)
-    self.failUnlessEqual(1, 
-                         option.value,
-                         'Should have gotten an integer equal to 1 back ' +
-                         "got %s" % option.value)
+    self.assertEqual(1, 
+                     option.value,
+                     'Should have gotten an integer equal to 1 back ' +
+                     "got %s" % option.value)
     
     # get float option
     option.opt_type = float
     config.set(section, option.name, '1.23e5')
     configfile.get_option(config, section, option)
-    self.failUnlessAlmostEqual(1.23e5, 
-                               option.value,
-                               7,
-                               'Should have gotten a float equal to 1.23e5 '+
-                               "back, got %s" % option.value)
+    self.assertAlmostEqual(1.23e5, 
+                           option.value,
+                           7,
+                           'Should have gotten a float equal to 1.23e5 '+
+                           "back, got %s" % option.value)
 
     # check errors when wrong type specified
     option.opt_type = int
-    self.failUnlessRaises(exceptions.SettingError, 
+    self.assertRaises(exceptions.SettingError, 
                           configfile.get_option,
                           config = config,
                           section = section,
@@ -99,36 +99,36 @@ class TestConfigFile(unittest.TestCase):
     option.opt_type = bool
     config.set(section, option.name, 'False')
     configfile.get_option(config, section, option)
-    self.failUnlessEqual(False, 
+    self.assertEqual(False, 
                          option.value,
                          'Should have gotten False back, got %s' % 
                          option.value)
     # check errors when wrong type specified
     option.opt_type = int
-    self.failUnlessRaises(exceptions.SettingError, 
-                          configfile.get_option,
-                          config = config,
-                          section = section,
-                          option = option)
+    self.assertRaises(exceptions.SettingError, 
+                      configfile.get_option,
+                      config = config,
+                      section = section,
+                      option = option)
     
     # check errors when wrong type specified
     option.opt_type = bool
     config.set(section, option.name, 'abc')
-    self.failUnlessRaises(exceptions.SettingError, 
-                          configfile.get_option,
-                          config = config,
-                          section = section,
-                          option = option)
+    self.assertRaises(exceptions.SettingError, 
+                      configfile.get_option,
+                      config = config,
+                      section = section,
+                      option = option)
 
     # check to make sure that default gets set when setting is set to 
     # blank/UNAVAILABLE
     option.opt_type = str
     config.set(section, option.name, 'UNAVAILABLE')
     configfile.get_option(config, section, option)
-    self.failUnlessEqual('test', 
-                         option.value,
-                         "Should have gotten a value of test back, got %s" %
-                         option.value)
+    self.assertEqual('test', 
+                     option.value,
+                     "Should have gotten a value of test back, got %s" %
+                     option.value)
 
   def test_get_option_location(self):
     """
@@ -139,28 +139,28 @@ class TestConfigFile(unittest.TestCase):
     opt_location = configfile.get_option_location('first_opt', 
                                                   'Common',
                                                   config_directory = config_directory)
-    self.failUnlessEqual(location,
-                         opt_location,
-                         "Didn't get the correct location for first_opt:" +
-                         "got %s expected %s" % (opt_location, location))
+    self.assertEqual(location,
+                     opt_location,
+                     "Didn't get the correct location for first_opt:" +
+                     "got %s expected %s" % (opt_location, location))
     
     location = get_test_config('config-test1.d/10-test.ini')
     opt_location = configfile.get_option_location('second_opt', 
                                                   'Common',
                                                   config_directory = config_directory)
-    self.failUnlessEqual(location,
-                         opt_location,
-                         "Didn't get the correct location for second_opt:" +
-                         "got %s expected %s" % (opt_location, location))
+    self.assertEqual(location,
+                     opt_location,
+                     "Didn't get the correct location for second_opt:" +
+                     "got %s expected %s" % (opt_location, location))
 
     location = None
     opt_location = configfile.get_option_location('missing_opt', 
                                                   'Common',
                                                   config_directory = config_directory)
-    self.failUnlessEqual(location,
-                         opt_location,
-                         "Didn't get the correct location for missing_opt:" +
-                         "got %s expected None" % (opt_location))
+    self.assertEqual(location,
+                     opt_location,
+                     "Didn't get the correct location for missing_opt:" +
+                     "got %s expected None" % (opt_location))
 
   def test_get_file_list(self):
     """
@@ -173,10 +173,10 @@ class TestConfigFile(unittest.TestCase):
                   get_test_config('config-test1.d/A-test.ini'),
                   get_test_config('config-test1.d/atest.ini')]
     file_list = configfile.get_file_list(config_directory = config_directory) 
-    self.failUnlessEqual(file_order,
-                         file_list, 
-                         "Didn't get the files in the correct order: " +
-                         " %s\n instead of\n %s" % (file_list, file_order))
+    self.assertEqual(file_order,
+                     file_list, 
+                     "Didn't get the files in the correct order: " +
+                     " %s\n instead of\n %s" % (file_list, file_order))
     
     config_directory = get_test_config('config-test2.d')
     file_order = [get_test_config('config-test2.d/00-test.ini'),
@@ -184,10 +184,10 @@ class TestConfigFile(unittest.TestCase):
                   get_test_config('config-test2.d/A-test.ini'),
                   get_test_config('config-test2.d/atest.ini')]
     file_list = configfile.get_file_list(config_directory = config_directory) 
-    self.failUnlessEqual(file_order,
-                         file_list, 
-                         "Didn't get the files in the correct order: " +
-                         " %s\n instead of\n %s" % (file_list, file_order))
+    self.assertEqual(file_order,
+                     file_list, 
+                     "Didn't get the files in the correct order: " +
+                     " %s\n instead of\n %s" % (file_list, file_order))
 
   def test_jobmanager_enabled(self):
     """
@@ -200,11 +200,11 @@ class TestConfigFile(unittest.TestCase):
                    get_test_config('config-ce-sge.d')]
     for directory in config_dirs:
       config = configfile.read_config_files(config_directory = directory)
-      self.failUnless(configfile.jobmanager_enabled(config), 
+      self.assertTrue(configfile.jobmanager_enabled(config), 
                       "%s has an enabled jobmanager" % directory)
 
     config = configfile.read_config_files(config_directory = get_test_config('config-nonce.d'))
-    self.failIf(configfile.jobmanager_enabled(config), 
+    self.assertFalse(configfile.jobmanager_enabled(config), 
                 "jobmanager_enabled returned true on a config without an enabled jobmanager")
           
 if __name__ == '__main__':

@@ -54,14 +54,12 @@ class TestGratia(unittest.TestCase):
     variables = {'probes' : 'jobmanager:gratia-osg-prod.opensciencegrid.org:80, '\
                             'gridftp:gratia-osg-transfer.opensciencegrid.org:80'}
     for var in variables:      
-      self.failUnless(options.has_key(var), 
+      self.assertTrue(options.has_key(var), 
                       "Attribute %s missing" % var)
-      self.failUnlessEqual(options[var].value, 
-                           variables[var], 
-                           "Wrong value obtained for %s, got %s but " \
-                           "expected %s" % (var, 
-                                            options[var].value, 
-                                            variables[var]))
+      self.assertEqual(options[var].value, 
+                       variables[var], 
+                       "Wrong value obtained for %s, got %s but " \
+                       "expected %s" % (var, options[var].value, variables[var]))
 
   def testParsingITBDefault(self):
     """
@@ -86,14 +84,12 @@ class TestGratia(unittest.TestCase):
     options = settings.options
     variables = {'probes' : 'jobmanager:gratia-osg-itb.opensciencegrid.org:80'}
     for var in variables:      
-      self.failUnless(options.has_key(var), 
+      self.assertTrue(options.has_key(var), 
                       "Attribute %s missing" % var)
-      self.failUnlessEqual(options[var].value, 
+      self.assertEqual(options[var].value, 
                            variables[var], 
                            "Wrong value obtained for %s, got %s but " \
-                           "expected %s" % (var, 
-                                            options[var].value, 
-                                            variables[var]))
+                           "expected %s" % (var, options[var].value, variables[var]))
 
     
   def testParsingProductionDefault(self):
@@ -119,14 +115,12 @@ class TestGratia(unittest.TestCase):
     options = settings.options
     variables = {'probes' : 'jobmanager:gratia-osg-prod.opensciencegrid.org:80'}
     for var in variables:      
-      self.failUnless(options.has_key(var), 
+      self.assertTrue(options.has_key(var), 
                       "Attribute %s missing" % var)
-      self.failUnlessEqual(options[var].value, 
-                           variables[var], 
-                           "Wrong value obtained for %s, got %s but " \
-                           "expected %s" % (var, 
-                                            options[var].value, 
-                                            variables[var]))
+      self.assertEqual(options[var].value, 
+                       variables[var], 
+                       "Wrong value obtained for %s, got %s but " \
+                       "expected %s" % (var, options[var].value, variables[var]))
 
   def testParsingMissingITBDefault(self):
     """
@@ -151,14 +145,12 @@ class TestGratia(unittest.TestCase):
     options = settings.options
     variables = {'probes' : 'jobmanager:gratia-osg-itb.opensciencegrid.org:80'}
     for var in variables:      
-      self.failUnless(options.has_key(var), 
+      self.assertTrue(options.has_key(var), 
                       "Attribute %s missing" % var)
-      self.failUnlessEqual(options[var].value, 
-                           variables[var], 
-                           "Wrong value obtained for %s, got %s but " \
-                           "expected %s" % (var, 
-                                            options[var].value, 
-                                            variables[var]))
+      self.assertEqual(options[var].value, 
+                       variables[var], 
+                       "Wrong value obtained for %s, got %s but " \
+                       "expected %s" % (var, options[var].value, variables[var]))
 
     config_file = get_test_config("gratia/itb_default3.ini")
     configuration = ConfigParser.SafeConfigParser()
@@ -174,14 +166,12 @@ class TestGratia(unittest.TestCase):
     options = settings.options
     variables = {'probes' : 'jobmanager:gratia-osg-itb.opensciencegrid.org:80'}
     for var in variables:      
-      self.failUnless(options.has_key(var), 
+      self.assertTrue(options.has_key(var), 
                       "Attribute %s missing" % var)
-      self.failUnlessEqual(options[var].value, 
-                           variables[var], 
-                           "Wrong value obtained for %s, got %s but " \
-                           "expected %s" % (var, 
-                                            options[var].value, 
-                                            variables[var]))
+      self.assertEqual(options[var].value, 
+                       variables[var], 
+                       "Wrong value obtained for %s, got %s but " \
+                       "expected %s" % (var, options[var].value, variables[var]))
     
   def testParsingMissingProductionDefault(self):
     """
@@ -206,14 +196,12 @@ class TestGratia(unittest.TestCase):
     options = settings.options
     variables = {'probes' : 'jobmanager:gratia-osg-prod.opensciencegrid.org:80'}
     for var in variables:      
-      self.failUnless(options.has_key(var), 
+      self.assertTrue(options.has_key(var), 
                       "Attribute %s missing" % var)
-      self.failUnlessEqual(options[var].value, 
-                           variables[var], 
-                           "Wrong value obtained for %s, got %s but " \
-                           "expected %s" % (var, 
-                                            options[var].value, 
-                                            variables[var]))
+      self.assertEqual(options[var].value, 
+                       variables[var], 
+                       "Wrong value obtained for %s, got %s but " \
+                       "expected %s" % (var, options[var].value, variables[var]))
 
   def testParsingDisabled(self):
     """
@@ -231,8 +219,9 @@ class TestGratia(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    self.failUnlessEqual(len(settings.options['probes'].value), 0, 
-                         "Disabled configuration should have no attributes")
+    self.assertEqual(len(settings.options['probes'].value), 
+                     0, 
+                     "Disabled configuration should have no attributes")
 
   def testParsingIgnored(self):
     """
@@ -250,8 +239,9 @@ class TestGratia(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    self.failUnlessEqual(len(settings.options['probes'].value), 0, 
-                         "Disabled configuration should have no attributes")
+    self.assertEqual(len(settings.options['probes'].value), 
+                     0, 
+                     "Disabled configuration should have no attributes")
 
   def testInvalidProbes1(self):
     """
@@ -270,8 +260,8 @@ class TestGratia(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes), 
-                "Did not notice invalid probe specification")
+    self.assertFalse(settings.checkAttributes(attributes), 
+                     "Did not notice invalid probe specification")
 
   def testInvalidProbes2(self):
     """
@@ -290,8 +280,8 @@ class TestGratia(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes), 
-                "Did not notice invalid probe specification")
+    self.assertFalse(settings.checkAttributes(attributes), 
+                     "Did not notice invalid probe specification")
 
   def testValidSettings(self):
     """
@@ -309,7 +299,7 @@ class TestGratia(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failUnless(settings.checkAttributes(attributes), 
+    self.assertTrue(settings.checkAttributes(attributes), 
                     "Correct settings incorrectly flagged as invalid")
     
   def testValidSettings2(self):
@@ -328,7 +318,7 @@ class TestGratia(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failUnless(settings.checkAttributes(attributes), 
+    self.assertTrue(settings.checkAttributes(attributes), 
                     "Disabled section incorrectly flagged as invalid")
     
   def testValidITBDefaults(self):
@@ -346,7 +336,7 @@ class TestGratia(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failUnless(settings.checkAttributes(attributes), 
+    self.assertTrue(settings.checkAttributes(attributes), 
                     "ITB defaults flagged as invalid")
 
   def testValidProductionDefaults(self):
@@ -364,7 +354,7 @@ class TestGratia(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failUnless(settings.checkAttributes(attributes), 
+    self.assertTrue(settings.checkAttributes(attributes), 
                     "Production defaults flagged as invalid")
     
   def testMissingITBDefaults(self):
@@ -383,7 +373,7 @@ class TestGratia(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failUnless(settings.checkAttributes(attributes), 
+    self.assertTrue(settings.checkAttributes(attributes), 
                     "ITB defaults flagged as invalid")
 
   def testMissingProductionDefaults(self):
@@ -402,7 +392,7 @@ class TestGratia(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failUnless(settings.checkAttributes(attributes), 
+    self.assertTrue(settings.checkAttributes(attributes), 
                     "Production defaults flagged as invalid")
 
   def testServiceList(self):
@@ -420,7 +410,7 @@ class TestGratia(unittest.TestCase):
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e)
     services = settings.enabledServices()
-    expected_services = set(['globus-gatekeeper'])
+    expected_services = set(['gratia-probes-cron'])
     self.assertEqual(services, expected_services,
                      "List of enabled services incorrect, " +
                      "got %s but expected %s" % (services, expected_services))

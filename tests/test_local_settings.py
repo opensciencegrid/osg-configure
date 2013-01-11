@@ -49,20 +49,20 @@ class TestLocalSettings(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failUnless(attributes.has_key('test1'), 
+    self.assertTrue(attributes.has_key('test1'), 
                     'Attribute test1 missing')
-    self.failUnlessEqual(attributes['test1'], 'Value1', 
-                         'Wrong value obtained for test1')
+    self.assertEqual(attributes['test1'], 'Value1', 
+                     'Wrong value obtained for test1')
     
-    self.failUnless(attributes.has_key('Test2-'), 
+    self.assertTrue(attributes.has_key('Test2-'), 
                     'Attribute Test2- missing')
-    self.failUnlessEqual(attributes['Test2-'], 'Val03-42', 
-                         'Wrong value obtained for Test2-')
+    self.assertEqual(attributes['Test2-'], 'Val03-42', 
+                     'Wrong value obtained for Test2-')
   
-    self.failIf(attributes.has_key('missing-key'), 
+    self.assertFalse(attributes.has_key('missing-key'), 
                 'Non-existent key (missing-key) found')
     
-    self.failIf(attributes.has_key('default-key'), 
+    self.assertFalse(attributes.has_key('default-key'), 
                 'Default key recognized as a local attribute')
     
 if __name__ == '__main__':

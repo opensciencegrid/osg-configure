@@ -74,14 +74,12 @@ class TestRSV(unittest.TestCase):
                  'enable_gratia' : True,
                  'enable_nagios' : True}
     for var in variables:      
-      self.failUnless(options.has_key(var), 
+      self.assertTrue(options.has_key(var), 
                       "Option %s missing" % var)
-      self.failUnlessEqual(options[var].value, 
-                           variables[var], 
-                           "Wrong value obtained for %s, got %s but " \
-                           "expected %s" % (var, 
-                                            options[var].value, 
-                                            variables[var]))
+      self.assertEqual(options[var].value, 
+                       variables[var], 
+                       "Wrong value obtained for %s, got %s but " \
+                       "expected %s" % (var, options[var].value, variables[var]))
         
   def testParsing2(self):
     """
@@ -117,14 +115,12 @@ class TestRSV(unittest.TestCase):
                  'enable_gratia' : False,
                  'enable_nagios' : False}
     for var in variables:
-      self.failUnless(options.has_key(var), 
+      self.assertTrue(options.has_key(var), 
                       "Option %s missing" % var)
-      self.failUnlessEqual(options[var].value, 
-                           variables[var], 
-                           "Wrong value obtained for %s, got %s but " \
-                           "expected %s" % (var, 
-                                            options[var].value, 
-                                            variables[var]))
+      self.assertEqual(options[var].value, 
+                       variables[var], 
+                       "Wrong value obtained for %s, got %s but " \
+                       "expected %s" % (var, options[var].value, variables[var]))
 
   def testMultipleHosts(self):
     """
@@ -159,14 +155,12 @@ class TestRSV(unittest.TestCase):
                  'enable_gratia' : True,
                  'enable_nagios' : True}
     for var in variables:
-      self.failUnless(options.has_key(var), 
+      self.assertTrue(options.has_key(var), 
                       "Option %s missing" % var)
-      self.failUnlessEqual(options[var].value, 
-                           variables[var], 
-                           "Wrong value obtained for %s, got %s but " \
-                           "expected %s" % (var, 
-                                            options[var].value, 
-                                            variables[var]))
+      self.assertEqual(options[var].value, 
+                       variables[var], 
+                       "Wrong value obtained for %s, got %s but " \
+                       "expected %s" % (var, options[var].value, variables[var]))
 
 
     
@@ -190,8 +184,8 @@ class TestRSV(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e) 
 
     attributes = settings.getAttributes()
-    self.failUnlessEqual(len(attributes), 0, 
-                         "Ignored configuration should have no attributes")
+    self.assertEqual(len(attributes), 0, 
+                     "Ignored configuration should have no attributes")
     
   def testParsingDisabled(self):
     """
@@ -213,8 +207,8 @@ class TestRSV(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e) 
 
     attributes = settings.getAttributes()
-    self.failUnlessEqual(len(attributes), 0, 
-                         "Disabled configuration should have no attributes")
+    self.assertEqual(len(attributes), 0, 
+                     "Disabled configuration should have no attributes")
                                                             
 
   def testMissingAttribute(self):
@@ -246,9 +240,9 @@ class TestRSV(unittest.TestCase):
 
       settings = rsv.RsvConfiguration(logger=global_logger)
       settings.rsv_meta_dir = RSV_META_DIR 
-      self.failUnlessRaises(exceptions.SettingError, 
-                            settings.parseConfiguration, 
-                            configuration)
+      self.assertRaises(exceptions.SettingError, 
+                        settings.parseConfiguration, 
+                        configuration)
 
   def testInvalidKey(self):
     """
@@ -272,8 +266,8 @@ class TestRSV(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)    
 
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes),
-                "Invalid rsv key file ignored")
+    self.assertFalse(settings.checkAttributes(attributes),
+                     "Invalid rsv key file ignored")
     
   def testMissingKey(self):
     """
@@ -296,8 +290,8 @@ class TestRSV(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)    
 
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes),
-                "Missing rsv key file ignored")
+    self.assertFalse(settings.checkAttributes(attributes),
+                     "Missing rsv key file ignored")
   
   def testInvalidCert(self):
     """
@@ -320,8 +314,8 @@ class TestRSV(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
           
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes),
-                "Invalid rsv cert file ignored")
+    self.assertFalse(settings.checkAttributes(attributes),
+                     "Invalid rsv cert file ignored")
 
   def testMissingCert(self):
     """
@@ -344,8 +338,8 @@ class TestRSV(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
           
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes),
-                "Missing rsv cert file ignored")
+    self.assertFalse(settings.checkAttributes(attributes),
+                     "Missing rsv cert file ignored")
 
   def testInvalidProxy(self):
     """
@@ -369,8 +363,8 @@ class TestRSV(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
           
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes),
-                "Invalid rsv proxy file ignored")
+    self.assertFalse(settings.checkAttributes(attributes),
+                     "Invalid rsv proxy file ignored")
 
   def testMissingProxy(self):
     """
@@ -393,8 +387,8 @@ class TestRSV(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
           
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes),
-                "Missing rsv proxy file ignored")
+    self.assertFalse(settings.checkAttributes(attributes),
+                     "Missing rsv proxy file ignored")
 
   def testInvalidGratiaProbes(self):
     """
@@ -417,8 +411,8 @@ class TestRSV(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
     
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes),
-                "Invalid gratia probe ignored")
+    self.assertFalse(settings.checkAttributes(attributes),
+                     "Invalid gratia probe ignored")
 
     config_file = get_test_config("rsv/" \
                                   "invalid_gratia2.ini")
@@ -433,8 +427,8 @@ class TestRSV(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
     
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes),
-                "Invalid gratia probe list ignored")
+    self.assertFalse(settings.checkAttributes(attributes),
+                     "Invalid gratia probe list ignored")
 
   def testInvalidCEHost(self):
     """
@@ -457,7 +451,7 @@ class TestRSV(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
     
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes),
+    self.assertFalse(settings.checkAttributes(attributes),
                 "Invalid ce  ignored")
       
   def testInvalidGumsHost(self):
@@ -481,7 +475,7 @@ class TestRSV(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
     
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes),
+    self.assertFalse(settings.checkAttributes(attributes),
                 "Invalid gums host ignored")
 
   def testInvalidGridftpHost(self):
@@ -505,7 +499,7 @@ class TestRSV(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
     
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes),
+    self.assertFalse(settings.checkAttributes(attributes),
                 "Invalid gridftp ignored")
 
   def testInvalidSRMHost(self):
@@ -529,7 +523,7 @@ class TestRSV(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
     
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes),
+    self.assertFalse(settings.checkAttributes(attributes),
                 "Invalid srm ignored")
 
   def testValidSettings1(self):
@@ -551,7 +545,7 @@ class TestRSV(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failUnless(settings.checkAttributes(attributes), 
+    self.assertTrue(settings.checkAttributes(attributes), 
                     "Correct configuration incorrectly flagged as incorrect")
 
   def testValidSettings2(self):
@@ -573,7 +567,7 @@ class TestRSV(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failUnless(settings.checkAttributes(attributes), 
+    self.assertTrue(settings.checkAttributes(attributes), 
                     "Correct configuration incorrectly flagged as incorrect")
 
   def testServiceList(self):

@@ -55,14 +55,12 @@ class TestSquid(unittest.TestCase):
                  'OSG_SQUID_CACHE_SIZE' : '2048',
                  'OSG_SQUID_MEM_CACHE' : '256'}
     for var in variables:      
-      self.failUnless(attributes.has_key(var), 
+      self.assertTrue(attributes.has_key(var), 
                       "Attribute %s missing" % var)
-      self.failUnlessEqual(attributes[var], 
-                           variables[var], 
-                           "Wrong value obtained for %s, got %s but " \
-                           "expected %s" % (var, 
-                                            attributes[var], 
-                                            variables[var]))
+      self.assertEqual(attributes[var], 
+                       variables[var], 
+                       "Wrong value obtained for %s, got %s but " \
+                       "expected %s" % (var, attributes[var], variables[var]))
         
   def testParsing2(self):
     """
@@ -86,14 +84,12 @@ class TestSquid(unittest.TestCase):
                  'OSG_SQUID_CACHE_SIZE' : '2048',
                  'OSG_SQUID_MEM_CACHE' : '256'}
     for var in variables:      
-      self.failUnless(attributes.has_key(var), 
+      self.assertTrue(attributes.has_key(var), 
                       "Attribute %s missing" % var)
-      self.failUnlessEqual(attributes[var], 
-                           variables[var], 
-                           "Wrong value obtained for %s, got %s but " \
-                           "expected %s" % (var, 
-                                            attributes[var], 
-                                            variables[var]))
+      self.assertEqual(attributes[var], 
+                       variables[var], 
+                       "Wrong value obtained for %s, got %s but " \
+                       "expected %s" % (var, attributes[var], variables[var]))
     
   def testParsingDisabled(self):
     """
@@ -112,19 +108,17 @@ class TestSquid(unittest.TestCase):
  
 
     attributes = settings.getAttributes()
-    self.failUnlessEqual(len(attributes), 1, 
-                         "Disabled configuration should have 4 attributes")
+    self.assertEqual(len(attributes), 1, 
+                     "Disabled configuration should have 4 attributes")
     
     variables = {'OSG_SQUID_LOCATION' : 'UNAVAILABLE'}
     for var in variables:      
-      self.failUnless(attributes.has_key(var), 
+      self.assertTrue(attributes.has_key(var), 
                       "Attribute %s missing" % var)
-      self.failUnlessEqual(attributes[var], 
-                           variables[var], 
-                           "Wrong value obtained for %s, got %s but " \
-                           "expected %s" % (var, 
-                                            attributes[var], 
-                                            variables[var]))
+      self.assertEqual(attributes[var], 
+                       variables[var], 
+                       "Wrong value obtained for %s, got %s but " \
+                       "expected %s" % (var, attributes[var], variables[var]))
                                                             
   def testParsingIgnored(self):
     """
@@ -143,22 +137,20 @@ class TestSquid(unittest.TestCase):
  
 
     attributes = settings.getAttributes()
-    self.failUnlessEqual(len(attributes), 4, 
-                         "Ignored configuration should have 4 attributes")
+    self.assertEqual(len(attributes), 4, 
+                     "Ignored configuration should have 4 attributes")
     
     variables = {'OSG_SQUID_LOCATION' : 'test.com:3128',
                  'OSG_SQUID_POLICY' : 'LRU',
                  'OSG_SQUID_CACHE_SIZE' : '2048',
                  'OSG_SQUID_MEM_CACHE' : '256'}
     for var in variables:      
-      self.failUnless(attributes.has_key(var), 
+      self.assertTrue(attributes.has_key(var), 
                       "Attribute %s missing" % var)
-      self.failUnlessEqual(attributes[var], 
-                           variables[var], 
-                           "Wrong value obtained for %s, got %s but " \
-                           "expected %s" % (var, 
-                                            attributes[var], 
-                                            variables[var]))
+      self.assertEqual(attributes[var], 
+                       variables[var], 
+                       "Wrong value obtained for %s, got %s but " \
+                       "expected %s" % (var, attributes[var], variables[var]))
 
 
   def testMissingAttribute(self):
@@ -175,9 +167,9 @@ class TestSquid(unittest.TestCase):
       configuration.remove_option('Squid', option)
 
       settings = squid.SquidConfiguration(logger=global_logger)
-      self.failUnlessRaises(exceptions.SettingError, 
-                            settings.parseConfiguration, 
-                            configuration)
+      self.assertRaises(exceptions.SettingError, 
+                        settings.parseConfiguration, 
+                        configuration)
 
 
   def testBadMemory(self):
@@ -229,8 +221,8 @@ class TestSquid(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
 
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes), 
-                "Did not notice invalid host")
+    self.assertFalse(settings.checkAttributes(attributes), 
+                     "Did not notice invalid host")
 
     config_file = get_test_config("squid/squid_bad_host2.ini")
     configuration = ConfigParser.SafeConfigParser()
@@ -243,8 +235,8 @@ class TestSquid(unittest.TestCase):
       self.fail("Received exception while parsing configuration")
 
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes), 
-                "Did not notice invalid host")
+    self.assertFalse(settings.checkAttributes(attributes), 
+                     "Did not notice invalid host")
 
   def testBadPort(self):
     """
@@ -264,8 +256,8 @@ class TestSquid(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
 
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes), 
-                "Did not notice invalid port number")
+    self.assertFalse(settings.checkAttributes(attributes), 
+                     "Did not notice invalid port number")
 
   def testMissingLocation(self):
     """
@@ -284,8 +276,8 @@ class TestSquid(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
 
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes), 
-                "Did not notice invalid squid location")
+    self.assertFalse(settings.checkAttributes(attributes), 
+                     "Did not notice invalid squid location")
 
   def testValidSettings(self):
     """
@@ -303,7 +295,7 @@ class TestSquid(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failUnless(settings.checkAttributes(attributes), 
+    self.assertTrue(settings.checkAttributes(attributes), 
                     "Correct locations incorrectly flagged as missing")
     
 if __name__ == '__main__':

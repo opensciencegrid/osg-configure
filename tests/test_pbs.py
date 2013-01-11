@@ -56,11 +56,11 @@ class TestPBS(unittest.TestCase):
                'OSG_JOB_MANAGER' : 'PBS'}
     for option in options:
       value = options[option]
-      self.failUnless(attributes.has_key(option), 
+      self.assertTrue(attributes.has_key(option), 
                       "Attribute %s missing" % option)
       err_msg = "Wrong value obtained for %s, " \
                 "got %s instead of %s" % (option, attributes[option], value)
-      self.failUnlessEqual(attributes[option], value, err_msg)
+      self.assertEqual(attributes[option], value, err_msg)
 
 
 
@@ -82,8 +82,8 @@ class TestPBS(unittest.TestCase):
  
 
     attributes = settings.getAttributes()
-    self.failUnlessEqual(len(attributes), 0, 
-                         "Disabled configuration should have no attributes")
+    self.assertEqual(len(attributes), 0, 
+                     "Disabled configuration should have no attributes")
     
   def testParsingIgnored(self):
     """
@@ -102,8 +102,8 @@ class TestPBS(unittest.TestCase):
  
 
     attributes = settings.getAttributes()
-    self.failUnlessEqual(len(attributes), 0, 
-                         "Ignored configuration should have no attributes")
+    self.assertEqual(len(attributes), 0, 
+                     "Ignored configuration should have no attributes")
 
                             
   def testMissingPBSLocation(self):
@@ -121,8 +121,8 @@ class TestPBS(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()    
-    self.failIf(settings.checkAttributes(attributes), 
-                "Did not notice missing pbs location")
+    self.assertFalse(settings.checkAttributes(attributes), 
+                     "Did not notice missing pbs location")
 
 
   def testValidSettings(self):
@@ -140,7 +140,7 @@ class TestPBS(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failUnless(settings.checkAttributes(attributes), 
+    self.assertTrue(settings.checkAttributes(attributes), 
                     "Correct settings incorrectly flagged as invalid")
 
   def testValidSettings2(self):
@@ -158,7 +158,7 @@ class TestPBS(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failUnless(settings.checkAttributes(attributes), 
+    self.assertTrue(settings.checkAttributes(attributes), 
                     "Correct settings incorrectly flagged as invalid")
     
   def testInvalidJobContact(self):
@@ -177,8 +177,8 @@ class TestPBS(unittest.TestCase):
       self.fail("Received exception while parsing configuration")
  
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes), 
-                "Did not notice invalid host in jobcontact option")
+    self.assertFalse(settings.checkAttributes(attributes), 
+                     "Did not notice invalid host in jobcontact option")
 
   def testInvalidUtilityContact(self):
     """
@@ -196,8 +196,8 @@ class TestPBS(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes), 
-                "Did not notice invalid host in utility_contact option")
+    self.assertFalse(settings.checkAttributes(attributes), 
+                     "Did not notice invalid host in utility_contact option")
 
   def testServiceList(self):
     """
@@ -231,8 +231,8 @@ class TestPBS(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
     services = settings.enabledServices()
     expected_services = set(['globus-gatekeeper', 
-                                  'globus-gridftp-server',
-                                  'globus-scheduler-event-generator'])
+                             'globus-gridftp-server',
+                             'globus-scheduler-event-generator'])
     self.assertEqual(services, expected_services,
                      "List of enabled services incorrect, " +
                      "got %s but expected %s" % (services, expected_services))

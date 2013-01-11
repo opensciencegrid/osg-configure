@@ -63,14 +63,12 @@ class TestSiteAttributes(unittest.TestCase):
                  'OSG_SITE_LONGITUDE' : '84.23',
                  'OSG_SITE_LATITUDE' : '23.32'}
     for var in variables:      
-      self.failUnless(attributes.has_key(var), 
+      self.assertTrue(attributes.has_key(var), 
                       "Attribute %s missing" % var)
-      self.failUnlessEqual(attributes[var], 
-                           variables[var], 
-                           "Wrong value obtained for %s, got %s but " \
-                           "expected %s" % (var, 
-                                            attributes[var], 
-                                            variables[var]))
+      self.assertEqual(attributes[var], 
+                       variables[var], 
+                       "Wrong value obtained for %s, got %s but " \
+                       "expected %s" % (var, attributes[var], variables[var]))
         
   def testParsing2(self):
     """
@@ -101,14 +99,12 @@ class TestSiteAttributes(unittest.TestCase):
                  'OSG_SITE_LONGITUDE' : '-84.23',
                  'OSG_SITE_LATITUDE' : '-23.32'}
     for var in variables:      
-      self.failUnless(attributes.has_key(var), 
+      self.assertTrue(attributes.has_key(var), 
                       "Attribute %s missing" % var)
-      self.failUnlessEqual(attributes[var], 
-                           variables[var], 
-                           "Wrong value obtained for %s, got %s but " \
-                           "expected %s" % (var, 
-                                            attributes[var], 
-                                            variables[var]))
+      self.assertEqual(attributes[var], 
+                       variables[var], 
+                       "Wrong value obtained for %s, got %s but " \
+                       "expected %s" % (var, attributes[var], variables[var]))
 
 
   def testParsing3(self):
@@ -140,14 +136,12 @@ class TestSiteAttributes(unittest.TestCase):
                  'OSG_SITE_LONGITUDE' : '-84.23',
                  'OSG_SITE_LATITUDE' : '-23.32'}
     for var in variables:      
-      self.failUnless(attributes.has_key(var), 
+      self.assertTrue(attributes.has_key(var), 
                       "Attribute %s missing" % var)
-      self.failUnlessEqual(attributes[var], 
-                           variables[var], 
-                           "Wrong value obtained for %s, got %s but " \
-                           "expected %s" % (var, 
-                                            attributes[var], 
-                                            variables[var]))
+      self.assertEqual(attributes[var], 
+                       variables[var], 
+                       "Wrong value obtained for %s, got %s but " \
+                       "expected %s" % (var, attributes[var], variables[var]))
     if ('resource_group' not in settings.options or
         settings.options['resource_group'].value != 'RESOURCE_GROUP'):
       self.fail('resource_group not present or not set to RESOURCE_GROUP')
@@ -182,9 +176,9 @@ class TestSiteAttributes(unittest.TestCase):
       configuration.remove_option('Site Information', option)
 
       settings = siteattributes.SiteAttributes(logger=global_logger)
-      self.failUnlessRaises(exceptions.SettingError, 
-                            settings.parseConfiguration, 
-                            configuration)
+      self.assertRaises(exceptions.SettingError, 
+                        settings.parseConfiguration, 
+                        configuration)
 
   def testInvalidLatitude(self):
     """
@@ -204,8 +198,8 @@ class TestSiteAttributes(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
     
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes),
-                "Invalid latitude ignored")
+    self.assertFalse(settings.checkAttributes(attributes),
+                     "Invalid latitude ignored")
     
     config_file = get_test_config("siteattributes/" \
                                   "invalid_latitude2.ini")
@@ -218,8 +212,8 @@ class TestSiteAttributes(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
 
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes),
-                "Invalid latitude ignored")
+    self.assertFalse(settings.checkAttributes(attributes),
+                     "Invalid latitude ignored")
   
   def testInvalidLongitude(self):
     """
@@ -239,8 +233,8 @@ class TestSiteAttributes(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
     
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes),
-                "Invalid latitude ignored")
+    self.assertFalse(settings.checkAttributes(attributes),
+                     "Invalid latitude ignored")
     
     config_file = get_test_config("siteattributes/" \
                                   "invalid_longitude2.ini")
@@ -253,8 +247,8 @@ class TestSiteAttributes(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
 
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes),
-                "Invalid latitude ignored")
+    self.assertFalse(settings.checkAttributes(attributes),
+                     "Invalid latitude ignored")
 
   def testInvalidHostname(self):
     """
@@ -274,8 +268,8 @@ class TestSiteAttributes(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
     
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes),
-                "Invalid hostname ignored")
+    self.assertFalse(settings.checkAttributes(attributes),
+                     "Invalid hostname ignored")
     
   def testInvalidEmail(self):
     """
@@ -295,8 +289,8 @@ class TestSiteAttributes(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
     
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes),
-                "Invalid email ignored")
+    self.assertFalse(settings.checkAttributes(attributes),
+                     "Invalid email ignored")
 
   def testInvalidSponsor1(self):
     """
@@ -317,8 +311,8 @@ class TestSiteAttributes(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
     
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes),
-                "Invalid email ignored")
+    self.assertFalse(settings.checkAttributes(attributes),
+                     "Invalid email ignored")
 
   def testInvalidSponsor2(self):
     """
@@ -339,8 +333,8 @@ class TestSiteAttributes(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
     
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes),
-                "Invalid email ignored")
+    self.assertFalse(settings.checkAttributes(attributes),
+                     "Invalid email ignored")
 
   def testInvalidSponsor3(self):
     """
@@ -361,8 +355,8 @@ class TestSiteAttributes(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
     
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes),
-                "Invalid email ignored")
+    self.assertFalse(settings.checkAttributes(attributes),
+                     "Invalid email ignored")
 
   def testValidSettings(self):
     """
@@ -380,7 +374,7 @@ class TestSiteAttributes(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failUnless(settings.checkAttributes(attributes), 
+    self.assertTrue(settings.checkAttributes(attributes), 
                     "Correct locations incorrectly flagged as missing")
 
   def testValidSettings2(self):
@@ -399,7 +393,7 @@ class TestSiteAttributes(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failUnless(settings.checkAttributes(attributes), 
+    self.assertTrue(settings.checkAttributes(attributes), 
                     "Correct locations incorrectly flagged as missing")
 if __name__ == '__main__':
   console = logging.StreamHandler()

@@ -65,14 +65,12 @@ class TestNetwork(unittest.TestCase):
                  'source_state_file' : '/etc/redhat-release',
                  'port_state_file' : '/etc/redhat-release'}
     for var in variables:      
-      self.failUnless(options.has_key(var), 
+      self.assertTrue(options.has_key(var), 
                       "Option %s missing" % var)
-      self.failUnlessEqual(options[var].value, 
-                           variables[var], 
-                           "Wrong value obtained for %s, got %s but " \
-                           "expected %s" % (var, 
-                                            options[var].value, 
-                                            variables[var]))
+      self.assertEqual(options[var].value, 
+                       variables[var], 
+                       "Wrong value obtained for %s, got %s but " \
+                       "expected %s" % (var, options[var].value, variables[var]))
     self.assertTrue(settings.checkAttributes({}),
                     "Flagged blank file as invalid")
     
@@ -92,14 +90,12 @@ class TestNetwork(unittest.TestCase):
                  'source_state_file' : '/etc/redhat-release',
                  'port_state_file' : ''}
     for var in variables:      
-      self.failUnless(options.has_key(var), 
+      self.assertTrue(options.has_key(var), 
                       "Option %s missing" % var)
-      self.failUnlessEqual(options[var].value, 
-                           variables[var], 
-                           "Wrong value obtained for %s, got %s but " \
-                           "expected %s" % (var, 
-                                            options[var].value, 
-                                            variables[var]))
+      self.assertEqual(options[var].value, 
+                       variables[var], 
+                       "Wrong value obtained for %s, got %s but " \
+                       "expected %s" % (var, options[var].value, variables[var]))
     self.assertTrue(settings.checkAttributes({}),
                     "Flagged blank file as invalid")
 
@@ -119,14 +115,12 @@ class TestNetwork(unittest.TestCase):
                  'source_state_file' : '',
                  'port_state_file' : '/etc/redhat-release'}
     for var in variables:      
-      self.failUnless(options.has_key(var), 
+      self.assertTrue(options.has_key(var), 
                       "Option %s missing" % var)
-      self.failUnlessEqual(options[var].value, 
-                           variables[var], 
-                           "Wrong value obtained for %s, got %s but " \
-                           "expected %s" % (var, 
-                                            options[var].value, 
-                                            variables[var]))
+      self.assertEqual(options[var].value, 
+                       variables[var], 
+                       "Wrong value obtained for %s, got %s but " \
+                       "expected %s" % (var, options[var].value, variables[var]))
     self.assertTrue(settings.checkAttributes({}),
                     "Flagged blank file as invalid")
   

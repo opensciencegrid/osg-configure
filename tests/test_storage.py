@@ -66,14 +66,12 @@ class TestStorage(unittest.TestCase):
                  'OSG_SITE_READ' : '/bin',
                  'OSG_SITE_WRITE' : '/usr/bin'}
     for var in variables:      
-      self.failUnless(attributes.has_key(var), 
+      self.assertTrue(attributes.has_key(var), 
                       "Attribute %s missing" % var)
-      self.failUnlessEqual(attributes[var], 
-                           variables[var], 
-                           "Wrong value obtained for %s, got %s but " \
-                           "expected %s" % (var, 
-                                            attributes[var], 
-                                            variables[var]))
+      self.assertEqual(attributes[var], 
+                       variables[var], 
+                       "Wrong value obtained for %s, got %s but " \
+                       "expected %s" % (var, attributes[var], variables[var]))
     if not validation.valid_directory('/tmp/etc'):
       # handle cases where this is not run under osg test framework
       os.mkdir('/tmp/etc')
@@ -114,14 +112,12 @@ class TestStorage(unittest.TestCase):
                  'OSG_SITE_READ' : '/tmp',
                  'OSG_SITE_WRITE' : '/var'}
     for var in variables:      
-      self.failUnless(attributes.has_key(var), 
+      self.assertTrue(attributes.has_key(var), 
                       "Attribute %s missing" % var)
-      self.failUnlessEqual(attributes[var], 
-                           variables[var], 
-                           "Wrong value obtained for %s, got %s but " \
-                           "expected %s" % (var,                                             
-                                            attributes[var],
-                                            variables[var]))
+      self.assertEqual(attributes[var], 
+                       variables[var], 
+                       "Wrong value obtained for %s, got %s but " \
+                       "expected %s" % (var, attributes[var], variables[var]))
     if not validation.valid_directory('/tmp/etc'):
       # handle cases where this is not run under osg test framework
       os.mkdir('/tmp/etc')
@@ -159,14 +155,12 @@ class TestStorage(unittest.TestCase):
                  'OSG_SITE_READ' : '/var',
                  'OSG_SITE_WRITE' : '/usr'}
     for var in variables:      
-      self.failUnless(attributes.has_key(var), 
+      self.assertTrue(attributes.has_key(var), 
                       "Attribute %s missing" % var)
-      self.failUnlessEqual(attributes[var], 
-                           variables[var], 
-                           "Wrong value obtained for %s, got %s but " \
-                           "expected %s" % (var,                                             
-                                            attributes[var],
-                                            variables[var]))
+      self.assertEqual(attributes[var], 
+                       variables[var], 
+                       "Wrong value obtained for %s, got %s but " \
+                       "expected %s" % (var, attributes[var], variables[var]))
     if not validation.valid_directory('/tmp/etc'):
       # handle cases where this is not run under osg test framework
       os.mkdir('/tmp/etc')
@@ -194,9 +188,9 @@ class TestStorage(unittest.TestCase):
       configuration.remove_option('Storage', option)
 
       settings = storage.StorageConfiguration(logger=global_logger)
-      self.failUnlessRaises(exceptions.SettingError, 
-                            settings.parseConfiguration, 
-                            configuration)
+      self.assertRaises(exceptions.SettingError, 
+                        settings.parseConfiguration, 
+                        configuration)
 
     
 if __name__ == '__main__':

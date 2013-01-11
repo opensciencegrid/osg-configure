@@ -54,25 +54,21 @@ class TestMisc(unittest.TestCase):
                  'gums_host' : 'my.gums.org',
                  'authorization_method' : 'xacml'}
     for var in variables:      
-      self.failUnless(options.has_key(var), 
+      self.assertTrue(options.has_key(var), 
                       "Option %s missing" % var)
-      self.failUnlessEqual(options[var].value, 
-                           variables[var], 
-                           "Wrong value obtained for %s, got %s but " \
-                           "expected %s" % (var, 
-                                            options[var].value, 
-                                            variables[var]))
+      self.assertEqual(options[var].value, 
+                       variables[var], 
+                       "Wrong value obtained for %s, got %s but " \
+                       "expected %s" % (var, options[var].value, variables[var]))
     attributes = settings.getAttributes()
     variables = {'OSG_GLEXEC_LOCATION' : './configs/misc'}
     for var in variables:      
-      self.failUnless(attributes.has_key(var), 
+      self.assertTrue(attributes.has_key(var), 
                       "Attribute %s missing" % var)
-      self.failUnlessEqual(attributes[var], 
-                           variables[var], 
-                           "Wrong value obtained for %s, got %s but " \
-                           "expected %s" % (var,                                             
-                                            attributes[var],
-                                            variables[var]))
+      self.assertEqual(attributes[var], 
+                       variables[var], 
+                       "Wrong value obtained for %s, got %s but " \
+                       "expected %s" % (var, attributes[var], variables[var]))
     
 
   def testParsing2(self):
@@ -96,25 +92,21 @@ class TestMisc(unittest.TestCase):
                  'gums_host' : 'my.gums.org',
                  'authorization_method' : 'xacml'}
     for var in variables:      
-      self.failUnless(options.has_key(var), 
+      self.assertTrue(options.has_key(var), 
                       "Option %s missing" % var)
-      self.failUnlessEqual(options[var].value, 
-                           variables[var], 
-                           "Wrong value obtained for %s, got %s but " \
-                           "expected %s" % (var, 
-                                            options[var].value, 
-                                            variables[var]))
+      self.assertEqual(options[var].value, 
+                       variables[var], 
+                       "Wrong value obtained for %s, got %s but " \
+                       "expected %s" % (var, options[var].value, variables[var]))
     attributes = settings.getAttributes()
     variables = {'OSG_GLEXEC_LOCATION' : './configs/misc'}
     for var in variables:      
-      self.failUnless(attributes.has_key(var), 
+      self.assertTrue(attributes.has_key(var), 
                       "Attribute %s missing" % var)
-      self.failUnlessEqual(attributes[var], 
-                           variables[var], 
-                           "Wrong value obtained for %s, got %s but " \
-                           "expected %s" % (var,                                             
-                                            attributes[var],
-                                            variables[var]))
+      self.assertEqual(attributes[var], 
+                       variables[var], 
+                       "Wrong value obtained for %s, got %s but " \
+                       "expected %s" % (var, attributes[var], variables[var]))
     
 
   def testParsingAuthentication(self):
@@ -133,14 +125,14 @@ class TestMisc(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    self.failUnless(settings.options.has_key('authorization_method'), 
+    self.assertTrue(settings.options.has_key('authorization_method'), 
                     "Attribute authorization_method missing")
-    self.failUnlessEqual(settings.options['authorization_method'].value, 
-                         'xacml', 
-                         "Wrong value obtained for %s, got %s but " \
-                         "expected %s" % ('authorization_method',                                             
-                                          settings.options['authorization_method'].value,
-                                          'xacml'))
+    self.assertEqual(settings.options['authorization_method'].value, 
+                     'xacml', 
+                     "Wrong value obtained for %s, got %s but " \
+                     "expected %s" % ('authorization_method',
+                                      settings.options['authorization_method'].value,
+                                      'xacml'))
 
     config_file = get_test_config("misc/misc_gridmap.ini")
     configuration = ConfigParser.SafeConfigParser()
@@ -153,14 +145,14 @@ class TestMisc(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    self.failUnless(settings.options.has_key('authorization_method'), 
+    self.assertTrue(settings.options.has_key('authorization_method'), 
                     "Attribute authorization_method missing")
-    self.failUnlessEqual(settings.options['authorization_method'].value, 
-                         'gridmap', 
-                         "Wrong value obtained for %s, got %s but " \
-                         "expected %s" % ('authorization_method',                                             
-                                          settings.options['authorization_method'].value,
-                                          'gridmap'))
+    self.assertEqual(settings.options['authorization_method'].value, 
+                     'gridmap', 
+                     "Wrong value obtained for %s, got %s but " \
+                     "expected %s" % ('authorization_method',                                             
+                                      settings.options['authorization_method'].value,
+                                      'gridmap'))
 
     config_file = get_test_config("misc/misc_local_gridmap.ini")
     configuration = ConfigParser.SafeConfigParser()
@@ -173,14 +165,14 @@ class TestMisc(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
 
-    self.failUnless(settings.options.has_key('authorization_method'), 
+    self.assertTrue(settings.options.has_key('authorization_method'), 
                     "Attribute authorization_method missing")
-    self.failUnlessEqual(settings.options['authorization_method'].value, 
-                         'local-gridmap', 
-                         "Wrong value obtained for %s, got %s but " \
-                         "expected %s" % ('authorization_method',                                             
-                                          settings.options['authorization_method'].value,
-                                          'local-gridmap'))
+    self.assertEqual(settings.options['authorization_method'].value, 
+                     'local-gridmap', 
+                     "Wrong value obtained for %s, got %s but " \
+                     "expected %s" % ('authorization_method',                                             
+                                      settings.options['authorization_method'].value,
+                                      'local-gridmap'))
 
   def testMissingAttribute(self):
     """
@@ -196,7 +188,7 @@ class TestMisc(unittest.TestCase):
 
       settings = misc.MiscConfiguration(logger=global_logger)
       settings.parseConfiguration(configuration)
-      self.failUnless(not settings.checkAttributes({})) 
+      self.assertTrue(not settings.checkAttributes({})) 
 
   def testXacmlMissingGums(self):
     """
@@ -211,7 +203,7 @@ class TestMisc(unittest.TestCase):
 
     settings = misc.MiscConfiguration(logger=global_logger)
     settings.parseConfiguration(configuration)
-    self.failUnless(exceptions.ConfigureError,
+    self.assertTrue(exceptions.ConfigureError,
                     settings.checkAttributes({}))
     
   def testXacmlBadGums(self):
@@ -232,8 +224,8 @@ class TestMisc(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
 
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes), 
-                "Did not notice bad gums host")
+    self.assertFalse(settings.checkAttributes(attributes), 
+                     "Did not notice bad gums host")
 
   def testValidSettings(self):
     """
@@ -251,7 +243,7 @@ class TestMisc(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failUnless(settings.checkAttributes(attributes), 
+    self.assertTrue(settings.checkAttributes(attributes), 
                     "Correct locations incorrectly flagged as missing")
 
   def testValidSettings2(self):
@@ -270,7 +262,7 @@ class TestMisc(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failUnless(settings.checkAttributes(attributes), 
+    self.assertTrue(settings.checkAttributes(attributes), 
                     "Correct locations incorrectly flagged as invalid")
 
   def testInvalidSettings(self):
@@ -289,8 +281,8 @@ class TestMisc(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failIf(settings.checkAttributes(attributes), 
-                "Bad config incorrectly flagged as okay")    
+    self.assertFalse(settings.checkAttributes(attributes), 
+                     "Bad config incorrectly flagged as okay")    
 
   def testServiceList(self):
     """

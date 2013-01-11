@@ -41,15 +41,15 @@ class TestXMLUtilities(unittest.TestCase):
     """
     
     xml_file = get_test_config('test_files/subscriptions.xml')
-    self.failUnlessEqual(xml_utilities.get_elements('foo', xml_file), 
-                         [], 
-                         'Got invalid elements')
+    self.assertEqual(xml_utilities.get_elements('foo', xml_file), 
+                     [], 
+                     'Got invalid elements')
     subscriptions = xml_utilities.get_elements('subscription', xml_file)
-    self.failUnlessEqual(len(subscriptions), 
-                         2, 
-                         'Got wrong number of elements')
+    self.assertEqual(len(subscriptions), 
+                     2, 
+                     'Got wrong number of elements')
     tag_names = [x.tagName for x in subscriptions]
-    self.failUnlessEqual(['subscription', 'subscription'], 
-                         tag_names, 
-                         'Got wrong elements')
+    self.assertEqual(['subscription', 'subscription'], 
+                     tag_names, 
+                     'Got wrong elements')
     

@@ -59,7 +59,7 @@ class TestGip(unittest.TestCase):
     """
     Test to see if the configure_osg module properly loaded
     """
-    self.failUnless(has_configure_osg, msg="osg-configure failed to " \
+    self.assertTrue(has_configure_osg, msg="osg-configure failed to " \
         "load.")
 
 
@@ -79,7 +79,7 @@ class TestGip(unittest.TestCase):
       gip_config.parseConfiguration(config_parser)
     except exceptions.SettingError:
       did_fail = True
-    self.failUnless(did_fail, msg="Did not properly detect a missing SC.")
+    self.assertTrue(did_fail, msg="Did not properly detect a missing SC.")
 
   def test_missing_se(self):
     """
@@ -98,7 +98,7 @@ class TestGip(unittest.TestCase):
       gip_config.parseConfiguration(config_parser)
     except exceptions.SettingError:
       did_fail = True
-    self.failUnless(did_fail, msg="Did not properly detect a missing SE.")
+    self.assertTrue(did_fail, msg="Did not properly detect a missing SE.")
 
   def test_missing_se2(self):
     """
@@ -117,7 +117,7 @@ class TestGip(unittest.TestCase):
       gip_config.parseConfiguration(config_parser)
     except exceptions.SettingError:
       did_fail = True
-    self.failIf(did_fail, msg="Did not properly detect a missing SE.")
+    self.assertFalse(did_fail, msg="Did not properly detect a missing SE.")
 
   def test_changeme1(self):
     """
@@ -135,7 +135,7 @@ class TestGip(unittest.TestCase):
       gip_config.parseConfiguration(config_parser)
     except exceptions.SettingError:
       did_fail = True
-    self.failIf(did_fail, msg="Falsely detected an enabled CHANGEME section.")
+    self.assertFalse(did_fail, msg="Falsely detected an enabled CHANGEME section.")
 
   def test_changeme2(self):
     """
@@ -153,7 +153,7 @@ class TestGip(unittest.TestCase):
       gip_config.parseConfiguration(config_parser)
     except exceptions.SettingError:
       did_fail = True
-    self.failUnless(did_fail, msg="Did not detect SE CHANGEME section.")
+    self.assertTrue(did_fail, msg="Did not detect SE CHANGEME section.")
 
   def test_changeme3(self):
     """
@@ -172,7 +172,7 @@ class TestGip(unittest.TestCase):
       gip_config.parseConfiguration(config_parser)
     except exceptions.SettingError:
       did_fail = True
-    self.failUnless(did_fail, msg="Did not detect enabled CHANGEME section.")
+    self.assertTrue(did_fail, msg="Did not detect enabled CHANGEME section.")
 
   def test_changeme4(self):
     """
@@ -191,7 +191,7 @@ class TestGip(unittest.TestCase):
       gip_config.parseConfiguration(config_parser)
     except exceptions.SettingError:
       did_fail = True
-    self.failUnless(did_fail, msg="Did not detect enabled CHANGEME section.")
+    self.assertTrue(did_fail, msg="Did not detect enabled CHANGEME section.")
 
   def test_changeme5(self):
     """
@@ -210,7 +210,7 @@ class TestGip(unittest.TestCase):
       gip_config.parseConfiguration(config_parser)
     except exceptions.SettingError:
       did_fail = True
-    self.failIf(did_fail, msg="Falsely detected an enabled CHANGEME section.")
+    self.assertFalse(did_fail, msg="Falsely detected an enabled CHANGEME section.")
 
   def test_missing_attributes(self):
     """
@@ -228,7 +228,7 @@ class TestGip(unittest.TestCase):
       gip_config.parseConfiguration(config_parser)
     except exceptions.SettingError:
       did_fail = True
-    self.failUnless(did_fail, msg="Did not properly detect missing attrs.")
+    self.assertTrue(did_fail, msg="Did not properly detect missing attrs.")
 
   def test_old_config(self):
     """
@@ -284,20 +284,20 @@ class TestGip(unittest.TestCase):
                                                  global_logger)
     local_settings.parseConfiguration(config_parser)
     attributes = local_settings.getAttributes()
-    self.failUnless('default' not in attributes,
+    self.assertTrue('default' not in attributes,
                     msg="Attributes set that weren't in the test config file")
-    self.failUnless('Foo' in attributes and attributes['Foo'] == 'value1', 
+    self.assertTrue('Foo' in attributes and attributes['Foo'] == 'value1', 
                     msg="Incorrectly named key."\
                     "  Desired name: Foo; only found  %s."  % 
                     (" ".join(attributes.keys())))
-    self.failUnless(attributes['Foo'] == 'value1', 
+    self.assertTrue(attributes['Foo'] == 'value1', 
                     msg="Incorrect value wanted value1, " \
                     "got %s" % attributes['Foo'])
-    self.failUnless('bar' in attributes and attributes['bar'] == 'value2', 
+    self.assertTrue('bar' in attributes and attributes['bar'] == 'value2', 
                     msg="Incorrectly named key."\
                     "  Desired name: bar; only found  %s."  % 
                     (" ".join(attributes.keys())))
-    self.failUnless('bar' in attributes and attributes['bar'] == 'value2', 
+    self.assertTrue('bar' in attributes and attributes['bar'] == 'value2', 
                     msg="Incorrect value wanted value2, " \
                     "got %s" % attributes['bar'])
 
@@ -406,7 +406,7 @@ class TestGip(unittest.TestCase):
       gip_config.checkSE(config_parser, "SE Valid")
     except exceptions.SettingError:
       did_fail = True
-    self.failIf(did_fail, msg="Improperly rejected a valid SE.")
+    self.assertFalse(did_fail, msg="Improperly rejected a valid SE.")
 
   def test_mount_point_wrong_len(self):
     """
@@ -425,7 +425,7 @@ class TestGip(unittest.TestCase):
       gip_config.checkSE(config_parser, "SE Wrong len")
     except exceptions.SettingError:
       did_fail = True
-    self.failUnless(did_fail, 
+    self.assertTrue(did_fail, 
                     msg="Did not throw an exception for incorrect # " \
                         "of paths in mount_point")
 
@@ -445,7 +445,7 @@ class TestGip(unittest.TestCase):
       gip_config.checkSE(config_parser, "SE Invalid Path 1")
     except exceptions.SettingError:
       did_fail = True
-    self.failUnless(did_fail, 
+    self.assertTrue(did_fail, 
                     msg="Did not throw an exception for invalid first " \
                         "mount_point path.")
 
@@ -465,7 +465,7 @@ class TestGip(unittest.TestCase):
       gip_config.checkSE(config_parser, "SE Invalid Path 2")
     except exceptions.SettingError:
       did_fail = True
-    self.failUnless(did_fail, 
+    self.assertTrue(did_fail, 
                     msg="Did not throw an exception for invalid " \
                         "second mount_point path.")
 
@@ -485,7 +485,7 @@ class TestGip(unittest.TestCase):
       gip_config.checkSC(config_parser, "Subcluster Valid")
     except exceptions.SettingError:
       did_fail = True
-    self.failIf(did_fail, msg="Valid HEPSPEC entry threw an exception.")
+    self.assertFalse(did_fail, msg="Valid HEPSPEC entry threw an exception.")
 
   def test_hepspec_invalid(self):
     """
@@ -503,7 +503,7 @@ class TestGip(unittest.TestCase):
       gip_config.checkSC(config_parser, "Subcluster Bad HEPSPEC")
     except exceptions.SettingError:
       did_fail = True
-    self.failUnless(did_fail, 
+    self.assertTrue(did_fail, 
                     msg="Invalid HEPSPEC entry did not throw an exception.")
 
   def test_user_check(self):

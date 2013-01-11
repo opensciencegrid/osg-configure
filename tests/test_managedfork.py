@@ -48,10 +48,11 @@ class TestManagedFork(unittest.TestCase):
  
 
     attributes = settings.getAttributes()
-    self.failUnless(attributes.has_key('OSG_MANAGEDFORK'), 
+    self.assertTrue(attributes.has_key('OSG_MANAGEDFORK'), 
                     'Attribute OSG_MANAGEDFORK missing')
-    self.failUnlessEqual(attributes['OSG_MANAGEDFORK'], 'Y', 
-                         'Wrong value obtained for OSG_MANAGEDFORK')
+    self.assertEqual(attributes['OSG_MANAGEDFORK'], 
+                     'Y', 
+                     'Wrong value obtained for OSG_MANAGEDFORK')
     
 
 
@@ -72,10 +73,11 @@ class TestManagedFork(unittest.TestCase):
  
 
     attributes = settings.getAttributes()
-    self.failUnless(attributes.has_key('OSG_MANAGEDFORK'), 
+    self.assertTrue(attributes.has_key('OSG_MANAGEDFORK'), 
                     'Attribute OSG_MANAGEDFORK missing')
-    self.failUnlessEqual(attributes['OSG_MANAGEDFORK'], 'N', 
-                         'Wrong value obtained for OSG_MANAGEDFORK')
+    self.assertEqual(attributes['OSG_MANAGEDFORK'], 
+                     'N', 
+                     'Wrong value obtained for OSG_MANAGEDFORK')
     
   def testParsingIgnored(self):
     """
@@ -94,10 +96,11 @@ class TestManagedFork(unittest.TestCase):
  
 
     attributes = settings.getAttributes()
-    self.failUnless(attributes.has_key('OSG_MANAGEDFORK'), 
+    self.assertTrue(attributes.has_key('OSG_MANAGEDFORK'), 
                     'Attribute OSG_MANAGEDFORK missing')
-    self.failUnlessEqual(attributes['OSG_MANAGEDFORK'], 'N', 
-                         'Wrong value obtained for OSG_MANAGEDFORK')
+    self.assertEqual(attributes['OSG_MANAGEDFORK'], 
+                     'N', 
+                     'Wrong value obtained for OSG_MANAGEDFORK')
                                                         
   def testValidSettings(self):
     """
@@ -115,7 +118,7 @@ class TestManagedFork(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failUnless(settings.checkAttributes(attributes), 
+    self.assertTrue(settings.checkAttributes(attributes), 
                     "Correct locations incorrectly flagged as missing")
 
 
@@ -135,7 +138,7 @@ class TestManagedFork(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failUnless(settings.checkAttributes(attributes), 
+    self.assertTrue(settings.checkAttributes(attributes), 
                     "Correct locations incorrectly flagged as missing")
 
 
@@ -155,7 +158,7 @@ class TestManagedFork(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.failUnless(settings.checkAttributes(attributes), 
+    self.assertTrue(settings.checkAttributes(attributes), 
                     "Correct locations incorrectly flagged as missing")
 
   def testServiceList(self):
