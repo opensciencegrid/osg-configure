@@ -112,10 +112,10 @@ class SLURMConfiguration(JobManagerConfiguration):
       return attributes_ok
 
     # make sure locations exist
-    if not validation.valid_location(self.options['pbs_location'].value):
+    if not validation.valid_location(self.options['slurm_location'].value):
       attributes_ok = False
       self.log("Non-existent location given: %s" % 
-                          (self.options['pbs_location'].value),
+                          (self.options['slurm_location'].value),
                 option = 'slurm_location',
                 section = self.config_section,
                 level = logging.ERROR)
@@ -174,7 +174,7 @@ class SLURMConfiguration(JobManagerConfiguration):
         self.log('SLURMConfiguration.configure completed')
         return False
 
-    self.disable_seg('pbs', SLURMConfiguration.SLURM_CONFIG_FILE)      
+#    self.disable_seg('pbs', SLURMConfiguration.SLURM_CONFIG_FILE)      
 #    if self.options['seg_enabled'].value:
 #      self.enable_seg('pbs', SLURMConfiguration.SLURM_CONFIG_FILE)
 #    else:
@@ -211,7 +211,7 @@ class SLURMConfiguration(JobManagerConfiguration):
     Returns True if successful, False otherwise
     """    
     contents = open(SLURMConfiguration.GRAM_CONFIG_FILE).read()
-    bin_location = os.path.join(self.options['pbs_location'].value,
+    bin_location = os.path.join(self.options['slurm_location'].value,
                                 'bin',
                                 'qsub')
     if validation.valid_file(bin_location):
@@ -221,7 +221,7 @@ class SLURMConfiguration(JobManagerConfiguration):
                                     1)
       if count == 0:
         contents += "qsub=\"%s\"\n" % bin_location
-    bin_location = os.path.join(self.options['pbs_location'].value,
+    bin_location = os.path.join(self.options['slurm_location'].value,
                                 'bin',
                                 'qstat')
     if validation.valid_file(bin_location):
@@ -229,7 +229,7 @@ class SLURMConfiguration(JobManagerConfiguration):
       (contents, count) = re_obj.subn("qstat=\"%s\"" % bin_location, contents, 1)
       if count == 0:
         contents += "qstat=\"%s\"\n" % bin_location
-    bin_location = os.path.join(self.options['pbs_location'].value,
+    bin_location = os.path.join(self.options['slurm__location'].value,
                                 'bin',
                                 'qdel')
     if validation.valid_file(bin_location):
@@ -244,7 +244,7 @@ class SLURMConfiguration(JobManagerConfiguration):
       if (self.options['log_directory'].value is None or
           not validation.valid_directory(self.options['log_directory'].value)):
         mesg = "%s is not a valid directory location " % self.options['log_directory'].value
-        mesg += "for pbs log files"
+        mesg += "for slurm log files"
         self.log(mesg, 
                  section = self.config_section,
                  option = 'log_directory',
