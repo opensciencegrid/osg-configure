@@ -387,7 +387,7 @@ class CemonConfiguration(BaseConfiguration):
       os.chmod(gridmap_location, 0644)
     else:
       perms = stat.S_IMODE(os.stat(gridmap_location).st_mode)
-      if not (perms & (stat.S_IROTH & stat.S_IXOTH)):
+      if not (perms & stat.S_IROTH):
         os.chmod(gridmap_location, perms | stat.S_IROTH)
       
       

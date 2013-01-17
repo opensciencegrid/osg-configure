@@ -27,7 +27,7 @@ class SGEConfiguration(JobManagerConfiguration):
                       configfile.Option(name = 'sge_root',
                                         mapping = 'OSG_SGE_ROOT'),
                     'sge_cell' : 
-                      configfile.Option(name = 'sge_CELL',
+                      configfile.Option(name = 'sge_cell',
                                         default_value = 'default', 
                                         mapping = 'OSG_SGE_CELL'),
                     'job_contact' : 
