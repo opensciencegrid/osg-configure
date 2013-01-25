@@ -41,6 +41,10 @@ class SGEConfiguration(JobManagerConfiguration):
                                         required = configfile.Option.OPTIONAL,
                                         opt_type = bool,
                                         default_value = False),
+                    'log_file' : 
+                      configfile.Option(name = 'log_file',
+                                        required = configfile.Option.OPTIONAL,
+                                        default_value = ''),
                     'log_directory' : 
                       configfile.Option(name = 'log_directory',
                                         required = configfile.Option.OPTIONAL,
@@ -96,6 +100,16 @@ class SGEConfiguration(JobManagerConfiguration):
     self.options['osg_sge_location'] = configfile.Option(name = 'sge_location',
                                                          value = self.options['sge_root'].value,
                                                          mapping = 'OSG_SGE_LOCATION')
+    
+    # if log_directory is set and log_file is not, copy log_directory over to 
+    # log_file and warn the admin
+    if (self.options['log_directory'].value != '' and 
+        self.options['log_file'].value == ''):
+      self.options['log_file'].value = self.options['log_directory'].value
+      self.log("log_directory is deprecated, please use log_file instead",
+               option = 'log_directory',
+               section = self.config_section,
+               level = logging.WARNING)
     # used to see if we need to enable the default fork manager, if we don't 
     # find the managed fork service enabled, set the default manager to fork
     # needed since the managed fork section could be removed after managed fork
@@ -163,13 +177,13 @@ class SGEConfiguration(JobManagerConfiguration):
                level = logging.ERROR)
 
     if self.options['seg_enabled'].value:
-      if (self.options['log_directory'].value is None or
-          not validation.valid_directory(self.options['log_directory'].value)):
-        mesg = "%s is not a valid directory location " % self.options['log_directory'].value
+      if (self.options['log_file'].value is None or
+          not validation.valid_file(self.options['log_file'].value)):
+        mesg = "%s is not a valid file path " % self.options['log_file'].value
         mesg += "for sge log files"
         self.log(mesg, 
                  section = self.config_section,
-                 option = 'log_directory',
+                 option = 'log_file',
                  level = logging.ERROR)
       
     self.log('SGEConfiguration.checkAttributes completed')    
@@ -297,17 +311,17 @@ class SGEConfiguration(JobManagerConfiguration):
       buf += new_setting + "\n" 
 
     if self.options['seg_enabled'].value:
-      if (self.options['log_directory'].value is None or
-          not validation.valid_directory(self.options['log_directory'].value)):
-        mesg = "%s is not a valid directory location " % self.options['log_directory'].value
+      if (self.options['log_file'].value is None or
+          not validation.valid_directory(self.options['log_file'].value)):
+        mesg = "%s is not a valid directory location " % self.options['log_file'].value
         mesg += "for sge log files"
         self.log(mesg, 
                  section = self.config_section,
-                 option = 'log_directory',
+                 option = 'log_file',
                  level = logging.ERROR)
         return False
 
-      new_setting = "log_path=\"%s\"" % self.options['log_directory'].value
+      new_setting = "log_path=\"%s\"" % self.options['log_file'].value
       re_obj = re.compile('^log_path=.*$', re.MULTILINE)
       (buf, count) = re_obj.subn(new_setting, buf, 1)
       if count == 0:
