@@ -11,10 +11,10 @@ from osg_configure.modules import configfile
 from osg_configure.modules import validation
 from osg_configure.modules.jobmanagerbase import JobManagerConfiguration
 
-__all__ = ['SLURMConfiguration']
+__all__ = ['SlurmConfiguration']
 
 
-class SLURMConfiguration(JobManagerConfiguration):
+class SlurmConfiguration(JobManagerConfiguration):
   """Class to handle attributes related to SLURM job manager configuration"""
 
   # Using PBS emulation in SLURM to interface with globus gatekeeper so
@@ -24,8 +24,8 @@ class SLURMConfiguration(JobManagerConfiguration):
    
   def __init__(self, *args, **kwargs):
     # pylint: disable-msg=W0142
-    super(SLURMConfiguration, self).__init__(*args, **kwargs)
-    self.log('SLURMConfiguration.__init__ started')
+    super(SlurmConfiguration, self).__init__(*args, **kwargs)
+    self.log('SlurmConfiguration.__init__ started')
     # dictionary to hold information about options
     self.options = {'slurm_location' : 
                       configfile.Option(name = 'slurm_location',
@@ -52,23 +52,23 @@ class SLURMConfiguration(JobManagerConfiguration):
                                         default_value = False)}
     self.config_section = "SLURM"
     self.__set_default = True
-    self.log('SLURMConfiguration.__init__ completed')
+    self.log('SlurmConfiguration.__init__ completed')
       
   def parseConfiguration(self, configuration):
     """Try to get configuration information from ConfigParser or SafeConfigParser object given
     by configuration and write recognized settings to attributes dict
     """
-    self.log('SLURMConfiguration.parseConfiguration started')    
+    self.log('SlurmConfiguration.parseConfiguration started')    
 
     self.checkConfig(configuration)
 
     if not configuration.has_section(self.config_section):
       self.log('SLURM section not found in config file')
-      self.log('SLURMConfiguration.parseConfiguration completed')    
+      self.log('SlurmConfiguration.parseConfiguration completed')    
       return
     
     if not self.setStatus(configuration):
-      self.log('SLURMConfiguration.parseConfiguration completed')    
+      self.log('SlurmConfiguration.parseConfiguration completed')    
       return True
 
     
@@ -91,24 +91,24 @@ class SLURMConfiguration(JobManagerConfiguration):
         configuration.getboolean('Managed Fork', 'enabled')):
       self.__set_default = False
       
-    self.log('SLURMConfiguration.parseConfiguration completed')    
+    self.log('SlurmConfiguration.parseConfiguration completed')    
 
   
 # pylint: disable-msg=W0613
   def checkAttributes(self, attributes):
     """Check attributes currently stored and make sure that they are consistent"""
-    self.log('SLURMConfiguration.checkAttributes started')    
+    self.log('SlurmConfiguration.checkAttributes started')    
 
     attributes_ok = True
 
     if not self.enabled:
       self.log('SLURM not enabled, returning True')
-      self.log('SLURMConfiguration.checkAttributes completed')    
+      self.log('SlurmConfiguration.checkAttributes completed')    
       return attributes_ok
     
     if self.ignored:
       self.log('Ignored, returning True')
-      self.log('SLURMConfiguration.checkAttributes completed')    
+      self.log('SlurmConfiguration.checkAttributes completed')    
       return attributes_ok
 
     # make sure locations exist
@@ -139,22 +139,22 @@ class SLURMConfiguration(JobManagerConfiguration):
                section = self.config_section,
                level = logging.ERROR)
             
-    self.log('SLURMConfiguration.checkAttributes completed')    
+    self.log('SlurmConfiguration.checkAttributes completed')    
     return attributes_ok 
   
   def configure(self, attributes):
     """Configure installation using attributes"""
-    self.log('SLURMConfiguration.configure started')
+    self.log('SlurmConfiguration.configure started')
 
     if not self.enabled:
       self.log('PBS not enabled, returning True')
-      self.log('SLURMConfiguration.configure completed')    
+      self.log('SlurmConfiguration.configure completed')    
       return True
 
     if self.ignored:
       self.log("%s configuration ignored" % self.config_section, 
                level = logging.WARNING)
-      self.log('SLURMConfiguration.configure completed')    
+      self.log('SlurmConfiguration.configure completed')    
       return True
 
     # The accept_limited argument was added for Steve Timm.  We are not adding
@@ -162,26 +162,26 @@ class SLURMConfiguration(JobManagerConfiguration):
     # useful to a wider audience.
     # See VDT RT ticket 7757 for more information.
     if self.options['accept_limited'].value:
-      if not self.enable_accept_limited(SLURMConfiguration.SLURM_CONFIG_FILE):
-        self.log('Error writing to ' + SLURMConfiguration.SLURM_CONFIG_FILE, 
+      if not self.enable_accept_limited(SlurmConfiguration.SLURM_CONFIG_FILE):
+        self.log('Error writing to ' + SlurmConfiguration.SLURM_CONFIG_FILE, 
                  level = logging.ERROR)
-        self.log('SLURMConfiguration.configure completed')
+        self.log('SlurmConfiguration.configure completed')
         return False
     else:
-      if not self.disable_accept_limited(SLURMConfiguration.SLURM_CONFIG_FILE):
-        self.log('Error writing to ' + SLURMConfiguration.SLURM_CONFIG_FILE, 
+      if not self.disable_accept_limited(SlurmConfiguration.SLURM_CONFIG_FILE):
+        self.log('Error writing to ' + SlurmConfiguration.SLURM_CONFIG_FILE, 
                  level = logging.ERROR)
-        self.log('SLURMConfiguration.configure completed')
+        self.log('SlurmConfiguration.configure completed')
         return False
 
-#    self.disable_seg('pbs', SLURMConfiguration.SLURM_CONFIG_FILE)      
+#    self.disable_seg('pbs', SlurmConfiguration.SLURM_CONFIG_FILE)      
 #    if self.options['seg_enabled'].value:
-#      self.enable_seg('pbs', SLURMConfiguration.SLURM_CONFIG_FILE)
+#      self.enable_seg('pbs', SlurmConfiguration.SLURM_CONFIG_FILE)
 #    else:
-#      self.disable_seg('pbs', SLURMConfiguration.SLURM_CONFIG_FILE)
+#      self.disable_seg('pbs', SlurmConfiguration.SLURM_CONFIG_FILE)
     
     if not self.setupGramConfig():
-      self.log('Error writing to ' + SLURMConfiguration.GRAM_CONFIG_FILE,
+      self.log('Error writing to ' + SlurmConfiguration.GRAM_CONFIG_FILE,
                level = logging.ERROR)
       return False
     
@@ -189,7 +189,7 @@ class SLURMConfiguration(JobManagerConfiguration):
       self.log('Configuring gatekeeper to use regular fork service')
       self.set_default_jobmanager('fork')
 
-    self.log('SLURMConfiguration.configure completed')    
+    self.log('SlurmConfiguration.configure completed')    
     return True
   
   def moduleName(self):
@@ -210,7 +210,7 @@ class SLURMConfiguration(JobManagerConfiguration):
     
     Returns True if successful, False otherwise
     """    
-    contents = open(SLURMConfiguration.GRAM_CONFIG_FILE).read()
+    contents = open(SlurmConfiguration.GRAM_CONFIG_FILE).read()
     bin_location = os.path.join(self.options['slurm_location'].value,
                                 'bin',
                                 'qsub')
@@ -257,7 +257,7 @@ class SLURMConfiguration(JobManagerConfiguration):
       if count == 0:
         contents += new_setting + "\n"
 
-    if not utilities.atomic_write(SLURMConfiguration.GRAM_CONFIG_FILE, contents):
+    if not utilities.atomic_write(SlurmConfiguration.GRAM_CONFIG_FILE, contents):
       return False
     
     return True
