@@ -203,7 +203,7 @@ class TestSGE(unittest.TestCase):
     config_file = get_test_config("sge/check_ok2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
-    root = os.path.join(config_file[:-16], 'test_files')
+    root = os.path.join(config_file[:-17], 'test_files')
     configuration.set('SGE', 'sge_root', root)
 
     settings = sge.SGEConfiguration(logger=global_logger)
@@ -225,7 +225,7 @@ class TestSGE(unittest.TestCase):
     config_file = get_test_config("sge/sge_log_dir.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
-    root = os.path.join(config_file[:-17], 'test_files')
+    root = os.path.join(config_file[:-20], 'test_files')
     configuration.set('SGE', 'sge_root', root)
 
     settings = sge.SGEConfiguration(logger=global_logger)
@@ -255,7 +255,7 @@ class TestSGE(unittest.TestCase):
     config_file = get_test_config("sge/sge_log_file.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
-    root = os.path.join(config_file[:-17], 'test_files')
+    root = os.path.join(config_file[:-20], 'test_files')
     configuration.set('SGE', 'sge_root', root)
 
     settings = sge.SGEConfiguration(logger=global_logger)

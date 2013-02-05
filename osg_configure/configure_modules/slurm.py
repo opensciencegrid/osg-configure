@@ -76,7 +76,7 @@ class SlurmConfiguration(JobManagerConfiguration):
 
     # set OSG_JOB_MANAGER and OSG_JOB_MANAGER_HOME
     self.options['job_manager'] = configfile.Option(name = 'job_manager',
-                                                    value = 'PBS',
+                                                    value = 'SLURM',
                                                     mapping = 'OSG_JOB_MANAGER')
     self.options['home'] = configfile.Option(name = 'job_manager_home',
                                              value = self.options['slurm_location'].value,
@@ -262,5 +262,15 @@ class SlurmConfiguration(JobManagerConfiguration):
     
     return True
       
-         
+  def enabledServices(self):
+    """Return a list of  system services needed for module to work
+    """
+    
+    if not self.enabled or self.ignored:
+      return set()
+        
+    services = set(['globus-gatekeeper', 'globus-gridftp-server'])
+    if self.options['seg_enabled'].value:
+      services.add('globus-scheduler-event-generator')
+    return services    
       
