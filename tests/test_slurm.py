@@ -215,7 +215,7 @@ class TestSlurm(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
     services = settings.enabledServices()
     expected_services = set(['globus-gatekeeper',
-                                  'globus-gridftp-server'])
+                             'globus-gridftp-server'])
     self.assertEqual(services, expected_services,
                      "List of enabled services incorrect, " +
                      "got %s but expected %s" % (services, expected_services))
@@ -231,8 +231,7 @@ class TestSlurm(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
     services = settings.enabledServices()
     expected_services = set(['globus-gatekeeper', 
-                             'globus-gridftp-server',
-                             'globus-scheduler-event-generator'])
+                             'globus-gridftp-server'])
     self.assertEqual(services, expected_services,
                      "List of enabled services incorrect, " +
                      "got %s but expected %s" % (services, expected_services))
