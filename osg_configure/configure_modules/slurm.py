@@ -270,7 +270,5 @@ class SlurmConfiguration(JobManagerConfiguration):
       return set()
         
     services = set(['globus-gatekeeper', 'globus-gridftp-server'])
-    if self.options['seg_enabled'].value:
-      services.add('globus-scheduler-event-generator')
     return services    
       
