@@ -236,7 +236,7 @@ class TestSlurm(unittest.TestCase):
                      "List of enabled services incorrect, " +
                      "got %s but expected %s" % (services, expected_services))
     
-    config_file = get_test_config("slurm/pbs_disabled.ini")
+    config_file = get_test_config("slurm/slurm_disabled.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 

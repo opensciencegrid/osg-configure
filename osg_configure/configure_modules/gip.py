@@ -108,7 +108,12 @@ class GipConfiguration(BaseConfiguration):
     self.log('GipConfiguration.__init__ started')
     self.config_section = "GIP"
     self.vo_dir = "VONAME"  # default to allowing substitution in vo_dir
-    self._valid_batch_opt = ['pbs', 'lsf', 'condor', 'sge', 'forwarding']
+    self._valid_batch_opt = ['pbs',
+                             'lsf',
+                             'condor',
+                             'sge',
+                             'slurm',
+                             'forwarding']
     self.gip_user = 'tomcat'
     self.log('GipConfiguration.__init__ completed')
     

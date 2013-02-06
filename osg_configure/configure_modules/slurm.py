@@ -229,7 +229,7 @@ class SlurmConfiguration(JobManagerConfiguration):
       (contents, count) = re_obj.subn("qstat=\"%s\"" % bin_location, contents, 1)
       if count == 0:
         contents += "qstat=\"%s\"\n" % bin_location
-    bin_location = os.path.join(self.options['slurm__location'].value,
+    bin_location = os.path.join(self.options['slurm_location'].value,
                                 'bin',
                                 'qdel')
     if validation.valid_file(bin_location):
@@ -240,23 +240,6 @@ class SlurmConfiguration(JobManagerConfiguration):
       if count == 0:
         contents += "qdel=\"%s\"\n" % bin_location
         
-    if self.options['seg_enabled'].value:
-      if (self.options['log_directory'].value is None or
-          not validation.valid_directory(self.options['log_directory'].value)):
-        mesg = "%s is not a valid directory location " % self.options['log_directory'].value
-        mesg += "for slurm log files"
-        self.log(mesg, 
-                 section = self.config_section,
-                 option = 'log_directory',
-                 level = logging.ERROR)
-        return False
-
-      new_setting = "log_path=\"%s\"" % self.options['log_directory'].value
-      re_obj = re.compile('^log_path=.*$', re.MULTILINE)
-      (contents, count) = re_obj.subn(new_setting, contents, 1)
-      if count == 0:
-        contents += new_setting + "\n"
-
     if not utilities.atomic_write(SlurmConfiguration.GRAM_CONFIG_FILE, contents):
       return False
     

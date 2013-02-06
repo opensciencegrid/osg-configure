@@ -158,7 +158,7 @@ def jobmanager_enabled(configuration):
   """
 
         
-  jobmanagers = ['PBS', 'Condor', 'SGE', 'LSF']  
+  jobmanagers = ['PBS', 'Condor', 'SGE', 'LSF', 'SLURM']  
   for jobmanager in jobmanagers:
     if (configuration.has_section(jobmanager) and
         configuration.has_option(jobmanager, 'enabled') and 
