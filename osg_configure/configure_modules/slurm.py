@@ -180,6 +180,8 @@ class SlurmConfiguration(JobManagerConfiguration):
 #    else:
 #      self.disable_seg('pbs', SlurmConfiguration.SLURM_CONFIG_FILE)
     
+    # make sure the SEG is disabled
+    self.disable_seg('pbs', SlurmConfiguration.SLURM_CONFIG_FILE)
     if not self.setupGramConfig():
       self.log('Error writing to ' + SlurmConfiguration.GRAM_CONFIG_FILE,
                level = logging.ERROR)
