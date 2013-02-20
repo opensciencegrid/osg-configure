@@ -300,14 +300,17 @@ class TestMisc(unittest.TestCase):
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e)
     services = settings.enabledServices()
-    if utilities.rpm_installed('fetch_crl'):
+    if utilities.rpm_installed('fetch-crl'):
       expected_services = set(['fetch-crl-cron', 
                                'fetch-crl-boot', 
                                'gums-client-cron'])
-    elif utilities.rpm_installed('fetch_crl3'):
+    elif utilities.rpm_installed('fetch-crl3'):
       expected_services = set(['fetch-crl3-cron', 
                                'fetch-crl3-boot', 
                                'gums-client-cron'])
+    else:
+      expected_services = set(['gums-client-cron'])
+      
       
     self.assertEqual(services, expected_services,
                      "List of enabled services incorrect, " +
@@ -323,14 +326,17 @@ class TestMisc(unittest.TestCase):
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e)
     services = settings.enabledServices()
-    if utilities.rpm_installed('fetch_crl'):
+    if utilities.rpm_installed('fetch-crl'):
       expected_services = set(['fetch-crl-cron', 
                                'fetch-crl-boot', 
                                'edg-mkgridmap'])
-    elif utilities.rpm_installed('fetch_crl3'):
+    elif utilities.rpm_installed('fetch-crl3'):
       expected_services = set(['fetch-crl3-cron', 
                                'fetch-crl3-boot', 
                                'edg-mkgridmap'])
+    else:
+      expected_services = set(['edg-mkgridmap'])
+      
     
     self.assertEqual(services, expected_services,
                      "List of enabled services incorrect, " +
