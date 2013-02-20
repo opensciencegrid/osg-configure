@@ -50,7 +50,7 @@ class MiscConfiguration(BaseConfiguration):
                     'cleanup_cron_time' : 
                       configfile.Option(name = 'cleanup_cron_time',
                                         required = configfile.Option.OPTIONAL,
-                                        default_value = '15 1 * * *')}    
+                                        default_value = '15 1 * * *')}
     self.__enabled = False
     self.config_section = "Misc Services"
     self.log('MiscConfiguration.__init__ completed')
@@ -313,7 +313,11 @@ configuration:
     if not self.enabled or self.ignored:
       return set()
     
-    services = set(['fetch-crl-cron', 'fetch-crl-boot'])
+    if utilities.rpm_installed('fetch-crl'):
+      services = set(['fetch-crl-cron', 'fetch-crl-boot'])
+    elif utilities.rpm_installed('fetch-crl3'):
+      services = set(['fetch-crl3-cron', 'fetch-crl3-boot'])
+      
     if self.options['authorization_method'].value == 'xacml':
       services.add('gums-client-cron')
     elif self.options['authorization_method'].value == 'gridmap':

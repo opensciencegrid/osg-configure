@@ -239,11 +239,13 @@ def fetch_crl():
       sys.stdout.write("CRLs exist, skipping fetch-crl invocation\n")
       sys.stdout.flush()
       return True
+    
+    crl_path = os.path.join('/', 'usr', 'sbin')
+    if rpm_installed('fetch-crl'):
+      crl_path = os.path.join(crl_path, 'fetch-crl')
+    elif rpm_installed('fetch-crl3'):
+      crl_path = os.path.join(crl_path, 'fetch-crl3')
       
-    crl_path = os.path.join('/',
-                            'usr',
-                            'sbin',
-                            'fetch-crl')
                  
     if not validation.valid_file(crl_path):
       sys.stdout.write("Can't find fetch-crl script, skipping fetch-crl invocation\n")
