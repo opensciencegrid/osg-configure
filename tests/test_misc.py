@@ -13,6 +13,7 @@ import logging
 pathname = os.path.realpath('../')
 sys.path.insert(0, pathname)
 
+from osg_configure.modules import utilities
 from osg_configure.modules import exceptions
 from osg_configure.configure_modules import misc
 from osg_configure.modules.utilities import get_test_config
@@ -299,9 +300,15 @@ class TestMisc(unittest.TestCase):
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e)
     services = settings.enabledServices()
-    expected_services = set(['fetch-crl-cron', 
-                                  'fetch-crl-boot', 
-                                  'gums-client-cron'])
+    if utilities.rpm_installed('fetch_crl'):
+      expected_services = set(['fetch-crl-cron', 
+                               'fetch-crl-boot', 
+                               'gums-client-cron'])
+    elif utilities.rpm_installed('fetch_crl3'):
+      expected_services = set(['fetch-crl3-cron', 
+                               'fetch-crl3-boot', 
+                               'gums-client-cron'])
+      
     self.assertEqual(services, expected_services,
                      "List of enabled services incorrect, " +
                      "got %s but expected %s" % (services, expected_services))
@@ -316,9 +323,15 @@ class TestMisc(unittest.TestCase):
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e)
     services = settings.enabledServices()
-    expected_services = set(['fetch-crl-cron', 
-                                  'fetch-crl-boot', 
-                                  'edg-mkgridmap'])
+    if utilities.rpm_installed('fetch_crl'):
+      expected_services = set(['fetch-crl-cron', 
+                               'fetch-crl-boot', 
+                               'edg-mkgridmap'])
+    elif utilities.rpm_installed('fetch_crl3'):
+      expected_services = set(['fetch-crl3-cron', 
+                               'fetch-crl3-boot', 
+                               'edg-mkgridmap'])
+    
     self.assertEqual(services, expected_services,
                      "List of enabled services incorrect, " +
                      "got %s but expected %s" % (services, expected_services))
