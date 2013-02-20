@@ -313,6 +313,7 @@ configuration:
     if not self.enabled or self.ignored:
       return set()
     
+    services = set()
     if utilities.rpm_installed('fetch-crl'):
       services = set(['fetch-crl-cron', 'fetch-crl-boot'])
     elif utilities.rpm_installed('fetch-crl3'):
