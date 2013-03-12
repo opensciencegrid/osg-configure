@@ -28,6 +28,8 @@ class LSFConfiguration(JobManagerConfiguration):
                       configfile.Option(name = 'lsf_location',
                                         default_value = '/usr',
                                         mapping = 'OSG_LSF_LOCATION'),
+                    'lsf_profile' : 
+                      configfile.Option(name = 'lsf_profile'),
                     'job_contact' : 
                       configfile.Option(name = 'job_contact',
                                         mapping = 'OSG_JOB_CONTACT'),
@@ -114,6 +116,14 @@ class LSFConfiguration(JobManagerConfiguration):
       self.log("Non-existent location given: %s" % 
                           (self.options['lsf_location'].value),
                 option = 'lsf_location',
+                section = self.config_section,
+                level = logging.ERROR)
+
+    if not validation.valid_directory(self.options['lsf_profile'].value):
+      attributes_ok = False
+      self.log("Non-existent location given: %s" % 
+                          (self.options['lsf_profile'].value),
+                option = 'lsf_profile',
                 section = self.config_section,
                 level = logging.ERROR)
 
@@ -208,39 +218,62 @@ class LSFConfiguration(JobManagerConfiguration):
     buf = open(LSFConfiguration.GRAM_CONFIG_FILE).read()
     bin_location = os.path.join(self.options['lsf_location'].value,
                                 'bin',
-                                'qsub')
+                                'bsub')
     if validation.valid_file(bin_location):
-      re_obj = re.compile('^qsub=.*$', re.MULTILINE)
-      (buf, count) = re_obj.subn("qsub=\"%s\"" % bin_location, 
+      re_obj = re.compile('^bsub=.*$', re.MULTILINE)
+      (buf, count) = re_obj.subn("bsub=\"%s\"" % bin_location, 
                                  buf, 
                                  1)
       if count == 0:
-        buf += "qsub=\"%s\"\n" % bin_location
+        buf += "bsub=\"%s\"\n" % bin_location
     bin_location = os.path.join(self.options['lsf_location'].value,
                                 'bin',
-                                'qstat')
+                                'bqueues')
     if validation.valid_file(bin_location):
-      re_obj = re.compile('^qstat=.*$', re.MULTILINE)
-      (buf, count) = re_obj.subn("qstat=\"%s\"" % bin_location,
+      re_obj = re.compile('^bqueues=.*$', re.MULTILINE)
+      (buf, count) = re_obj.subn("bqueues=\"%s\"" % bin_location,
                                  buf,
                                  1)
       if count == 0:
-        buf += "qstat=\"%s\"\n" % bin_location
+        buf += "bqueues=\"%s\"\n" % bin_location
     bin_location = os.path.join(self.options['lsf_location'].value,
                                 'bin',
-                                'qdel')
+                                'bjobs')
     if validation.valid_file(bin_location):
-      re_obj = re.compile('^qstat=.*$', re.MULTILINE)
-      (buf, count) = re_obj.subn("qdel=\"%s\"" % bin_location, buf, 1)
-      if count == 0:
-        buf += "qdel=\"%s\"\n" % bin_location
-    if self.options['lsf_server'].value is not None:
-      re_obj = re.compile('^qstat=.*$', re.MULTILINE)
-      (buf, count) = re_obj.subn("lsf_default=\"%s\"" % bin_location,
+      re_obj = re.compile('^bjobs=.*$', re.MULTILINE)
+      (buf, count) = re_obj.subn("bjobs=\"%s\"" % bin_location,
                                  buf,
                                  1)
       if count == 0:
-        buf += "lsf_default=\"%s\"\n" % self.options['lsf_server'].value
+        buf += "bjobs=\"%s\"\n" % bin_location
+    bin_location = os.path.join(self.options['lsf_location'].value,
+                                'bin',
+                                'bhist')
+    if validation.valid_file(bin_location):
+      re_obj = re.compile('^bhist=.*$', re.MULTILINE)
+      (buf, count) = re_obj.subn("bhist=\"%s\"" % bin_location,
+                                 buf,
+                                 1)
+      if count == 0:
+        buf += "bhist=\"%s\"\n" % bin_location
+    bin_location = os.path.join(self.options['lsf_location'].value,
+                                'bin',
+                                'bacct')
+    if validation.valid_file(bin_location):
+      re_obj = re.compile('^bacct=.*$', re.MULTILINE)
+      (buf, count) = re_obj.subn("bacct=\"%s\"" % bin_location,
+                                 buf,
+                                 1)
+      if count == 0:
+        buf += "bacct=\"%s\"\n" % bin_location
+    bin_location = os.path.join(self.options['lsf_location'].value,
+                                'bin',
+                                'bkill')
+    if validation.valid_file(bin_location):
+      re_obj = re.compile('^bkill=.*$', re.MULTILINE)
+      (buf, count) = re_obj.subn("bkill=\"%s\"" % bin_location, buf, 1)
+      if count == 0:
+        buf += "bkill=\"%s\"\n" % bin_location
         
     if self.options['seg_enabled'].value:
       if (self.options['log_directory'].value is None or
