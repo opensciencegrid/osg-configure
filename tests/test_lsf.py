@@ -126,6 +126,24 @@ class TestLSF(unittest.TestCase):
     self.assertFalse(settings.checkAttributes(attributes), 
                      "Did not notice missing LSF location")
 
+  def testMissingLSFProfile(self):
+    """
+    Test the checkAttributes function to see if it catches missing LSF profile
+    """
+    config_file = get_test_config("lsf/missing_profile.ini")
+    configuration = ConfigParser.SafeConfigParser()
+    configuration.read(config_file)
+
+    settings = lsf.LSFConfiguration(logger=global_logger)
+    try:
+      settings.parseConfiguration(configuration)
+    except Exception, e:
+      self.fail("Received exception while parsing configuration: %s" % e)
+ 
+    attributes = settings.getAttributes()    
+    self.assertFalse(settings.checkAttributes(attributes), 
+                     "Did not notice missing LSF profile")
+
 
   def testValidSettings(self):
     """
