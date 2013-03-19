@@ -16,7 +16,7 @@ __all__ = ['LSFConfiguration']
 class LSFConfiguration(JobManagerConfiguration):
   """Class to handle attributes related to lsf job manager configuration"""
   
-  LSF_CONFIG_FILE = '/etc/grid-services/available/jobmanager-lsf'
+  LSF_CONFIG_FILE = '/etc/grid-services/available/jobmanager-lsf-seg'
   GRAM_CONFIG_FILE = '/etc/globus/globus-lsf.conf'
 
   def __init__(self, *args, **kwargs):
@@ -119,7 +119,7 @@ class LSFConfiguration(JobManagerConfiguration):
                 section = self.config_section,
                 level = logging.ERROR)
 
-    if not validation.valid_directory(self.options['lsf_profile'].value):
+    if not validation.valid_file(self.options['lsf_profile'].value):
       attributes_ok = False
       self.log("Non-existent location given: %s" % 
                           (self.options['lsf_profile'].value),
@@ -180,11 +180,12 @@ class LSFConfiguration(JobManagerConfiguration):
         self.log('LSFConfiguration.configure completed')
         return False
 
-    if self.options['seg_enabled'].value:
-      self.enable_seg('lsf', LSFConfiguration.LSF_CONFIG_FILE)
-    else:
-      self.disable_seg('lsf', LSFConfiguration.LSF_CONFIG_FILE)
-    
+    if not self.options['seg_enabled'].value:
+      self.log("SEG must be enabled for LSF jobmanager",
+                option = 'seg_enabled',
+                section = self.config_section,
+                level = logging.ERROR)
+    self.enable_seg('lsf', LSFConfiguration.LSF_CONFIG_FILE)
     if not self.setupGramConfig():
       self.log('Error writing to ' + LSFConfiguration.GRAM_CONFIG_FILE,
                level = logging.ERROR)
@@ -292,6 +293,12 @@ class LSFConfiguration(JobManagerConfiguration):
       if count == 0:
         buf += new_setting + "\n"
     
+    new_setting = "lsf_profile=\"%s\"" % self.options['lsf_profile'].value
+    re_obj = re.compile('^lsf_profile=.*$', re.MULTILINE)
+    (buf, count) = re_obj.subn(new_setting, buf, 1)
+    if count == 0:
+      buf += new_setting + "\n"
+      
     if not utilities.atomic_write(LSFConfiguration.GRAM_CONFIG_FILE, buf):
       return False
     return True
@@ -307,3 +314,5 @@ class LSFConfiguration(JobManagerConfiguration):
     if self.options['seg_enabled'].value:
       services.add('globus-scheduler-event-generator')
     return services 
+  
+
