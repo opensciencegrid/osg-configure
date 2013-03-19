@@ -15,6 +15,7 @@ sys.path.insert(0, pathname)
 
 from osg_configure.configure_modules import lsf
 from osg_configure.modules.utilities import get_test_config
+from osg_configure.modules import exceptions
 
 global_logger = logging.getLogger(__name__)
 if sys.version_info[0] >= 2 and sys.version_info[1] > 6:
@@ -135,14 +136,10 @@ class TestLSF(unittest.TestCase):
     configuration.read(config_file)
 
     settings = lsf.LSFConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
-    attributes = settings.getAttributes()    
-    self.assertFalse(settings.checkAttributes(attributes), 
-                     "Did not notice missing LSF profile")
+    self.assertRaises(exceptions.SettingError,
+                      settings.parseConfiguration,
+                      configuration)     
+
 
 
   def testValidSettings(self):
