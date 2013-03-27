@@ -117,7 +117,7 @@ in your config.ini file."""
         elif probe == 'lsf':
           lsf_location = configfile.Option(name = 'lsf_location',
                                            default_value = '/usr/bin')
-          configfile.get_option(configuration, 'LSF', log_option)
+          configfile.get_option(configuration, 'LSF', lsf_location)
           self.__probe_config['lsf'] = {'lsf_location' : lsf_location.value}
 
           accounting_log_option = configfile.Option(name = 'accounting_log_directory',
@@ -447,6 +447,12 @@ in your config.ini file."""
         self.__probe_config['pbs']['accounting_log_directory'] == ''):
       return True
     accounting_log_directory = self.__probe_config['pbs']['accounting_log_directory']
+    if not validation.valid_directory(accounting_log_directory):
+      self.log("PBS accounting log not present, PBS gratia probe not configured",
+               level = logging.ERROR,
+                option = 'accounting_log_directory',
+                section = 'PBS')
+      return True    
     re_obj = re.compile('^\s*pbsAcctLogDir\s*=.*$', re.MULTILINE)  
     config_location = os.path.join('/', 
                                'etc',
@@ -469,12 +475,18 @@ in your config.ini file."""
     """
     if (self.__probe_config['lsf']['accounting_log_directory'] is None or
         self.__probe_config['lsf']['accounting_log_directory'] == ''):
-      self.log("LSF accounting log not given, lsf gratia probe not configured",
+      self.log("LSF accounting log not given, LSF gratia probe not configured",
                level = logging.ERROR,
                 option = 'accounting_log_directory',
                 section = 'LSF')               
       return True
     accounting_log_directory = self.__probe_config['lsf']['accounting_log_directory']
+    if not validation.valid_directory(accounting_log_directory):
+      self.log("LSF accounting log not present, LSF gratia probe not configured",
+               level = logging.ERROR,
+                option = 'accounting_log_directory',
+                section = 'LSF')
+      return True
     re_obj = re.compile('^\s*lsfAcctLogDir\s*=.*$', re.MULTILINE)  
     config_location = os.path.join('/', 
                                'etc',
