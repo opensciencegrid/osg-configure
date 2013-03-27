@@ -114,6 +114,18 @@ in your config.ini file."""
                                                     default_value = '')
           configfile.get_option(configuration, 'PBS', accounting_log_option)
           self.__probe_config['pbs'] = {'accounting_log_directory' : accounting_log_option.value}
+        elif probe == 'lsf':
+          lsf_location = configfile.Option(name = 'lsf_location',
+                                           default_value = '/usr/bin')
+          configfile.get_option(configuration, 'LSF', log_option)
+          self.__probe_config['lsf'] = {'lsf_location' : lsf_location.value}
+
+          accounting_log_option = configfile.Option(name = 'accounting_log_directory',
+                                                    required = configfile.Option.OPTIONAL,
+                                                    default_value = '')
+          configfile.get_option(configuration, 'LSF', accounting_log_option)
+          self.__probe_config['lsf'] = {'accounting_log_directory' : accounting_log_option.value}
+          
 
     self.getOptions(configuration, 
                     ignore_options = ['itb-jobmanager-gratia',
@@ -188,6 +200,8 @@ in your config.ini file."""
         self.__configureCondorProbe()
       elif probe == 'pbs':
         self.__configurePBSProbe()
+      elif probe == 'lsf':
+        self.__configureLSFProbe()
 
 
     self.log("GratiaConfiguration.configure completed")
@@ -448,6 +462,54 @@ in your config.ini file."""
     if not utilities.atomic_write(config_location, buf):
       return False    
     return True
+
+  def __configureLSFProbe(self):
+    """
+    Do lsf probe specific configuration
+    """
+    if (self.__probe_config['lsf']['accounting_log_directory'] is None or
+        self.__probe_config['lsf']['accounting_log_directory'] == ''):
+      self.log("LSF accounting log not given, lsf gratia probe not configured",
+               level = logging.ERROR,
+                option = 'accounting_log_directory',
+                section = 'LSF')               
+      return True
+    accounting_log_directory = self.__probe_config['lsf']['accounting_log_directory']
+    re_obj = re.compile('^\s*lsfAcctLogDir\s*=.*$', re.MULTILINE)  
+    config_location = os.path.join('/', 
+                               'etc',
+                               'gratia',
+                               'pbs-lsf',
+                               'urCollector.conf')   
+    buf = file(config_location).read()
+    (buf, count) = re_obj.subn(r'lsfAcctLogDir = "%s"' % accounting_log_directory,
+                                  buf, 
+                                  1)
+    if count == 0:
+      buf += "lsfAcctLogDir = \"%s\"\n" % accounting_log_directory
+    # setup lsfBinDir
+    if (self.__probe_config['lsf']['lsf_location'] is None or
+        self.__probe_config['lsf']['lsf_location'] == ''):
+      self.log("LSF location not given, lsf gratia probe not configured",
+               level = logging.ERROR,
+                option = 'lsf_location',
+                section = 'LSF')               
+      return True
+    lsf_bin_dir = os.path.join(self.__probe_config['lsf']['lsf_location'], 'bin')
+    re_obj = re.compile('^\s*lsfBinDir\s*=.*$', re.MULTILINE)  
+    config_location = os.path.join('/', 
+                                   'etc',
+                                   'gratia',
+                                   'pbs-lsf',
+                                   'urCollector.conf')   
+    (buf, count) = re_obj.subn(r'lsfBinDir = "%s"' % lsf_bin_dir, buf, 1)
+    if count == 0:
+      buf += "lsfBinDir = \"%s\"\n" % accounting_log_directory
+    
+    if not utilities.atomic_write(config_location, buf):
+      return False    
+    return True
+
 
   def enabledServices(self):
     """Return a list of  system services needed for module to work
