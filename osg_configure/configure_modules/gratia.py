@@ -120,11 +120,11 @@ in your config.ini file."""
           configfile.get_option(configuration, 'LSF', lsf_location)
           self.__probe_config['lsf'] = {'lsf_location' : lsf_location.value}
 
-          accounting_log_option = configfile.Option(name = 'accounting_log_directory',
-                                                    required = configfile.Option.OPTIONAL,
-                                                    default_value = '')
-          configfile.get_option(configuration, 'LSF', accounting_log_option)
-          self.__probe_config['lsf'] = {'accounting_log_directory' : accounting_log_option.value}
+          log_option = configfile.Option(name = 'log_directory',
+                                         required = configfile.Option.OPTIONAL,
+                                         default_value = '')
+          configfile.get_option(configuration, 'LSF', log_option)
+          self.__probe_config['lsf'] = {'log_directory' : log_option.value}
           
 
     self.getOptions(configuration, 
@@ -473,18 +473,18 @@ in your config.ini file."""
     """
     Do lsf probe specific configuration
     """
-    if (self.__probe_config['lsf']['accounting_log_directory'] is None or
-        self.__probe_config['lsf']['accounting_log_directory'] == ''):
-      self.log("LSF accounting log not given, LSF gratia probe not configured",
+    if (self.__probe_config['lsf']['log_directory'] is None or
+        self.__probe_config['lsf']['log_directory'] == ''):
+      self.log("LSF accounting log directory not given, LSF gratia probe not configured",
                level = logging.ERROR,
-                option = 'accounting_log_directory',
-                section = 'LSF')               
+               option = 'log_directory',
+               section = 'LSF')               
       return True
-    accounting_log_directory = self.__probe_config['lsf']['accounting_log_directory']
-    if not validation.valid_directory(accounting_log_directory):
+    log_directory = self.__probe_config['lsf']['log_directory']
+    if not validation.valid_directory(log_directory):
       self.log("LSF accounting log not present, LSF gratia probe not configured",
                level = logging.ERROR,
-                option = 'accounting_log_directory',
+                option = 'log_directory',
                 section = 'LSF')
       return True
     re_obj = re.compile('^\s*lsfAcctLogDir\s*=.*$', re.MULTILINE)  
@@ -494,11 +494,11 @@ in your config.ini file."""
                                'pbs-lsf',
                                'urCollector.conf')   
     buf = file(config_location).read()
-    (buf, count) = re_obj.subn(r'lsfAcctLogDir = "%s"' % accounting_log_directory,
+    (buf, count) = re_obj.subn(r'lsfAcctLogDir = "%s"' % log_directory,
                                   buf, 
                                   1)
     if count == 0:
-      buf += "lsfAcctLogDir = \"%s\"\n" % accounting_log_directory
+      buf += "lsfAcctLogDir = \"%s\"\n" % log_directory
     # setup lsfBinDir
     if (self.__probe_config['lsf']['lsf_location'] is None or
         self.__probe_config['lsf']['lsf_location'] == ''):
@@ -516,7 +516,7 @@ in your config.ini file."""
                                    'urCollector.conf')   
     (buf, count) = re_obj.subn(r'lsfBinDir = "%s"' % lsf_bin_dir, buf, 1)
     if count == 0:
-      buf += "lsfBinDir = \"%s\"\n" % accounting_log_directory
+      buf += "lsfBinDir = \"%s\"\n" % lsf_bin_dir
     
     if not utilities.atomic_write(config_location, buf):
       return False    
