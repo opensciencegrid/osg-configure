@@ -103,6 +103,10 @@ in your config.ini file."""
           self.__probe_config['condor'] = {'condor_location' : 
                                             CondorConfiguration.getCondorLocation(configuration)}
         elif probe == 'pbs':
+          if BaseConfiguration.sectionDisabled(configuration, 'PBS'):
+            # if the PBS jobmanager is disabled, the CE is probably using LSF
+            # in any case, setting up the pbs gratia probe is not useful
+            continue
           log_option = configfile.Option(name = 'log_directory',
                                          required = configfile.Option.OPTIONAL,
                                          default_value = '')
@@ -115,6 +119,10 @@ in your config.ini file."""
           configfile.get_option(configuration, 'PBS', accounting_log_option)
           self.__probe_config['pbs'] = {'accounting_log_directory' : accounting_log_option.value}
         elif probe == 'lsf':
+          if BaseConfiguration.sectionDisabled(configuration, 'LSF'):
+            # if the LSF jobmanager is disabled, the CE is probably using PBS
+            # in any case, setting up the pbs gratia probe is not useful
+            continue
           lsf_location = configfile.Option(name = 'lsf_location',
                                            default_value = '/usr/bin')
           configfile.get_option(configuration, 'LSF', lsf_location)
@@ -124,7 +132,7 @@ in your config.ini file."""
                                          required = configfile.Option.OPTIONAL,
                                          default_value = '')
           configfile.get_option(configuration, 'LSF', log_option)
-          self.__probe_config['lsf'] = {'log_directory' : log_option.value}
+          self.__probe_config['lsf']['log_directory'] = log_option.value
           
 
     self.getOptions(configuration, 
@@ -199,8 +207,14 @@ in your config.ini file."""
       if probe == 'condor':
         self.__configureCondorProbe()
       elif probe == 'pbs':
+        if 'pbs' not in self.__probe_config:
+          # don't have pbs specific gratia settings
+          continue        
         self.__configurePBSProbe()
       elif probe == 'lsf':
+        if 'lsf' not in self.__probe_config:
+          # don't have lsf specific gratia settings
+          continue        
         self.__configureLSFProbe()
 
 
@@ -484,8 +498,8 @@ in your config.ini file."""
     if not validation.valid_directory(log_directory):
       self.log("LSF accounting log not present, LSF gratia probe not configured",
                level = logging.ERROR,
-                option = 'log_directory',
-                section = 'LSF')
+               option = 'log_directory',
+               section = 'LSF')
       return True
     re_obj = re.compile('^\s*lsfAcctLogDir\s*=.*$', re.MULTILINE)  
     config_location = os.path.join('/', 
@@ -504,8 +518,8 @@ in your config.ini file."""
         self.__probe_config['lsf']['lsf_location'] == ''):
       self.log("LSF location not given, lsf gratia probe not configured",
                level = logging.ERROR,
-                option = 'lsf_location',
-                section = 'LSF')               
+               option = 'lsf_location',
+               section = 'LSF')               
       return True
     lsf_bin_dir = os.path.join(self.__probe_config['lsf']['lsf_location'], 'bin')
     re_obj = re.compile('^\s*lsfBinDir\s*=.*$', re.MULTILINE)  
@@ -531,4 +545,6 @@ in your config.ini file."""
       return set()
     
     return set(['gratia-probes-cron'])
+  
+
     

@@ -193,3 +193,23 @@ class BaseConfiguration(object):
     """
     return set()
     
+  @staticmethod
+  def sectionDisabled(configuration, section):
+    """
+    Check the enable option and then set the appropriate attributes based on that.
+    
+    Returns False if the section is not enabled or set to ignore
+    """
+    
+    try:
+      if not configuration.has_option(section, 'enabled'):
+        return True
+      elif configuration.get(section, 'enabled').lower() == 'ignore':
+        return True
+      elif not configuration.getboolean(section, 'enabled'):
+        return True
+      else:
+        return False
+    except ConfigParser.NoOptionError:
+      raise exceptions.SettingError("Can't get value for enable option " \
+                                    "in %s section" % section) 
