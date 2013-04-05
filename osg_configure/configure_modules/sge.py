@@ -185,6 +185,7 @@ class SGEConfiguration(JobManagerConfiguration):
                  section = self.config_section,
                  option = 'log_file',
                  level = logging.ERROR)
+        attributes_ok = False
       
     self.log('SGEConfiguration.checkAttributes completed')    
     return attributes_ok 
