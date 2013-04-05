@@ -199,6 +199,17 @@ in your config.ini file."""
           probe_host = self.enabled_probe_settings[probe]
         else:
           continue
+      # conditional ugliness thanks to the pbs-lsf probes being shared
+      if probe == 'pbs' and 'pbs' not in self.__probe_config:
+          # don't have pbs specific gratia settings so don't want to configure
+          # pbs probe any futher to avoid messing up LSF settings
+        continue
+      elif probe == 'lsf' and 'lsf' not in self.__probe_config:
+          # don't have lsf specific gratia settings so we shouldn't try
+          # to configure the lsf probe any further to avoid messing up pbs 
+          # settings if they will be set
+        continue
+
       self.__makeSubscription(probe, 
                               probe_list[probe], 
                               probe_host, 
@@ -207,14 +218,8 @@ in your config.ini file."""
       if probe == 'condor':
         self.__configureCondorProbe()
       elif probe == 'pbs':
-        if 'pbs' not in self.__probe_config:
-          # don't have pbs specific gratia settings
-          continue        
         self.__configurePBSProbe()
       elif probe == 'lsf':
-        if 'lsf' not in self.__probe_config:
-          # don't have lsf specific gratia settings
-          continue        
         self.__configureLSFProbe()
 
 
