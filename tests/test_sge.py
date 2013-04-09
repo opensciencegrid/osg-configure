@@ -238,7 +238,7 @@ class TestSGE(unittest.TestCase):
               "%s but " % get_test_config('./test_files/subscriptions.xml') + \
                "got %s instead\n" %  settings.options['log_file'].value
     self.assertEqual(settings.options['log_file'].value,
-                     './test_files/subscriptions.xml',
+                     '/etc/hosts',
                      err_msg)
                      
     attributes = settings.getAttributes()    
@@ -270,7 +270,7 @@ class TestSGE(unittest.TestCase):
                "got %s instead\n" %  settings.options['log_file'].value
  
     self.assertEqual(settings.options['log_file'].value,
-                     './test_files/subscriptions.xml',
+                     '/etc/hosts',
                      err_msg)
     
     attributes = settings.getAttributes()
