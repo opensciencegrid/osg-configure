@@ -312,16 +312,6 @@ class SGEConfiguration(JobManagerConfiguration):
       buf += new_setting + "\n" 
 
     if self.options['seg_enabled'].value:
-      if (self.options['log_file'].value is None or
-          not validation.valid_directory(self.options['log_file'].value)):
-        mesg = "%s is not a valid directory location " % self.options['log_file'].value
-        mesg += "for sge log files"
-        self.log(mesg, 
-                 section = self.config_section,
-                 option = 'log_file',
-                 level = logging.ERROR)
-        return False
-
       new_setting = "log_path=\"%s\"" % self.options['log_file'].value
       re_obj = re.compile('^log_path=.*$', re.MULTILINE)
       (buf, count) = re_obj.subn(new_setting, buf, 1)
