@@ -508,6 +508,13 @@ def main():
   if os.getuid() != 0:
     error_exit("You must be root when running %s" % sys.argv[0])
     
+  umask = os.umask(0)
+  if umask != 022:
+    error_exit("Your umask is not set to 02, this probably caused issues with " \
+               "your OSG install, please check your the file permissions for " \
+               "your installation")
+  os.umask(umask)
+  
   if 'VDT_LOCATION' in os.environ:
     error_exit("$VDT_LOCATION exists in the environment, it looks like " +
                "the setup.sh from a pacman install exists in the environment " + 
