@@ -509,10 +509,11 @@ def main():
     error_exit("You must be root when running %s" % sys.argv[0])
     
   umask = os.umask(0)
-  if umask != 022:
-    error_exit("Your umask is not set to 02, this probably caused issues with " \
-               "your OSG install, please check your the file permissions for " \
-               "your installation")
+  if ((umask != 022) and (umask != 002)):
+    error_exit("Your umask is not set to 022 or 002, this probably caused " \
+               "files to be installed from the rpms with incorrect " \
+               "permissions, please check your the file permissions for your " \
+               "installation")
   os.umask(umask)
   
   if 'VDT_LOCATION' in os.environ:
