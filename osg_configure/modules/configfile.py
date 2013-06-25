@@ -3,6 +3,7 @@
 import glob
 import ConfigParser
 import os
+import sys
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
@@ -38,6 +39,10 @@ def read_config_files(**kwargs):
   if not validation.valid_directory(config_dir):
     raise IOError("%s does not exist" % config_dir)
   file_list = get_file_list(config_directory = config_dir)
+  for filename in file_list:
+    if not validation.valid_ini_file(filename):
+      sys.stderr.write("Error found in %s\n" % filename)
+      sys.exit(1)
   try:
     config = ConfigParser.SafeConfigParser()
     if case_sensitive:

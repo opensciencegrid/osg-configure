@@ -24,7 +24,7 @@ def valid_domain(host, resolve=False):
   """Check to see if the string passed in is a valid domain"""
   if len(host) == 0:
     return False
-  match = re.match('^[a-zA-Z0-9\-]+(?:\.[a-zA-Z0-9\-]+)+$', 
+  match = re.match(r'^[a-zA-Z0-9\-]+(?:\.[a-zA-Z0-9\-]+)+$', 
                    host)
   if not match:
     return False
@@ -43,7 +43,7 @@ def valid_email(address):
   """Check an email address and make sure that it fits the correct format"""
   if len(address) == 0:
     return False
-  match = re.match('(?:[a-zA-Z\-_+0-9.]+)@([a-zA-Z0-9_\-]+(?:\.[a-zA-Z0-9_\-]+)+)', 
+  match = re.match(r'(?:[a-zA-Z\-_+0-9.]+)@([a-zA-Z0-9_\-]+(?:\.[a-zA-Z0-9_\-]+)+)', 
                    address)
   if not match:
     return False
@@ -106,7 +106,7 @@ def valid_user_vo_file(map_file = None, return_invalid_lines = False):
       return False
   
   valid = True
-  comment = re.compile('^\s*#')
+  comment = re.compile(r'^\s*#')
   java = re.compile('(java|exception)', re.I)
   account_regex = re.compile('^[a-z0-9-._]+$', re.IGNORECASE) 
   invalid_lines = []
@@ -209,12 +209,12 @@ def valid_ini_file(filename):
         if "\n" in value:
           # pylint: disable-msg=E1103
           error_line = value.split('\n')[1]
-          sys.stderr.write("INI syntax error in section %s: " % section)
-          sys.stderr.write("The following line starts with a space: %s" % error_line)
-          sys.stderr.write("Please removing the leading space")
+          sys.stderr.write("INI syntax error in section %s: \n" % section)
+          sys.stderr.write("The following line starts with a space: %s\n" % error_line)
+          sys.stderr.write("Please removing the leading space\n")
           return False
   except ValueError:
-    sys.stderr.write("syntax error in section %s with option %s" % (section, option))
+    sys.stderr.write("syntax error in section %s with option %s\n" % (section, option))
     return False
         
   return True
