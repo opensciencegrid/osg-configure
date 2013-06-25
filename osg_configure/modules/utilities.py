@@ -13,10 +13,7 @@ import rpm
 
 from osg_configure.modules import validation
 
-__all__ = ['using_prima',
-           'get_vos',
-           'enable_service',
-           'disable_service',
+__all__ = ['get_vos',
            'service_enabled',    
            'get_elements',
            'get_hostname',
@@ -179,7 +176,7 @@ def service_enabled(service_name):
   if process.returncode != 0:
     return False  
 
-  match = re.search(service_name + '\s*\|.*\|\s*([a-z ]*)$', output)
+  match = re.search(service_name + r'\s*\|.*\|\s*([a-z ]*)$', output)
   if match:
     # The regex above captures trailing whitespace, so remove it
     # before we make the comparison. -Scot Kronenfeld 2010-10-08
