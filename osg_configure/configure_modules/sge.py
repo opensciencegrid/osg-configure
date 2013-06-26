@@ -362,3 +362,13 @@ class SGEConfiguration(JobManagerConfiguration):
     if self.options['seg_enabled'].value:
       services.add('globus-scheduler-event-generator')
     return services 
+  
+  def getAccountingFile(self):
+    """
+    Return the location of the SGE Accounting file
+    """
+    
+    return os.path.join(self.options['sge_root'].value,
+                        self.options['sge_cell'].value,
+                        'common',
+                        'accounting') 
