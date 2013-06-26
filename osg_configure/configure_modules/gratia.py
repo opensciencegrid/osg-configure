@@ -11,6 +11,7 @@ from osg_configure.modules import validation
 from osg_configure.modules import configfile
 from osg_configure.modules.configurationbase import BaseConfiguration
 from osg_configure.configure_modules.condor import CondorConfiguration
+from osg_configure.configure_modules.sge import SGEConfiguration
 
 __all__ = ['GratiaConfiguration']
 
@@ -133,6 +134,12 @@ in your config.ini file."""
                                          default_value = '')
           configfile.get_option(configuration, 'LSF', log_option)
           self.__probe_config['lsf']['log_directory'] = log_option.value
+        elif probe == 'sge':
+          sge_config = SGEConfiguration()
+          sge_config.parseConfiguration(configuration)
+          
+          self.__probe_config['sge'] = {'sge_accounting_file' : sge_config.getAccountingFile()}
+          
           
 
     self.getOptions(configuration, 
@@ -221,6 +228,8 @@ in your config.ini file."""
         self.__configurePBSProbe()
       elif probe == 'lsf':
         self.__configureLSFProbe()
+      elif probe == 'sge':
+        self.__configureSGEProbe()
 
 
     self.log("GratiaConfiguration.configure completed")
@@ -320,7 +329,7 @@ in your config.ini file."""
                    buf,
                    1)
       for var in ['SSLHost', 'SOAPHost', 'SSLRegistrationHost', 'CollectorHost']:
-        buf = re.sub(r'(\s*)' + var + '\s*=.*',
+        buf = re.sub(r'(\s*)' + var + r'\s*=.*',
                      r'\1' + var + '="' + probe_host + '"',
                      buf,
                      1)  
@@ -440,12 +449,8 @@ in your config.ini file."""
     """
     Do condor probe specific configuration
     """    
-    if (self.__probe_config['condor']['condor_location'] is None or
-        self.__probe_config['condor']['condor_location'] == '/usr' or
-        self.__probe_config['condor']['condor_location'] == ''):
-      return True
     condor_location = self.__probe_config['condor']['condor_location']
-    re_obj = re.compile('^(\s*)CondorLocation\s*=.*$', re.MULTILINE)  
+    re_obj = re.compile(r'^(\s*)CondorLocation\s*=.*$', re.MULTILINE)  
     config_location = os.path.join('/', 'etc', 'gratia', 'condor',  'ProbeConfig')
     buf = file(config_location).read()
     (buf, count) = re_obj.subn(r'\1CondorLocation="%s"' % condor_location,
@@ -472,7 +477,7 @@ in your config.ini file."""
                 option = 'accounting_log_directory',
                 section = 'PBS')
       return True    
-    re_obj = re.compile('^\s*pbsAcctLogDir\s*=.*$', re.MULTILINE)  
+    re_obj = re.compile(r'^\s*pbsAcctLogDir\s*=.*$', re.MULTILINE)  
     config_location = os.path.join('/', 
                                'etc',
                                'gratia',
@@ -506,7 +511,7 @@ in your config.ini file."""
                option = 'log_directory',
                section = 'LSF')
       return True
-    re_obj = re.compile('^\s*lsfAcctLogDir\s*=.*$', re.MULTILINE)  
+    re_obj = re.compile(r'^\s*lsfAcctLogDir\s*=.*$', re.MULTILINE)  
     config_location = os.path.join('/', 
                                'etc',
                                'gratia',
@@ -527,7 +532,7 @@ in your config.ini file."""
                section = 'LSF')               
       return True
     lsf_bin_dir = os.path.join(self.__probe_config['lsf']['lsf_location'], 'bin')
-    re_obj = re.compile('^\s*lsfBinDir\s*=.*$', re.MULTILINE)  
+    re_obj = re.compile(r'^\s*lsfBinDir\s*=.*$', re.MULTILINE)  
     config_location = os.path.join('/', 
                                    'etc',
                                    'gratia',
@@ -537,6 +542,24 @@ in your config.ini file."""
     if count == 0:
       buf += "lsfBinDir = \"%s\"\n" % lsf_bin_dir
     
+    if not utilities.atomic_write(config_location, buf):
+      return False    
+    return True
+
+  def __configureSGEProbe(self):
+    """
+    Do SGE probe specific configuration
+    """
+    accounting_path = self.__probe_config['sge']['sge_accounting_file']
+    re_obj = re.compile(r'^(\s*)SGEAccountingFile\s*=.*$', re.MULTILINE)  
+    config_location = os.path.join('/', 'etc', 'gratia', 'sge',  'ProbeConfig')
+    buf = file(config_location).read()
+    (buf, count) = re_obj.subn(r'\1SGEAccountingFile="%s"' % accounting_path,
+                                  buf,
+                                  1)
+    if count == 0:
+      buf = buf.replace('/>', 
+                        "    SGEAccountingFile=\"%s\"\n/>" % accounting_path)
     if not utilities.atomic_write(config_location, buf):
       return False    
     return True
