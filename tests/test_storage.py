@@ -170,6 +170,42 @@ class TestStorage(unittest.TestCase):
     else:
       self.assertTrue(settings.checkAttributes(attributes))
                 
+  def testOASISConfig(self):
+    """
+    Test storage parsing when using OASIS configuration
+    """
+    
+    # StorageConfiguration is not enabled on non-ce installs
+    if not utilities.ce_installed():
+      return
+    config_file = get_test_config("storage/oasis.ini")
+    configuration = ConfigParser.SafeConfigParser()
+    configuration.read(config_file)
+
+    settings = storage.StorageConfiguration(logger=global_logger)
+    try:
+      settings.parseConfiguration(configuration)
+    except Exception, e:
+      self.fail("Received exception while parsing configuration: %s" % e)
+ 
+
+    attributes = settings.getAttributes()
+    variables = {'OSG_STORAGE_ELEMENT' : 'False',
+                 'OSG_DEFAULT_SE' : 'test.domain.org',
+                 'OSG_GRID' : '/etc',
+                 'OSG_APP' : '/cvmfs/oasis.opensciencegrid.org',
+                 'OSG_DATA' : 'UNAVAILABLE',
+                 'OSG_SITE_READ' : '/var',
+                 'OSG_SITE_WRITE' : '/usr'}
+    for var in variables:      
+      self.assertTrue(attributes.has_key(var), 
+                      "Attribute %s missing" % var)
+      self.assertEqual(attributes[var], 
+                       variables[var], 
+                       "Wrong value obtained for %s, got %s but " \
+                       "expected %s" % (var, attributes[var], variables[var]))      
+      self.assertTrue(settings.checkAttributes(attributes))
+
   def testMissingAttribute(self):
     """
     Test the checkAttributes function 

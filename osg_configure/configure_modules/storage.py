@@ -175,8 +175,15 @@ class StorageConfiguration(BaseConfiguration):
     the proper permissions.  Returns True if everything is okay, False otherwise. 
     
     APP_DIR must exist and have a etc directory with 1777 permissions for success.
+    
+    If APP_DIR begins with /cvmfs/oasis.opensciencegrid.org, skip tests
     """
     try:
+      if app_dir.startswith('/cvmfs/oasis.opensciencegrid.org'):
+        self.log('OSG_APP is an OASIS repository, skipping tests', 
+                 level=logging.INFO)
+        return True
+      
       if not validation.valid_location(app_dir) or not os.path.isdir(app_dir):
         self.log("Directory not present: %s" % app_dir,
                  section = self.config_section,

@@ -216,6 +216,39 @@ class TestValidation(unittest.TestCase):
                     "Got error on valid file %s" % filename)
 
 
+  def test_valid_contact(self):
+    """
+    Test functionality of valid_contact to make sure that it rejects incorrect
+    contact strings and accepts correct ones
+    """
+    
+    jobmanagers = ['pbs', 'lsf', 'sge', 'condor']
+    domain = 'test.com'
+    port = 8888
+    
+    for jobmanager in jobmanagers:
+      for test_manager in jobmanagers:
+        contact = "%s:%s/jobmanager-%s" % (domain, port, test_manager)
+        if test_manager == jobmanager:
+          self.assertTrue(validation.valid_contact(contact, 
+                                                   test_manager), 
+                          "%s labeled as invalid contact" % contact)
+        else:
+          self.assertFalse(validation.valid_contact(contact, 
+                                                    test_manager), 
+                           "%s labeled as valid contact" % contact)
+    port = '234a'
+    for jobmanager in jobmanagers:
+      contact = "%s:%s/jobmanager-%s" % (domain, port, jobmanager)
+      self.assertFalse(validation.valid_contact(contact, jobmanager), 
+                       "%s labeled as valid contact" % contact)
+    port = 8888
+    domain = 'fdf^34@!'
+    for jobmanager in jobmanagers:
+      contact = "%s:%s/jobmanager-%s" % (domain, port, jobmanager)
+      self.assertFalse(validation.valid_contact(contact, jobmanager), 
+                       "%s labeled as valid contact" % contact)
+          
 if __name__ == '__main__':
   unittest.main()
 

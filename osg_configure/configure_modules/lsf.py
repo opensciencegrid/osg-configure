@@ -127,8 +127,8 @@ class LSFConfiguration(JobManagerConfiguration):
                 section = self.config_section,
                 level = logging.ERROR)
 
-    if not self.validContact(self.options['job_contact'].value, 
-                             'lsf'):
+    if not validation.valid_contact(self.options['job_contact'].value, 
+                                    'lsf'):
       attributes_ok = False
       self.log("Invalid job contact: %s" % 
                          (self.options['job_contact'].value),
@@ -136,8 +136,8 @@ class LSFConfiguration(JobManagerConfiguration):
                section = self.config_section,
                level = logging.ERROR)
       
-    if not self.validContact(self.options['util_contact'].value, 
-                             'lsf'):
+    if not validation.valid_contact(self.options['util_contact'].value, 
+                                    'lsf'):
       attributes_ok = False
       self.log("Invalid util contact: %s" % 
                         (self.options['util_contact'].value),

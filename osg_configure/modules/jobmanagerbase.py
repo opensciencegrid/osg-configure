@@ -5,7 +5,6 @@ import logging
 
 from osg_configure.modules.configurationbase import BaseConfiguration
 from osg_configure.modules import utilities
-from osg_configure.modules import validation
 
 
 
@@ -21,34 +20,7 @@ class JobManagerConfiguration(BaseConfiguration):
     self.lrms = ['pbs', 'sge', 'lsf', 'condor']
     self.seg_admin_path = '/usr/sbin/globus-scheduler-event-generator-admin'
         
-
-  def validContact(self, contact, jobmanager):
-    """
-    Check a contact string to make sure that it's valid, e.g. host[:port]/jobmanager
-    returns True or False  
-    """
-    
-    if len(contact.split('/')) != 2:
-      return False
-    (host_part, jobmanager_part) = contact.split('/')
-    
-    if '-' in jobmanager_part and jobmanager_part.split('-')[1] != jobmanager:
-      # invalid jobmanager
-      return False
-    
-    if ':' in host_part:
-      (host, port) = host_part.split(':')
-      try:
-        # test to make sure port is an integer
-        int(port)
-        return validation.valid_domain(host)
-      except ValueError:
-        return False
-    else:
-      return validation.valid_domain(host_part)
-
-    return True
-
+  
   def enable_accept_limited(self, filename):
     """
     Update the globus jobmanager configuration so that it allows limited proxies
@@ -84,7 +56,7 @@ class JobManagerConfiguration(BaseConfiguration):
 
     contents = open(filename).read()
     if contents.startswith('accept_limited,'):
-      contents = contents.replace('accept_limited,','',1)
+      contents = contents.replace('accept_limited,', '', 1)
       if utilities.atomic_write(filename, contents):
         return True
       else:
@@ -93,7 +65,7 @@ class JobManagerConfiguration(BaseConfiguration):
         return False
       
     if ',accept_limited' in contents:
-      contents = contents.replace(',accept_limited','',1)
+      contents = contents.replace(',accept_limited', '', 1)
       if utilities.atomic_write(filename, contents):
         return True
       else:
@@ -147,7 +119,7 @@ class JobManagerConfiguration(BaseConfiguration):
 
     contents = open(filename).read()
     if '-seg-module' in contents:
-      contents = re.sub('-seg-module\s+.*?\s', '', contents, 1)
+      contents = re.sub(r'-seg-module\s+.*?\s', '', contents, 1)
       if utilities.atomic_write(filename, contents):
         return True
       else:

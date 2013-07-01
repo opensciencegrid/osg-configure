@@ -219,3 +219,30 @@ def valid_ini_file(filename):
         
   return True
 
+
+def valid_contact(contact, jobmanager):
+  """
+  Check a contact string to make sure that it's valid, e.g. host[:port]/jobmanager
+  returns True or False  
+  """
+  
+  if len(contact.split('/')) != 2:
+    return False
+  (host_part, jobmanager_part) = contact.split('/')
+  
+  if '-' in jobmanager_part and jobmanager_part.split('-')[1] != jobmanager:
+    # invalid jobmanager
+    return False
+  
+  if ':' in host_part:
+    (host, port) = host_part.split(':')
+    try:
+      # test to make sure port is an integer
+      int(port)
+      return valid_domain(host)
+    except ValueError:
+      return False
+  else:
+    return valid_domain(host_part)
+
+  return True

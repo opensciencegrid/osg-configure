@@ -116,8 +116,8 @@ class CondorConfiguration(JobManagerConfiguration):
                 section = self.config_section,
                 level = logging.ERROR)
 
-    if not self.validContact(self.options['job_contact'].value, 
-                             'condor'):
+    if not validation.valid_contact(self.options['job_contact'].value, 
+                                    'condor'):
       attributes_ok = False
       self.log("Invalid job contact: %s" % 
                          (self.options['job_contact'].value),
@@ -125,8 +125,8 @@ class CondorConfiguration(JobManagerConfiguration):
                section = self.config_section,
                level = logging.ERROR)
       
-    if not self.validContact(self.options['util_contact'].value, 
-                             'condor'):
+    if not validation.valid_contact(self.options['util_contact'].value, 
+                                    'condor'):
       attributes_ok = False
       self.log("Invalid util contact: %s" % 
                         (self.options['util_contact'].value),
