@@ -17,7 +17,8 @@ __all__ = ['valid_domain',
            'valid_vo_name',
            'valid_boolean',
            'valid_executable',
-           'valid_ini_file']
+           'valid_ini_file',
+           'valid_contact']
 
 
 def valid_domain(host, resolve=False):

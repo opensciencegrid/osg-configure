@@ -231,11 +231,11 @@ class TestValidation(unittest.TestCase):
         contact = "%s:%s/jobmanager-%s" % (domain, port, test_manager)
         if test_manager == jobmanager:
           self.assertTrue(validation.valid_contact(contact, 
-                                                   test_manager), 
+                                                   jobmanager), 
                           "%s labeled as invalid contact" % contact)
         else:
           self.assertFalse(validation.valid_contact(contact, 
-                                                    test_manager), 
+                                                    jobmanager), 
                            "%s labeled as valid contact" % contact)
     port = '234a'
     for jobmanager in jobmanagers:
