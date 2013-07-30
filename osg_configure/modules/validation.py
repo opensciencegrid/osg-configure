@@ -200,8 +200,13 @@ def valid_ini_file(filename):
   
   config_file = os.path.abspath(filename)
   configuration = ConfigParser.ConfigParser()
-  configuration.read(config_file)
-  
+  try:
+    configuration.read(config_file)
+  except ConfigParser.ParsingError, e:
+    sys.stderr.write("Error while parsing: %s\n%s\n" % (filename, e))
+    sys.stderr.write("Lines with options should not start with a space\n")
+    return False
+    
   sections = configuration.sections()
   try:
     for section in sections:
