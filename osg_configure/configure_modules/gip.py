@@ -299,7 +299,7 @@ class GipConfiguration(BaseConfiguration):
           "outside allowed range, 2-50.  The conversion factor from HEPSPEC"
           " to SI2K is 250." % (option, section))
       elif (option in ['ram_mb', 'swap_mb'] ) and \
-           (entry < 500 or entry > 128000):
+           (entry < 500 or entry > 512000):
         raise exceptions.SettingError("Value for %s in section %s is " \
                                       "outside allowed range, 500-128000" % 
                                       (option, section))
