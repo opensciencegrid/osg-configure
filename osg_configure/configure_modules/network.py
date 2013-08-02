@@ -78,7 +78,7 @@ class NetworkConfiguration(BaseConfiguration):
       if utilities.blank(self.options[name].value):
         continue
 
-      matches = re.match('(\d+),(\d+)', self.options[name].value)
+      matches = re.match(r'(\d+),(\d+)', self.options[name].value)
       if matches is None:
         self.log("Invalid range specification, expected low_port,high_port, " +
                  "got %s" % self.options[name].value,

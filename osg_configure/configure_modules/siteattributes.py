@@ -176,7 +176,7 @@ class SiteAttributes(BaseConfiguration):
                level = logging.ERROR)
       attributes_ok = False
     else:
-      match = re.match('(?:[a-zA-Z\-_+0-9.]+)@([a-zA-Z0-9_\-]+(?:\.[a-zA-Z0-9_\-]+)+)', 
+      match = re.match(r'(?:[a-zA-Z\-_+0-9.]+)@([a-zA-Z0-9_\-]+(?:\.[a-zA-Z0-9_\-]+)+)', 
                      self.options['email'].value)
       try:
         socket.gethostbyname(match.group(1))
@@ -205,7 +205,7 @@ class SiteAttributes(BaseConfiguration):
     vo_names.append('local')   # local is a valid vo name
     
     cap_vo_names = [vo.upper() for vo in vo_names]
-    for vo in re.split('\s*,?\s*', vo_list):
+    for vo in re.split(r'\s*,?\s*', vo_list):
       vo_name = vo.split(':')[0]
       if vo_name not in vo_names:
         if vo_name.upper() in cap_vo_names:

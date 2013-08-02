@@ -34,7 +34,9 @@ except:
   raise
 
 class TestConfigFile(unittest.TestCase):
-
+  """
+  Class to test configfile module
+  """
   def test_get_option(self):
     """
     Test functionality of get_option function
@@ -206,6 +208,19 @@ class TestConfigFile(unittest.TestCase):
     config = configfile.read_config_files(config_directory = get_test_config('config-nonce.d'))
     self.assertFalse(configfile.jobmanager_enabled(config), 
                 "jobmanager_enabled returned true on a config without an enabled jobmanager")
+    
+  def test_ini_spaces(self):
+    """
+    Test to make sure ini files with spaces work correctly
+    """
+    
+    config_dirs = [get_test_config('config-space1.d'),
+                   get_test_config('config-space2.d')]
+    temp = sys.stderr
+    sys.stderr = open(os.devnull, 'w')
+    for directory in config_dirs:
+      self.assertRaises(SystemExit, configfile.read_config_files, config_directory = directory)
+    sys.stderr  = temp
           
 if __name__ == '__main__':
   unittest.main()
