@@ -175,7 +175,7 @@ class GipConfiguration(BaseConfiguration):
       self.log('GipConfiguration._check_entry completed')
       return entry in positive_vals
     elif kind == LIST:
-      regex = re.compile('\s*,*\s*')
+      regex = re.compile(r'\s*,*\s*')
       entry = regex.split(entry)
       self.log('GipConfiguration._check_entry completed')
       return entry
@@ -301,7 +301,7 @@ class GipConfiguration(BaseConfiguration):
       elif (option in ['ram_mb', 'swap_mb'] ) and \
            (entry < 500 or entry > 512000):
         raise exceptions.SettingError("Value for %s in section %s is " \
-                                      "outside allowed range, 500-128000" % 
+                                      "outside allowed range, 500-512000" % 
                                       (option, section))
       if (option in ['cpus_per_node', 'cores_per_node'] ) and \
          (entry < 1 or entry > 32):
@@ -348,7 +348,7 @@ class GipConfiguration(BaseConfiguration):
 
       # Validate the mount point information
       if option == 'mount_point':
-        regex = re.compile("/(/*[A-Za-z0-9_\-]/*)*$")
+        regex = re.compile(r"/(/*[A-Za-z0-9_\-]/*)*$")
         err_info = {'input': value}
         if len(entry) != 2:
           err_info['reason'] = "Only one path was specified!"
@@ -364,7 +364,7 @@ class GipConfiguration(BaseConfiguration):
           raise exceptions.SettingError(msg)
 
       if option == 'srm_endpoint':
-        regex = re.compile('([A-Za-z]+)://([A-Za-z0-9_\-.]+):([0-9]+)/(.+)')
+        regex = re.compile(r'([A-Za-z]+)://([A-Za-z0-9_\-.]+):([0-9]+)/(.+)')
         match = regex.match(entry)
         if not match or match.groups()[3].find('?SFN=') >= 0:
           msg = "Given SRM endpoint is not valid! It must be of the form " + \
