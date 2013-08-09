@@ -248,6 +248,18 @@ class CondorConfiguration(JobManagerConfiguration):
                                  default_value = utilities.get_condor_location())
     configfile.get_option(configuration, 'Condor', location)
     return location.value
+
+  @staticmethod
+  def getCondorConfig(configuration):
+    """
+    Get the condor config location based on the information in a configParser 
+    object (configuration argument) and environment variables if possible
+    """
+    
+    location = configfile.Option(name = 'condor_config',
+                                 default_value = utilities.get_condor_config())
+    configfile.get_option(configuration, 'Condor', location)
+    return location.value
     
   def enabledServices(self):
     """Return a list of  system services needed for module to work

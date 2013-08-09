@@ -341,7 +341,7 @@ class CemonConfiguration(BaseConfiguration):
       # this allows cemon to be send ress information but not bdii or vice versa
       return server_list
     
-    server_regex = re.compile('(.*)\[(.*)\]')
+    server_regex = re.compile(r'(.*)\[(.*)\]')
     for entry in servers.split(','):
       match = server_regex.match(entry)
       if match is None:
@@ -416,7 +416,12 @@ class CemonConfiguration(BaseConfiguration):
     if not self.enabled or self.ignored:
       return set()
     
-    return set(['tomcat5'])
+    if utilities.get_os_version()[0] == 5:
+      return set(['tomcat5'])
+    elif utilities.get_os_version()[0] == 6:
+      return set(['tomcat6'])
+    else:
+      return set()
         
       
       

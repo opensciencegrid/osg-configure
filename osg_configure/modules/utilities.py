@@ -10,21 +10,28 @@ import stat
 import tempfile
 import subprocess
 import rpm
+import platform
 
 from osg_configure.modules import validation
 
-__all__ = ['get_vos',
-           'service_enabled',    
-           'get_elements',
-           'get_hostname',
+__all__ = ['get_elements',
+           'write_attribute_file',
            'get_set_membership',
+           'get_hostname',
            'blank',
-           'create_map_file',
+           'get_vos',
+           'service_enabled',
+           'create_map_file',    
            'fetch_crl',
-           'ce_installed',
+           'run_script',
+           'get_condor_location',
+           'get_condor_config',
            'atomic_write',
+           'ce_installed',
            'rpm_installed',           
-           'get_test_config']
+           'get_test_config',
+           'make_directory',
+           'get_os_version']
   
 CONFIG_DIRECTORY = "/etc/osg"
 
@@ -347,6 +354,7 @@ def atomic_write(filename = None, contents = None, **kwargs):
       raise 
     os.rename(temp_name, filename)
     os.chmod(filename, mode)
+  # pylint: disable-msg=W0703  
   except Exception:
     return False
   return True
@@ -391,7 +399,8 @@ def rpm_installed(rpm_name = None):
       if trans_set.dbMatch('name', name).count() not in (1, 2):
         return False
     return True
-  except:
+  # pylint: disable-msg=W0703
+  except Exception:
     return False
   
 def get_test_config(config_file = ''):
@@ -442,6 +451,14 @@ def make_directory(dir_name, perms = 0755, uid = None, gid = None):
     return True
   except IOError:
     return False
+  
+def get_os_version():
+  """
+  Get and return OS major version
+  """
+  version = platform.dist()[1]
+  version_list = [ int(x) for x in version.split('.') ]
+  return version_list
     
   
     

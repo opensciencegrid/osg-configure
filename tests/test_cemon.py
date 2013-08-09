@@ -565,7 +565,12 @@ class TestCEMon(unittest.TestCase):
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e)
     services = settings.enabledServices()
-    expected_services = set(['tomcat5'])    
+    if utilities.get_os_version() == 5:
+      expected_services = set(['tomcat5'])
+    elif utilities.get_os_version() == 5:
+      expected_services = set(['tomcat6'])
+    else:
+      expected_services = set()
     self.assertEqual(services, expected_services,
                      "List of enabled services incorrect, " +
                      "got %s but expected %s" % (services, expected_services))

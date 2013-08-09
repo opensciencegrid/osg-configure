@@ -102,7 +102,7 @@ in your config.ini file."""
       for probe in probes:
         if probe == 'condor':
           self.__probe_config['condor'] = {'condor_location' : 
-                                            CondorConfiguration.getCondorLocation(configuration)}
+                                            CondorConfiguration.getCondorConfig(configuration)}
         elif probe == 'pbs':
           if BaseConfiguration.sectionDisabled(configuration, 'PBS'):
             # if the PBS jobmanager is disabled, the CE is probably using LSF
@@ -449,6 +449,7 @@ in your config.ini file."""
     """
     Do condor probe specific configuration
     """    
+    
     condor_location = self.__probe_config['condor']['condor_location']
     re_obj = re.compile(r'^(\s*)CondorLocation\s*=.*$', re.MULTILINE)  
     config_location = os.path.join('/', 'etc', 'gratia', 'condor',  'ProbeConfig')
@@ -458,7 +459,19 @@ in your config.ini file."""
                                   1)
     if count == 0:
       buf = buf.replace('/>', 
-                              "    CondorLocation=\"%s\"\n/>" % condor_location)
+                        "    CondorLocation=\"%s\"\n/>" % condor_location)
+      
+    
+    condor_config = self.__probe_config['condor']['condor_config']
+    re_obj = re.compile(r'^(\s*)CondorConfig\s*=.*$', re.MULTILINE)  
+    config_location = os.path.join('/', 'etc', 'gratia', 'condor',  'ProbeConfig')
+    buf = file(config_location).read()
+    (buf, count) = re_obj.subn(r'\1CondorConfig="%s"' % condor_config,
+                                  buf,
+                                  1)
+    if count == 0:
+      buf = buf.replace('/>', 
+                        "    CondorConfig=\"%s\"\n/>" % condor_config)
     if not utilities.atomic_write(config_location, buf):
       return False    
     return True
