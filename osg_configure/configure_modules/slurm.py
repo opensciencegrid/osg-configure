@@ -41,9 +41,21 @@ class SlurmConfiguration(JobManagerConfiguration):
                       configfile.Option(name = 'log_directory',
                                         required = configfile.Option.OPTIONAL,
                                         default_value = ''),
-                    'accounting_log_directory' : 
-                      configfile.Option(name = 'accounting_log_directory',
-                                        required = configfile.Option.OPTIONAL,
+                    'db_host' : 
+                      configfile.Option(name = 'db_host',
+                                        default_value = ''),
+                    'db_port' : 
+                      configfile.Option(name = 'db_port',
+                                        opt_type = int,
+                                        default_value = 3306),
+                    'db_user' : 
+                      configfile.Option(name = 'db_user',
+                                        default_value = 'slurm'),
+                    'db_name' : 
+                      configfile.Option(name = 'db_name',
+                                        default_value = 'slurm_acct_db'),
+                    'db_pass' : 
+                      configfile.Option(name = 'db_pass',
                                         default_value = ''),
                     'accept_limited' : 
                       configfile.Option(name = 'accept_limited',
@@ -256,4 +268,46 @@ class SlurmConfiguration(JobManagerConfiguration):
         
     services = set(['globus-gatekeeper', 'globus-gridftp-server'])
     return services    
+
+  def getDBHost(self):
+    """
+    Return the hostname of the machine with the Slurm DB
+    """
+    
+    return self.options['db_host'].value 
       
+  def getDBPort(self):
+    """
+    Return the port for Slurm DB service
+    """
+    
+    return self.options['db_port'].value 
+
+  def getDBUser(self):
+    """
+    Return the user to use when accessing Slurm DB
+    """
+    
+    return self.options['db_user'].value 
+
+  def getDBPass(self):
+    """
+    Return the location of the file containing the password
+    to use when accessing Slurm DB
+    """
+    
+    return self.options['db_pass'].value 
+
+  def getDBName(self):
+    """
+    Return the name of the data slurm is using for accounting info
+    """
+    
+    return self.options['db_name'].value 
+
+  def getLocation(self):
+    """
+    Return the location where slurm is installed
+    """
+    
+    return self.options['slurm_location'].value 

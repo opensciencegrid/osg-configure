@@ -12,6 +12,7 @@ from osg_configure.modules import configfile
 from osg_configure.modules.configurationbase import BaseConfiguration
 from osg_configure.configure_modules.condor import CondorConfiguration
 from osg_configure.configure_modules.sge import SGEConfiguration
+from osg_configure.configure_modules.slurm import SlurmConfiguration
 
 __all__ = ['GratiaConfiguration']
 
@@ -139,7 +140,15 @@ in your config.ini file."""
           sge_config.parseConfiguration(configuration)
           
           self.__probe_config['sge'] = {'sge_accounting_file' : sge_config.getAccountingFile()}
-          
+        elif probe == 'slurm':
+          slurm_config = SlurmConfiguration()
+          slurm_config.parseConfiguration(configuration)
+          self.__probe_config['slurm'] = {'db_host' : slurm_config.getDBHost(),
+                                          'db_port': slurm_config.getDBPort(),
+                                          'db_user' : slurm_config.getDBUser(),
+                                          'db_pass' : slurm_config.getDBPass(),
+                                          'db_name' : slurm_config.getDBName(),
+                                          'location' : slurm_config.getLocation()}
           
 
     self.getOptions(configuration, 
@@ -450,28 +459,11 @@ in your config.ini file."""
     Do condor probe specific configuration
     """    
     
-    condor_location = self.__probe_config['condor']['condor_location']
-    re_obj = re.compile(r'^(\s*)CondorLocation\s*=.*$', re.MULTILINE)  
     config_location = os.path.join('/', 'etc', 'gratia', 'condor',  'ProbeConfig')
     buf = file(config_location).read()
-    (buf, count) = re_obj.subn(r'\1CondorLocation="%s"' % condor_location,
-                                  buf,
-                                  1)
-    if count == 0:
-      buf = buf.replace('/>', 
-                        "    CondorLocation=\"%s\"\n/>" % condor_location)
-      
-    
-    condor_config = self.__probe_config['condor']['condor_config']
-    re_obj = re.compile(r'^(\s*)CondorConfig\s*=.*$', re.MULTILINE)  
-    config_location = os.path.join('/', 'etc', 'gratia', 'condor',  'ProbeConfig')
-    buf = file(config_location).read()
-    (buf, count) = re_obj.subn(r'\1CondorConfig="%s"' % condor_config,
-                                  buf,
-                                  1)
-    if count == 0:
-      buf = buf.replace('/>', 
-                        "    CondorConfig=\"%s\"\n/>" % condor_config)
+    settings = self.__probe_config['condor']
+    buf = self.replaceSetting(buf, 'CondorLocation', settings['condor_location'])
+    buf = self.replaceSetting(buf, 'CondorConfig', settings['condor_config'])
     if not utilities.atomic_write(config_location, buf):
       return False    
     return True
@@ -483,25 +475,21 @@ in your config.ini file."""
     if (self.__probe_config['pbs']['accounting_log_directory'] is None or
         self.__probe_config['pbs']['accounting_log_directory'] == ''):
       return True
-    accounting_log_directory = self.__probe_config['pbs']['accounting_log_directory']
-    if not validation.valid_directory(accounting_log_directory):
+    accounting_dir = self.__probe_config['pbs']['accounting_log_directory']
+    if not validation.valid_directory(accounting_dir):
       self.log("PBS accounting log not present, PBS gratia probe not configured",
                level = logging.ERROR,
                 option = 'accounting_log_directory',
                 section = 'PBS')
-      return True    
-    re_obj = re.compile(r'^\s*pbsAcctLogDir\s*=.*$', re.MULTILINE)  
+      return True
+    
     config_location = os.path.join('/', 
-                               'etc',
-                               'gratia',
-                               'pbs-lsf',
-                               'urCollector.conf')   
+                                   'etc',
+                                   'gratia',
+                                   'pbs-lsf',
+                                   'urCollector.conf')   
     buf = file(config_location).read()
-    (buf, count) = re_obj.subn(r'pbsAcctLogDir = "%s"' % accounting_log_directory,
-                                  buf, 
-                                  1)
-    if count == 0:
-      buf += "pbsAcctLogDir = \"%s\"\n" % accounting_log_directory
+    buf = self.replaceSetting(buf, 'pbsAcctLogDir', accounting_dir, xml_file = False)
     if not utilities.atomic_write(config_location, buf):
       return False    
     return True
@@ -524,18 +512,14 @@ in your config.ini file."""
                option = 'log_directory',
                section = 'LSF')
       return True
-    re_obj = re.compile(r'^\s*lsfAcctLogDir\s*=.*$', re.MULTILINE)  
     config_location = os.path.join('/', 
                                'etc',
                                'gratia',
                                'pbs-lsf',
                                'urCollector.conf')   
     buf = file(config_location).read()
-    (buf, count) = re_obj.subn(r'lsfAcctLogDir = "%s"' % log_directory,
-                                  buf, 
-                                  1)
-    if count == 0:
-      buf += "lsfAcctLogDir = \"%s\"\n" % log_directory
+    buf = self.replaceSetting(buf, 'lsfAcctLogDir', log_directory, xml_file = False)
+
     # setup lsfBinDir
     if (self.__probe_config['lsf']['lsf_location'] is None or
         self.__probe_config['lsf']['lsf_location'] == ''):
@@ -545,16 +529,8 @@ in your config.ini file."""
                section = 'LSF')               
       return True
     lsf_bin_dir = os.path.join(self.__probe_config['lsf']['lsf_location'], 'bin')
-    re_obj = re.compile(r'^\s*lsfBinDir\s*=.*$', re.MULTILINE)  
-    config_location = os.path.join('/', 
-                                   'etc',
-                                   'gratia',
-                                   'pbs-lsf',
-                                   'urCollector.conf')   
-    (buf, count) = re_obj.subn(r'lsfBinDir = "%s"' % lsf_bin_dir, buf, 1)
-    if count == 0:
-      buf += "lsfBinDir = \"%s\"\n" % lsf_bin_dir
-    
+    buf = self.replaceSetting(buf, 'lsfBinDir', lsf_bin_dir, xml_file = False)
+        
     if not utilities.atomic_write(config_location, buf):
       return False    
     return True
@@ -564,20 +540,62 @@ in your config.ini file."""
     Do SGE probe specific configuration
     """
     accounting_path = self.__probe_config['sge']['sge_accounting_file']
-    re_obj = re.compile(r'^(\s*)SGEAccountingFile\s*=.*$', re.MULTILINE)  
     config_location = os.path.join('/', 'etc', 'gratia', 'sge',  'ProbeConfig')
-    buf = file(config_location).read()
-    (buf, count) = re_obj.subn(r'\1SGEAccountingFile="%s"' % accounting_path,
-                                  buf,
-                                  1)
-    if count == 0:
-      buf = buf.replace('/>', 
-                        "    SGEAccountingFile=\"%s\"\n/>" % accounting_path)
+    buf = file(config_location).read()    
+    buf = self.replaceSetting(buf, 'SGEAccountingFile', accounting_path)    
     if not utilities.atomic_write(config_location, buf):
       return False    
     return True
 
+  def __configureSLURMProbe(self):
+    """
+    Do SLURM probe specific configuration
+    """
+    config_location = os.path.join('/', 'etc', 'gratia', 'slurm',  'ProbeConfig')
+    buf = file(config_location).read()
+    
+    settings = self.__probe_config['slurm']
+    if not validation.valid_file(settings['db_pass']):
+      self.log("Slurm DB password file not present",
+               level = logging.ERROR,
+               option = 'db_pass',
+               section = 'SLURM')
+      return True
+    
+    buf = self.replaceSetting(buf, 'SlurmDbHost', settings['db_host'])
+    buf = self.replaceSetting(buf, 'SlurmDbPort', settings['db_port'])
+    buf = self.replaceSetting(buf, 'SlurmDbUser', settings['db_user'])
+    buf = self.replaceSetting(buf, 'SlurmDbPasswordFile', settings['db_pass'])
+    buf = self.replaceSetting(buf, 'SlurmDbName', settings['db_name'])
+    buf = self.replaceSetting(buf, 'SlurmLocation', settings['location'])
 
+    if not utilities.atomic_write(config_location, buf):
+      return False    
+    return True
+
+  @staticmethod
+  def replaceSetting(buf, setting, value, xml_file = True):
+    """
+      Replace the first instance of the option within a string, adding
+      the option if it's not present
+      
+      e.g.
+      "a=b\n  setting=old_value" => "a=b\n setting=value"
+      and
+      "a=b\n " => "a=b\n setting=value"
+      
+      returns the string with the option string replaced/added 
+    """
+    re_obj = re.compile(r"^(\s*)%s\s*=.*$" % setting, re.MULTILINE)  
+    (new_buf, count) = re_obj.subn(r'\1%s="%s"' % (setting, value), buf, 1)
+    if count == 0:
+      if xml_file:
+        new_buf = new_buf.replace('/>', "    %s=\"%s\"\n/>" % (setting, value))
+      else:
+        new_buf += "%s = \"%s\"\n" % (setting, value)
+    return new_buf
+    
+    
   def enabledServices(self):
     """Return a list of  system services needed for module to work
     """

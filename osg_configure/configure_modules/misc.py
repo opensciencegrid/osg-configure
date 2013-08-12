@@ -278,7 +278,7 @@ configuration:
     """
 
     # Do basic error checking to validate that this is a cron string
-    if len(re.split("\s+", self.options['cleanup_cron_time'].value)) != 5:
+    if len(re.split(r'\s+', self.options['cleanup_cron_time'].value)) != 5:
       err_msg = "Error: the value of cleanup_cron_time must be a 5 part " \
                 "cron string: %s" % self.options['cleanup_cron_time'].value
       self.log(err_msg,
