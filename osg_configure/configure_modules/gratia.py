@@ -490,6 +490,7 @@ in your config.ini file."""
                                    'urCollector.conf')   
     buf = file(config_location).read()
     buf = self.replaceSetting(buf, 'pbsAcctLogDir', accounting_dir, xml_file = False)
+    buf = self.replaceSetting(buf, 'lrmsType', 'pbs', xml_file = False)            
     if not utilities.atomic_write(config_location, buf):
       return False    
     return True
@@ -530,7 +531,7 @@ in your config.ini file."""
       return True
     lsf_bin_dir = os.path.join(self.__probe_config['lsf']['lsf_location'], 'bin')
     buf = self.replaceSetting(buf, 'lsfBinDir', lsf_bin_dir, xml_file = False)
-        
+    buf = self.replaceSetting(buf, 'lrmsType', 'lsf', xml_file = False)        
     if not utilities.atomic_write(config_location, buf):
       return False    
     return True
