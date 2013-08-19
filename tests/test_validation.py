@@ -166,7 +166,7 @@ class TestValidation(unittest.TestCase):
                     "/bin/ls should be a valid binary")
     
 
-  def test_valid_file2(self):
+  def test_valid_file(self):
     """
     Test functionality of valid_file function
     """
@@ -184,6 +184,8 @@ class TestValidation(unittest.TestCase):
     filename = get_test_config('utilities/valid_boolean.ini')    
     self.assertTrue(validation.valid_ini_file(filename),
                     "Got error on valid file %s" % filename)
+    
+    
     
   def test_valid_references(self):
     """
