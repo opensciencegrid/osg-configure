@@ -6,6 +6,7 @@ import os
 import pwd
 import ConfigParser
 import sys
+import cStringIO
 
 __all__ = ['valid_domain', 
            'valid_email', 
@@ -200,8 +201,12 @@ def valid_ini_file(filename):
   
   config_file = os.path.abspath(filename)
   configuration = ConfigParser.ConfigParser()
+  file_buffer = cStringIO.StringIO()
+  temp = open(config_file).read()
+  temp.replace('%(', '-')
+  file_buffer.write(temp)
   try:
-    configuration.read(config_file)
+    configuration.read(file_buffer)
   except ConfigParser.ParsingError, e:
     sys.stderr.write("Error while parsing: %s\n%s\n" % (filename, e))
     sys.stderr.write("Lines with options should not start with a space\n")

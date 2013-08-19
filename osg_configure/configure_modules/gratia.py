@@ -138,7 +138,6 @@ in your config.ini file."""
         elif probe == 'sge':
           sge_config = SGEConfiguration()
           sge_config.parseConfiguration(configuration)
-          
           self.__probe_config['sge'] = {'sge_accounting_file' : sge_config.getAccountingFile()}
         elif probe == 'slurm':
           slurm_config = SlurmConfiguration()
@@ -543,7 +542,7 @@ in your config.ini file."""
     accounting_path = self.__probe_config['sge']['sge_accounting_file']
     config_location = os.path.join('/', 'etc', 'gratia', 'sge',  'ProbeConfig')
     buf = file(config_location).read()    
-    buf = self.replaceSetting(buf, 'SGEAccountingFile', accounting_path)    
+    buf = self.replaceSetting(buf, 'SGEAccountingFile', accounting_path)
     if not utilities.atomic_write(config_location, buf):
       return False    
     return True
