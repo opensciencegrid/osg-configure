@@ -43,19 +43,24 @@ class SlurmConfiguration(JobManagerConfiguration):
                                         default_value = ''),
                     'db_host' : 
                       configfile.Option(name = 'db_host',
+                                        required = configfile.Option.OPTIONAL,
                                         default_value = ''),
                     'db_port' : 
                       configfile.Option(name = 'db_port',
+                                        required = configfile.Option.OPTIONAL,
                                         opt_type = int,
                                         default_value = 3306),
                     'db_user' : 
                       configfile.Option(name = 'db_user',
+                                        required = configfile.Option.OPTIONAL,
                                         default_value = 'slurm'),
                     'db_name' : 
                       configfile.Option(name = 'db_name',
+                                        required = configfile.Option.OPTIONAL,
                                         default_value = 'slurm_acct_db'),
                     'db_pass' : 
                       configfile.Option(name = 'db_pass',
+                                        required = configfile.Option.OPTIONAL,
                                         default_value = ''),
                     'accept_limited' : 
                       configfile.Option(name = 'accept_limited',
