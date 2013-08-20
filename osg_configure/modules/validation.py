@@ -206,7 +206,7 @@ def valid_ini_file(filename):
   temp.replace('%(', '-')
   file_buffer.write(temp)
   try:
-    configuration.read(file_buffer)
+    configuration.readfp(file_buffer)
   except ConfigParser.ParsingError, e:
     sys.stderr.write("Error while parsing: %s\n%s\n" % (filename, e))
     sys.stderr.write("Lines with options should not start with a space\n")

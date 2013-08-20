@@ -161,7 +161,7 @@ class TestSlurm(unittest.TestCase):
     self.assertTrue(settings.checkAttributes(attributes), 
                     "Correct settings incorrectly flagged as invalid")
     
-  def testInvalidJobContact(self):
+  def testInvalidDBPass(self):
     """
     Test the checkAttributes function to see if it catches invalid job contacts
     """
@@ -179,6 +179,25 @@ class TestSlurm(unittest.TestCase):
     attributes = settings.getAttributes()
     self.assertFalse(settings.checkAttributes(attributes), 
                      "Did not notice invalid host in jobcontact option")
+
+  def testInvalidUtilityContact(self):
+    """
+    Test the checkAttributes function to see if it catches invalid
+    utility contacts
+    """
+    config_file = get_test_config("slurm/invalid_utility_contact.ini")
+    configuration = ConfigParser.SafeConfigParser()
+    configuration.read(config_file)
+
+    settings = slurm.SlurmConfiguration(logger=global_logger)
+    try:
+      settings.parseConfiguration(configuration)
+    except Exception, e:
+      self.fail("Received exception while parsing configuration: %s" % e)
+ 
+    attributes = settings.getAttributes()
+    self.assertFalse(settings.checkAttributes(attributes), 
+                     "Did not notice invalid host in utility_contact option")
 
   def testInvalidUtilityContact(self):
     """
