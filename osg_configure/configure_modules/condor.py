@@ -30,6 +30,7 @@ class CondorConfiguration(JobManagerConfiguration):
                                         mapping = 'OSG_CONDOR_LOCATION'),
                     'condor_config' : 
                       configfile.Option(name = 'condor_config',
+                                        required = configfile.Option.OPTIONAL,
                                         default_value = utilities.get_condor_config(),
                                         mapping = 'OSG_CONDOR_CONFIG'),
                     'job_contact' : 
