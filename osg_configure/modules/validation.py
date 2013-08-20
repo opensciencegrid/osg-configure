@@ -205,6 +205,7 @@ def valid_ini_file(filename):
   temp = open(config_file).read()
   temp.replace('%(', '-')
   file_buffer.write(temp)
+  file_buffer.seek(0)
   try:
     configuration.readfp(file_buffer)
   except ConfigParser.ParsingError, e:
