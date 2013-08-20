@@ -565,7 +565,7 @@ class TestCEMon(unittest.TestCase):
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e)
     services = settings.enabledServices()
-    os_version = utilities.get_os_version[0]
+    os_version = utilities.get_os_version()[0]
     if os_version == 5:
       expected_services = set(['tomcat5'])
     elif os_version == 6:
