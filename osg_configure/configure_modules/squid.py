@@ -73,15 +73,24 @@ class SquidConfiguration(BaseConfiguration):
     self.log('SquidConfiguration.checkAttributes started')
     attributes_ok = True
     if not self.enabled:
+      self.log("Squid is not enabled, sites must enable this \n" +
+               "section, location can be set to UNAVAILABLE if squid is \n" +
+               "not present",
+               level = logging.ERROR)
       self.log('squid not enabled')
       self.log('SquidConfiguration.checkAttributes completed')
-      return attributes_ok
+      return False
 
     if self.ignored:
       self.log('Ignored, returning True')
       self.log('SquidConfiguration.checkAttributes completed')
       return attributes_ok
 
+    if (self.options['location'].value.upper() == 'UNAVAILABLE'):
+      self.log("Squid location is set to UNAVAILABLE.  Although this is \n" +
+               "allowed, most jobs function better and use less bandwidth \n" +
+               "when a squid proxy is available",
+               level = logging.WARN)
     if len(self.options['location'].value.split(':')) != 2:
       self.log("Bad host specification, got %s expected hostname:port " \
                "(e.g. localhost:3128)" % self.options['location'].value,

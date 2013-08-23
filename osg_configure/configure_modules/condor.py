@@ -258,6 +258,7 @@ class CondorConfiguration(JobManagerConfiguration):
     """
     
     location = configfile.Option(name = 'condor_config',
+                                 required = configfile.Option.OPTIONAL,
                                  default_value = utilities.get_condor_config())
     configfile.get_option(configuration, 'Condor', location)
     return location.value
