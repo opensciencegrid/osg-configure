@@ -324,7 +324,7 @@ class TestSquid(unittest.TestCase):
     location is left blank
     """
         
-    config_file = get_test_config("squid/squid_blank.ini")
+    config_file = get_test_config("squid/squid_blank_location.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
 
