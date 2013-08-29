@@ -19,6 +19,7 @@ class SquidConfiguration(BaseConfiguration):
     self.log('SquidConfiguration.__init__ started')
     self.options = {'location' : 
                       configfile.Option(name = 'location',
+                                        default_value = 'None',
                                         mapping = 'OSG_SQUID_LOCATION'),
                     'policy' : 
                       configfile.Option(name = 'policy',
@@ -60,10 +61,13 @@ class SquidConfiguration(BaseConfiguration):
 
     self.getOptions(configuration, ignore_options = ['enabled'])
     
-    if not utilities.blank(self.options['location'].value):
+    if not (utilities.blank(self.options['location'].value) or 
+            self.options['location'].value == 'None'):
       if ":" not in self.options['location'].value:        
         self.options['location'].value += ":3128"        
-        
+    
+    if configuration.get(self.config_section, 'location').upper() == 'UNAVAILABLE':
+      self.options['location'].value = 'UNAVAILABLE'
     self.log('SquidConfiguration.parseConfiguration completed')
 
   
@@ -86,11 +90,22 @@ class SquidConfiguration(BaseConfiguration):
       self.log('SquidConfiguration.checkAttributes completed')
       return attributes_ok
 
+    if (self.options['location'].value == 'None'):
+      self.log("location setting must be set, if site does not provide " +
+               "squid, please use UNAVAILABLE",
+               section = self.config_section,
+               option = 'location',
+               level = logging.ERROR)
+      attributes_ok = False
+      return attributes_ok
+          
     if (self.options['location'].value.upper() == 'UNAVAILABLE'):
       self.log("Squid location is set to UNAVAILABLE.  Although this is \n" +
                "allowed, most jobs function better and use less bandwidth \n" +
                "when a squid proxy is available",
                level = logging.WARN)
+      return attributes_ok
+    
     if len(self.options['location'].value.split(':')) != 2:
       self.log("Bad host specification, got %s expected hostname:port " \
                "(e.g. localhost:3128)" % self.options['location'].value,

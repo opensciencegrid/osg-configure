@@ -297,6 +297,66 @@ class TestSquid(unittest.TestCase):
     attributes = settings.getAttributes()
     self.assertTrue(settings.checkAttributes(attributes), 
                     "Correct locations incorrectly flagged as missing")
+
+  def testDisabled(self):
+    """
+    Test the checkAttributes function to see if it indicates that a disabled 
+    section has an error
+    """
+        
+    config_file = get_test_config("squid/squid_disabled.ini")
+    configuration = ConfigParser.SafeConfigParser()
+    configuration.read(config_file)
+
+    settings = squid.SquidConfiguration(logger=global_logger)
+    try:
+      settings.parseConfiguration(configuration)
+    except Exception, e:
+      self.fail("Received exception while parsing configuration: %s" % e)
+ 
+    attributes = settings.getAttributes()
+    self.assertFalse(settings.checkAttributes(attributes), 
+                     "Disabled squid flagged as good")
+
+  def testBlankLocation(self):
+    """
+    Test the checkAttributes function to see if it raises an error when
+    location is left blank
+    """
+        
+    config_file = get_test_config("squid/squid_blank.ini")
+    configuration = ConfigParser.SafeConfigParser()
+    configuration.read(config_file)
+
+    settings = squid.SquidConfiguration(logger=global_logger)
+    try:
+      settings.parseConfiguration(configuration)
+    except Exception, e:
+      self.fail("Received exception while parsing configuration: %s" % e)
+ 
+    attributes = settings.getAttributes()
+    self.assertFalse(settings.checkAttributes(attributes), 
+                     "Blank location flagged as good")
+
+  def testLocationUnavailable(self):
+    """
+    Test the checkAttributes function to see if it oks a section
+    where location is set to UNAVAILABLE
+    """
+        
+    config_file = get_test_config("squid/squid_unavailable.ini")
+    configuration = ConfigParser.SafeConfigParser()
+    configuration.read(config_file)
+
+    settings = squid.SquidConfiguration(logger=global_logger)
+    try:
+      settings.parseConfiguration(configuration)
+    except Exception, e:
+      self.fail("Received exception while parsing configuration: %s" % e)
+ 
+    attributes = settings.getAttributes()
+    self.assertTrue(settings.checkAttributes(attributes), 
+                    "location set to UNAVAIALBLE flagged as bad")
     
 if __name__ == '__main__':
   console = logging.StreamHandler()
