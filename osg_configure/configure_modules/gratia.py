@@ -103,6 +103,8 @@ in your config.ini file."""
       for probe in probes:
         if probe == 'condor':
           self.__probe_config['condor'] = {'condor_location' : 
+                                            CondorConfiguration.getCondorLocation(configuration),
+                                           'condor_config' : 
                                             CondorConfiguration.getCondorConfig(configuration)}
         elif probe == 'pbs':
           if BaseConfiguration.sectionDisabled(configuration, 'PBS'):

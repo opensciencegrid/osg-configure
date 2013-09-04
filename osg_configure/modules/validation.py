@@ -203,7 +203,7 @@ def valid_ini_file(filename):
   configuration = ConfigParser.ConfigParser()
   file_buffer = cStringIO.StringIO()
   temp = open(config_file).read()
-  temp.replace('%(', '-')
+  temp = temp.replace('%(', '-')
   file_buffer.write(temp)
   file_buffer.seek(0)
   try:
@@ -230,6 +230,57 @@ def valid_ini_file(filename):
     return False
         
   return True
+
+def valid_ini_references(files):
+  """
+  Check a set of ini files and verify that it contains correct variable 
+  references
+  
+  return False if this is not the case
+  """
+  
+  configuration = ConfigParser.SafeConfigParser()
+  try:
+    configuration.read(files)
+  except ConfigParser.InterpolationError, e:
+    sys.stderr.write("Error with variable interpolation:\n%s\n" % e)
+    return False    
+  
+  ref_regex = re.compile(r'(%\(.*\))(!s|$)', flags = re.MULTILINE)
+  ref2_regex = re.compile(r'(%\(.*(!\)))$', flags = re.MULTILINE)
+  if not hasattr(files, '__iter__'):
+    # we have a single filename
+    buf = open(files).read()
+    match = ref_regex.search(buf)
+    match2 = ref2_regex.search(buf)
+    if match:
+      sys.stderr.write("WARNING: Possible invalid variable reference " + 
+                       "in %s:\n%s\n" % (files, match.group(1)))    
+      return False
+    elif match2:
+      sys.stderr.write("WARNING: Possible invalid variable reference " + 
+                       "in %s:\n%s\n" % (files, match2.group(1)))    
+      return False      
+    else:
+      return True
+    
+    
+  status = True
+  for filename in files:
+    buf = open(filename).read()
+    match = ref_regex.search(buf)
+    match2 = ref2_regex.search(buf)
+    if match:
+      sys.stderr.write("WARNING: Possible invalid variable reference " + 
+                       "in %s:\n%s\n" % (filename, match.group(1)))
+      status = False
+    elif match2:
+      sys.stderr.write("WARNING: Possible invalid variable reference " + 
+                       "in %s:\n%s\n" % (files, match2.group(1)))    
+      return False      
+      
+      
+  return status
 
 
 def valid_contact(contact, jobmanager):
