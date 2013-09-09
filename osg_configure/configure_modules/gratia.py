@@ -138,11 +138,11 @@ in your config.ini file."""
           configfile.get_option(configuration, 'LSF', log_option)
           self.__probe_config['lsf']['log_directory'] = log_option.value
         elif probe == 'sge':
-          sge_config = SGEConfiguration()
+          sge_config = SGEConfiguration(logger = self.logger)
           sge_config.parseConfiguration(configuration)
           self.__probe_config['sge'] = {'sge_accounting_file' : sge_config.getAccountingFile()}
         elif probe == 'slurm':
-          slurm_config = SlurmConfiguration()
+          slurm_config = SlurmConfiguration(logger = self.logger)
           slurm_config.parseConfiguration(configuration)
           self.__probe_config['slurm'] = {'db_host' : slurm_config.getDBHost(),
                                           'db_port': slurm_config.getDBPort(),
