@@ -53,7 +53,7 @@ in your config.ini file."""
     self.__production_defaults = {'probes' : 
                                     'jobmanager:gratia-osg-prod.opensciencegrid.org:80'}     
     
-    self.__job_managers = ['pbs', 'sge', 'lsf', 'condor']
+    self.__job_managers = ['pbs', 'sge', 'lsf', 'condor', 'slurm']
     self.__probe_config = {}
     self.grid_group = 'OSG'
 
@@ -240,6 +240,8 @@ in your config.ini file."""
         self.__configureLSFProbe()
       elif probe == 'sge':
         self.__configureSGEProbe()
+      elif probe == 'slurm':
+        self.__configureSLURMProbe()
 
 
     self.log("GratiaConfiguration.configure completed")
