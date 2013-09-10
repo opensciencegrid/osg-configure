@@ -76,14 +76,17 @@ class SquidConfiguration(BaseConfiguration):
     """Check attributes currently stored and make sure that they are consistent"""
     self.log('SquidConfiguration.checkAttributes started')
     attributes_ok = True
+    if utilities.ce_installed():
+      return attributes_ok
+    
     if not self.enabled:
       self.log("Squid is not enabled, sites must enable this \n" +
                "section, location can be set to UNAVAILABLE if squid is \n" +
                "not present",
-               level = logging.ERROR)
+               level = logging.WARNING)
       self.log('squid not enabled')
       self.log('SquidConfiguration.checkAttributes completed')
-      return False
+      return attributes_ok
 
     if self.ignored:
       self.log('Ignored, returning True')
@@ -95,8 +98,7 @@ class SquidConfiguration(BaseConfiguration):
                "squid, please use UNAVAILABLE",
                section = self.config_section,
                option = 'location',
-               level = logging.ERROR)
-      attributes_ok = False
+               level = logging.WARNING)
       return attributes_ok
           
     if (self.options['location'].value.upper() == 'UNAVAILABLE'):
