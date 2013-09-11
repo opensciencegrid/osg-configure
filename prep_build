@@ -1,0 +1,24 @@
+#!/bin/bash
+USER="sthapa"
+WISC_SYS="$user@library.cs.wisc.edu"
+USER_DN="'Suchandra Thapa 444221'"
+SPEC_LOCATION="~/vdt-rpms/rpm-defs/osg-configure"
+svn_output=`svn status`
+
+if [[ -n $svn_output ]]; then
+  echo "svn checkout not clean, aborting..."
+  exit 1
+fi
+svn up
+version=`grep 'VERSION =' scripts/osg-configure | cut -f 2 -d\'`
+echo "Building osg-configure $version"
+sleep 10
+python setup.py sdist
+remote_dir="/p/vdt/public/html/upstream/osg-configure/ $version"
+ssh $WISC_SYS "mkdir $remote_dir"
+scp dist/osg-configure-$version.tar.gz $WISC_SYS:$remote_dir/$version
+if [[ $1 == "-scratch" ]];  then
+    osg-build koji $SPEC_LOCATION --kojilogin=$USER_DN --svn --scratch
+else
+    osg-build koji $SPEC_LOCATION --kojilogin=$USER_DN --svn
+fi
