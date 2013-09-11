@@ -5,7 +5,6 @@ USER_DN="'Suchandra Thapa 444221'"
 SPEC_LOCATION="/share/home/sthapa/vdt-rpms/rpm-defs/osg-configure"
 software_checkout=`svn status`
 spec_checkout=`svn status $SPEC_LOCATION`
-software_checkout=``
 
 if [[ -n "$software_checkout" ]]; then
   echo "svn software checkout not clean, aborting..."
@@ -26,12 +25,10 @@ sleep 10
 python setup.py sdist
 remote_dir="/p/vdt/public/html/upstream/osg-configure/$version"
 ssh $WISC_SYS "mkdir $remote_dir"
-echo "ssh $WISC_SYS \"mkdir $remote_dir\""
 scp dist/osg-configure-$version.tar.gz $WISC_SYS:$remote_dir/
-echo "scp dist/osg-configure-$version.tar.gz $WISC_SYS:$remote_dir/"
 if [[ $1 == "-release" ]];  then
-    osg-build koji $SPEC_LOCATION --kojilogin=$USER_DN --svn
+    osg-build koji $SPEC_LOCATION --kojilogin="$USER_DN" --svn
     https://vdt.cs.wisc.edu/svn/software/osg-configure/trunk https://vdt.cs.wisc.edu/svn/software/osg-configure/tags/$version
 else
-    osg-build koji $SPEC_LOCATION --kojilogin=$USER_DN --svn --scratch
+    osg-build koji $SPEC_LOCATION --kojilogin="$USER_DN" --svn --scratch
 fi
