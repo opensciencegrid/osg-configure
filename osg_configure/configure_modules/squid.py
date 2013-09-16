@@ -106,6 +106,7 @@ class SquidConfiguration(BaseConfiguration):
                "allowed, most jobs function better and use less bandwidth \n" +
                "when a squid proxy is available",
                level = logging.WARN)
+      self.options['location'].value = 'None'
       return attributes_ok
     
     if len(self.options['location'].value.split(':')) != 2:
@@ -184,10 +185,14 @@ class SquidConfiguration(BaseConfiguration):
       self.log("%s.getAttributes completed" % self.__class__)
       return dict(zip([item.mapping for item in self.options.values() if item.isMappable()],
                       [str(item.value) for item in self.options.values() if item.isMappable()]))
-    elif not self.enabled:
-      attributes['OSG_SQUID_LOCATION'] = 'UNAVAILABLE'
+    elif not self.enabled:      
       self.log("%s.getAttributes completed" % self.__class__)
       return attributes              
+    elif self.options['location'].value == 'None':
+      self.log("Blank location or location set to UNAVAILABLE, " +
+               "not setting environment variable")      
+      self.log("%s.getAttributes completed" % self.__class__)
+      return attributes
     
     self.log("%s.getAttributes completed" % self.__class__)
     return attributes
