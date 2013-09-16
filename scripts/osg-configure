@@ -135,7 +135,10 @@ def write_attributes(attributes,
       try:
         temp[key] = attributes[key]
       except KeyError, exception:
-        error_exit("Missing job environment key (%s), exiting." % key, exception)      
+        if key == 'OSG_SQUID_LOCATION':
+          continue
+        else:
+          error_exit("Missing job environment key (%s), exiting." % key, exception)      
     utilities.write_attribute_file(filename, temp)
   except IOError, exception:
     error_exit("Error writing attributes to osg-job-environment.conf", exception)

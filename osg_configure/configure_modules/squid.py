@@ -188,7 +188,8 @@ class SquidConfiguration(BaseConfiguration):
     elif not self.enabled:      
       self.log("%s.getAttributes completed" % self.__class__)
       return attributes              
-    elif self.options['location'].value == 'None':
+    elif self.options['location'].value in ('None', 'UNAVAILABLE'):
+      del attributes['OSG_SQUID_LOCATION'] 
       self.log("Blank location or location set to UNAVAILABLE, " +
                "not setting environment variable")      
       self.log("%s.getAttributes completed" % self.__class__)

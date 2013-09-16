@@ -28,7 +28,7 @@ ssh $WISC_SYS "mkdir $remote_dir"
 scp dist/osg-configure-$version.tar.gz $WISC_SYS:$remote_dir/
 if [[ $1 == "-release" ]];  then
     osg-build koji $SPEC_LOCATION --kojilogin="$USER_DN" --svn
-    https://vdt.cs.wisc.edu/svn/software/osg-configure/trunk https://vdt.cs.wisc.edu/svn/software/osg-configure/tags/$version
+    svn co https://vdt.cs.wisc.edu/svn/software/osg-configure/trunk https://vdt.cs.wisc.edu/svn/software/osg-configure/tags/$version
 else
     osg-build koji $SPEC_LOCATION --kojilogin="$USER_DN" --svn --scratch
 fi
