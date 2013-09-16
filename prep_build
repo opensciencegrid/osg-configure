@@ -6,6 +6,8 @@ SPEC_LOCATION="/share/home/sthapa/vdt-rpms/rpm-defs/osg-configure"
 software_checkout=`svn status`
 spec_checkout=`svn status $SPEC_LOCATION`
 
+set -e
+
 if [[ -n "$software_checkout" ]]; then
   echo "svn software checkout not clean, aborting..."
   exit 1
@@ -24,10 +26,11 @@ sleep 10
 /bin/rm dist/*
 python setup.py sdist
 remote_dir="/p/vdt/public/html/upstream/osg-configure/$version"
-ssh $WISC_SYS "mkdir $remote_dir"
+ssh $WISC_SYS "if [[ ! -e $remote_dir ]]; then mkdir $remote_dir; fi"
 scp dist/osg-configure-$version.tar.gz $WISC_SYS:$remote_dir/
 if [[ $1 == "-release" ]];  then
     osg-build koji $SPEC_LOCATION --kojilogin="$USER_DN" --svn
+    if [[ $? -e 0 ]] 
     svn co https://vdt.cs.wisc.edu/svn/software/osg-configure/trunk https://vdt.cs.wisc.edu/svn/software/osg-configure/tags/$version
 else
     osg-build koji $SPEC_LOCATION --kojilogin="$USER_DN" --svn --scratch
