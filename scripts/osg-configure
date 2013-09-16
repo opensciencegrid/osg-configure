@@ -38,7 +38,6 @@ job_environment_attributes = ['GLOBUS_LOCATION',
                               'OSG_DEFAULT_SE',
                               'OSG_SITE_READ',
                               'OSG_SITE_WRITE',
-                              'OSG_SQUID_LOCATION',
                               'OSG_JOB_CONTACT',
                               'OSG_GLEXEC_LOCATION']
 
@@ -135,10 +134,7 @@ def write_attributes(attributes,
       try:
         temp[key] = attributes[key]
       except KeyError, exception:
-        if key == 'OSG_SQUID_LOCATION':
-          continue
-        else:
-          error_exit("Missing job environment key (%s), exiting." % key, exception)      
+        error_exit("Missing job environment key (%s), exiting." % key, exception)      
     utilities.write_attribute_file(filename, temp)
   except IOError, exception:
     error_exit("Error writing attributes to osg-job-environment.conf", exception)
