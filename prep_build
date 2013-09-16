@@ -32,7 +32,7 @@ if [[ $1 == "-release" ]];  then
     osg-build koji $SPEC_LOCATION --kojilogin="$USER_DN" --svn
     echo "Tagging build..."
     sleep 20
-    svn co https://vdt.cs.wisc.edu/svn/software/osg-configure/trunk https://vdt.cs.wisc.edu/svn/software/osg-configure/tags/$version
+    svn copy https://vdt.cs.wisc.edu/svn/software/osg-configure/trunk https://vdt.cs.wisc.edu/svn/software/osg-configure/tags/$version
 else
     osg-build koji $SPEC_LOCATION --kojilogin="$USER_DN" --svn --scratch
 fi
