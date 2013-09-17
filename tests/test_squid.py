@@ -16,6 +16,7 @@ sys.path.insert(0, pathname)
 from osg_configure.modules import exceptions
 from osg_configure.configure_modules import squid
 from osg_configure.modules.utilities import get_test_config
+from osg_configure.modules.utilities import ce_installed
 
 global_logger = logging.getLogger(__name__)
 if sys.version_info[0] >= 2 and sys.version_info[1] > 6:
@@ -108,17 +109,13 @@ class TestSquid(unittest.TestCase):
  
 
     attributes = settings.getAttributes()
-    self.assertEqual(len(attributes), 1, 
-                     "Disabled configuration should have 4 attributes")
+    self.assertEqual(len(attributes), 0, 
+                     "Disabled configuration should have 0 attributes")
     
-    variables = {'OSG_SQUID_LOCATION' : 'UNAVAILABLE'}
-    for var in variables:      
-      self.assertTrue(attributes.has_key(var), 
-                      "Attribute %s missing" % var)
-      self.assertEqual(attributes[var], 
-                       variables[var], 
-                       "Wrong value obtained for %s, got %s but " \
-                       "expected %s" % (var, attributes[var], variables[var]))
+    self.assertEqual(attributes, 
+                     {}, 
+                     "Error attributes from squid configuration " +
+                     "not empty when disabled")
                                                             
   def testParsingIgnored(self):
     """
@@ -176,8 +173,9 @@ class TestSquid(unittest.TestCase):
     """
     Test the checkAttributes function when memory size is not an integer
     """
-        
-
+    
+    if not ce_installed():
+      return True
     config_file = get_test_config("squid/squid_bad_mem.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -192,7 +190,8 @@ class TestSquid(unittest.TestCase):
     Test the checkAttributes function when cache size is not an integer
     """
         
-
+    if not ce_installed():
+      return True
     config_file = get_test_config("squid/squid_bad_cache.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -209,7 +208,8 @@ class TestSquid(unittest.TestCase):
     not valie
     """
         
-
+    if not ce_installed():
+      return True
     config_file = get_test_config("squid/squid_bad_host.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -244,7 +244,8 @@ class TestSquid(unittest.TestCase):
     not an integer
     """
         
-
+    if not ce_installed():
+      return True
     config_file = get_test_config("squid/squid_bad_port.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -259,31 +260,13 @@ class TestSquid(unittest.TestCase):
     self.assertFalse(settings.checkAttributes(attributes), 
                      "Did not notice invalid port number")
 
-  def testMissingLocation(self):
-    """
-    Test the checkAttributes function when squid location is missing
-    """
-        
-
-    config_file = get_test_config("squid/squid_missing_location.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-
-    settings = squid.SquidConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
-
-    attributes = settings.getAttributes()
-    self.assertFalse(settings.checkAttributes(attributes), 
-                     "Did not notice invalid squid location")
-
   def testValidSettings(self):
     """
     Test the checkAttributes function to see if it oks good attributes
     """
-        
+
+    if not ce_installed():
+      return True
     config_file = get_test_config("squid/valid_settings.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -315,7 +298,7 @@ class TestSquid(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.assertFalse(settings.checkAttributes(attributes), 
+    self.assertTrue(settings.checkAttributes(attributes), 
                      "Disabled squid flagged as good")
 
   def testBlankLocation(self):
@@ -323,7 +306,9 @@ class TestSquid(unittest.TestCase):
     Test the checkAttributes function to see if it raises an error when
     location is left blank
     """
-        
+
+    if not ce_installed():
+      return True
     config_file = get_test_config("squid/squid_blank_location.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -335,8 +320,8 @@ class TestSquid(unittest.TestCase):
       self.fail("Received exception while parsing configuration: %s" % e)
  
     attributes = settings.getAttributes()
-    self.assertFalse(settings.checkAttributes(attributes), 
-                     "Blank location flagged as good")
+    self.assertTrue(settings.checkAttributes(attributes), 
+                     "Blank location flagged as bad")
 
   def testLocationUnavailable(self):
     """
