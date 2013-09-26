@@ -272,6 +272,9 @@ class RsvConfiguration(BaseConfiguration):
     if not self.__configure_srm_metrics():
       return False
 
+    if not self.__check_rsv_files():
+      return False
+    
     # Setup Apache?  I think this is done in the RPM
 
     # Fix the Gratia ProbeConfig file to point at the appropriate collector
@@ -1083,6 +1086,32 @@ class RsvConfiguration(BaseConfiguration):
       return set()
       
     return set(['rsv', 'condor-cron'])
+  
+  def __check_rsv_files(self):
+    """
+    Check for the existence and permissions of files used by 
+    rsv/condor-cron
+    """
+    
+    # check the uid/gid in the condor_ids file
+    condor_id_fname = os.path.join("/",
+                                   "condor-cron",
+                                   "config.d",
+                                   "condor_ids")
+    ids = open(condor_id_fname).read()
+    id_regex = re.compile(r'\s+CONDOR_IDS\s+=\s+\d+\.\d+.*')
+    condor_ent = pwd.getpwnam('cndrcron')
+    (ids, count) = id_regex.subn("CONDOR_IDS  = %s.%s" % (condor_ent.pw_uid,
+                                                          condor_ent.pw_guid), 
+                                 ids,
+                                 1)
+    if count == 0:
+        ids += "CONDOR_IDS  = %d.%d\n" % (condor_ent.pw_uid, condor_ent.pw_guid)
+    if not utilities.atomic_write(condor_id_fname, id):
+      return False
+    
+    return True 
+                
 
 def split_list(item_list):
   """ Split a comma separated list of items """
