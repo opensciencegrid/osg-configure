@@ -29,7 +29,8 @@ class LSFConfiguration(JobManagerConfiguration):
                                         default_value = '/usr',
                                         mapping = 'OSG_LSF_LOCATION'),
                     'lsf_profile' : 
-                      configfile.Option(name = 'lsf_profile'),
+                      configfile.Option(name = 'lsf_profile',
+                                        default_value = ''),
                     'job_contact' : 
                       configfile.Option(name = 'job_contact',
                                         mapping = 'OSG_JOB_CONTACT'),
