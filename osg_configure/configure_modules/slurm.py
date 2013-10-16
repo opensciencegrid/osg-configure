@@ -62,6 +62,10 @@ class SlurmConfiguration(JobManagerConfiguration):
                       configfile.Option(name = 'db_pass',
                                         required = configfile.Option.OPTIONAL,
                                         default_value = ''),
+                    'slurm_cluster' : 
+                      configfile.Option(name = 'slurm_cluster',
+                                        required = configfile.Option.OPTIONAL,
+                                        default_value = ''),                    
                     'accept_limited' : 
                       configfile.Option(name = 'accept_limited',
                                         required = configfile.Option.OPTIONAL,
@@ -309,6 +313,13 @@ class SlurmConfiguration(JobManagerConfiguration):
     """
     
     return self.options['db_name'].value 
+
+  def getSlurmCluster(self):
+    """
+    Return the name of the data slurm is using for accounting info
+    """
+    
+    return self.options['slurm_cluster'].value 
 
   def getLocation(self):
     """

@@ -117,6 +117,7 @@ class TestSGE(unittest.TestCase):
 
     mandatory = ['sge_root',
                  'sge_cell',
+                 'sge_bin_location',
                  'job_contact',
                  'util_contact']
     for option in mandatory:

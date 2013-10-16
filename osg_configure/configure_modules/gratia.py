@@ -571,6 +571,7 @@ in your config.ini file."""
     buf = self.replaceSetting(buf, 'SlurmDbUser', settings['db_user'])
     buf = self.replaceSetting(buf, 'SlurmDbPasswordFile', settings['db_pass'])
     buf = self.replaceSetting(buf, 'SlurmDbName', settings['db_name'])
+    buf = self.replaceSetting(buf, 'SlurmCluster', settings['slurm_cluster'])
     buf = self.replaceSetting(buf, 'SlurmLocation', settings['location'])
 
     if not utilities.atomic_write(config_location, buf):

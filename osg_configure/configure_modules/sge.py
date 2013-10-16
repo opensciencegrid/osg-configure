@@ -30,6 +30,9 @@ class SGEConfiguration(JobManagerConfiguration):
                       configfile.Option(name = 'sge_cell',
                                         default_value = 'default', 
                                         mapping = 'OSG_SGE_CELL'),
+                    'sge_bin_locationn' : 
+                      configfile.Option(name = 'sge_bin_location',
+                                        default_value = 'default'),
                     'job_contact' : 
                       configfile.Option(name = 'job_contact',
                                         mapping = 'OSG_JOB_CONTACT'),
@@ -158,6 +161,13 @@ class SGEConfiguration(JobManagerConfiguration):
                 section = self.config_section,
                 level = logging.ERROR)
 
+    if not validation.valid_directory(self.options['sge_bin_location'].value):
+      attributes_ok = False
+      self.log("sge_bin_location not valid: %s" % self.options['sge_bin_location'].value,
+               option = 'sge_bin_location',
+               section = self.config_section,
+               level = logging.ERROR)
+      
     if not validation.valid_contact(self.options['job_contact'].value, 
                                     'sge'):
       attributes_ok = False
@@ -258,8 +268,7 @@ class SGEConfiguration(JobManagerConfiguration):
     Returns True if successful, False otherwise
     """    
     buf = open(SGEConfiguration.GRAM_CONFIG_FILE).read()
-    bin_location = os.path.join(self.options['sge_root'].value,
-                                'bin',
+    bin_location = os.path.join(self.options['sge_bin_location'].value,
                                 'qsub')
     if validation.valid_file(bin_location):
       re_obj = re.compile('^qsub=.*$', re.MULTILINE)
@@ -268,8 +277,7 @@ class SGEConfiguration(JobManagerConfiguration):
                                  1)
       if count == 0:
         buf += "qsub=\"%s\"\n" % bin_location
-    bin_location = os.path.join(self.options['sge_root'].value,
-                                'bin',
+    bin_location = os.path.join(self.options['sge_bin_location'].value,
                                 'qstat')
     if validation.valid_file(bin_location):
       re_obj = re.compile('^qstat=.*$', re.MULTILINE)
@@ -278,8 +286,7 @@ class SGEConfiguration(JobManagerConfiguration):
                                  1)
       if count == 0:
         buf += "qstat=\"%s\"\n" % bin_location
-    bin_location = os.path.join(self.options['sge_root'].value,
-                                'bin',
+    bin_location = os.path.join(self.options['sge_bin_location'].value,
                                 'qdel')
     if validation.valid_file(bin_location):
       re_obj = re.compile('^qdel=.*$', re.MULTILINE)
@@ -289,8 +296,7 @@ class SGEConfiguration(JobManagerConfiguration):
       if count == 0:
         buf += "qdel=\"%s\"\n" % bin_location 
     
-    bin_location = os.path.join(self.options['sge_root'].value,
-                                'bin',
+    bin_location = os.path.join(self.options['sge_bin_location'].value,
                                 'qconf')
     if validation.valid_file(bin_location):
       re_obj = re.compile('^qconf=.*$', re.MULTILINE)
