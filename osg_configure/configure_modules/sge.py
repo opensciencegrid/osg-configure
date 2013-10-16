@@ -30,7 +30,7 @@ class SGEConfiguration(JobManagerConfiguration):
                       configfile.Option(name = 'sge_cell',
                                         default_value = 'default', 
                                         mapping = 'OSG_SGE_CELL'),
-                    'sge_bin_locationn' : 
+                    'sge_bin_location' : 
                       configfile.Option(name = 'sge_bin_location',
                                         default_value = 'default'),
                     'job_contact' : 
