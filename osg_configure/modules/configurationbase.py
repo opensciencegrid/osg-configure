@@ -104,8 +104,8 @@ class BaseConfiguration(object):
                                                      kwargs['section'])
       if file_location is not None:
         message = "Option '%s' in section '%s' located in %s: " % (kwargs['option'],
-                                                              kwargs['section'],
-                                                              file_location)      
+                                                                   kwargs['section'],
+                                                                   file_location)      
     message += mesg
     self.logger.log(log_level, message, exc_info = exception)
     
@@ -149,7 +149,7 @@ class BaseConfiguration(object):
                  option = option.name,
                  section = self.config_section,
                  level = logging.ERROR,
-                 exception = True)
+                 exception = False)
         raise
 
     # check and warn if unknown options found
