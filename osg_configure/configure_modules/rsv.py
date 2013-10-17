@@ -1100,7 +1100,7 @@ class RsvConfiguration(BaseConfiguration):
                                    "config.d",
                                    "condor_ids")
     ids = open(condor_id_fname).read()
-    id_regex = re.compile(r'\s+CONDOR_IDS\s+=\s+(\d+)\.(\d+).*')
+    id_regex = re.compile(r'^\s*CONDOR_IDS\s+=\s+(\d+)\.(\d+).*', re.MULTILINE)
     condor_ent = pwd.getpwnam('cndrcron')
     match = id_regex.search(ids)
     if ((match is not None) and
@@ -1115,11 +1115,11 @@ class RsvConfiguration(BaseConfiguration):
         if count == 0:
           self.log("Can't correct condor-cron uid/gid, please double check",
                    level = logging.ERROR)
-        if not utilities.atomic_write(condor_id_fname, id):
+        if not utilities.atomic_write(condor_id_fname, ids):
           return False
     elif (match is None):
-        ids += "CONDOR_IDS  = %d.%d\n" % (condor_ent.pw_uid, condor_ent.pw_gid)
-        if not utilities.atomic_write(condor_id_fname, id):
+        ids += "CONDOR_IDS = %d.%d\n" % (condor_ent.pw_uid, condor_ent.pw_gid)
+        if not utilities.atomic_write(condor_id_fname, ids):
           return False
     
     return True 
