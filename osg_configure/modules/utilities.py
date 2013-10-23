@@ -117,7 +117,7 @@ def get_set_membership(test_set, reference_set, defaults = None):
 def get_hostname():
   """Returns the hostname of the current system"""
   try:
-    return socket.gethostbyaddr(socket.gethostname())[0]
+    return socket.getfqdn()
   # pylint: disable-msg=W0703
   except Exception:
     return None

@@ -1104,8 +1104,8 @@ class RsvConfiguration(BaseConfiguration):
     condor_ent = pwd.getpwnam('cndrcron')
     match = id_regex.search(ids)
     if ((match is not None) and
-        (((match.group(1) != condor_ent.pw_uid) or 
-          (match.group(2) != condor_ent.pw_gid)))):
+        (((int(match.group(1)) != condor_ent.pw_uid) or 
+          (int(match.group(2)) != condor_ent.pw_gid)))):
         self.log("Condor-cron uid/gid not correct, correcting",
                  level = logging.ERROR)
         (ids, count) = id_regex.subn("CONDOR_IDS  = %s.%s" % (condor_ent.pw_uid,
