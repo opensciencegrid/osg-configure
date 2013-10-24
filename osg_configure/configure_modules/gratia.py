@@ -142,18 +142,18 @@ in your config.ini file."""
             # if section is disabled then the following code won't work
             # since the parseConfiguration will shortcircuit, so 
             # give a warning and then move on
-            self.log("Skipping SGE probe configuration since SGE is disabled",
+            self.log("Skipping SGE gratia probe configuration since SGE is disabled",
                      level = logging.WARNING)
             continue
           sge_config = SGEConfiguration(logger = self.logger)
           sge_config.parseConfiguration(configuration)
           self.__probe_config['sge'] = {'sge_accounting_file' : sge_config.getAccountingFile()}
         elif probe == 'slurm':
-          if BaseConfiguration.sectionDisabled(configuration, 'Slurm'):
+          if BaseConfiguration.sectionDisabled(configuration, 'SLURM'):
             # if section is disabled then the following code won't work
             # since the parseConfiguration will shortcircuit, so 
             # give a warning and then move on
-            self.log("Skipping Slurm probe configuration since Slurm is disabled",
+            self.log("Skipping Slurm gratia probe configuration since Slurm is disabled",
                      level = logging.WARNING)
             continue
           slurm_config = SlurmConfiguration(logger = self.logger)
