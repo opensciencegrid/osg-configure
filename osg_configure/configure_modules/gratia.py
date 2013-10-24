@@ -153,7 +153,7 @@ in your config.ini file."""
             # if section is disabled then the following code won't work
             # since the parseConfiguration will shortcircuit, so 
             # give a warning and then move on
-            self.log("Skipping Slurm probe configuration since SGE is disabled",
+            self.log("Skipping Slurm probe configuration since Slurm is disabled",
                      level = logging.WARNING)
             continue
           slurm_config = SlurmConfiguration(logger = self.logger)
@@ -222,6 +222,12 @@ in your config.ini file."""
     probe_list = self.getInstalledProbes()
     for probe in probe_list:
       if probe in self.__job_managers:
+        if probe not in self.__probe_config:
+          # Probe is installed but we don't have configuration for it
+          # might be due to pbs-lsf probe sharing or relevant job 
+          # manager is not shared
+          continue
+        
         if 'jobmanager' in self.enabled_probe_settings:
           probe_host = self.enabled_probe_settings['jobmanager']
         else:
@@ -231,16 +237,7 @@ in your config.ini file."""
           probe_host = self.enabled_probe_settings[probe]
         else:
           continue
-      # conditional ugliness thanks to the pbs-lsf probes being shared
-      if probe == 'pbs' and 'pbs' not in self.__probe_config:
-          # don't have pbs specific gratia settings so don't want to configure
-          # pbs probe any futher to avoid messing up LSF settings
-        continue
-      elif probe == 'lsf' and 'lsf' not in self.__probe_config:
-          # don't have lsf specific gratia settings so we shouldn't try
-          # to configure the lsf probe any further to avoid messing up pbs 
-          # settings if they will be set
-        continue
+        
 
       self.__makeSubscription(probe, 
                               probe_list[probe], 
