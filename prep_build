@@ -22,7 +22,10 @@ svn up $SPEC_LOCATION
 version=`grep 'VERSION =' scripts/osg-configure | cut -f 2 -d\'`
 echo "Building osg-configure $version"
 sleep 10
-/bin/rm MANIFEST
+if [ -e MANIFEST ]; 
+then
+  /bin/rm MANIFEST
+fi 
 /bin/rm dist/*
 python setup.py sdist
 remote_dir="/p/vdt/public/html/upstream/osg-configure/$version"
