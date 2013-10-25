@@ -26,7 +26,10 @@ if [ -e MANIFEST ];
 then
   /bin/rm MANIFEST
 fi 
-/bin/rm dist/*
+if [ -e dist ];
+then
+  /bin/rm -fr dist
+fi
 python setup.py sdist
 remote_dir="/p/vdt/public/html/upstream/osg-configure/$version"
 ssh $WISC_SYS "if [[ ! -e $remote_dir ]]; then mkdir $remote_dir; fi"
