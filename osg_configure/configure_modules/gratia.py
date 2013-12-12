@@ -623,6 +623,7 @@ in your config.ini file."""
                                                                  history_dir),
                    level=logging.ERROR)
           valid = False
+        # Per Gratia-126 DataFolder must end in / otherwise gratia won't find certinfo files
         if match.group(1)[-1] != "/":
             self.log("DataFolder setting in %s must end in a /" % config_location,
                      level=logging.ERROR)
