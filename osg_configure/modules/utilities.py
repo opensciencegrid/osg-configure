@@ -35,8 +35,7 @@ __all__ = ['get_elements',
   
 CONFIG_DIRECTORY = "/etc/osg"
 
-  
-      
+
 def get_elements(element=None, filename=None):
   """Get values for selected element from xml file specified in filename"""
   if filename is None or element is None:
@@ -50,7 +49,8 @@ def get_elements(element=None, filename=None):
     return []
   values = dom.getElementsByTagName(element)
   return values
-    
+
+
 def write_attribute_file(filename=None, attributes=None):
   """
   Write attributes to osg attributes file in an atomic fashion
@@ -100,7 +100,7 @@ def write_attribute_file(filename=None, attributes=None):
   atomic_write(filename, file_contents, mode=0644)
   return True
 
-def get_set_membership(test_set, reference_set, defaults = None):
+def get_set_membership(test_set, reference_set, defaults=None):
   """
   See if test_set has any elements that aren't keys of the reference_set 
   or optionally defaults.  Takes lists as arguments
@@ -114,6 +114,7 @@ def get_set_membership(test_set, reference_set, defaults = None):
       missing_members.append(member)
   return missing_members
 
+
 def get_hostname():
   """Returns the hostname of the current system"""
   try:
@@ -123,11 +124,12 @@ def get_hostname():
     return None
   return None
 
+
 def blank(value):
   """Check the value to check to see if it is 'UNAVAILABLE' or blank, return True 
   if that's the case
   """
-  if type(value) != types.StringType:
+  if isinstance(value, types.StringType):
     if value is None:
       return True
     return False
@@ -138,6 +140,7 @@ def blank(value):
       value is None):
     return True
   return False
+
 
 def get_vos(user_vo_file):
   """
@@ -171,11 +174,12 @@ def get_vos(user_vo_file):
       pass
   return vo_list
 
+
 def service_enabled(service_name):
   """
   Check to see if a service is enabled
   """
-  if service_name == None or service_name == "":
+  if service_name is None or service_name == "":
     return False
   process = subprocess.Popen(['/sbin/service', '--list', service_name], 
                              stdout=subprocess.PIPE)
@@ -194,7 +198,7 @@ def service_enabled(service_name):
   else:
     return False 
   
-def create_map_file(using_gums = False):
+def create_map_file(using_gums=False):
   """
   Check and create a mapfile if needed
   """
@@ -227,6 +231,7 @@ def create_map_file(using_gums = False):
   except IOError:
     result = False
   return result
+
 
 def fetch_crl():
   """
@@ -265,6 +270,7 @@ def fetch_crl():
     return False
   return True
 
+
 def run_script(script):
   """
   Arguments:
@@ -286,7 +292,7 @@ def run_script(script):
   return True          
 
 
-def get_condor_location(default_location = '/usr'):
+def get_condor_location(default_location='/usr'):
   """
   Check environment variables to try to get condor location
   """
@@ -298,7 +304,8 @@ def get_condor_location(default_location = '/usr'):
   else:
     return ""
 
-def get_condor_config(default_config = '/etc/condor/condor_config'):
+
+def get_condor_config(default_config='/etc/condor/condor_config'):
   """
   Check environment variables to try to get condor config
   """
@@ -312,7 +319,8 @@ def get_condor_config(default_config = '/etc/condor/condor_config'):
                         'etc',
                         'condor_config')
 
-def atomic_write(filename = None, contents = None, **kwargs):
+
+def atomic_write(filename=None, contents=None, **kwargs):
   """
   Atomically write contents to a file
   
@@ -329,7 +337,7 @@ def atomic_write(filename = None, contents = None, **kwargs):
   
   """
 
-  if (filename is None or contents is None):
+  if filename is None or contents is None:
     return True
    
   try:
@@ -372,7 +380,8 @@ def ce_installed():
     return True
   return False
 
-def rpm_installed(rpm_name = None):
+
+def rpm_installed(rpm_name=None):
   """
   Check to see if given rpm is installed
   
@@ -388,7 +397,7 @@ def rpm_installed(rpm_name = None):
     return True
   
   trans_set = rpm.TransactionSet()
-  if type(rpm_name) is types.StringType:
+  if isinstance(rpm_name, types.StringType):
     if trans_set.dbMatch('name', rpm_name).count() in (1, 2):
       return True
     return False
@@ -402,8 +411,9 @@ def rpm_installed(rpm_name = None):
   # pylint: disable-msg=W0703
   except Exception:
     return False
-  
-def get_test_config(config_file = ''):
+
+
+def get_test_config(config_file=''):
   """
   Try to figure out whether where the config files for unit tests are located,
   preferring the ones in the local directory
@@ -416,12 +426,10 @@ def get_test_config(config_file = ''):
   the prefixed config file if config_file is non-empty, otherwise just the 
   prefix, returns None if no path exists
   """
-  
-  
+
   config_prefix = './configs'
   sys_prefix = os.path.join('/', 'usr', 'share', 'osg-configure', 'tests', 'configs')
-  
-  
+
   if config_file == '' or config_file is None:
     return None 
 
@@ -432,8 +440,9 @@ def get_test_config(config_file = ''):
   if os.path.exists(test_location):
     return os.path.abspath(test_location)
   return None
-    
-def make_directory(dir_name, perms = 0755, uid = None, gid = None):
+
+
+def make_directory(dir_name, perms=0755, uid=None, gid=None):
   """
   Create a directory with specified permissions and uid/gid.  Will use the 
   current user's uid and gid if not specified.
@@ -451,15 +460,13 @@ def make_directory(dir_name, perms = 0755, uid = None, gid = None):
     return True
   except IOError:
     return False
-  
+
+
 def get_os_version():
   """
   Get and return OS major version
   """
   version = platform.dist()[1]
-  version_list = [ int(x) for x in version.split('.') ]
+  version_list = [int(x) for x in version.split('.')]
   return version_list
-    
-  
-    
-    
+
