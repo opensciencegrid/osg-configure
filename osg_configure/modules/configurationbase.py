@@ -34,7 +34,7 @@ class BaseConfiguration(object):
         return False
       elif configuration.get(self.config_section, 'enabled').lower() == 'ignore':
         self.logger.debug("%s will be ignored" % self.config_section)
-        self.ignored  = True
+        self.ignored = True
         self.enabled = False
         return False
       elif not configuration.getboolean(self.config_section, 'enabled'):
@@ -45,16 +45,14 @@ class BaseConfiguration(object):
         self.enabled = True
         return True
     except ConfigParser.NoOptionError:
-      raise exceptions.SettingError("Can't get value for enable option " \
+      raise exceptions.SettingError("Can't get value for enable option "
                                     "in %s section" % self.config_section) 
 
-    
   def parseConfiguration(self, configuration):
     """Try to get configuration information from ConfigParser or SafeConfigParser object given
     by configuration and write recognized settings to attributes dict
     """
     pass
-
 
 # pylint: disable-msg=W0613
 # pylint: disable-msg=R0201
@@ -99,7 +97,7 @@ class BaseConfiguration(object):
     log_level = kwargs.get('level', logging.DEBUG)
     exception = kwargs.get('exception', False)
     message = ""
-    if ('option' in kwargs and 'section' in kwargs):
+    if 'option' in kwargs and 'section' in kwargs:
       file_location = configfile.get_option_location(kwargs['option'],
                                                      kwargs['section'])
       if file_location is not None:
@@ -115,7 +113,7 @@ class BaseConfiguration(object):
     """
     
     if configuration is None or \
-       (configuration.__class__.__name__ is not 'ConfigParser' and \
+       (configuration.__class__.__name__ is not 'ConfigParser' and
         configuration.__class__.__name__ is not 'SafeConfigParser'):
       err_msg = 'Invalid type for configuration, must be a ConfigParser '
       err_msg += 'or SafeConfigParser object'
@@ -146,10 +144,10 @@ class BaseConfiguration(object):
         self.log("Got %s" % option.value)
       except Exception:
         self.log("Received exception when parsing option",
-                 option = option.name,
-                 section = self.config_section,
-                 level = logging.ERROR,
-                 exception = False)
+                 option=option.name,
+                 section=self.config_section,
+                 level=logging.ERROR,
+                 exception=False)
         raise
 
     # check and warn if unknown options found
@@ -160,11 +158,11 @@ class BaseConfiguration(object):
                                         configuration.defaults().keys())
     for option in temp:
       self.log("Found unknown option",
-               option = option, 
-               section = self.config_section,
-               level = logging.WARNING)
+               option=option,
+               section=self.config_section,
+               level=logging.WARNING)
     
-  def getAttributes(self, converter = str):
+  def getAttributes(self, converter=str):
     """
     Get attributes for the osg attributes file using the dict in self.options
 
@@ -196,7 +194,7 @@ class BaseConfiguration(object):
   @staticmethod
   def sectionDisabled(configuration, section):
     """
-    Check the enable option and then set the appropriate attributes based on that.
+    Check the enable option for a specified section
     
     Returns False if the section is not enabled or set to ignore
     """
@@ -211,5 +209,5 @@ class BaseConfiguration(object):
       else:
         return False
     except ConfigParser.NoOptionError:
-      raise exceptions.SettingError("Can't get value for enable option " \
+      raise exceptions.SettingError("Can't get value for enable option "
                                     "in %s section" % section) 

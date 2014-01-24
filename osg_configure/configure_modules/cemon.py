@@ -30,19 +30,19 @@ class CemonConfiguration(BaseConfiguration):
     # file location for xml file with cemon subscriptions
     self.__cemon_configuration_file = os.path.join(self.CEMON_CONFIG_FILE)
     self.config_section = 'Cemon'
-    self.options = {'ress_servers' : configfile.Option(name = 'ress_servers',
-                                                       default_value = ''),
-                    'bdii_servers' : configfile.Option(name = 'bdii_servers',
-                                                       default_value = '')}
-    self.__itb_defaults = {'ress_servers' : 'https://osg-ress-4.fnal.gov:8443/ig/' \
+    self.options = {'ress_servers': configfile.Option(name='ress_servers',
+                                                       default_value=''),
+                    'bdii_servers': configfile.Option(name='bdii_servers',
+                                                       default_value='')}
+    self.__itb_defaults = {'ress_servers': 'https://osg-ress-4.fnal.gov:8443/ig/'
                                             'services/CEInfoCollector[OLD_CLASSAD]',
-                           'bdii_servers' : 'http://is1.grid.iu.edu:14001[RAW],' \
+                           'bdii_servers': 'http://is1.grid.iu.edu:14001[RAW],'
                                             'http://is2.grid.iu.edu:14001[RAW]'}
-    self.__production_defaults = {'ress_servers' :
-                                    'https://osg-ress-1.fnal.gov:8443/ig/' \
+    self.__production_defaults = {'ress_servers':
+                                    'https://osg-ress-1.fnal.gov:8443/ig/'
                                     'services/CEInfoCollector[OLD_CLASSAD]',
-                                  'bdii_servers' :
-                                    'http://is1.grid.iu.edu:14001[RAW],' \
+                                  'bdii_servers':
+                                    'http://is1.grid.iu.edu:14001[RAW],'
                                     'http://is2.grid.iu.edu:14001[RAW]'}
     self.bdii_servers = {}
     self.ress_servers = {}
@@ -67,11 +67,11 @@ class CemonConfiguration(BaseConfiguration):
     elif not configuration.has_section(self.config_section):  
       self.enabled = False
       self.log("%s section not in config file" % self.config_section)
-      self.log('Cemon.parseConfiguration completed')
+      self.log('CemonConfiguration.parseConfiguration completed')
       return
     
     if not self.setStatus(configuration):
-      self.log('Cemon.parseConfiguration completed')
+      self.log('CemonConfiguration.parseConfiguration completed')
       return True
        
     if utilities.ce_installed():
@@ -84,11 +84,11 @@ class CemonConfiguration(BaseConfiguration):
         self.options['bdii_servers'].default_value = self.__production_defaults['bdii_servers']
 
     self.getOptions(configuration,
-                    ignore_options = ['itb-ress-servers',
-                                      'itb-bdii-servers',
-                                      'osg-ress-servers',
-                                      'osg-bdii-servers',
-                                      'enabled'])
+                    ignore_options=['itb-ress-servers',
+                                    'itb-bdii-servers',
+                                    'osg-ress-servers',
+                                    'osg-bdii-servers',
+                                    'enabled'])
     
     self.ress_servers = self.__parse_servers(self.options['ress_servers'].value)  
     self.bdii_servers = self.__parse_servers(self.options['bdii_servers'].value)  
@@ -100,8 +100,8 @@ class CemonConfiguration(BaseConfiguration):
 
     if self.ignored:
       self.log("%s configuration ignored" % self.config_section, 
-               level = logging.WARNING)
-      self.log('PBSConfiguration.configure completed')    
+               level=logging.WARNING)
+      self.log('CemonConfiguration.configure completed')
       return True
 
     if not self.enabled:
@@ -126,16 +126,15 @@ class CemonConfiguration(BaseConfiguration):
       dialect = self.bdii_servers[subscription]
       self.log("Subscribing to %s using %s dialect" % (subscription,
                                                                 dialect))
-      self.configureSubscriptions(subscription = subscription, 
-                                  dialect = dialect)
+      self.configureSubscriptions(subscription=subscription,
+                                  dialect=dialect)
         
 
     self.log("Making ReSS subscriptions")
     for subscription in self.ress_servers:
       dialect = self.ress_servers[subscription]
-      self.log("Subscribing to %s using %s dialect" % (subscription,
-                                                                dialect))
-      self.configureSubscriptions(subscription = subscription, dialect = dialect)
+      self.log("Subscribing to %s using %s dialect" % (subscription, dialect))
+      self.configureSubscriptions(subscription=subscription, dialect=dialect)
 
 
     self.log("CemonConfiguration.configure completed")
@@ -178,7 +177,7 @@ class CemonConfiguration(BaseConfiguration):
     configured separately"""
     return False
   
-  def configureSubscriptions(self, subscription = None, dialect = "RAW"):
+  def configureSubscriptions(self, subscription=None, dialect="RAW"):
     """Check to see if subscriptions is already present and if not
     make them"""
 
@@ -200,7 +199,7 @@ class CemonConfiguration(BaseConfiguration):
     if subscription not in found_subscriptions.keys():
       if not self.__installConsumer(subscription, 'OSG_CE', dialect):
         self.log("Error while subscribing to server",
-                 level = logging.ERROR)
+                 level=logging.ERROR)
         raise exceptions.ConfigureError("Error configuring cemon")
    
 
@@ -227,8 +226,8 @@ class CemonConfiguration(BaseConfiguration):
         config_file.close()
     except IOError, e:
       self.log("Error reading from configuration file at %s" % config_path,
-               exception = True,
-               level = logging.ERROR)
+               exception=True,
+               level=logging.ERROR)
       return False
 
     # Simple check to see if we have already installed a subscription for this
@@ -240,7 +239,7 @@ class CemonConfiguration(BaseConfiguration):
                  consumer_topic, 
                  consumer_dialect,
                  config_path),
-               level = logging.ERROR)
+               level=logging.ERROR)
       return False
 
     # Add in the subscription information
@@ -283,17 +282,17 @@ class CemonConfiguration(BaseConfiguration):
     contents = re.sub(r'(</service>)', add + r'\1', contents, 1)
     if not utilities.atomic_write(config_path, contents, mode = 0644):
       self.log("Error updating configuration file at %s: %s" % (config_path, e),
-               level = logging.ERROR)
+               level=logging.ERROR)
       return False
 
     self.log("The following consumer subscription has been installed:", 
-             level = logging.INFO)
+             level=logging.INFO)
     self.log("\tHOST:    " + consumer_host, 
-             level = logging.INFO)
+             level=logging.INFO)
     self.log("\tTOPIC:   " + consumer_topic, 
-             level = logging.INFO)
+             level=logging.INFO)
     self.log("\tDIALECT: " + consumer_dialect + "\n", 
-             level = logging.INFO)
+             level=logging.INFO)
 
     return True
 
@@ -310,7 +309,7 @@ class CemonConfiguration(BaseConfiguration):
     result = urlparse.urlsplit(subscription)
     if result[1] == '':
       self.log("Subscription must be a uri, got %s" % subscription,
-               level = logging.ERROR)
+               level=logging.ERROR)
       valid = False
     
     # check to see if host resolves
@@ -319,13 +318,13 @@ class CemonConfiguration(BaseConfiguration):
       server = server.split(':')[0]
     if not validation.valid_domain(server, True):
       self.log("Host in subscription does not resolve: %s" % server,
-               level = logging.ERROR)
+               level=logging.ERROR)
       valid = False
     
     # check to make sure dialect is correct
     if dialect not in ('CLASSAD', 'RAW', 'OLD_CLASSAD'):
       self.log("Dialect for subscription %s is not valid: %s" % (server, dialect),
-               level = logging.ERROR)
+               level=logging.ERROR)
       valid = False
     return valid
 
@@ -359,7 +358,7 @@ class CemonConfiguration(BaseConfiguration):
       group = configuration.get('Site Information', 'group')
     else:
       self.log('No group defined in Site Information, this is required on a CE',
-               level = logging.ERROR)
+               level=logging.ERROR)
       raise exceptions.SettingError('In Site Information, ' \
                                     'group needs to be set')
     if group == 'OSG':

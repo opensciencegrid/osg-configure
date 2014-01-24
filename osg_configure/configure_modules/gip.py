@@ -10,6 +10,7 @@ from osg_configure.modules.configurationbase import BaseConfiguration
 from osg_configure.modules import utilities
 from osg_configure.modules import validation
 
+
 __all__ = ['GipConfiguration']
 
 REQUIRED = "required"
@@ -21,13 +22,13 @@ POSITIVE_FLOAT = "positive float"
 LIST = "list"
 BOOLEAN = "boolean"
 
-OSG_ENTRIES = { \
+OSG_ENTRIES = {
    "Site Information": ["host_name", "site_name", "sponsor", "site_policy",
                         "contact", "email", "city", "longitude", "latitude"],
    "Storage": ["app_dir", "data_dir", "worker_node_temp"],
 }
 
-SC_ENTRIES = { \
+SC_ENTRIES = {
    "name": (REQUIRED, STRING),
    "cpu_vendor": (REQUIRED, STRING),
    "cpu_model": (REQUIRED, STRING),
@@ -45,7 +46,7 @@ SC_ENTRIES = { \
    "cpu_platform": (REQUIRED, STRING),
 }
 
-SC_BANNED_ENTRIES = { \
+SC_BANNED_ENTRIES = {
    "name": "SUBCLUSTER_NAME",
    "node_count": "NUMBER_OF_NODE",
    "ram_mb": "MB_OF_RAM",
@@ -58,7 +59,7 @@ SC_BANNED_ENTRIES = { \
 }
 
 
-SE_ENTRIES = { \
+SE_ENTRIES = {
    "name": (REQUIRED, STRING),
    "unique_name": (OPTIONAL, STRING),
    "srm_endpoint": (REQUIRED, STRING),
@@ -72,9 +73,9 @@ SE_ENTRIES = { \
    "mount_point": (OPTIONAL, LIST),
 }
 
-SE_BANNED_ENTRIES = { \
+SE_BANNED_ENTRIES = {
    "name": "SE_CHANGEME",
-   "srm_endpoint" : "httpg://srm.example.com:8443/srm/v2/server",
+   "srm_endpoint": "httpg://srm.example.com:8443/srm/v2/server",
 }
 
 # Error messages
@@ -114,7 +115,10 @@ class GipConfiguration(BaseConfiguration):
                              'sge',
                              'slurm',
                              'forwarding']
-    self.gip_user = 'tomcat'
+
+    self.gip_cemon_user = 'tomcat'
+    self.gip_infoservices_user = 'gip'
+    self.gip_user = None
     self.log('GipConfiguration.__init__ completed')
     
   def _check_entry(self, config, section, option, status, kind):
@@ -203,6 +207,13 @@ class GipConfiguration(BaseConfiguration):
     
     self.checkConfig(configuration)
 
+    # The following is to set the user that gip files need to belong to
+    # based on whether CEMon or OSG info services are enabled
+    if not self.sectionDisabled(configuration, 'Cemon'):
+        self.gip_user = self.gip_cemon_user
+    elif not self.sectionDisabled(configuration, 'Info Services'):
+        self.gip_user = self.gip_infoservices_user
+
     if configuration.has_option(self.config_section, 'batch'):
       batch_opt = configuration.get(self.config_section, 'batch').lower()
       if (not utilities.blank(batch_opt) and
@@ -211,7 +222,7 @@ class GipConfiguration(BaseConfiguration):
               "(e.g. %s), %s was given" % (self.config_section, 
                                            ",".join(self._valid_batch_opt),
                                            batch_opt)
-        self.log(msg, level = logging.ERROR)
+        self.log(msg, level=logging.ERROR)
         raise exceptions.SettingError(msg)
     
     has_sc = False
@@ -261,9 +272,9 @@ class GipConfiguration(BaseConfiguration):
       if not validation.valid_user(username):
         err_msg = "%s is not a valid account on this system" % username
         self.log(err_msg,
-                 section = self.config_section,
-                 option = 'user',
-                 level = logging.ERROR)
+                 section=self.config_section,
+                 option='user',
+                 level=logging.ERROR)
         raise exceptions.SettingError(err_msg)
       self.gip_user = username
     self.log('GipConfiguration.parseConfiguration completed')
@@ -287,7 +298,7 @@ class GipConfiguration(BaseConfiguration):
                                       "a default or banned entry (%s); " \
                                       "you must change this value." % \
                                       (option, section, SC_BANNED_ENTRIES[option]))      
-      if entry == None:
+      if entry is None:
         continue
       if (option in ['SF00', 'SI00'] ) and \
          (entry < 500 or entry > 5000):
@@ -343,7 +354,7 @@ class GipConfiguration(BaseConfiguration):
                                       "a default or banned entry (%s); " \
                                       "you must change this value." % \
                                       (option, section, SE_BANNED_ENTRIES[option]))
-      if entry == None:
+      if entry is None:
         continue
 
       # Validate the mount point information
@@ -378,7 +389,7 @@ class GipConfiguration(BaseConfiguration):
         vo_list = utilities.get_vos(user_vo_map)
         for vo in entry:
           if vo not in vo_list:
-            msg = "The vo %s is explicity listed in the allowed_vos list in "  % vo
+            msg = "The vo %s is explicitly listed in the allowed_vos list in " % vo
             msg += "section %s, but is not in the list of allowed VOs." % section
             if vo_list:
               msg += "  The list of allowed VOs are: %s." % ', '.join(vo_list)
@@ -404,11 +415,11 @@ class GipConfiguration(BaseConfiguration):
       gip_pwent = pwd.getpwnam(self.gip_user)
     except Exception, e:
       self.log("Couldn't find username %s" % self.gip_user,
-               exception = True,
-               level = logging.ERROR)
+               exception=True,
+               level=logging.ERROR)
       raise exceptions.ConfigureError("Couldn't find username %s: %s" % (self.gip_user, e))
 
-    (gip_uid, gip_gid)  = gip_pwent[2:4]
+    (gip_uid, gip_gid) = gip_pwent[2:4]
     gip_tmpdir = os.path.join('/', 'var', 'tmp', 'gip')
     gip_logdir = os.path.join('/', 'var', 'log', 'gip')
 
@@ -419,26 +430,26 @@ class GipConfiguration(BaseConfiguration):
       if not os.path.isdir(gip_tmpdir):
         self.log("%s is not a directory, " % gip_tmpdir +
                  "please remove it and recreate it as a directory ",
-                 level = logging.ERROR)
+                 level=logging.ERROR)
         raise exceptions.ConfigureError("GIP tmp directory not setup: %s" % gip_tmpdir)
       os.chown(gip_tmpdir, gip_uid, gip_gid)
     except Exception, e:
       self.log("Can't set permissions on " + gip_tmpdir,
-               exception = True,
-               level = logging.ERROR)
+               exception=True,
+               level=logging.ERROR)
       raise exceptions.ConfigureError("Can't set permissions on %s: %s" % (gip_tmpdir, e))
 
     try:
       if not os.path.exists(gip_logdir) or not os.path.isdir(gip_logdir):
         self.log("%s is not present or is not a directory, " % gip_logdir +
                  "gip did not install correctly",
-                 level = logging.ERROR)
+                 level=logging.ERROR)
         raise exceptions.ConfigureError("GIP log directory not setup: %s" % gip_logdir)
       os.chown(gip_logdir, gip_uid, gip_gid)
     except Exception, e:
       self.log("Can't set permissions on " + gip_logdir,
-               exception = True,
-               level = logging.ERROR)
+               exception=True,
+               level=logging.ERROR)
       raise exceptions.ConfigureError("Can't set permissions on %s: %s" % \
                                       (gip_logdir, e))        
 
