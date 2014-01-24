@@ -125,13 +125,13 @@ in your config.ini file."""
                                          required=configfile.Option.OPTIONAL,
                                          default_value='')
           configfile.get_option(configuration, 'PBS', log_option)
-          self.__probe_config['pbs'] = {'log_directory' : log_option.value}
+          self.__probe_config['pbs'] = {'log_directory': log_option.value}
 
           accounting_log_option = configfile.Option(name='accounting_log_directory',
                                                     required=configfile.Option.OPTIONAL,
                                                     default_value='')
           configfile.get_option(configuration, 'PBS', accounting_log_option)
-          self.__probe_config['pbs'] = {'accounting_log_directory' : accounting_log_option.value}
+          self.__probe_config['pbs'] = {'accounting_log_directory': accounting_log_option.value}
         elif probe == 'lsf':
           if BaseConfiguration.sectionDisabled(configuration, 'LSF'):
             # if the LSF jobmanager is disabled, the CE is probably using PBS
@@ -140,7 +140,7 @@ in your config.ini file."""
           lsf_location = configfile.Option(name='lsf_location',
                                            default_value='/usr/bin')
           configfile.get_option(configuration, 'LSF', lsf_location)
-          self.__probe_config['lsf'] = {'lsf_location' : lsf_location.value}
+          self.__probe_config['lsf'] = {'lsf_location': lsf_location.value}
 
           log_option = configfile.Option(name='log_directory',
                                          required=configfile.Option.OPTIONAL,
@@ -614,11 +614,11 @@ in your config.ini file."""
       history_dir = history_dir.strip()
       config_location = GRATIA_CONFIG_FILES['condor']
       contents = file(config_location).read()
-      re_obj = re.compile(r'^(\s*)DataFolder\s*=(.*)\s*$', re.MULTILINE)
+      re_obj = re.compile(r'^(\s*)DataFolder\s*=(.*)\s*$')
       match = re_obj.search(contents)
       if match is not None:
-        if match.group(1) != history_dir:
-          self.log("DataFolder setting in %s and condor PER_JOB_HISTORY_DIR %s"
+        if not os.path.samefile(match.group(1), history_dir):
+          self.log("DataFolder setting in %s and condor PER_JOB_HISTORY_DIR %s "
                    "do not match, these settings must match!" % (config_location,
                                                                  history_dir),
                    level=logging.ERROR)

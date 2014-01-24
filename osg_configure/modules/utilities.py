@@ -129,11 +129,9 @@ def blank(value):
   """Check the value to check to see if it is 'UNAVAILABLE' or blank, return True 
   if that's the case
   """
-  if isinstance(value, types.StringType):
-    if value is None:
-      return True
-    return False
-  
+  if isinstance(value, types.StringType) and value is None:
+    return True
+
   if (value.upper().startswith('UNAVAILABLE') or
       value.upper() == 'DEFAULT' or
       value == "" or

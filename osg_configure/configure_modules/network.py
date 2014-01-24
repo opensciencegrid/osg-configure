@@ -19,22 +19,22 @@ class NetworkConfiguration(BaseConfiguration):
     # pylint: disable-msg=W0142
     super(NetworkConfiguration, self).__init__(*args, **kwargs)
     self.log('NetworkConfiguration.configure started')    
-    self.options = {'source_range' : 
-                      configfile.Option(name = 'source_range',
-                                        default_value = '',
-                                        required = configfile.Option.OPTIONAL),
-                    'source_state_file' : 
-                      configfile.Option(name = 'source_state_file',
-                                        default_value = '',
-                                        required = configfile.Option.OPTIONAL),
-                    'port_range' : 
-                      configfile.Option(name = 'port_range',
-                                        default_value = '',
-                                        required = configfile.Option.OPTIONAL),
-                    'port_state_file' : 
-                      configfile.Option(name = 'port_state_file',
-                                        default_value = '',
-                                        required = configfile.Option.OPTIONAL)}
+    self.options = {'source_range':
+                      configfile.Option(name='source_range',
+                                        default_value='',
+                                        required=configfile.Option.OPTIONAL),
+                    'source_state_file':
+                      configfile.Option(name='source_state_file',
+                                        default_value='',
+                                        required=configfile.Option.OPTIONAL),
+                    'port_range':
+                      configfile.Option(name='port_range',
+                                        default_value='',
+                                        required=configfile.Option.OPTIONAL),
+                    'port_state_file':
+                      configfile.Option(name='port_state_file',
+                                        default_value='',
+                                        required=configfile.Option.OPTIONAL)}
     self.config_section = 'Network'
     self.log('NetworkConfiguration.configure completed')    
       
@@ -70,9 +70,9 @@ class NetworkConfiguration(BaseConfiguration):
       
       if not validation.valid_location(self.options[name].value):
         self.log("File is not present: %s" % self.options[name].value,
-                 option = name,
-                 section = self.config_section,
-                 level = logging.WARNING)
+                 option=name,
+                 section=self.config_section,
+                 level=logging.WARNING)
 
     for name in ['source_range', 'port_range']:
       if utilities.blank(self.options[name].value):
@@ -82,27 +82,27 @@ class NetworkConfiguration(BaseConfiguration):
       if matches is None:
         self.log("Invalid range specification, expected low_port,high_port, " +
                  "got %s" % self.options[name].value,
-                 option = name,
-                 section = self.config_section,
-                 level = logging.ERROR)
+                 option=name,
+                 section=self.config_section,
+                 level=logging.ERROR)
         attributes_ok = False
       
     if (not utilities.blank(self.options['source_state_file'].value) and
       utilities.blank(self.options['source_range'].value)):
       self.log("If you specify a source_state_file, " +
                "source_range must be given",
-               option = 'source_state_file',
-               section = self.config_section,
-               level = logging.ERROR)
+               option='source_state_file',
+               section=self.config_section,
+               level=logging.ERROR)
       attributes_ok = False
         
     if (not utilities.blank(self.options['port_state_file'].value) and
       utilities.blank(self.options['port_range'].value)):
       self.log("If you specify a port_state_file, " +
                "port_range must be given",
-               option = 'port_state_file',
-               section = self.config_section,
-               level = logging.ERROR)
+               option='port_state_file',
+               section=self.config_section,
+               level=logging.ERROR)
       attributes_ok = False
 
     self.log('NetworkConfiguration.checkAttributes completed')        
@@ -145,18 +145,18 @@ class NetworkConfiguration(BaseConfiguration):
     filename = os.path.join('/', 'var', 'lib', 'osg' , 'globus-firewall')
     if not utilities.atomic_write(filename, contents):
       self.log("Error writing to %s" % filename,
-               level = logging.ERROR)
+               level=logging.ERROR)
       status = False
     filename = os.path.join('/', 'etc', 'profile.d', 'osg.sh')
     if not utilities.atomic_write(filename, contents):
       self.log("Error writing to %s" % filename,
-               level = logging.ERROR)
+               level=logging.ERROR)
       status = False
     contents = "#!/bin/csh\n" + header + source_settings_csh + port_settings_csh
     filename = os.path.join('/', 'etc', 'profile.d', 'osg.csh')
     if not utilities.atomic_write(filename, contents):
       self.log("Error writing to %s" % filename,
-               level = logging.ERROR)
+               level=logging.ERROR)
       status = False
         
     self.log("NetworkConfiguration.configure completed")    
