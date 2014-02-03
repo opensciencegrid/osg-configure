@@ -227,9 +227,13 @@ class InfoServicesConfiguration(BaseConfiguration):
     """
     Return a list of  system services needed for module to work
     """
-    if not self.enabled or self.ignored:
-      return set()
-    return set('osg-info-services')
+    # need this since we don't have a separate cemon / infoservices section yet
+    if utilities.rpm_installed('glite-ce-monitor'):
+        return set()
+#    if not self.enabled or self.ignored:
+#      return set()
+
+    return set(['osg-info-services'])
 
 
 
