@@ -410,14 +410,28 @@ class GipConfiguration(BaseConfiguration):
       self.log('Not enabled, exiting...')         
       self.log('GipConfiguration.configure completed')   
       return 
-    
+
     try:
       gip_pwent = pwd.getpwnam(self.gip_user)
-    except Exception, e:
-      self.log("Couldn't find username %s" % self.gip_user,
-               exception=True,
-               level=logging.ERROR)
-      raise exceptions.ConfigureError("Couldn't find username %s: %s" % (self.gip_user, e))
+    except KeyError, e:
+      if self.gip_user != 'tomcat':
+          self.gip_user = 'tomcat'
+            self.log("Couldn't find username %s, trying tomcat" % self.gip_user,
+                     exception=True,
+                     level=logging.WARNING)
+          try:
+            gip_pwent = pwd.getpwnam(self.gip_user)
+          except KeyError, e:
+            self.log("Couldn't find username %s" % self.gip_user,
+                     exception=True,
+                     level=logging.ERROR)
+            raise exceptions.ConfigureError("Couldn't find username %s: %s" % (self.gip_user, e))
+      else:
+        self.log("Couldn't find username %s" % self.gip_user,
+                 exception=True,
+                 level=logging.ERROR)
+        raise exceptions.ConfigureError("Couldn't find username %s: %s" % (self.gip_user, e))
+
 
     (gip_uid, gip_gid) = gip_pwent[2:4]
     gip_tmpdir = os.path.join('/', 'var', 'tmp', 'gip')
