@@ -415,17 +415,17 @@ class GipConfiguration(BaseConfiguration):
       gip_pwent = pwd.getpwnam(self.gip_user)
     except KeyError, e:
       if self.gip_user != 'tomcat':
-          self.gip_user = 'tomcat'
-            self.log("Couldn't find username %s, trying tomcat" % self.gip_user,
-                     exception=True,
-                     level=logging.WARNING)
-          try:
-            gip_pwent = pwd.getpwnam(self.gip_user)
-          except KeyError, e:
-            self.log("Couldn't find username %s" % self.gip_user,
-                     exception=True,
-                     level=logging.ERROR)
-            raise exceptions.ConfigureError("Couldn't find username %s: %s" % (self.gip_user, e))
+        self.gip_user = 'tomcat'
+        self.log("Couldn't find username %s, trying tomcat" % self.gip_user,
+                 exception=True,
+                 level=logging.WARNING)
+        try:
+          gip_pwent = pwd.getpwnam(self.gip_user)
+        except KeyError, e:
+          self.log("Couldn't find username %s" % self.gip_user,
+                   exception=True,
+                   level=logging.ERROR)
+          raise exceptions.ConfigureError("Couldn't find username %s: %s" % (self.gip_user, e))
       else:
         self.log("Couldn't find username %s" % self.gip_user,
                  exception=True,
