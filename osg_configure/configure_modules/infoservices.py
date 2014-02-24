@@ -26,7 +26,7 @@ class InfoServicesConfiguration(BaseConfiguration):
     super(InfoServicesConfiguration, self).__init__(*args, **kwargs)
     self.log("InfoServicesConfiguration.__init__ started")
     # file location for xml file with info services subscriptions
-    self.config_section = 'CEMon'
+    self.config_section = 'Info Services'
     self.options = {'ress_servers': configfile.Option(name = 'ress_servers',
                                                        default_value=''),
                     'bdii_servers': configfile.Option(name = 'bdii_servers',
