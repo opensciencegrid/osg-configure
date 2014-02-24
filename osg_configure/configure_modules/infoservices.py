@@ -217,6 +217,10 @@ class InfoServicesConfiguration(BaseConfiguration):
     elif group == 'OSG-ITB':
       ress_servers = self.__itb_defaults['ress_servers']
       bdii_servers = self.__itb_defaults['bdii_servers']
+    else:
+      self.log('Group must be OSG or OSG-ITB',
+               level=logging.ERROR)
+      raise exceptions.SettingError('In Site Information, group needs to be OSG or OSG-ITB')
 
     self.options['ress_servers'].value = ress_servers
     self.options['bdii_servers'].value = bdii_servers
