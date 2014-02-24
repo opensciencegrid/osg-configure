@@ -209,10 +209,8 @@ class GipConfiguration(BaseConfiguration):
     self.checkConfig(configuration)
 
     # The following is to set the user that gip files need to belong to
-    # based on whether CEMon or OSG info services are enabled
-    # we'll check by checking the release tag in the rpm osg32 ==> use gip
-    # This will change when info services uses the Info Services section
-    self.gip_user = self.get_gip_user(configuration)
+    # This can be overridden by setting the 'user' option in the [GIP] section
+    self.gip_user = 'tomcat'
 
     if configuration.has_option(self.config_section, 'batch'):
       batch_opt = configuration.get(self.config_section, 'batch').lower()
@@ -492,25 +490,3 @@ class GipConfiguration(BaseConfiguration):
     separately
     """
     return True
-  
-  def get_gip_user(self, configuration):
-    """
-    Get the gip user that should own gip output files
-    """
-
-    # For now we'll check the rpm release for osg32, later we'll
-    # check the configuration for a Info Services section
-    trans_set = rpm.TransactionSet()
-    ts_set = trans_set.dbMatch('name', 'osg-configure')
-    if ts_set.count() != 1:
-      self.log("Can't find osg-configure rpm record",
-               level=logging.ERROR)
-      raise exceptions.ConfigureError("Couldn't find rpm record for osg-configure")
-    header = ts_set.next()
-    if 'osg32' in header['release']:
-        return 'gip'
-    else:
-        return 'tomcat'
-
-
-    return user
