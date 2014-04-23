@@ -273,6 +273,7 @@ def fetch_crl():
       'CRL verification failed for',
       'Download error',
       'CRL retrieval for',
+      r'^\s*$',
     ]
     fetch_crl_process = subprocess.Popen([crl_path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     outerr = fetch_crl_process.communicate()[0]
@@ -280,7 +281,12 @@ def fetch_crl():
       sys.stdout.write("fetch-crl script had some errors:\n" + outerr + "\n")
       sys.stdout.flush()
       for line in outerr.rstrip("\n").split("\n"):
-        if line not in error_message_whitelist:
+        found = False
+        for msg in error_message_whitelist:
+          if re.search(msg, line):
+            found = True
+            break
+        if not found:
           return False
       sys.stdout.write("Ignoring errors and continuing\n")
       sys.stdout.flush()
