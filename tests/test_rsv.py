@@ -39,6 +39,19 @@ class TestRSV(unittest.TestCase):
   """
   Unit test class to test RsvConfiguration class
   """
+  def load_settings_from_files(self, *cfgfiles):
+    configuration = ConfigParser.SafeConfigParser()
+    for cfgfile in cfgfiles:
+      configuration.read(get_test_config(cfgfile))
+
+    settings = rsv.RsvConfiguration(logger=global_logger)
+    settings.rsv_meta_dir = RSV_META_DIR
+    try:
+      settings.parseConfiguration(configuration)
+    except Exception, e:
+      self.fail("Received exception while parsing configuration: %s" % e)
+
+    return settings
 
   def testParsing1(self):
     """
@@ -48,17 +61,8 @@ class TestRSV(unittest.TestCase):
     # need to have rsv installed to get rsv tests working
     if not utilities.rpm_installed('rsv-core'):
       return
-    config_file = get_test_config("rsv/rsv1.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
 
-    settings = rsv.RsvConfiguration(logger=global_logger)
-    settings.rsv_meta_dir = RSV_META_DIR 
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e) 
-
+    settings = self.load_settings_from_files("rsv/rsv1.ini")
     options = settings.options
     variables = {'gratia_probes' : 'pbs,metric,condor', 
                  'ce_hosts' : 'my.host.com',
@@ -89,17 +93,8 @@ class TestRSV(unittest.TestCase):
     # need to have rsv installed to get rsv tests working
     if not utilities.rpm_installed('rsv-core'):
       return
-    config_file = get_test_config("rsv/rsv2.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
 
-    settings = rsv.RsvConfiguration(logger=global_logger)
-    settings.rsv_meta_dir = RSV_META_DIR 
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e) 
-
+    settings = self.load_settings_from_files("rsv/rsv2.ini")
     options = settings.options
     variables = {'gratia_probes' : '', 
                  'ce_hosts' : 'my.host.com, my2.host.com',
@@ -130,17 +125,7 @@ class TestRSV(unittest.TestCase):
     # need to have rsv installed to get rsv tests working
     if not utilities.rpm_installed('rsv-core'):
       return
-    config_file = get_test_config("rsv/multiple_hosts.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-
-    settings = rsv.RsvConfiguration(logger=global_logger)
-    settings.rsv_meta_dir = RSV_META_DIR 
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e) 
-
+    settings = self.load_settings_from_files("rsv/multiple_hosts.ini")
     options = settings.options
     variables = {'ce_hosts' : 'host1.site.com, host2.site.com',
                  'gridftp_hosts' : 'host3.site.com, host4.site.com',
@@ -172,17 +157,7 @@ class TestRSV(unittest.TestCase):
     # need to have rsv installed to get rsv tests working
     if not utilities.rpm_installed('rsv-core'):
       return
-    config_file = get_test_config("rsv/ignored.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-
-    settings = rsv.RsvConfiguration(logger=global_logger)
-    settings.rsv_meta_dir = RSV_META_DIR 
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e) 
-
+    settings = self.load_settings_from_files("rsv/ignored.ini")
     attributes = settings.getAttributes()
     self.assertEqual(len(attributes), 0, 
                      "Ignored configuration should have no attributes")
@@ -195,17 +170,7 @@ class TestRSV(unittest.TestCase):
     # need to have rsv installed to get rsv tests working
     if not utilities.rpm_installed('rsv-core'):
       return
-    config_file = get_test_config("rsv/disabled.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-
-    settings = rsv.RsvConfiguration(logger=global_logger)
-    settings.rsv_meta_dir = RSV_META_DIR 
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e) 
-
+    settings = self.load_settings_from_files("rsv/disabled.ini")
     attributes = settings.getAttributes()
     self.assertEqual(len(attributes), 0, 
                      "Disabled configuration should have no attributes")
@@ -253,18 +218,7 @@ class TestRSV(unittest.TestCase):
     # need to have rsv installed to get rsv tests working
     if not utilities.rpm_installed('rsv-core'):
       return
-    config_file = get_test_config("rsv/" \
-                                  "invalid_key.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-  
-    settings = rsv.RsvConfiguration(logger=global_logger)
-    settings.rsv_meta_dir = RSV_META_DIR 
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)    
-
+    settings = self.load_settings_from_files("rsv/invalid_key.ini")
     attributes = settings.getAttributes()
     self.assertFalse(settings.checkAttributes(attributes),
                      "Invalid rsv key file ignored")
@@ -277,18 +231,7 @@ class TestRSV(unittest.TestCase):
     # need to have rsv installed to get rsv tests working
     if not utilities.rpm_installed('rsv-core'):
       return
-    config_file = get_test_config("rsv/" \
-                                  "missing_key.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-  
-    settings = rsv.RsvConfiguration(logger=global_logger)
-    settings.rsv_meta_dir = RSV_META_DIR 
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)    
-
+    settings = self.load_settings_from_files("rsv/missing_key.ini")
     attributes = settings.getAttributes()
     self.assertFalse(settings.checkAttributes(attributes),
                      "Missing rsv key file ignored")
@@ -301,18 +244,7 @@ class TestRSV(unittest.TestCase):
     # need to have rsv installed to get rsv tests working
     if not utilities.rpm_installed('rsv-core'):
       return
-    config_file = get_test_config("rsv/" \
-                                  "invalid_cert.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-  
-    settings = rsv.RsvConfiguration(logger=global_logger)
-    settings.rsv_meta_dir = RSV_META_DIR 
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
-          
+    settings = self.load_settings_from_files("rsv/invalid_cert.ini")
     attributes = settings.getAttributes()
     self.assertFalse(settings.checkAttributes(attributes),
                      "Invalid rsv cert file ignored")
@@ -325,18 +257,7 @@ class TestRSV(unittest.TestCase):
     # need to have rsv installed to get rsv tests working
     if not utilities.rpm_installed('rsv-core'):
       return
-    config_file = get_test_config("rsv/" \
-                                  "missing_cert.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-  
-    settings = rsv.RsvConfiguration(logger=global_logger)
-    settings.rsv_meta_dir = RSV_META_DIR 
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
-          
+    settings = self.load_settings_from_files("rsv/missing_cert.ini")
     attributes = settings.getAttributes()
     self.assertFalse(settings.checkAttributes(attributes),
                      "Missing rsv cert file ignored")
@@ -350,18 +271,7 @@ class TestRSV(unittest.TestCase):
     # need to have rsv installed to get rsv tests working
     if not utilities.rpm_installed('rsv-core'):
       return
-    config_file = get_test_config("rsv/" \
-                                  "invalid_proxy.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-  
-    settings = rsv.RsvConfiguration(logger=global_logger)
-    settings.rsv_meta_dir = RSV_META_DIR 
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
-          
+    settings = self.load_settings_from_files("rsv/invalid_proxy.ini")
     attributes = settings.getAttributes()
     self.assertFalse(settings.checkAttributes(attributes),
                      "Invalid rsv proxy file ignored")
@@ -374,18 +284,7 @@ class TestRSV(unittest.TestCase):
     # need to have rsv installed to get rsv tests working
     if not utilities.rpm_installed('rsv-core'):
       return
-    config_file = get_test_config("rsv/" \
-                                  "missing_proxy.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-  
-    settings = rsv.RsvConfiguration(logger=global_logger)
-    settings.rsv_meta_dir = RSV_META_DIR 
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
-          
+    settings = self.load_settings_from_files("rsv/missing_proxy.ini")
     attributes = settings.getAttributes()
     self.assertFalse(settings.checkAttributes(attributes),
                      "Missing rsv proxy file ignored")
@@ -398,34 +297,12 @@ class TestRSV(unittest.TestCase):
     # need to have rsv installed to get rsv tests working
     if not utilities.rpm_installed('rsv-core'):
       return
-    config_file = get_test_config("rsv/" \
-                                  "invalid_gratia1.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-  
-    settings = rsv.RsvConfiguration(logger=global_logger)
-    settings.rsv_meta_dir = RSV_META_DIR 
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
-    
+    settings = self.load_settings_from_files("rsv/invalid_gratia1.ini")
     attributes = settings.getAttributes()
     self.assertFalse(settings.checkAttributes(attributes),
                      "Invalid gratia probe ignored")
 
-    config_file = get_test_config("rsv/" \
-                                  "invalid_gratia2.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-  
-    settings = rsv.RsvConfiguration(logger=global_logger)
-    settings.rsv_meta_dir = RSV_META_DIR 
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
-    
+    settings = self.load_settings_from_files("rsv/invalid_gratia2.ini")
     attributes = settings.getAttributes()
     self.assertFalse(settings.checkAttributes(attributes),
                      "Invalid gratia probe list ignored")
@@ -438,18 +315,7 @@ class TestRSV(unittest.TestCase):
     # need to have rsv installed to get rsv tests working
     if not utilities.rpm_installed('rsv-core'):
       return
-    config_file = get_test_config("rsv/" \
-                                  "invalid_ce_host.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-  
-    settings = rsv.RsvConfiguration(logger=global_logger)
-    settings.rsv_meta_dir = RSV_META_DIR 
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
-    
+    settings = self.load_settings_from_files("rsv/invalid_ce_host.ini")
     attributes = settings.getAttributes()
     self.assertFalse(settings.checkAttributes(attributes),
                 "Invalid ce  ignored")
@@ -462,18 +328,7 @@ class TestRSV(unittest.TestCase):
     # need to have rsv installed to get rsv tests working
     if not utilities.rpm_installed('rsv-core'):
       return
-    config_file = get_test_config("rsv/" \
-                                  "invalid_gums_host.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-  
-    settings = rsv.RsvConfiguration(logger=global_logger)
-    settings.rsv_meta_dir = RSV_META_DIR 
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
-    
+    settings = self.load_settings_from_files("rsv/invalid_gums_host.ini")
     attributes = settings.getAttributes()
     self.assertFalse(settings.checkAttributes(attributes),
                 "Invalid gums host ignored")
@@ -486,18 +341,7 @@ class TestRSV(unittest.TestCase):
     # need to have rsv installed to get rsv tests working
     if not utilities.rpm_installed('rsv-core'):
       return
-    config_file = get_test_config("rsv/" \
-                                  "invalid_gridftp_host.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-  
-    settings = rsv.RsvConfiguration(logger=global_logger)
-    settings.rsv_meta_dir = RSV_META_DIR 
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
-    
+    settings = self.load_settings_from_files("rsv/invalid_gridftp_host.ini")
     attributes = settings.getAttributes()
     self.assertFalse(settings.checkAttributes(attributes),
                 "Invalid gridftp ignored")
@@ -510,18 +354,7 @@ class TestRSV(unittest.TestCase):
     # need to have rsv installed to get rsv tests working
     if not utilities.rpm_installed('rsv-core'):
       return
-    config_file = get_test_config("rsv/" \
-                                  "invalid_srm_host.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-  
-    settings = rsv.RsvConfiguration(logger=global_logger)
-    settings.rsv_meta_dir = RSV_META_DIR 
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
-    
+    settings = self.load_settings_from_files("rsv/invalid_srm_host.ini")
     attributes = settings.getAttributes()
     self.assertFalse(settings.checkAttributes(attributes),
                 "Invalid srm ignored")
@@ -534,16 +367,7 @@ class TestRSV(unittest.TestCase):
     # need to have rsv installed to get rsv tests working
     if not utilities.rpm_installed('rsv-core'):
       return
-    config_file = get_test_config("rsv/rsv1.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-    settings = rsv.RsvConfiguration(logger=global_logger)
-    settings.rsv_meta_dir = RSV_META_DIR 
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
+    settings = self.load_settings_from_files("rsv/rsv1.ini")
     attributes = settings.getAttributes()
     self.assertTrue(settings.checkAttributes(attributes), 
                     "Correct configuration incorrectly flagged as incorrect")
@@ -555,17 +379,7 @@ class TestRSV(unittest.TestCase):
     # need to have rsv installed to get rsv tests working
     if not utilities.rpm_installed('rsv-core'):
       return
-    config_file = get_test_config("rsv/rsv2.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-
-    settings = rsv.RsvConfiguration(logger=global_logger)
-    settings.rsv_meta_dir = RSV_META_DIR     
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
+    settings = self.load_settings_from_files("rsv/rsv2.ini")
     attributes = settings.getAttributes()
     self.assertTrue(settings.checkAttributes(attributes), 
                     "Correct configuration incorrectly flagged as incorrect")
@@ -575,15 +389,7 @@ class TestRSV(unittest.TestCase):
     Test to make sure right services get returned
     """
     
-    config_file = get_test_config("rsv/rsv1.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-
-    settings = rsv.RsvConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
+    settings = self.load_settings_from_files("rsv/rsv1.ini")
     services = settings.enabledServices()
     expected_services = set(['rsv', 'condor-cron'])
     self.assertEqual(services, expected_services,
@@ -591,36 +397,22 @@ class TestRSV(unittest.TestCase):
                      "got %s but expected %s" % (services, expected_services))
     
     
-    config_file = get_test_config("rsv/disabled.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-
-    settings = rsv.RsvConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
+    settings = self.load_settings_from_files("rsv/disabled.ini")
     services = settings.enabledServices()
     expected_services = set()
     self.assertEqual(services, expected_services,
                      "List of enabled services incorrect, " +
                      "got %s but expected %s" % (services, expected_services))    
 
-    config_file = get_test_config("rsv/ignored.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
-
-    settings = rsv.RsvConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
+    settings = self.load_settings_from_files("rsv/ignored.ini")
     services = settings.enabledServices()
     expected_services = set()
     self.assertEqual(services, expected_services,
                      "List of enabled services incorrect, " +
                      "got %s but expected %s" % (services, expected_services))
-        
+
+
+
 if __name__ == '__main__':
   console = logging.StreamHandler()
   console.setLevel(logging.ERROR)
