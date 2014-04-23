@@ -414,7 +414,7 @@ class RsvConfiguration(BaseConfiguration):
       if not re.search('\.conf$', filename):
         continue
 
-      if filename == "rsv.conf" or filename == "rsv-nagios.conf":
+      if filename in ('rsv.conf', 'rsv-nagios.conf', 'rsv-zabbix.conf'):
         continue
 
       path = os.path.join(parent_dir, filename)
