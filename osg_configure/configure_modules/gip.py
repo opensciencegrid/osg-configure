@@ -4,7 +4,6 @@ import os
 import re
 import pwd
 import logging
-import rpm
 
 from osg_configure.modules import exceptions
 from osg_configure.modules.configurationbase import BaseConfiguration
@@ -117,8 +116,6 @@ class GipConfiguration(BaseConfiguration):
                              'slurm',
                              'forwarding']
 
-    self.gip_cemon_user = 'tomcat'
-    self.gip_infoservices_user = 'gip'
     self.gip_user = None
     self.log('GipConfiguration.__init__ completed')
     
@@ -128,6 +125,7 @@ class GipConfiguration(BaseConfiguration):
     """
     self.log('GipConfiguration._check_entry started')
     has_entry = True
+    entry = None
     try:
       entry = config.get(section, option)
     # pylint: disable-msg=W0703

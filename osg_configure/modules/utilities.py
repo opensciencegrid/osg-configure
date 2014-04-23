@@ -378,10 +378,7 @@ def ce_installed():
   Returns:
   True if osg-ce metapackage rpm is installed, False otherwise
   """
-  trans_set = rpm.TransactionSet()
-  if trans_set.dbMatch('name', 'osg-ce').count() in (1, 2):
-    return True
-  return False
+  return rpm_installed('osg-ce')
 
 
 def rpm_installed(rpm_name=None):

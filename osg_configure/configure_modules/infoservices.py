@@ -1,7 +1,6 @@
 """This module provides a class to handle attributes and configuration
  for OSG info services subscriptions"""
 
-import os
 import re
 import urlparse
 import logging
