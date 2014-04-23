@@ -257,8 +257,6 @@ def fetch_crl():
       crl_path = os.path.join(crl_path, 'fetch-crl')
     elif rpm_installed('fetch-crl3'):
       crl_path = os.path.join(crl_path, 'fetch-crl3')
-      
-                 
     if not validation.valid_file(crl_path):
       sys.stdout.write("Can't find fetch-crl script, skipping fetch-crl invocation\n")
       sys.stdout.flush()
@@ -267,8 +265,25 @@ def fetch_crl():
     sys.stdout.write("Running %s, this process make take " % crl_path +
                      "some time to fetch all the crl updates\n")
     sys.stdout.flush()
-    if not run_script([crl_path]):
-      return False
+
+    # Some CRLs are often problematic; it's better to ignore some errors than to halt configuration. (SOFTWARE-1428)
+    error_message_whitelist = [ # whitelist partially taken from osg-test
+      'CRL has lastUpdate time in the future',
+      'CRL has nextUpdate time in the past',
+      'CRL verification failed for',
+      'Download error',
+      'CRL retrieval for',
+    ]
+    fetch_crl_process = subprocess.Popen([crl_path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    outerr = fetch_crl_process.communicate()[0]
+    if fetch_crl_process.returncode != 0:
+      sys.stdout.write("fetch-crl script had some errors:\n" + outerr + "\n")
+      sys.stdout.flush()
+      for line in outerr.rstrip("\n").split("\n"):
+        if line not in error_message_whitelist:
+          return False
+      sys.stdout.write("Ignoring errors and continuing\n")
+      sys.stdout.flush()
   except IOError:
     return False
   return True
