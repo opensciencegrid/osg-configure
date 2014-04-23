@@ -1,0 +1,32 @@
+#!/bin/env python
+
+from optparse import OptionParser
+import os
+import sys
+import unittest
+
+def read_args():
+    p = OptionParser(usage='usage: %prog [options')
+    p.add_option('-e', '--exclude-test', action='append', metavar='TEST', type='string', dest='excludetest',
+                 help='Exclude specific tests from running')
+
+    return p
+
+if __name__ == '__main__':
+    parser = read_args()
+    (options, args) = parser.parse_args()
+
+    test_dir = '/usr/share/osg-configure/tests'
+    sys.path.append(test_dir)
+
+    test_files = [d[:-3] for d in os.listdir(test_dir)
+                  if d.startswith('test_') and d.endswith('.py')]
+
+    try:
+        test_files = list(set(test_files) - set(options.excludetest))
+    except TypeError:
+        pass # no exclusions specified
+
+    test_suite = unittest.defaultTestLoader.loadTestsFromNames(test_files)
+    unittest.TextTestRunner(stream=sys.stdout, verbosity=2).run(test_suite)
+
