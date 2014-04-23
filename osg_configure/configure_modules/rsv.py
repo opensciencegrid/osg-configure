@@ -36,6 +36,14 @@ class RsvConfiguration(BaseConfiguration):
                       configfile.Option(name = 'ce_hosts',
                                         default_value = '',
                                         required = configfile.Option.OPTIONAL),
+                    'gram_ce_hosts':
+                      configfile.Option(name='gram_ce_hosts',
+                                        default_value='',
+                                        required=configfile.Option.OPTIONAL),
+                    'htcondor_ce_hosts':
+                      configfile.Option(name='htcondor_ce_hosts',
+                                        default_value='',
+                                        required=configfile.Option.OPTIONAL),
                     'gridftp_hosts' : 
                       configfile.Option(name = 'gridftp_hosts',
                                         default_value = '',
@@ -100,6 +108,8 @@ class RsvConfiguration(BaseConfiguration):
 
     self.__rsv_user = "rsv"
     self.__ce_hosts = []
+    self.__gram_ce_hosts = []
+    self.__htcondor_ce_hosts = []
     self.__gridftp_hosts = []
     self.__gums_hosts = []
     self.__srm_hosts = []
@@ -107,12 +117,15 @@ class RsvConfiguration(BaseConfiguration):
     self.__gratia_metric_map = {}
     self.__enable_rsv_downloads = False
     self.__meta = ConfigParser.RawConfigParser()
+    self.__gram_ce_enabled = True
+    self.__htcondor_ce_enabled = False
     self.use_service_cert = True
     self.grid_group = 'OSG'
     self.site_name = 'Generic Site'
     self.config_section = "RSV"
-    self.rsv_control = os.path.join('/', 'usr', 'bin', 'rsv-control')
-    self.rsv_meta_dir = os.path.join('/', 'etc', 'rsv', 'meta', 'metrics')
+    self.rsv_control = '/usr/bin/rsv-control'
+    self.rsv_meta_dir = '/etc/rsv/meta/metrics'
+    self.rsv_conf = '/etc/rsv/rsv.conf'
     self.uid = None
     self.gid = None
     self.log('RsvConfiguration.__init__ completed')
@@ -163,6 +176,8 @@ class RsvConfiguration(BaseConfiguration):
 
     # Parse lists
     self.__ce_hosts = split_list(self.options['ce_hosts'].value)
+    self.__gram_ce_hosts = split_list(self.options['gram_ce_hosts'].value)
+    self.__htcondor_ce_hosts = split_list(self.options['htcondor_ce_hosts'].value)
     self.__gums_hosts = split_list(self.options['gums_hosts'].value)
     self.__srm_hosts = split_list(self.options['srm_hosts'].value)
 
@@ -181,6 +196,14 @@ class RsvConfiguration(BaseConfiguration):
     
     if self.options['gratia_probes'].value != '':
       self.__gratia_probes_2d = self.split_2d_list(self.options['gratia_probes'].value)
+
+    # Check the options for which CE daemons are enabled
+    # How we run remote probes depends on this
+    if configuration.has_section('CE'):
+      if configuration.has_option('CE', 'gram_ce_enabled'):
+        self.__gram_ce_enabled = configuration.getboolean('CE', 'gram_ce_enabled')
+      if configuration.has_option('CE', 'htcondor_ce_enabled'):
+        self.__htcondor_ce_enabled = configuration.getboolean('CE', 'htcondor_ce_enabled')
 
     self.log('RsvConfiguration.parseConfiguration completed')    
   
@@ -214,6 +237,11 @@ class RsvConfiguration(BaseConfiguration):
     attributes_ok &= self.__validate_host_list(self.__ce_hosts, "ce_hosts")
     attributes_ok &= self.__validate_host_list(self.__gums_hosts, "gums_hosts")
     attributes_ok &= self.__validate_host_list(self.__srm_hosts, "srm_hosts")
+    if self.__htcondor_ce_enabled:
+      attributes_ok &= self.__validate_host_list(self.__htcondor_ce_hosts, "htcondor_ce_hosts")
+    if self.__gram_ce_enabled:
+      attributes_ok &= self.__validate_host_list(self.__gram_ce_hosts, "gram_ce_hosts")
+
     attributes_ok &= self.__check_gridftp_settings()
     attributes_ok &= self.__check_srm_settings()
     # check Gratia list
@@ -274,7 +302,9 @@ class RsvConfiguration(BaseConfiguration):
 
     if not self.__check_rsv_files():
       return False
-    
+
+    if not self.__configure_ce_type():
+      return False
     # Setup Apache?  I think this is done in the RPM
 
     # Fix the Gratia ProbeConfig file to point at the appropriate collector
@@ -482,19 +512,33 @@ class RsvConfiguration(BaseConfiguration):
     """
     Enable appropriate CE metrics
     """
+    def _helper(label, metric_type, hosts_var_name, hosts, enabled):
+      if not enabled:
+        self.log("%s disabled.  Not configuring %s metrics" % (label, label))
+        return True
 
-    if not self.__ce_hosts:
-      self.log("No ce_hosts defined.  Not configuring CE metrics")
+      if not hosts:
+        self.log("No %s defined.  Not configuring %s metrics" % (hosts_var_name, label))
+        return True
+
+      metrics = self.__get_metrics_by_type(metric_type)
+
+      for host in hosts:
+        self.log("Enabling %s metrics for host '%s'" % (label, host))
+        if not self.__enable_metrics(host, metrics):
+          return False
+
       return True
 
-    ce_metrics = self.__get_metrics_by_type("OSG-CE")
+    all_ok = True
+    all_ok &= _helper(label='CE', metric_type='OSG-CE', hosts_var_name='ce_hosts',
+                      hosts=self.__ce_hosts, enabled=True)
+    all_ok &= _helper(label='GRAM CE', metric_type='OSG-GRAM-CE', hosts_var_name='gram_ce_hosts',
+                      hosts=self.__gram_ce_hosts, enabled=self.__gram_ce_enabled)
+    all_ok &= _helper(label='HTCondor-CE', metric_type='OSG-HTCondor-CE', hosts_var_name='htcondor_ce_hosts',
+                      hosts=self.__htcondor_ce_hosts, enabled=self.__htcondor_ce_enabled)
 
-    for ce in self.__ce_hosts:
-      self.log("Enabling CE metrics for host '%s'" % ce)
-      if not self.__enable_metrics(ce, ce_metrics):
-        return False
-
-    return True
+    return all_ok
 
 
   def __configure_gridftp_metrics(self):
@@ -797,20 +841,33 @@ class RsvConfiguration(BaseConfiguration):
 
     return ret
 
+  def __read_rsv_conf(self):
+    """ Return a ConfigParser with the contents of the rsv.conf file
+    """
+    config = ConfigParser.RawConfigParser()
+    config.optionxform = str  # rsv.conf is case-sensitive
+
+    if os.path.exists(self.rsv_conf):
+      config.read(self.rsv_conf)
+
+    if not config.has_section('rsv'):
+      config.add_section('rsv')
+
+    return config
+
+  def __write_rsv_conf(self, config):
+    """ Write the contents of a ConfigParser back to the rsv.conf file
+    """
+    config_fp = open(self.rsv_conf, 'w')
+    try:
+      config.write(config_fp)
+    finally:
+      config_fp.close()
 
   def __configure_cert_info(self):
     """ Configure certificate information """
 
-    # Load in the existing configuration file
-    config_file = os.path.join('/', 'etc', 'rsv', 'rsv.conf')
-    config = ConfigParser.RawConfigParser()
-    config.optionxform = str
-
-    if os.path.exists(config_file):
-      config.read(config_file)
-
-    if not config.has_section('rsv'):
-      config.add_section('rsv')
+    config = self.__read_rsv_conf()
 
     # Set the appropriate options in the rsv.conf file
     if self.use_service_cert:
@@ -830,13 +887,26 @@ class RsvConfiguration(BaseConfiguration):
     else:
       config.remove_option('rsv', 'legacy-proxy')
 
-    # Write back to disk
-    config_fp = open(config_file, 'w')
-    config.write(config_fp)
-    config_fp.close()
+    self.__write_rsv_conf(config)
 
     return True
 
+  def __configure_ce_type(self):
+    """ Set the ce-type in rsv.conf, which controls whether Condor-G submits
+    to a GRAM-Gatekeeper or an HTCondor-CE when running remote probes.
+    """
+
+    config = self.__read_rsv_conf()
+
+    # gram preferred over htcondor-ce if both enabled
+    if self.__gram_ce_enabled:
+      config.set('rsv', 'ce-type', 'gram')
+    elif self.__htcondor_ce_enabled:
+      config.set('rsv', 'ce-type', 'htcondor-ce')
+
+    self.__write_rsv_conf(config)
+
+    return True
 
   def __configure_consumers(self):
     """ Enable the appropriate consumers """
