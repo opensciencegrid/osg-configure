@@ -70,7 +70,7 @@ class InfoServicesConfiguration(BaseConfiguration):
       self.log('InfoServicesConfiguration.parseConfiguration completed')
       return True
 
-    if utilities.ce_installed():
+    if utilities.rpm_installed('gip'):
       if (configuration.has_option('Site Information', 'group') and
           configuration.get('Site Information', 'group') == 'OSG-ITB'):
         self.options['ress_servers'].default_value = self.__itb_defaults['ress_servers']
