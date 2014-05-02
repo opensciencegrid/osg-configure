@@ -117,8 +117,8 @@ class RsvConfiguration(BaseConfiguration):
     self.__gratia_metric_map = {}
     self.__enable_rsv_downloads = False
     self.__meta = ConfigParser.RawConfigParser()
-    self.__gram_ce_enabled = True
-    self.__htcondor_ce_enabled = False
+    self.gram_gateway_enabled = True
+    self.htcondor_ce_gateway_enabled = False
     self.use_service_cert = True
     self.grid_group = 'OSG'
     self.site_name = 'Generic Site'
@@ -197,13 +197,13 @@ class RsvConfiguration(BaseConfiguration):
     if self.options['gratia_probes'].value != '':
       self.__gratia_probes_2d = self.split_2d_list(self.options['gratia_probes'].value)
 
-    # Check the options for which CE daemons are enabled
+    # Check the options for which gateways are enabled
     # How we run remote probes depends on this
-    if configuration.has_section('CE'):
-      if configuration.has_option('CE', 'gram_ce_enabled'):
-        self.__gram_ce_enabled = configuration.getboolean('CE', 'gram_ce_enabled')
-      if configuration.has_option('CE', 'htcondor_ce_enabled'):
-        self.__htcondor_ce_enabled = configuration.getboolean('CE', 'htcondor_ce_enabled')
+    if configuration.has_section('Gateway'):
+      if configuration.has_option('Gateway', 'gram_gateway_enabled'):
+        self.gram_gateway_enabled = configuration.getboolean('Gateway', 'gram_gateway_enabled')
+      if configuration.has_option('Gateway', 'htcondor_ce_gateway_enabled'):
+        self.htcondor_ce_gateway_enabled = configuration.getboolean('Gateway', 'htcondor_ce_gateway_enabled')
 
     self.log('RsvConfiguration.parseConfiguration completed')    
   
@@ -237,9 +237,9 @@ class RsvConfiguration(BaseConfiguration):
     attributes_ok &= self.__validate_host_list(self.__ce_hosts, "ce_hosts")
     attributes_ok &= self.__validate_host_list(self.__gums_hosts, "gums_hosts")
     attributes_ok &= self.__validate_host_list(self.__srm_hosts, "srm_hosts")
-    if self.__htcondor_ce_enabled:
+    if self.htcondor_ce_gateway_enabled:
       attributes_ok &= self.__validate_host_list(self.__htcondor_ce_hosts, "htcondor_ce_hosts")
-    if self.__gram_ce_enabled:
+    if self.gram_gateway_enabled:
       attributes_ok &= self.__validate_host_list(self.__gram_ce_hosts, "gram_ce_hosts")
 
     attributes_ok &= self.__check_gridftp_settings()
@@ -512,7 +512,7 @@ class RsvConfiguration(BaseConfiguration):
     """
     Enable appropriate CE metrics
     """
-    def _helper(label, metric_type, hosts_var_name, hosts, enabled):
+    def _set_metrics_for_hosts(label, metric_type, hosts_var_name, hosts, enabled):
       if not enabled:
         self.log("%s disabled.  Not configuring %s metrics" % (label, label))
         return True
@@ -531,12 +531,13 @@ class RsvConfiguration(BaseConfiguration):
       return True
 
     all_ok = True
-    all_ok &= _helper(label='CE', metric_type='OSG-CE', hosts_var_name='ce_hosts',
-                      hosts=self.__ce_hosts, enabled=True)
-    all_ok &= _helper(label='GRAM CE', metric_type='OSG-GRAM-CE', hosts_var_name='gram_ce_hosts',
-                      hosts=self.__gram_ce_hosts, enabled=self.__gram_ce_enabled)
-    all_ok &= _helper(label='HTCondor-CE', metric_type='OSG-HTCondor-CE', hosts_var_name='htcondor_ce_hosts',
-                      hosts=self.__htcondor_ce_hosts, enabled=self.__htcondor_ce_enabled)
+    all_ok &= _set_metrics_for_hosts(label='CE', metric_type='OSG-CE', hosts_var_name='ce_hosts',
+                                     hosts=self.__ce_hosts, enabled=True)
+    all_ok &= _set_metrics_for_hosts(label='GRAM CE', metric_type='OSG-GRAM-CE', hosts_var_name='gram_ce_hosts',
+                                     hosts=self.__gram_ce_hosts, enabled=self.gram_gateway_enabled)
+    all_ok &= _set_metrics_for_hosts(label='HTCondor-CE', metric_type='OSG-HTCondor-CE',
+                                     hosts_var_name='htcondor_ce_hosts', hosts=self.__htcondor_ce_hosts,
+                                     enabled=self.htcondor_ce_gateway_enabled)
 
     return all_ok
 
@@ -899,9 +900,9 @@ class RsvConfiguration(BaseConfiguration):
     config = self.__read_rsv_conf()
 
     # gram preferred over htcondor-ce if both enabled
-    if self.__gram_ce_enabled:
+    if self.gram_gateway_enabled:
       config.set('rsv', 'ce-type', 'gram')
-    elif self.__htcondor_ce_enabled:
+    elif self.htcondor_ce_gateway_enabled:
       config.set('rsv', 'ce-type', 'htcondor-ce')
 
     self.__write_rsv_conf(config)

@@ -20,6 +20,7 @@ class CondorConfiguration(JobManagerConfiguration):
   CONDOR_CONFIG_FILE = '/etc/grid-services/available/jobmanager-condor'
   GRAM_CONFIG_FILE = '/etc/globus/globus-condor.conf'
   HTCONDOR_CE_CONFIG_FILE = '/etc/condor-ce/config.d/50-osg-configure.conf'
+
   def __init__(self, *args, **kwargs):
     # pylint: disable-msg=W0142
     super(CondorConfiguration, self).__init__(*args, **kwargs)
@@ -46,8 +47,8 @@ class CondorConfiguration(JobManagerConfiguration):
                                         opt_type = bool,
                                         default_value = False)}
     self.__set_default = True
-    self.__gram_ce_enabled = True
-    self.__htcondor_ce_enabled = False
+    self.__gram_gateway_enabled = True
+    self.__htcondor_ce_gateway_enabled = False
     self.log('CondorConfiguration.__init__ completed')    
       
   def parseConfiguration(self, configuration):
@@ -84,11 +85,11 @@ class CondorConfiguration(JobManagerConfiguration):
         configuration.getboolean('Managed Fork', 'enabled')):
       self.__set_default = False
 
-    if configuration.has_section('CE'):
-      if configuration.has_option('CE', 'htcondor_ce_enabled'):
-        self.__htcondor_ce_enabled = configuration.getboolean('CE', 'htcondor_ce_enabled')
-      if configuration.has_option('CE', 'gram_ce_enabled'):
-        self.__gram_ce_enabled = configuration.getboolean('CE', 'gram_ce_enabled')
+    if configuration.has_section('Gateway'):
+      if configuration.has_option('Gateway', 'htcondor_ce_gateway_enabled'):
+        self.__htcondor_ce_gateway_enabled = configuration.getboolean('Gateway', 'htcondor_ce_gateway_enabled')
+      if configuration.has_option('Gateway', 'gram_gateway_enabled'):
+        self.__gram_gateway_enabled = configuration.getboolean('Gateway', 'gram_gateway_enabled')
 
     self.log('CondorConfiguration.parseConfiguration completed')
 
@@ -181,18 +182,18 @@ class CondorConfiguration(JobManagerConfiguration):
         self.log('CondorConfiguration.configure completed')
         return False
 
-    if self.__gram_ce_enabled:
+    if self.__gram_gateway_enabled:
       if not self.setupGramConfig():
         self.log('Error writing to ' + CondorConfiguration.GRAM_CONFIG_FILE,
                  level = logging.ERROR)
         return False
-    if self.__htcondor_ce_enabled:
+    if self.__htcondor_ce_gateway_enabled:
       if not self.setupHTCondorCEConfig():
         self.log('Error writing to ' + CondorConfiguration.HTCONDOR_CE_CONFIG_FILE,
                  level=logging.ERROR)
-    if not self.__gram_ce_enabled and not self.__htcondor_ce_enabled:
-      self.log('Neither GRAM nor HTCondor-CE are enabled. In the [CE] section of the configuration, '
-               'set gram_ce_enabled or htcondor_ce_enabled.',
+    if not self.__gram_gateway_enabled and not self.__htcondor_ce_gateway_enabled:
+      self.log('Neither GRAM nor HTCondor-CE are enabled. In the [Gateway] section of the configuration, '
+               'set gram_gateway_enabled or htcondor_ce_gateway_enabled.',
                level=logging.WARNING)
 
     if self.__set_default:
