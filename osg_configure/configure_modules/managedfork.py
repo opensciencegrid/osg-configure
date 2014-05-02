@@ -68,6 +68,8 @@ class ManagedForkConfiguration(JobManagerConfiguration):
     """Try to get configuration information from ConfigParser or SafeConfigParser object given
     by configuration and write recognized settings to attributes dict
     """
+    super(ManagedForkConfiguration, self).parseConfiguration(configuration)
+
     self.log('ManagedForkConfiguration.parseConfiguration started')
 
     self.checkConfig(configuration)
@@ -133,52 +135,53 @@ class ManagedForkConfiguration(JobManagerConfiguration):
       self.log('ManagedForkConfiguration.configure completed')
       return True
 
-    if not self.enabled:
-      self.log('ManagedFork not enabled')
-      if self.section_present:
-        # Only switch job managers if this is a CE configuration
-        self.log('Configuring gatekeeper to use regular fork service')
-        if not self.set_default_jobmanager('fork'):
-          self.log('ManagedForkConfiguration.configure completed')
-          return False 
-      self.log('ManagedForkConfiguration.configure completed')
-      return True
+    if self.gram_gateway_enabled:
+
+      if not self.enabled:
+        self.log('ManagedFork not enabled')
+        if self.section_present:
+          # Only switch job managers if this is a CE configuration
+          self.log('Configuring gatekeeper to use regular fork service')
+          if not self.set_default_jobmanager('fork'):
+            self.log('ManagedForkConfiguration.configure completed')
+            return False
+        self.log('ManagedForkConfiguration.configure completed')
+        return True
 
 
-    self.log("Setting managed fork to be the default jobmanager")
-    if not os.path.exists(ManagedForkConfiguration.MANAGED_FORK_CONFIG_FILE):
-      err_mesg = "Configuration files from globus-gram-job-manager-managedfork "\
-                 "rpm not present, is it installed?\n"
-      self.log(err_mesg,
-               level = logging.ERROR)
-      self.log('ManagedForkConfiguration.configure completed')
-      return False
-
-    
-    # The accept_limited argument was added for Steve Timm.  We are not adding
-    # it to the default config.ini template because we do not think it is
-    # useful to a wider audience.
-    # See VDT RT ticket 7757 for more information.
-    if self.options['accept_limited'].value:
-      if not self.enable_accept_limited(ManagedForkConfiguration.MANAGED_FORK_CONFIG_FILE):
-        self.log('Error writing to ' + 
-                 ManagedForkConfiguration.MANAGED_FORK_CONFIG_FILE, 
+      self.log("Setting managed fork to be the default jobmanager")
+      if not os.path.exists(ManagedForkConfiguration.MANAGED_FORK_CONFIG_FILE):
+        err_mesg = "Configuration files from globus-gram-job-manager-managedfork "\
+                   "rpm not present, is it installed?\n"
+        self.log(err_mesg,
                  level = logging.ERROR)
         self.log('ManagedForkConfiguration.configure completed')
         return False
-    else:
-      if not self.disable_accept_limited(ManagedForkConfiguration.MANAGED_FORK_CONFIG_FILE):
-        self.log('Error writing to ' + 
-                 ManagedForkConfiguration.MANAGED_FORK_CONFIG_FILE, 
+
+      # The accept_limited argument was added for Steve Timm.  We are not adding
+      # it to the default config.ini template because we do not think it is
+      # useful to a wider audience.
+      # See VDT RT ticket 7757 for more information.
+      if self.options['accept_limited'].value:
+        if not self.enable_accept_limited(ManagedForkConfiguration.MANAGED_FORK_CONFIG_FILE):
+          self.log('Error writing to ' +
+                   ManagedForkConfiguration.MANAGED_FORK_CONFIG_FILE,
+                   level = logging.ERROR)
+          self.log('ManagedForkConfiguration.configure completed')
+          return False
+      else:
+        if not self.disable_accept_limited(ManagedForkConfiguration.MANAGED_FORK_CONFIG_FILE):
+          self.log('Error writing to ' +
+                   ManagedForkConfiguration.MANAGED_FORK_CONFIG_FILE,
+                   level = logging.ERROR)
+          self.log('ManagedForkConfiguration.configure completed')
+          return False
+
+      if not self.set_default_jobmanager('managed-fork'):
+        self.log("Could not set the jobmanager-managedfork to the default jobmanager",
                  level = logging.ERROR)
         self.log('ManagedForkConfiguration.configure completed')
-        return False      
-
-    if not self.set_default_jobmanager('managed-fork'):
-      self.log("Could not set the jobmanager-managedfork to the default jobmanager",
-               level = logging.ERROR)
-      self.log('ManagedForkConfiguration.configure completed')
-      return False
+        return False
 
     self.log('ManagedForkConfiguration.configure completed')
     return True
@@ -220,5 +223,5 @@ class ManagedForkConfiguration(JobManagerConfiguration):
     if not self.enabled or self.ignored:
       return set()
 
-    return set(['condor'])
+    return set(['condor']).union(self.gatewayServices())
   

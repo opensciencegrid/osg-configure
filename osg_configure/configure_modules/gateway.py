@@ -24,8 +24,8 @@ class GatewayConfiguration(BaseConfiguration):
                                         required=configfile.Option.OPTIONAL,
                                         opt_type=bool,
                                         default_value=False)}
-    self.__gram_gateway_enabled = True
-    self.__htcondor_ce_gateway_enabled = False
+    self.gram_gateway_enabled = True
+    self.htcondor_ce_gateway_enabled = False
     self.config_section = "Gateway"
     self.log('GatewayConfiguration.__init__ completed')
 
@@ -44,18 +44,12 @@ class GatewayConfiguration(BaseConfiguration):
 
     self.getOptions(configuration)
 
-    self.__gram_gateway_enabled = self.options['gram_gateway_enabled'].value
-    self.__htcondor_ce_gateway_enabled = self.options['htcondor_ce_gateway_enabled'].value
+    self.gram_gateway_enabled = self.options['gram_gateway_enabled'].value
+    self.htcondor_ce_gateway_enabled = self.options['htcondor_ce_gateway_enabled'].value
     self.log('GatewayConfiguration.parseConfiguration completed')
 
-  def enabledServices(self):
-    """Return set of services for module to work"""
-    services = set()
-    if self.__gram_gateway_enabled:
-      services.add('globus-gatekeeper')
-    if self.__htcondor_ce_gateway_enabled:
-      services.add('condor-ce')
-    return services
+  # Not overriding enabledServices -- only job manager modules need the gateways enabled
+  #def enabledServices(self):
 
   # Not overriding checkAttributes -- all attributes are independent.
   #def checkAttributes(self, attributes):
@@ -75,7 +69,7 @@ class GatewayConfiguration(BaseConfiguration):
 
   def separatelyConfigurable(self):
     """A boolean that indicates whether this module can be configured separately"""
-    return True
+    return False
 
   def parseSections(self):
     """A list of the sections from the configuration file that this module handles"""

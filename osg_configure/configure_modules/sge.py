@@ -78,7 +78,9 @@ class SGEConfiguration(JobManagerConfiguration):
     """Try to get configuration information from ConfigParser or SafeConfigParser object given
     by configuration and write recognized settings to attributes dict
     """
-    self.log('SGEConfiguration.parseConfiguration started')    
+    super(SGEConfiguration, self).parseConfiguration(configuration)
+
+    self.log('SGEConfiguration.parseConfiguration started')
 
     self.checkConfig(configuration)
 
@@ -121,7 +123,7 @@ class SGEConfiguration(JobManagerConfiguration):
         configuration.has_option('Managed Fork', 'enabled') and
         configuration.getboolean('Managed Fork', 'enabled')):
       self.__set_default = False
-   
+
     self.log('SGEConfiguration.parseConfiguration completed')    
   
 # pylint: disable-msg=W0613
@@ -215,36 +217,38 @@ class SGEConfiguration(JobManagerConfiguration):
       self.log('SGEConfiguration.configure completed')    
       return True
 
-    # The accept_limited argument was added for Steve Timm.  We are not adding
-    # it to the default config.ini template because we do not think it is
-    # useful to a wider audience.
-    # See VDT RT ticket 7757 for more information.
-    if self.options['accept_limited'].value:
-      if not self.enable_accept_limited(SGEConfiguration.SGE_CONFIG_FILE):
-        self.log('Error writing to ' + SGEConfiguration.SGE_CONFIG_FILE, 
+    if self.gram_gateway_enabled:
+
+      # The accept_limited argument was added for Steve Timm.  We are not adding
+      # it to the default config.ini template because we do not think it is
+      # useful to a wider audience.
+      # See VDT RT ticket 7757 for more information.
+      if self.options['accept_limited'].value:
+        if not self.enable_accept_limited(SGEConfiguration.SGE_CONFIG_FILE):
+          self.log('Error writing to ' + SGEConfiguration.SGE_CONFIG_FILE,
+                   level = logging.ERROR)
+          self.log('SGEConfiguration.configure completed')
+          return False
+      else:
+        if not self.disable_accept_limited(SGEConfiguration.SGE_CONFIG_FILE):
+          self.log('Error writing to ' + SGEConfiguration.SGE_CONFIG_FILE,
+                   level = logging.ERROR)
+          self.log('SGEConfiguration.configure completed')
+          return False
+
+      if self.options['seg_enabled'].value:
+        self.enable_seg('sge', SGEConfiguration.SGE_CONFIG_FILE)
+      else:
+        self.disable_seg('sge', SGEConfiguration.SGE_CONFIG_FILE)
+
+      if not self.setupGramConfig():
+        self.log('Error writing to ' + SGEConfiguration.GRAM_CONFIG_FILE,
                  level = logging.ERROR)
-        self.log('SGEConfiguration.configure completed')
-        return False
-    else:
-      if not self.disable_accept_limited(SGEConfiguration.SGE_CONFIG_FILE):
-        self.log('Error writing to ' + SGEConfiguration.SGE_CONFIG_FILE, 
-                 level = logging.ERROR)
-        self.log('SGEConfiguration.configure completed')
         return False
 
-    if self.options['seg_enabled'].value:
-      self.enable_seg('sge', SGEConfiguration.SGE_CONFIG_FILE)
-    else:
-      self.disable_seg('sge', SGEConfiguration.SGE_CONFIG_FILE)
-
-    if not self.setupGramConfig():
-      self.log('Error writing to ' + SGEConfiguration.GRAM_CONFIG_FILE,
-               level = logging.ERROR)
-      return False
-
-    if self.__set_default:
-      self.log('Configuring gatekeeper to use regular fork service')
-      self.set_default_jobmanager('fork')
+      if self.__set_default:
+        self.log('Configuring gatekeeper to use regular fork service')
+        self.set_default_jobmanager('fork')
     
     self.log('SGEConfiguration.configure started')    
     return True
@@ -365,6 +369,7 @@ class SGEConfiguration(JobManagerConfiguration):
       return set()
         
     services = set(['globus-gridftp-server'])
+    services.update(self.gatewayServices())
     if self.options['seg_enabled'].value:
       services.add('globus-scheduler-event-generator')
       services.add('globus-gatekeeper')

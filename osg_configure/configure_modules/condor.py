@@ -47,15 +47,15 @@ class CondorConfiguration(JobManagerConfiguration):
                                         opt_type = bool,
                                         default_value = False)}
     self.__set_default = True
-    self.__gram_gateway_enabled = True
-    self.__htcondor_ce_gateway_enabled = False
-    self.log('CondorConfiguration.__init__ completed')    
+    self.log('CondorConfiguration.__init__ completed')
       
   def parseConfiguration(self, configuration):
     """
     Try to get configuration information from ConfigParser or SafeConfigParser object given
     by configuration and write recognized settings to attributes dict
     """
+    super(CondorConfiguration, self).parseConfiguration(configuration)
+
     self.log('CondorConfiguration.parseConfiguration started')
 
     self.checkConfig(configuration)
@@ -84,12 +84,6 @@ class CondorConfiguration(JobManagerConfiguration):
         configuration.has_option('Managed Fork', 'enabled') and
         configuration.getboolean('Managed Fork', 'enabled')):
       self.__set_default = False
-
-    if configuration.has_section('Gateway'):
-      if configuration.has_option('Gateway', 'htcondor_ce_gateway_enabled'):
-        self.__htcondor_ce_gateway_enabled = configuration.getboolean('Gateway', 'htcondor_ce_gateway_enabled')
-      if configuration.has_option('Gateway', 'gram_gateway_enabled'):
-        self.__gram_gateway_enabled = configuration.getboolean('Gateway', 'gram_gateway_enabled')
 
     self.log('CondorConfiguration.parseConfiguration completed')
 
@@ -165,41 +159,39 @@ class CondorConfiguration(JobManagerConfiguration):
       self.log('CondorConfiguration.configure completed')
       return True
             
-    # The accept_limited argument was added for Steve Timm.  We are not adding
-    # it to the default config.ini template because we do not think it is
-    # useful to a wider audience.
-    # See VDT RT ticket 7757 for more information.
-    if self.options['accept_limited'].value:
-      if not self.enable_accept_limited(CondorConfiguration.CONDOR_CONFIG_FILE):
-        self.log('Error writing to ' + CondorConfiguration.CONDOR_CONFIG_FILE,
-                 level = logging.ERROR)
-        self.log('CondorConfiguration.configure completed')
-        return False
-    else:
-      if not self.disable_accept_limited(CondorConfiguration.CONDOR_CONFIG_FILE):
-        self.log('Error writing to ' + CondorConfiguration.CONDOR_CONFIG_FILE,
-                 level = logging.ERROR)
-        self.log('CondorConfiguration.configure completed')
-        return False
+    if self.gram_gateway_enabled:
 
-    if self.__gram_gateway_enabled:
+      # The accept_limited argument was added for Steve Timm.  We are not adding
+      # it to the default config.ini template because we do not think it is
+      # useful to a wider audience.
+      # See VDT RT ticket 7757 for more information.
+      if self.options['accept_limited'].value:
+        if not self.enable_accept_limited(CondorConfiguration.CONDOR_CONFIG_FILE):
+          self.log('Error writing to ' + CondorConfiguration.CONDOR_CONFIG_FILE,
+                   level = logging.ERROR)
+          self.log('CondorConfiguration.configure completed')
+          return False
+      else:
+        if not self.disable_accept_limited(CondorConfiguration.CONDOR_CONFIG_FILE):
+          self.log('Error writing to ' + CondorConfiguration.CONDOR_CONFIG_FILE,
+                   level = logging.ERROR)
+          self.log('CondorConfiguration.configure completed')
+          return False
+
       if not self.setupGramConfig():
         self.log('Error writing to ' + CondorConfiguration.GRAM_CONFIG_FILE,
                  level = logging.ERROR)
         return False
-    if self.__htcondor_ce_gateway_enabled:
+      if self.__set_default:
+        self.log('Configuring gatekeeper to use regular fork service')
+        self.set_default_jobmanager('fork')
+
+    if self.htcondor_ce_gateway_enabled:
       if not self.setupHTCondorCEConfig():
         self.log('Error writing to ' + CondorConfiguration.HTCONDOR_CE_CONFIG_FILE,
                  level=logging.ERROR)
-    if not self.__gram_gateway_enabled and not self.__htcondor_ce_gateway_enabled:
-      self.log('Neither GRAM nor HTCondor-CE are enabled. In the [Gateway] section of the configuration, '
-               'set gram_gateway_enabled or htcondor_ce_gateway_enabled.',
-               level=logging.WARNING)
+        return False
 
-    if self.__set_default:
-      self.log('Configuring gatekeeper to use regular fork service')
-      self.set_default_jobmanager('fork')
-      
     self.log('CondorConfiguration.configure completed')
     return True    
     
@@ -265,7 +257,8 @@ class CondorConfiguration(JobManagerConfiguration):
     Returns True if successful, False otherwise
     """
     if not utilities.rpm_installed('htcondor-ce'):
-      return True # Nothing to configure.
+      self.log("Unable to configure htcondor-ce for Condor: htcondor-ce not installed", level=logging.ERROR)
+      return False
 
     def _add_or_replace(variable, new_value):
       """
@@ -325,9 +318,9 @@ class CondorConfiguration(JobManagerConfiguration):
     return location.value
     
   def enabledServices(self):
-    """Return a list of  system services needed for module to work
+    """Return a list of system services needed for module to work
     """
     if not self.enabled or self.ignored:
       return set()
-        
-    return set(['globus-gridftp-server'])
+
+    return set(['globus-gridftp-server']).union(self.gatewayServices())

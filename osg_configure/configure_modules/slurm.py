@@ -79,6 +79,8 @@ class SlurmConfiguration(JobManagerConfiguration):
     """Try to get configuration information from ConfigParser or SafeConfigParser object given
     by configuration and write recognized settings to attributes dict
     """
+    super(SlurmConfiguration, self).parseConfiguration(configuration)
+
     self.log('SlurmConfiguration.parseConfiguration started')    
 
     self.checkConfig(configuration)
@@ -168,7 +170,7 @@ class SlurmConfiguration(JobManagerConfiguration):
     self.log('SlurmConfiguration.configure started')
 
     if not self.enabled:
-      self.log('PBS not enabled, returning True')
+      self.log('Slurm not enabled, returning True')
       self.log('SlurmConfiguration.configure completed')    
       return True
 
@@ -178,39 +180,41 @@ class SlurmConfiguration(JobManagerConfiguration):
       self.log('SlurmConfiguration.configure completed')    
       return True
 
-    # The accept_limited argument was added for Steve Timm.  We are not adding
-    # it to the default config.ini template because we do not think it is
-    # useful to a wider audience.
-    # See VDT RT ticket 7757 for more information.
-    if self.options['accept_limited'].value:
-      if not self.enable_accept_limited(SlurmConfiguration.SLURM_CONFIG_FILE):
-        self.log('Error writing to ' + SlurmConfiguration.SLURM_CONFIG_FILE, 
+    if self.gram_gateway_enabled:
+
+      # The accept_limited argument was added for Steve Timm.  We are not adding
+      # it to the default config.ini template because we do not think it is
+      # useful to a wider audience.
+      # See VDT RT ticket 7757 for more information.
+      if self.options['accept_limited'].value:
+        if not self.enable_accept_limited(SlurmConfiguration.SLURM_CONFIG_FILE):
+          self.log('Error writing to ' + SlurmConfiguration.SLURM_CONFIG_FILE,
+                   level = logging.ERROR)
+          self.log('SlurmConfiguration.configure completed')
+          return False
+      else:
+        if not self.disable_accept_limited(SlurmConfiguration.SLURM_CONFIG_FILE):
+          self.log('Error writing to ' + SlurmConfiguration.SLURM_CONFIG_FILE,
+                   level = logging.ERROR)
+          self.log('SlurmConfiguration.configure completed')
+          return False
+
+  #    self.disable_seg('pbs', SlurmConfiguration.SLURM_CONFIG_FILE)
+  #    if self.options['seg_enabled'].value:
+  #      self.enable_seg('pbs', SlurmConfiguration.SLURM_CONFIG_FILE)
+  #    else:
+  #      self.disable_seg('pbs', SlurmConfiguration.SLURM_CONFIG_FILE)
+
+      # make sure the SEG is disabled
+      self.disable_seg('pbs', SlurmConfiguration.SLURM_CONFIG_FILE)
+      if not self.setupGramConfig():
+        self.log('Error writing to ' + SlurmConfiguration.GRAM_CONFIG_FILE,
                  level = logging.ERROR)
-        self.log('SlurmConfiguration.configure completed')
-        return False
-    else:
-      if not self.disable_accept_limited(SlurmConfiguration.SLURM_CONFIG_FILE):
-        self.log('Error writing to ' + SlurmConfiguration.SLURM_CONFIG_FILE, 
-                 level = logging.ERROR)
-        self.log('SlurmConfiguration.configure completed')
         return False
 
-#    self.disable_seg('pbs', SlurmConfiguration.SLURM_CONFIG_FILE)      
-#    if self.options['seg_enabled'].value:
-#      self.enable_seg('pbs', SlurmConfiguration.SLURM_CONFIG_FILE)
-#    else:
-#      self.disable_seg('pbs', SlurmConfiguration.SLURM_CONFIG_FILE)
-    
-    # make sure the SEG is disabled
-    self.disable_seg('pbs', SlurmConfiguration.SLURM_CONFIG_FILE)
-    if not self.setupGramConfig():
-      self.log('Error writing to ' + SlurmConfiguration.GRAM_CONFIG_FILE,
-               level = logging.ERROR)
-      return False
-    
-    if self.__set_default:
-      self.log('Configuring gatekeeper to use regular fork service')
-      self.set_default_jobmanager('fork')
+      if self.__set_default:
+        self.log('Configuring gatekeeper to use regular fork service')
+        self.set_default_jobmanager('fork')
 
     self.log('SlurmConfiguration.configure completed')    
     return True
@@ -274,9 +278,8 @@ class SlurmConfiguration(JobManagerConfiguration):
     
     if not self.enabled or self.ignored:
       return set()
-        
-    services = set(['globus-gridftp-server'])
-    return services    
+
+    return set(['globus-gridftp-server']).union(self.gatewayServices())
 
   def getDBHost(self):
     """

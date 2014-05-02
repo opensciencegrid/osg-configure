@@ -59,6 +59,8 @@ class LSFConfiguration(JobManagerConfiguration):
     """Try to get configuration information from ConfigParser or SafeConfigParser object given
     by configuration and write recognized settings to attributes dict
     """
+    super(LSFConfiguration, self).parseConfiguration(configuration)
+
     self.log('LSFConfiguration.parseConfiguration started')    
 
     self.checkConfig(configuration)
@@ -164,39 +166,42 @@ class LSFConfiguration(JobManagerConfiguration):
       self.log('LSFConfiguration.configure completed')    
       return True
 
-    # The accept_limited argument was added for Steve Timm.  We are not adding
-    # it to the default config.ini template because we do not think it is
-    # useful to a wider audience.
-    # See VDT RT ticket 7757 for more information.
-    if self.options['accept_limited'].value:
-      if not self.enable_accept_limited(LSFConfiguration.LSF_CONFIG_FILE):
-        self.log('Error writing to ' + LSFConfiguration.LSF_CONFIG_FILE, 
+    if self.gram_gateway_enabled:
+
+      # The accept_limited argument was added for Steve Timm.  We are not adding
+      # it to the default config.ini template because we do not think it is
+      # useful to a wider audience.
+      # See VDT RT ticket 7757 for more information.
+      if self.options['accept_limited'].value:
+        if not self.enable_accept_limited(LSFConfiguration.LSF_CONFIG_FILE):
+          self.log('Error writing to ' + LSFConfiguration.LSF_CONFIG_FILE,
+                   level = logging.ERROR)
+          self.log('LSFConfiguration.configure completed')
+          return False
+      elif self.options['accept_limited'].value:
+        if not self.disable_accept_limited(LSFConfiguration.LSF_CONFIG_FILE):
+          self.log('Error writing to ' + LSFConfiguration.LSF_CONFIG_FILE,
+                   level = logging.ERROR)
+          self.log('LSFConfiguration.configure completed')
+          return False
+
+      if not self.options['seg_enabled'].value:
+        self.log("SEG must be enabled for LSF jobmanager",
+                  option = 'seg_enabled',
+                  section = self.config_section,
+                  level = logging.ERROR)
+      self.enable_seg('lsf', LSFConfiguration.LSF_CONFIG_FILE)
+
+      if not self.setupGramConfig():
+        self.log('Error writing to ' + LSFConfiguration.GRAM_CONFIG_FILE,
                  level = logging.ERROR)
-        self.log('LSFConfiguration.configure completed')
-        return False
-    elif self.options['accept_limited'].value:
-      if not self.disable_accept_limited(LSFConfiguration.LSF_CONFIG_FILE):
-        self.log('Error writing to ' + LSFConfiguration.LSF_CONFIG_FILE, 
-                 level = logging.ERROR)
-        self.log('LSFConfiguration.configure completed')
         return False
 
-    if not self.options['seg_enabled'].value:
-      self.log("SEG must be enabled for LSF jobmanager",
-                option = 'seg_enabled',
-                section = self.config_section,
-                level = logging.ERROR)
-    self.enable_seg('lsf', LSFConfiguration.LSF_CONFIG_FILE)
-    if not self.setupGramConfig():
-      self.log('Error writing to ' + LSFConfiguration.GRAM_CONFIG_FILE,
-               level = logging.ERROR)
-      return False
+      if self.__set_default:
+        self.log('Configuring gatekeeper to use regular fork service')
+        self.set_default_jobmanager('fork')
 
-    if self.__set_default:
-      self.log('Configuring gatekeeper to use regular fork service')
-      self.set_default_jobmanager('fork')
-
-    self.log('LSFConfiguration.configure started')    
+    self.log('LSFConfiguration.configure completed')
     return True
   
   def moduleName(self):
@@ -312,6 +317,7 @@ class LSFConfiguration(JobManagerConfiguration):
       return set()
     
     services = set(['globus-gridftp-server'])
+    services.update(self.gatewayServices())
     if self.options['seg_enabled'].value:
       services.add('globus-scheduler-event-generator')
       services.add('globus-gatekeeper')
