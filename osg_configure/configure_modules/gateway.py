@@ -19,13 +19,13 @@ class GatewayConfiguration(BaseConfiguration):
                                         required=configfile.Option.OPTIONAL,
                                         opt_type=bool,
                                         default_value=True),
-                    'htcondor_ce_gateway_enabled':
-                      configfile.Option(name='htcondor_ce_gateway_enabled',
+                    'htcondor_gateway_enabled':
+                      configfile.Option(name='htcondor_gateway_enabled',
                                         required=configfile.Option.OPTIONAL,
                                         opt_type=bool,
                                         default_value=False)}
     self.gram_gateway_enabled = True
-    self.htcondor_ce_gateway_enabled = False
+    self.htcondor_gateway_enabled = False
     self.config_section = "Gateway"
     self.log('GatewayConfiguration.__init__ completed')
 
@@ -45,7 +45,7 @@ class GatewayConfiguration(BaseConfiguration):
     self.getOptions(configuration)
 
     self.gram_gateway_enabled = self.options['gram_gateway_enabled'].value
-    self.htcondor_ce_gateway_enabled = self.options['htcondor_ce_gateway_enabled'].value
+    self.htcondor_gateway_enabled = self.options['htcondor_gateway_enabled'].value
     self.log('GatewayConfiguration.parseConfiguration completed')
 
   # Not overriding enabledServices -- only job manager modules need the gateways enabled

@@ -44,7 +44,7 @@ class TestGateway(unittest.TestCase):
 
     options = settings.options
     variables = {'gram_gateway_enabled': True,
-                 'htcondor_ce_gateway_enabled': False}
+                 'htcondor_gateway_enabled': False}
     for var in variables:
       self.assertTrue(options.has_key(var),
                       "Option %s missing" % var)

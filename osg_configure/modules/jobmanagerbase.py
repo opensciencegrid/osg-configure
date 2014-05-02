@@ -20,21 +20,21 @@ class JobManagerConfiguration(BaseConfiguration):
     self.lrms = ['pbs', 'sge', 'lsf', 'condor']
     self.seg_admin_path = '/usr/sbin/globus-scheduler-event-generator-admin'
     self.gram_gateway_enabled = True
-    self.htcondor_ce_gateway_enabled = False
+    self.htcondor_gateway_enabled = False
 
   def parseConfiguration(self, configuration):
     super(JobManagerConfiguration, self).parseConfiguration(configuration)
     self.log('JobManagerConfiguration.parseConfiguration started')
     if configuration.has_section('Gateway'):
-      if configuration.has_option('Gateway', 'htcondor_ce_gateway_enabled'):
-        self.htcondor_ce_gateway_enabled = configuration.getboolean('Gateway', 'htcondor_ce_gateway_enabled')
+      if configuration.has_option('Gateway', 'htcondor_gateway_enabled'):
+        self.htcondor_gateway_enabled = configuration.getboolean('Gateway', 'htcondor_gateway_enabled')
       if configuration.has_option('Gateway', 'gram_gateway_enabled'):
         self.gram_gateway_enabled = configuration.getboolean('Gateway', 'gram_gateway_enabled')
     self.log('JobManagerConfiguration.parseConfiguration completed')
 
   def gatewayServices(self):
     services = set([])
-    if self.htcondor_ce_gateway_enabled:
+    if self.htcondor_gateway_enabled:
       services.add('condor-ce')
     if self.gram_gateway_enabled:
       services.add('globus-gatekeeper')

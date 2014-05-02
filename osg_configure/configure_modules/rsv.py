@@ -118,7 +118,7 @@ class RsvConfiguration(BaseConfiguration):
     self.__enable_rsv_downloads = False
     self.__meta = ConfigParser.RawConfigParser()
     self.gram_gateway_enabled = True
-    self.htcondor_ce_gateway_enabled = False
+    self.htcondor_gateway_enabled = False
     self.use_service_cert = True
     self.grid_group = 'OSG'
     self.site_name = 'Generic Site'
@@ -202,8 +202,8 @@ class RsvConfiguration(BaseConfiguration):
     if configuration.has_section('Gateway'):
       if configuration.has_option('Gateway', 'gram_gateway_enabled'):
         self.gram_gateway_enabled = configuration.getboolean('Gateway', 'gram_gateway_enabled')
-      if configuration.has_option('Gateway', 'htcondor_ce_gateway_enabled'):
-        self.htcondor_ce_gateway_enabled = configuration.getboolean('Gateway', 'htcondor_ce_gateway_enabled')
+      if configuration.has_option('Gateway', 'htcondor_gateway_enabled'):
+        self.htcondor_gateway_enabled = configuration.getboolean('Gateway', 'htcondor_gateway_enabled')
 
     self.log('RsvConfiguration.parseConfiguration completed')    
   
@@ -237,7 +237,7 @@ class RsvConfiguration(BaseConfiguration):
     attributes_ok &= self.__validate_host_list(self.__ce_hosts, "ce_hosts")
     attributes_ok &= self.__validate_host_list(self.__gums_hosts, "gums_hosts")
     attributes_ok &= self.__validate_host_list(self.__srm_hosts, "srm_hosts")
-    if self.htcondor_ce_gateway_enabled:
+    if self.htcondor_gateway_enabled:
       attributes_ok &= self.__validate_host_list(self.__htcondor_ce_hosts, "htcondor_ce_hosts")
     if self.gram_gateway_enabled:
       attributes_ok &= self.__validate_host_list(self.__gram_ce_hosts, "gram_ce_hosts")
@@ -537,7 +537,7 @@ class RsvConfiguration(BaseConfiguration):
                                      hosts=self.__gram_ce_hosts, enabled=self.gram_gateway_enabled)
     all_ok &= _set_metrics_for_hosts(label='HTCondor-CE', metric_type='OSG-HTCondor-CE',
                                      hosts_var_name='htcondor_ce_hosts', hosts=self.__htcondor_ce_hosts,
-                                     enabled=self.htcondor_ce_gateway_enabled)
+                                     enabled=self.htcondor_gateway_enabled)
 
     return all_ok
 
@@ -902,7 +902,7 @@ class RsvConfiguration(BaseConfiguration):
     # gram preferred over htcondor-ce if both enabled
     if self.gram_gateway_enabled:
       config.set('rsv', 'ce-type', 'gram')
-    elif self.htcondor_ce_gateway_enabled:
+    elif self.htcondor_gateway_enabled:
       config.set('rsv', 'ce-type', 'htcondor-ce')
 
     self.__write_rsv_conf(config)

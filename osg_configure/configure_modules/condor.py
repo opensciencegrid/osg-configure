@@ -186,7 +186,7 @@ class CondorConfiguration(JobManagerConfiguration):
         self.log('Configuring gatekeeper to use regular fork service')
         self.set_default_jobmanager('fork')
 
-    if self.htcondor_ce_gateway_enabled:
+    if self.htcondor_gateway_enabled:
       if not self.setupHTCondorCEConfig():
         self.log('Error writing to ' + CondorConfiguration.HTCONDOR_CE_CONFIG_FILE,
                  level=logging.ERROR)
