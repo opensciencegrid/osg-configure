@@ -275,7 +275,7 @@ class SlurmConfiguration(JobManagerConfiguration):
     if not self.enabled or self.ignored:
       return set()
         
-    services = set(['globus-gatekeeper', 'globus-gridftp-server'])
+    services = set(['globus-gridftp-server'])
     return services    
 
   def getDBHost(self):

@@ -364,9 +364,10 @@ class SGEConfiguration(JobManagerConfiguration):
     if not self.enabled or self.ignored:
       return set()
         
-    services = set(['globus-gatekeeper', 'globus-gridftp-server'])
+    services = set(['globus-gridftp-server'])
     if self.options['seg_enabled'].value:
       services.add('globus-scheduler-event-generator')
+      services.add('globus-gatekeeper')
     return services 
   
   def getAccountingFile(self):

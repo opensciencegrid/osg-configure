@@ -19,6 +19,7 @@ class CondorConfiguration(JobManagerConfiguration):
   
   CONDOR_CONFIG_FILE = '/etc/grid-services/available/jobmanager-condor'
   GRAM_CONFIG_FILE = '/etc/globus/globus-condor.conf'
+  HTCONDOR_CE_CONFIG_FILE = '/etc/condor-ce/config.d/50-osg-configure.conf'
   def __init__(self, *args, **kwargs):
     # pylint: disable-msg=W0142
     super(CondorConfiguration, self).__init__(*args, **kwargs)
@@ -45,6 +46,8 @@ class CondorConfiguration(JobManagerConfiguration):
                                         opt_type = bool,
                                         default_value = False)}
     self.__set_default = True
+    self.__gram_ce_enabled = True
+    self.__htcondor_ce_enabled = False
     self.log('CondorConfiguration.__init__ completed')    
       
   def parseConfiguration(self, configuration):
@@ -75,13 +78,19 @@ class CondorConfiguration(JobManagerConfiguration):
     self.options['home'] = configfile.Option(name = 'job_manager_home',
                                              value = self.options['condor_location'].value,
                                              mapping = 'OSG_JOB_MANAGER_HOME')
-      
+
     if (configuration.has_section('Managed Fork') and
         configuration.has_option('Managed Fork', 'enabled') and
         configuration.getboolean('Managed Fork', 'enabled')):
       self.__set_default = False
 
-    self.log('CondorConfiguration.parseConfiguration completed')        
+    if configuration.has_section('CE'):
+      if configuration.has_option('CE', 'htcondor_ce_enabled'):
+        self.__htcondor_ce_enabled = configuration.getboolean('CE', 'htcondor_ce_enabled')
+      if configuration.has_option('CE', 'gram_ce_enabled'):
+        self.__gram_ce_enabled = configuration.getboolean('CE', 'gram_ce_enabled')
+
+    self.log('CondorConfiguration.parseConfiguration completed')
 
 # pylint: disable-msg=W0613
   def checkAttributes(self, attributes):
@@ -172,11 +181,20 @@ class CondorConfiguration(JobManagerConfiguration):
         self.log('CondorConfiguration.configure completed')
         return False
 
-    if not self.setupGramConfig():
-      self.log('Error writing to ' + CondorConfiguration.GRAM_CONFIG_FILE,
-               level = logging.ERROR)
-      return False
-      
+    if self.__gram_ce_enabled:
+      if not self.setupGramConfig():
+        self.log('Error writing to ' + CondorConfiguration.GRAM_CONFIG_FILE,
+                 level = logging.ERROR)
+        return False
+    if self.__htcondor_ce_enabled:
+      if not self.setupHTCondorCEConfig():
+        self.log('Error writing to ' + CondorConfiguration.HTCONDOR_CE_CONFIG_FILE,
+                 level=logging.ERROR)
+    if not self.__gram_ce_enabled and not self.__htcondor_ce_enabled:
+      self.log('Neither GRAM nor HTCondor-CE are enabled. In the [CE] section of the configuration, '
+               'set gram_ce_enabled or htcondor_ce_enabled.',
+               level=logging.WARNING)
+
     if self.__set_default:
       self.log('Configuring gatekeeper to use regular fork service')
       self.set_default_jobmanager('fork')
@@ -201,7 +219,8 @@ class CondorConfiguration(JobManagerConfiguration):
     Populate the gram config file with correct values
     
     Returns True if successful, False otherwise
-    """    
+    """
+
     buf = open(CondorConfiguration.GRAM_CONFIG_FILE).read()
     bin_location = os.path.join(self.options['condor_location'].value,
                                 'bin',
@@ -238,6 +257,47 @@ class CondorConfiguration(JobManagerConfiguration):
     
     return True
 
+  def setupHTCondorCEConfig(self):
+    """
+    Populate the config file that tells htcondor-ce what host to find condor on.
+
+    Returns True if successful, False otherwise
+    """
+    if not utilities.rpm_installed('htcondor-ce'):
+      return True # Nothing to configure.
+
+    def _add_or_replace(variable, new_value):
+      """
+      If there is a line setting 'variable' in 'buf', change it to set
+      variable to new_value. If there is no such line, add a line to the end
+      of buf setting variable to new_value. Return the modified buf.
+      """
+      new_line = '%s=%s' % (variable, new_value)
+      new_buf, count = re.subn(r'(?m)^\s*%s\s*=.*$' % variable, new_line, buf, 1)
+      if count == 0:
+        new_buf += new_line + "\n"
+      return new_buf
+
+    condor_host = utilities.get_condor_config_val('CONDOR_HOST')
+    if not condor_host:
+      self.log("Unable to determine value of CONDOR_HOST", level=logging.ERROR)
+      return False
+
+    try:
+      buf = open(CondorConfiguration.HTCONDOR_CE_CONFIG_FILE).read()
+    except EnvironmentError:
+      buf = ""
+    if not buf:
+      buf = "# This file is managed by osg-configure\n"
+    buf = _add_or_replace('JOB_ROUTER_SCHEDD2_NAME', condor_host)
+    buf = _add_or_replace('JOB_ROUTER_SCHEDD2_POOL', condor_host)
+
+    if not utilities.atomic_write(CondorConfiguration.HTCONDOR_CE_CONFIG_FILE, buf):
+      return False
+
+    return True
+
+
   @staticmethod
   def getCondorLocation(configuration):
     """
@@ -269,4 +329,4 @@ class CondorConfiguration(JobManagerConfiguration):
     if not self.enabled or self.ignored:
       return set()
         
-    return set(['globus-gatekeeper', 'globus-gridftp-server'])
+    return set(['globus-gridftp-server'])

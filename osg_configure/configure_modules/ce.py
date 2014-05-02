@@ -63,11 +63,9 @@ class CEConfiguration(BaseConfiguration):
   def configure(self, attributes):
     """Configure installation using attributes"""
     self.log('CEConfiguration.configure started')
-    # This is a placeholder. Right now there isn't any configuration to do:
-    # all the configuration for globus-gatekeeper is done in the batch system-
-    # specific modules, and the only config step for condor-ce should be done
-    # manually since according to the installation guide it reduces the
-    # security of the site.
+    # This is a placeholder. All the configuration for globus-gatekeeper or
+    # htcondor-ce is handled in the batch-system-specific modules, and the
+    # configuration for rsv is handled in the rsv module.
     self.log('CEConfiguration.configure completed')
     return True
 

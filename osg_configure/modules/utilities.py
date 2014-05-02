@@ -26,6 +26,7 @@ __all__ = ['get_elements',
            'run_script',
            'get_condor_location',
            'get_condor_config',
+           'get_condor_config_val'
            'atomic_write',
            'ce_installed',
            'rpm_installed',           
@@ -342,6 +343,29 @@ def get_condor_config(default_config='/etc/condor/condor_config'):
     return os.path.join(get_condor_location(),
                         'etc',
                         'condor_config')
+
+
+def get_condor_config_val(variable, executable='condor_config_val'):
+  """
+  Use condor_config_val to return the expanded value of a variable.
+
+  Arguments:
+  variable - name of the variable whose value to return
+  executable - the name of the executable to use (in case we want to poll condor_ce_config_val or
+               condor_cron_config_val)
+
+  Returns:
+  The stripped output of condor_config_val, or None if condor_config_val reports an error.
+  """
+  try:
+    process = subprocess.Popen([executable, '-expand', variable],
+                               stdout=subprocess.PIPE)
+    output = process.communicate()[0]
+    if process.returncode != 0:
+      return None
+    return output.strip()
+  except OSError:
+    return None
 
 
 def atomic_write(filename=None, contents=None, **kwargs):

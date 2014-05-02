@@ -220,5 +220,5 @@ class ManagedForkConfiguration(JobManagerConfiguration):
     if not self.enabled or self.ignored:
       return set()
 
-    return set(['condor', 'globus-gatekeeper'])
+    return set(['condor'])
   
