@@ -19,11 +19,11 @@ __all__ = ['GratiaConfiguration']
 
 
 GRATIA_CONFIG_FILES = {
-    'condor': os.path.join('/', 'etc', 'gratia', 'condor', 'ProbeConfig'),
-    'sge': os.path.join('/', 'etc', 'gratia', 'slurm', 'ProbeConfig'),
-    'lsf': os.path.join('/', 'etc', 'gratia', 'pbs-lsf', 'urCollector.conf'),
-    'pbs': os.path.join('/', 'etc', 'gratia', 'pbs-lsf', 'urCollector.conf'),
-    'slurm': os.path.join('/', 'etc', 'gratia', 'slurm', 'ProbeConfig')
+    'condor': '/etc/gratia/condor/ProbeConfig',
+    'sge':    '/etc/gratia/sge/ProbeConfig',
+    'lsf':    '/etc/gratia/pbs-lsf/urCollector.conf',
+    'pbs':    '/etc/gratia/pbs-lsf/urCollector.conf',
+    'slurm':  '/etc/gratia/slurm/ProbeConfig'
 }
 
 
