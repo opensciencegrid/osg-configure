@@ -601,14 +601,27 @@ in your config.ini file."""
       if 'condor' not in self.__probe_config:
           # Don't need this for non-condor probes
           return valid
-      condor_bin = os.path.join(self.__probe_config['condor']['condor_location'],
+      # TODO Change to use utilities.get_condor_config_val (need to add more checking to that function first)
+      condor_config_val_bin = os.path.join(self.__probe_config['condor']['condor_location'],
                                 "bin",
                                 "condor_config_val")
-      cmd = [condor_bin, '-schedd', 'PER_JOB_HISTORY_DIR']
-      process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-      (history_dir, _) = process.communicate()
-      if process.returncode != 0:
-        self.log("Can't run %s while checking gratia parameters" % condor_bin,
+      if not os.path.exists(condor_config_val_bin):
+        self.log("While checking gratia parameters: Unable to find condor_config_val binary (looked for %s).\n"
+                 "In the [Condor] section of your configuration, set condor_location such that "
+                 "(condor_location)/bin/condor_config_val is the location of the condor_config_val binary."
+                 % condor_config_val_bin,
+                 level=logging.ERROR)
+        return False
+      cmd = [condor_config_val_bin, '-schedd', 'PER_JOB_HISTORY_DIR']
+      try:
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        (history_dir, errtext) = process.communicate()
+        if process.returncode != 0:
+          self.log("While checking gratia parameters: %s failed. Output follows:\n%s" % (condor_config_val_bin,
+                                                                                         errtext), level=logging.ERROR)
+          return False
+      except OSError, err:
+        self.log("While checking gratia parameters: Error running %s: %s" % (condor_config_val_bin, str(err)),
                  level=logging.ERROR)
         return False
       history_dir = history_dir.strip()
