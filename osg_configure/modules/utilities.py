@@ -262,8 +262,8 @@ def fetch_crl():
       sys.stdout.write("Can't find fetch-crl script, skipping fetch-crl invocation\n")
       sys.stdout.flush()
       return True
-    
-    sys.stdout.write("Running %s, this process make take " % crl_path +
+
+    sys.stdout.write("Running %s, this process may take " % crl_path +
                      "some time to fetch all the crl updates\n")
     sys.stdout.flush()
 
