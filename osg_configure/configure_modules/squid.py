@@ -165,10 +165,6 @@ class SquidConfiguration(BaseConfiguration):
     """Return a boolean that indicates whether this module can be configured separately"""
     return True
   
-  def parseSections(self):
-    """Returns the sections from the configuration file that this module handles"""
-    return [self.config_section]
-
   def getAttributes(self, converter = str):
     """
     Get attributes for the osg attributes file using the dict in self.options

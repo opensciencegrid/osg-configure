@@ -324,11 +324,6 @@ class RsvConfiguration(BaseConfiguration):
     """Return a boolean that indicates whether this module can be configured separately"""
     return True  
 
-  def parseSections(self):
-    """Returns the sections from the configuration file that this module handles"""
-    return [self.config_section]
-
-
   def __check_gridftp_settings(self):
     """ Check gridftp settings and make sure they are valid """
     status_check = self.__validate_host_list(self.__gridftp_hosts, "gridftp_hosts")

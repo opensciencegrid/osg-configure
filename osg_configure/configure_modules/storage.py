@@ -165,10 +165,6 @@ class StorageConfiguration(BaseConfiguration):
     """Return a boolean that indicates whether this module can be configured separately"""
     return True
   
-  def parseSections(self):
-    """Returns the sections from the configuration file that this module handles"""
-    return [self.config_section]
-  
   def __check_app_dir(self, app_dir):
     """"
     Checks to make sure that the OSG_APP directory exists and the VO directories have 

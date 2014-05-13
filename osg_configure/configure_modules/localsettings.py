@@ -55,10 +55,6 @@ class LocalSettings(BaseConfiguration):
     """Return a boolean that indicates whether this module can be configured separately"""
     return True
 
-  def parseSections(self):
-    """Returns the sections from the configuration file that this module handles"""
-    return [self.config_section]
-  
   def getAttributes(self, converter=str):
     """
     Need to override because this class doesn't use the self.options to store

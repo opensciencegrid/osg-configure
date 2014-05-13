@@ -70,7 +70,3 @@ class GatewayConfiguration(BaseConfiguration):
   def separatelyConfigurable(self):
     """A boolean that indicates whether this module can be configured separately"""
     return False
-
-  def parseSections(self):
-    """A list of the sections from the configuration file that this module handles"""
-    return [self.config_section]

@@ -181,10 +181,6 @@ class MiscConfiguration(BaseConfiguration):
     """Return a boolean that indicates whether this module can be configured separately"""
     return True
   
-  def parseSections(self):
-    """Returns the sections from the configuration file that this module handles"""
-    return [self.config_section]
-  
   def __enable_xacml(self):
     """
     Enable authorization services using xacml protocol

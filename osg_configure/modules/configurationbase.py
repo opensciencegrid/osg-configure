@@ -74,10 +74,6 @@ class BaseConfiguration(object):
     """Return a boolean that indicates whether this module can be configured separately"""
     return False
   
-  def parseSections(self):
-    """Returns the sections from the configuration file that this module handles"""
-    return []
-  
   def log(self, mesg, **kwargs):
     """
     Generate a log message if option and section are given then the file 
