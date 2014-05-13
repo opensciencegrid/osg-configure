@@ -3,11 +3,7 @@
 import os
 import sys
 import optparse
-import time
 import ConfigParser
-import re
-import atexit
-import shutil
 import logging
 
 from osg_configure.modules import exceptions
@@ -188,7 +184,6 @@ def configure_system(modules, logger, configure_module=None, force=False):
   attributes = {}
   local_attributes = {}
   monalisaConfig = None
-  localConfig = None
   for module in modules:
     if  module.__class__.__name__ == 'LocalSettings':
       local_attributes.update(module.getAttributes())
@@ -284,7 +279,6 @@ def query_option(modules, logger, option=None):
                                         location.ljust(30)))
     normal_exit("Query completed")
     
-  section = None
   option_name = option
   # check all sections for option
   sys.stdout.write("%s %s %s %s\n" % ('Option'.ljust(20),
@@ -425,7 +419,7 @@ def check_configuration(modules, attributes, logger):
     return False
 
   try:
-    config = configfile.read_config_files()
+    configfile.read_config_files()
   except IOError, e:
     error_exit("Can't read configuration files: %s" % e)
 
@@ -442,10 +436,7 @@ def main():
   
   normal_exit_message = "Configuration completed, exiting..."
   error_exit_message = "Critical error occurred, exiting..."
-    
-  mode = None
-  configure_mode = None
-  
+
   parser = optparse.OptionParser(usage='Usage: %prog [options] arg1 arg2', version='%prog ' + VERSION)
   parser.add_option('-d',
                     '--debug',
