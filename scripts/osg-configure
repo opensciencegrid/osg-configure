@@ -183,18 +183,11 @@ def configure_system(modules, logger, configure_module=None, force=False):
     
   attributes = {}
   local_attributes = {}
-  monalisaConfig = None
   for module in modules:
     if  module.__class__.__name__ == 'LocalSettings':
       local_attributes.update(module.getAttributes())
 
-    if module.__class__.__name__ == 'MonalisaConfiguration':
-      # need to configuration MonaLisaConfiguration after other modules
-      # since it derives it's settings from other modules
-      # and uses the attributes dictionary for this
-      monalisaConfig = module
-    else:
-      attributes.update(module.getAttributes())
+    attributes.update(module.getAttributes())
 
       
   
@@ -221,10 +214,6 @@ def configure_system(modules, logger, configure_module=None, force=False):
     except exceptions.ConfigureError, e:
       logger.debug("Got ConfigureError %s" % e)
       error_exit("Can't configure module, exiting")
-
-  if configure_module is None:
-    # need to configure monalisa after job managers
-    monalisaConfig.configure(attributes)
 
   if not utilities.ce_installed():
     # no need to write out attribute files on non-ce installations
