@@ -815,6 +815,7 @@ class RsvConfiguration(BaseConfiguration):
         self.log("Invalid port in [%s].%s: %s" % (self.config_section, 
                                                   setting, host),
                  level = logging.ERROR)
+        ret = False
 
     return ret
 
@@ -1138,12 +1139,14 @@ class RsvConfiguration(BaseConfiguration):
         utilities.blank(self.options['srm_hosts'].value)):
       return True
 
+    all_ok = True
     if self.options['srm_dir'].value.upper() == 'DEFAULT':
       self.log("srm_dir has to be set and can't be set to DEFAULT for each "+ 
                "srm host defined (set to %s)" % dir,
-               option = 'srm_dir',
-               section = 'rsv',
-               level = logging.ERROR)
+               option='srm_dir',
+               section='rsv',
+               level=logging.ERROR)
+      all_ok = False
       
     srm_dirs = split_list(self.options['srm_dir'].value)    
     if len(self.__srm_hosts) != len(srm_dirs):
@@ -1151,19 +1154,20 @@ class RsvConfiguration(BaseConfiguration):
                "of entries in the srm_dir variable as you have in the " +
                "srm_hosts section.  There are %i host entries and %i " \
                "srm_dir entries." % (len(self.__srm_hosts), len(srm_dirs)),
-               level = logging.ERROR)
-      return False
+               level=logging.ERROR)
+      all_ok = False
+
     for directory in srm_dirs:
       if directory.upper() == 'DEFAULT':
         self.log("srm_dir has to be set and can't be set to DEFAULT for each "+ 
                  "srm host defined (set to %s)" % directory,
-                 option = 'srm_dir',
-                 section = 'rsv',
-                 level = logging.ERROR)
+                 option='srm_dir',
+                 section='rsv',
+                 level=logging.ERROR)
+        all_ok = False
         
     
-    srm_ws_paths = []
-    if not utilities.blank(self.options['srm_webservice_path'].value):      
+    if not utilities.blank(self.options['srm_webservice_path'].value):
       srm_ws_paths = split_list(self.options['srm_webservice_path'].value)
       if len(self.__srm_hosts) != len(srm_ws_paths):
         self.log("If you set srm_webservice_path when enabling SRM metrics " +
@@ -1172,10 +1176,10 @@ class RsvConfiguration(BaseConfiguration):
                  "section.  There are %i host entries and %i " \
                  "srm_webservice_path entries." % (len(self.__srm_hosts), 
                                                    len(srm_ws_paths)),
-                 level = logging.ERROR)
-        return False
+                 level=logging.ERROR)
+        all_ok = False
       
-    return True
+    return all_ok
 
   def enabledServices(self):
     """Return a list of  system services needed for module to work
