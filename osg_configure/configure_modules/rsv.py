@@ -126,8 +126,10 @@ class RsvConfiguration(BaseConfiguration):
     self.grid_group = 'OSG'
     self.site_name = 'Generic Site'
     self.config_section = "RSV"
+    self.rsv_conf_dir = '/etc/rsv'
     self.rsv_control = '/usr/bin/rsv-control'
     self.rsv_meta_dir = '/etc/rsv/meta/metrics'
+    self.rsv_metrics_dir = '/etc/rsv/metrics'
     self.rsv_conf = '/etc/rsv/rsv.conf'
     self.uid = None
     self.gid = None
@@ -275,7 +277,7 @@ class RsvConfiguration(BaseConfiguration):
     try:
       # Reset always?
       self.__reset_configuration()
-      # Put proxy information into rsv.ini
+      # Put proxy information into rsv.conf
       self.__configure_cert_info()
       # Enable consumers
       self.__configure_consumers()
@@ -418,22 +420,20 @@ class RsvConfiguration(BaseConfiguration):
 
     self.log("Resetting all metrics and consumers to disabled")
 
-    parent_dir = os.path.join('/', 'etc', 'rsv')
-    for filename in os.listdir(parent_dir):
+    for filename in os.listdir(self.rsv_conf_dir):
       if not re.search('\.conf$', filename):
         continue
 
       if filename in ('rsv.conf', 'rsv-nagios.conf', 'rsv-zabbix.conf'):
         continue
 
-      path = os.path.join(parent_dir, filename)
+      path = os.path.join(self.rsv_conf_dir, filename)
       self.log("Removing %s as part of reset" % path)
       os.unlink(path)
 
     # Remove any host specific metric configuration
-    parent_dir = os.path.join('/', 'etc', 'rsv', 'metrics')
-    for directory in os.listdir(parent_dir):
-      path = os.path.join(parent_dir, directory)
+    for directory in os.listdir(self.rsv_metrics_dir):
+      path = os.path.join(self.rsv_metrics_dir, directory)
       if not os.path.isdir(path):
         continue
 
@@ -887,12 +887,12 @@ class RsvConfiguration(BaseConfiguration):
     """ Store the nagios configuration """
 
     # The Nagios conf file contains a password so set it to mode 0400 owned by rsv
-    pw_file = os.path.join('/', 'etc', 'rsv', 'rsv-nagios.conf')
+    pw_file = os.path.join(self.rsv_conf_dir, 'rsv-nagios.conf')
     os.chown(pw_file, self.uid, self.gid)
     os.chmod(pw_file, 0400)
     
     # Add the configuration file 
-    nagios_conf_file = os.path.join('/', 'etc', 'rsv', 'consumers', 'nagios-consumer.conf')
+    nagios_conf_file = os.path.join(self.rsv_conf_dir, 'consumers/nagios-consumer.conf')
     config = ConfigParser.RawConfigParser()
     config.optionxform = str
     
