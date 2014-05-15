@@ -289,7 +289,8 @@ class RsvConfiguration(BaseConfiguration):
       self.__configure_local_metrics()
       self.__configure_srm_metrics()
       self.__configure_condor_cron_ids()
-      self.__configure_ce_type()
+      self.__configure_default_ce_type()
+      self.__configure_ce_types()
       # Setup Apache?  I think this is done in the RPM
 
       # Fix the Gratia ProbeConfig file to point at the appropriate collector
@@ -465,8 +466,17 @@ class RsvConfiguration(BaseConfiguration):
 
 
   def __enable_metrics(self, host, metrics, args=None):
-    """ Given a host and array of metrics, enable them via rsv-control """
+    """Given a host and array of metrics, enable them via rsv-control
 
+    :param host: FQDN of host to enable metrics for
+    :type host: str
+    :param metrics: list of metrics to enable
+    :type metrics: list
+    :param args: extra arguments to rsv-control
+    :type args: list or None
+    :raise ConfigFailed: if rsv-control fails
+
+    """
     # need this to prevent weird behaviour if [] as a default argument in function def
     args = args or []
     if not metrics:
@@ -485,8 +495,12 @@ class RsvConfiguration(BaseConfiguration):
 
 
   def __configure_ce_metrics(self):
-    """
-    Enable appropriate CE metrics
+    """Enable CE metrics.
+    This consists of OSG-GRAM-CE metrics for gram_ce_hosts, OSG-HTCondor-CE
+    metrics for htcondor_ce_hosts and OSG-CE metrics for ce_hosts (which should
+    include gram_ce_hosts and htcondor_ce_hosts).
+
+    :raise ConfigFailed: if enabling metrics fails
     """
     def _set_metrics_for_hosts(label, metric_type, hosts_var_name, hosts, enabled):
       if not enabled:
@@ -794,8 +808,7 @@ class RsvConfiguration(BaseConfiguration):
     return ret
 
   def __read_rsv_conf(self):
-    """ Return a ConfigParser with the contents of the rsv.conf file
-    """
+    """Return a ConfigParser with the contents of the rsv.conf file"""
     config = ConfigParser.RawConfigParser()
     config.optionxform = str  # rsv.conf is case-sensitive
 
@@ -808,8 +821,7 @@ class RsvConfiguration(BaseConfiguration):
     return config
 
   def __write_rsv_conf(self, config):
-    """ Write the contents of a ConfigParser back to the rsv.conf file
-    """
+    """Write the contents of a ConfigParser back to the rsv.conf file"""
     config_fp = open(self.rsv_conf, 'w')
     try:
       config.write(config_fp)
@@ -842,11 +854,13 @@ class RsvConfiguration(BaseConfiguration):
     self.__write_rsv_conf(config)
 
 
-  def __configure_ce_type(self):
-    """ Set the ce-type in rsv.conf, which controls whether Condor-G submits
-    to a GRAM-Gatekeeper or an HTCondor-CE when running remote probes.
-    """
+  def __configure_default_ce_type(self):
+    """Set the ce-type in rsv.conf.
+    This controls whether Condor-G submits to a GRAM-Gatekeeper or an
+    HTCondor-CE when running remote probes. The setting may be overridden in
+    probe-specific configs (set by __configure_ce_types for example).
 
+    """
     config = self.__read_rsv_conf()
 
     # gram preferred over htcondor-ce if both enabled
@@ -856,6 +870,64 @@ class RsvConfiguration(BaseConfiguration):
       config.set('rsv', 'ce-type', 'htcondor-ce')
 
     self.__write_rsv_conf(config)
+
+
+  def __configure_ce_types(self):
+    """Write config files that set the ce-type for GRAM-CE hosts and HTCondor-CE hosts.
+
+    :raise ConfigFailed: if writing any config file failed.
+
+    """
+    if self.gram_gateway_enabled:
+      for host in self.__gram_ce_hosts:
+        self.__configure_ce_type_for_host(host, 'gram')
+    if self.htcondor_gateway_enabled:
+      for host in self.__htcondor_ce_hosts:
+        if host not in self.__gram_ce_hosts:
+          self.__configure_ce_type_for_host(host, 'htcondor-ce')
+
+
+  def __configure_ce_type_for_host(self, hostname, ce_type):
+    """Write config file that sets the ce-type for all probes on a host.
+    Specifically, a directory is created (if missing) under the metrics config
+    dir for that host, and an allmetrics.conf file is placed into it.
+    An existing allmetrics.conf for the host will be parsed and rewritten;
+    comments inside it will be lost.
+
+    :param hostname: FQDN of the host to configure probes for
+    :type hostname: str
+    :param ce_type: either 'gram' or 'htcondor-ce'
+    :type ce_type: str
+    :raise ConfigFailed: if writing the config file failed
+    :rtype: None
+
+    """
+    host_metrics_dir = os.path.join(self.rsv_metrics_dir, hostname)
+    allmetrics_conf_path = os.path.join(host_metrics_dir, "allmetrics.conf")
+
+    try:
+      os.mkdir(host_metrics_dir)
+    except OSError:
+      pass # Dir already exists.
+
+    config = ConfigParser.RawConfigParser()
+    config.optionxform = str # Conf is case-sensitive.
+
+    config.read(allmetrics_conf_path) # Does nothing if the file can't be read.
+
+    if not config.has_section('allmetrics'):
+      config.add_section('allmetrics')
+    config.set('allmetrics', 'ce-type', ce_type)
+
+    config_fp = open(allmetrics_conf_path, 'w')
+    try:
+      try:
+        config.write(config_fp)
+      except EnvironmentError, err:
+        self.log("Error writing to %s: %s" % (allmetrics_conf_path, str(err)), level=logging.ERROR)
+        raise ConfigFailed
+    finally:
+      config_fp.close()
 
 
   def __configure_consumers(self):
@@ -1103,7 +1175,7 @@ class RsvConfiguration(BaseConfiguration):
   
   def __configure_condor_cron_ids(self):
     """Ensure UID/GID of cndrcron user is valid and is in the condor-cron configs
-    :raises ConfigFailed: if modifying condor-cron configs failed
+    :raise ConfigFailed: if modifying condor-cron configs failed
 
     """
     # check the uid/gid in the condor_ids file
