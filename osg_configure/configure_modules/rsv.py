@@ -738,7 +738,7 @@ class RsvConfiguration(BaseConfiguration):
 
     if not self.options['condor_location'].value:
       self.log("Skipping condor_location validation because it is empty")
-      return
+      return True
 
     condor_bin = os.path.join(self.options['condor_location'].value, "bin")
     condor_sbin = os.path.join(self.options['condor_location'].value, "sbin")
@@ -747,7 +747,8 @@ class RsvConfiguration(BaseConfiguration):
       self.log("There is not a bin/ or sbin/ subdirectory at the supplied " +
                "condor_location (%s)" % (self.options['condor_location'].value),
                level=logging.ERROR)
-      raise ConfigFailed
+      return False
+    return True
 
 
   def __configure_condor_location(self):
