@@ -286,7 +286,7 @@ class RsvConfiguration(BaseConfiguration):
       self.__configure_gratia_metrics()
       self.__configure_local_metrics()
       self.__configure_srm_metrics()
-      self.__check_rsv_files()
+      self.__configure_condor_cron_ids()
       self.__configure_ce_type()
       # Setup Apache?  I think this is done in the RPM
 
@@ -1101,24 +1101,19 @@ class RsvConfiguration(BaseConfiguration):
       
     return set(['rsv', 'condor-cron'])
   
-  def __check_rsv_files(self):
+  def __configure_condor_cron_ids(self):
+    """Ensure UID/GID of cndrcron user is valid and is in the condor-cron configs
+    :raises ConfigFailed: if modifying condor-cron configs failed
+
     """
-    Check for the existence and permissions of files used by 
-    rsv/condor-cron
-    """
-    
     # check the uid/gid in the condor_ids file
-    condor_id_fname = os.path.join("/",
-                                   "etc",
-                                   "condor-cron",
-                                   "config.d",
-                                   "condor_ids")
+    condor_id_fname = "/etc/condor-cron/config.d/condor_ids"
     ids = open(condor_id_fname).read()
     id_regex = re.compile(r'^\s*CONDOR_IDS\s+=\s+(\d+)\.(\d+).*', re.MULTILINE)
     condor_ent = pwd.getpwnam('cndrcron')
     match = id_regex.search(ids)
     if ((match is not None) and
-        (((int(match.group(1)) != condor_ent.pw_uid) or 
+        (((int(match.group(1)) != condor_ent.pw_uid) or
           (int(match.group(2)) != condor_ent.pw_gid)))):
         self.log("Condor-cron uid/gid not correct, correcting",
                  level = logging.ERROR)
