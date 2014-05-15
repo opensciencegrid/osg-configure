@@ -190,11 +190,11 @@ class RsvConfiguration(BaseConfiguration):
 
 
     # Parse lists
-    self.__ce_hosts = split_list(self.options['ce_hosts'].value)
-    self.__gram_ce_hosts = split_list(self.options['gram_ce_hosts'].value)
-    self.__htcondor_ce_hosts = split_list(self.options['htcondor_ce_hosts'].value)
-    self.__gums_hosts = split_list(self.options['gums_hosts'].value)
-    self.__srm_hosts = split_list(self.options['srm_hosts'].value)
+    self.__ce_hosts = split_list_exclude_blank(self.options['ce_hosts'].value)
+    self.__gram_ce_hosts = split_list_exclude_blank(self.options['gram_ce_hosts'].value)
+    self.__htcondor_ce_hosts = split_list_exclude_blank(self.options['htcondor_ce_hosts'].value)
+    self.__gums_hosts = split_list_exclude_blank(self.options['gums_hosts'].value)
+    self.__srm_hosts = split_list_exclude_blank(self.options['srm_hosts'].value)
 
     # If the gridftp hosts are not defined then they default to the CE hosts
     if self.options['gridftp_hosts'].value == '':
@@ -1230,3 +1230,10 @@ def split_list(item_list):
     
   return items
 
+def exclude_blank(item_list):
+  """Return a copy of a list with blank values removed"""
+  return [item for item in item_list if not utilities.blank(item)]
+
+def split_list_exclude_blank(item_list):
+  """Split a comma-separated list of items, returning non-blanks only"""
+  return exclude_blank(split_list(item_list))
