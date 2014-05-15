@@ -15,6 +15,12 @@ from osg_configure.modules.configurationbase import BaseConfiguration
 
 __all__ = ['RsvConfiguration']
 
+
+GRAM_CE_TYPE = "gram"
+HTCONDOR_CE_TYPE = "htcondor-ce"
+# The gateway to use if both gram and htcondor-ce are enabled.
+PREFERRED_CE_TYPE = GRAM_CE_TYPE
+
 class ConfigFailed(Exception):
   pass
 
@@ -120,8 +126,12 @@ class RsvConfiguration(BaseConfiguration):
     self.__gratia_metric_map = {}
     self.__enable_rsv_downloads = False
     self.__meta = ConfigParser.RawConfigParser()
-    self.gram_gateway_enabled = True
-    self.htcondor_gateway_enabled = False
+    if PREFERRED_CE_TYPE == GRAM_CE_TYPE:
+      self.gram_gateway_enabled = True
+      self.htcondor_gateway_enabled = False
+    else:
+      self.gram_gateway_enabled = False
+      self.htcondor_gateway_enabled = True
     self.use_service_cert = True
     self.grid_group = 'OSG'
     self.site_name = 'Generic Site'
@@ -864,11 +874,12 @@ class RsvConfiguration(BaseConfiguration):
     """
     config = self.__read_rsv_conf()
 
-    # gram preferred over htcondor-ce if both enabled
-    if self.gram_gateway_enabled:
-      config.set('rsv', 'ce-type', 'gram')
+    if self.gram_gateway_enabled and self.htcondor_gateway_enabled:
+      config.set('rsv', 'ce-type', PREFERRED_CE_TYPE)
+    elif self.gram_gateway_enabled:
+      config.set('rsv', 'ce-type', GRAM_CE_TYPE)
     elif self.htcondor_gateway_enabled:
-      config.set('rsv', 'ce-type', 'htcondor-ce')
+      config.set('rsv', 'ce-type', HTCONDOR_CE_TYPE)
 
     self.__write_rsv_conf(config)
 
@@ -881,11 +892,12 @@ class RsvConfiguration(BaseConfiguration):
     """
     if self.gram_gateway_enabled:
       for host in self.__gram_ce_hosts:
-        self.__configure_ce_type_for_host(host, 'gram')
+        if PREFERRED_CE_TYPE == GRAM_CE_TYPE or host not in self.__htcondor_ce_hosts:
+          self.__configure_ce_type_for_host(host, GRAM_CE_TYPE)
     if self.htcondor_gateway_enabled:
       for host in self.__htcondor_ce_hosts:
-        if host not in self.__gram_ce_hosts:
-          self.__configure_ce_type_for_host(host, 'htcondor-ce')
+        if PREFERRED_CE_TYPE == HTCONDOR_CE_TYPE or host not in self.__gram_ce_hosts:
+          self.__configure_ce_type_for_host(host, HTCONDOR_CE_TYPE)
 
 
   def __configure_ce_type_for_host(self, hostname, ce_type):
