@@ -171,7 +171,27 @@ class TestSGE(unittest.TestCase):
  
     attributes = settings.getAttributes()    
     self.assertFalse(settings.checkAttributes(attributes), 
-                     "Did not notice missing SGE root")
+                     "Did not notice missing SGE cell")
+
+  def testMissingSGEConfig(self):
+    """
+    Test the checkAttributes function to see if it catches missing SGE config
+    """
+
+    config_file = get_test_config("sge/missing_config.ini")
+    configuration = ConfigParser.SafeConfigParser()
+    configuration.read(config_file)
+
+    settings = sge.SGEConfiguration(logger=global_logger)
+    try:
+      settings.parseConfiguration(configuration)
+    except Exception, e:
+      self.fail("Received exception while parsing configuration: %s" % e)
+
+    attributes = settings.getAttributes()
+    self.assertFalse(settings.checkAttributes(attributes),
+                     "Did not notice missing SGE config")
+
 
   def testValidSettings(self):
     """
