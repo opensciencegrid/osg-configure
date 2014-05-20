@@ -388,7 +388,9 @@ class TestRSV(unittest.TestCase):
     """
     Test to make sure right services get returned
     """
-    
+    # If rsv-core is not installed, settings.enabled will always be False
+    if not utilities.rpm_installed('rsv-core'):
+      return
     settings = self.load_settings_from_files("rsv/rsv1.ini")
     services = settings.enabledServices()
     expected_services = set(['rsv', 'condor-cron'])
