@@ -5,6 +5,7 @@ import logging
 
 from osg_configure.modules.configurationbase import BaseConfiguration
 from osg_configure.modules import utilities
+from osg_configure.modules import validation
 
 
 
@@ -13,6 +14,9 @@ __all__ = ['JobManagerConfiguration']
 
 class JobManagerConfiguration(BaseConfiguration):
   """Base class for inheritance by jobmanager configuration classes"""
+  MISSING_JOBMANAGER_CONF_MSG = ("Unable to load the jobmanager configuration at %s: %s.\n"
+                                 "Ensure the Globus jobmanagers for all enabled batch systems are installed.")
+
   def __init__(self, *args, **kwargs):
     # pylint: disable-msg=W0142
     super(JobManagerConfiguration, self).__init__(*args, **kwargs)
@@ -50,7 +54,12 @@ class JobManagerConfiguration(BaseConfiguration):
     if filename is None:
       return False
 
-    contents = open(filename).read()
+    try:
+      contents = open(filename).read()
+    except EnvironmentError, err:
+      self.log(self.MISSING_JOBMANAGER_CONF_MSG % (filename, err), level=logging.ERROR)
+      return False
+
     if 'accept_limited' not in contents:
       contents = 'accept_limited,' + contents
       if utilities.atomic_write(filename, contents):
@@ -73,7 +82,12 @@ class JobManagerConfiguration(BaseConfiguration):
     if filename is None:
       return False
 
-    contents = open(filename).read()
+    try:
+      contents = open(filename).read()
+    except EnvironmentError, err:
+      self.log(self.MISSING_JOBMANAGER_CONF_MSG % (filename, err), level=logging.ERROR)
+      return False
+
     if contents.startswith('accept_limited,'):
       contents = contents.replace('accept_limited,', '', 1)
       if utilities.atomic_write(filename, contents):
@@ -108,7 +122,12 @@ class JobManagerConfiguration(BaseConfiguration):
     if seg_module not in self.lrms:
       return False
     
-    contents = open(filename).read()
+    try:
+      contents = open(filename).read()
+    except EnvironmentError, err:
+      self.log(self.MISSING_JOBMANAGER_CONF_MSG % (filename, err), level=logging.ERROR)
+      return False
+
     if '-seg-module' not in contents:
       contents = contents + '-seg-module ' + seg_module
       if utilities.atomic_write(filename, contents):
@@ -136,7 +155,12 @@ class JobManagerConfiguration(BaseConfiguration):
     if seg_module not in self.lrms:
       return False
 
-    contents = open(filename).read()
+    try:
+      contents = open(filename).read()
+    except EnvironmentError, err:
+      self.log(self.MISSING_JOBMANAGER_CONF_MSG % (filename, err), level=logging.ERROR)
+      return False
+
     if '-seg-module' in contents:
       contents = re.sub(r'-seg-module\s+.*?\s', '', contents, 1)
       if utilities.atomic_write(filename, contents):
@@ -161,9 +185,14 @@ class JobManagerConfiguration(BaseConfiguration):
     """
     self.log("JobManager.set_default_jobmanager started")
 
+    gatekeeper_admin = "/usr/sbin/globus-gatekeeper-admin"
+    if not validation.valid_executable(gatekeeper_admin):
+      self.log("%s not found. Ensure the Globus Gatekeeper is installed." % gatekeeper_admin, level=logging.ERROR)
+      return False
+
     if default == 'fork': 
       self.log("Setting regular fork manager to be the default jobmanager")
-      result = utilities.run_script(['/usr/sbin/globus-gatekeeper-admin',
+      result = utilities.run_script([gatekeeper_admin,
                                      '-e',
                                      'jobmanager-fork-poll',
                                      '-n',
@@ -173,7 +202,7 @@ class JobManagerConfiguration(BaseConfiguration):
                  "jobmanager",
                  level = logging.ERROR)
         return False
-      result = utilities.run_script(['/usr/sbin/globus-gatekeeper-admin',
+      result = utilities.run_script([gatekeeper_admin,
                                      '-e',
                                      'jobmanager-fork-poll',
                                      '-n',
@@ -185,7 +214,7 @@ class JobManagerConfiguration(BaseConfiguration):
         return False
     elif default == 'managed-fork':
       self.log("Setting managed fork manager to be the default jobmanager")
-      result = utilities.run_script(['/usr/sbin/globus-gatekeeper-admin',
+      result = utilities.run_script([gatekeeper_admin,
                                      '-e',
                                      'jobmanager-managedfork',
                                      '-n',
@@ -195,7 +224,7 @@ class JobManagerConfiguration(BaseConfiguration):
                  "jobmanager",
                  level = logging.ERROR)
         return False
-      result = utilities.run_script(['/usr/sbin/globus-gatekeeper-admin',
+      result = utilities.run_script([gatekeeper_admin,
                                      '-e',
                                      'jobmanager-managedfork',
                                      '-n',
