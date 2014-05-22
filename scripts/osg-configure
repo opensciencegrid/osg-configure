@@ -5,6 +5,7 @@ import sys
 import optparse
 import ConfigParser
 import logging
+import traceback
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
@@ -566,6 +567,11 @@ def main():
     # needed since SystemExit inherits from Exception
     raise
   except Exception, e:
+    debug_info = "Unhandled exception %s\n%s" % (e, traceback.format_exc())
+    if logger:
+      logger.debug(debug_info)
+    else:
+      sys.stderr.write(debug_info + "\n")
     sys.stderr.write("Please contact the developer, an unknown error occurred\n")
     error_exit("Unknown exception encountered while running: %s" % e)  
   
