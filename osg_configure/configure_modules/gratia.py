@@ -279,15 +279,16 @@ in your config.ini file."""
       if probe.lower() == 'common':
         # the common directory isn't a probe
         continue
-      elif probe.lower() == 'pbs-lsf':
+      elif probe.lower() == 'pbs-lsf' and os.path.isfile('/etc/gratia/pbs-lsf/ProbeConfig'):
         probes['pbs'] = '/etc/gratia/pbs-lsf/ProbeConfig'
         probes['lsf'] = '/etc/gratia/pbs-lsf/ProbeConfig'
         continue
-
-      probes[probe] = os.path.join('/etc/gratia',
-                                   probe,
-                                   'ProbeConfig')
-
+      # Chech the config file before adding the probe                                                                                           
+      probePath = os.path.join('/etc/gratia',
+                              probe,
+                              'ProbeConfig')
+      if os.path.isfile(probePath):
+        probes[probe] = probePath
     return probes
 
   # pylint: disable-msg=W0613
