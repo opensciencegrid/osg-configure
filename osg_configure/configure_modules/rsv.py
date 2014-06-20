@@ -133,6 +133,7 @@ class RsvConfiguration(BaseConfiguration):
       self.gram_gateway_enabled = False
       self.htcondor_gateway_enabled = True
     self.use_service_cert = True
+    self.copy_host_cert_for_service_cert = False
     self.grid_group = 'OSG'
     self.site_name = 'Generic Site'
     self.config_section = "RSV"
@@ -220,6 +221,11 @@ class RsvConfiguration(BaseConfiguration):
       if configuration.has_option('Gateway', 'htcondor_gateway_enabled'):
         self.htcondor_gateway_enabled = configuration.getboolean('Gateway', 'htcondor_gateway_enabled')
 
+    if configuration.has_section('Misc Services'):
+      if configuration.has_option('Misc Services', 'copy_host_cert_for_service_certs'):
+        self.copy_host_cert_for_service_cert = configuration.getboolean('Misc Services',
+                                                                        'copy_host_cert_for_service_certs')
+
     self.log('RsvConfiguration.parseConfiguration completed')    
   
 
@@ -287,6 +293,7 @@ class RsvConfiguration(BaseConfiguration):
     try:
       # Reset always?
       self.__reset_configuration()
+      self.__create_cert_key_if_needed()
       # Put proxy information into rsv.conf
       self.__configure_cert_info()
       # Enable consumers
@@ -390,21 +397,20 @@ class RsvConfiguration(BaseConfiguration):
                  level = logging.ERROR)
         check_value = False      
     else:
-      value = self.options['service_cert'].value
-      if utilities.blank(value) or not validation.valid_file(value):
-        self.log("service_cert must point to an existing file: %s" % value,
-                 section = self.config_section,
-                 option = 'service_cert',
-                 level = logging.ERROR)
-        check_value = False
-
-      value = self.options['service_key'].value
-      if utilities.blank(value) or not validation.valid_file(value):
-        self.log("service_key must point to an existing file: %s" % value,
-                 section = self.config_section,
-                 option = 'service_key',
-                 level = logging.ERROR)
-        check_value = False
+      for optname in 'service_cert', 'service_key':
+        value = self.options[optname].value
+        if utilities.blank(value):
+          self.log("%s must have a valid location" % optname,
+                   section=self.config_section,
+                   option=optname,
+                   level=logging.ERROR)
+          check_value = False
+        elif not self.copy_host_cert_for_service_cert and not validation.valid_file(value):
+          self.log("%s must point to an existing file" % optname,
+                   section=self.config_section,
+                   option=optname,
+                   level=logging.ERROR)
+          check_value = False
 
       value = self.options['service_proxy'].value
       if utilities.blank(value):
@@ -450,6 +456,19 @@ class RsvConfiguration(BaseConfiguration):
 
       shutil.rmtree(path)
 
+  def __create_cert_key_if_needed(self):
+    if not self.copy_host_cert_for_service_cert:
+      # User explicitly told us not to make a copy
+      return
+    service_cert = self.options['service_cert'].value
+    service_key = self.options['service_key'].value
+    if utilities.blank(service_cert) or utilities.blank(service_key):
+      # cert/key location not specified so don't make anything
+      return
+
+    if not self.create_missing_service_cert_key(service_cert, service_key, 'rsv'):
+      # creation unsuccessful
+      raise ConfigFailed("Could not create service cert (%s) and key (%s)" % (service_cert, service_key))
 
   def __get_metrics_by_type(self, metric_type, enabled=True):
     """

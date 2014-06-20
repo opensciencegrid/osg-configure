@@ -14,6 +14,9 @@ from osg_configure.modules.configurationbase import BaseConfiguration
 __all__ = ['InfoServicesConfiguration']
 
 
+SERVICECERT_PATH = "/etc/grid-security/http/httpcert.pem"
+SERVICEKEY_PATH = "/etc/grid-security/http/httpkey.pem"
+
 class InfoServicesConfiguration(BaseConfiguration):
   """
   Class to handle attributes and configuration related to
@@ -42,6 +45,7 @@ class InfoServicesConfiguration(BaseConfiguration):
                                     'http://is2.grid.iu.edu:14001[RAW]'}
     self.bdii_servers = {}
     self.ress_servers = {}
+    self.copy_host_cert_for_service_cert = False
     self.log("InfoServicesConfiguration.__init__ completed")
 
   def parseConfiguration(self, configuration):
@@ -89,6 +93,13 @@ class InfoServicesConfiguration(BaseConfiguration):
     self.ress_servers = self.__parse_servers(self.options['ress_servers'].value)
     self.bdii_servers = self.__parse_servers(self.options['bdii_servers'].value)
 
+    if configuration.has_section('Misc Services'):
+      if configuration.has_option('Misc Services', 'copy_host_cert_for_service_certs'):
+        self.copy_host_cert_for_service_cert = configuration.getboolean('Misc Services',
+                                                                        'copy_host_cert_for_service_certs')
+
+
+
 # pylint: disable-msg=W0613
   def configure(self, attributes):
     """Configure installation using attributes"""
@@ -105,6 +116,10 @@ class InfoServicesConfiguration(BaseConfiguration):
       self.log("InfoServicesConfiguration.configure completed")
       return True
 
+    if self.copy_host_cert_for_service_cert:
+      if not self.create_missing_service_cert_key(SERVICECERT_PATH, SERVICEKEY_PATH, 'tomcat'):
+        self.log("Could not create service cert/key", level=logging.ERROR)
+        return False
 
     self.log("InfoServicesConfiguration.configure completed")
     return True

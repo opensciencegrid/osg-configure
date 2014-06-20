@@ -50,7 +50,12 @@ class MiscConfiguration(BaseConfiguration):
                     'cleanup_cron_time' : 
                       configfile.Option(name = 'cleanup_cron_time',
                                         required = configfile.Option.OPTIONAL,
-                                        default_value = '15 1 * * *')}
+                                        default_value = '15 1 * * *'),
+                    'copy_host_cert_for_service_certs' :
+                      configfile.Option(name = 'copy_host_cert_for_service_certs',
+                                        required = configfile.Option.OPTIONAL,
+                                        opt_type = bool,
+                                        default_value = False)}
     self.__enabled = False
     self.config_section = "Misc Services"
     self.log('MiscConfiguration.__init__ completed')

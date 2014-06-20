@@ -1,14 +1,20 @@
 """ Base class for all configuration classes """
 
 import ConfigParser
+import errno
 import logging
+import os
+import pwd
 
 from osg_configure.modules import configfile
 from osg_configure.modules import utilities
 from osg_configure.modules import exceptions
+import utilities
 
 __all__ = ['BaseConfiguration']
 
+HOSTCERT_PATH = "/etc/grid-security/hostcert.pem"
+HOSTKEY_PATH = "/etc/grid-security/hostkey.pem"
 
 class BaseConfiguration(object):
   """Base class for inheritance by configuration"""
@@ -206,4 +212,69 @@ class BaseConfiguration(object):
         return False
     except ConfigParser.NoOptionError:
       raise exceptions.SettingError("Can't get value for enable option "
-                                    "in %s section" % section) 
+                                    "in %s section" % section)
+
+  def create_missing_service_cert_key(self, service_cert, service_key, user):
+    """Copy the host cert and key to a service cert and key with the
+    appropriate permissions if the service cert and key do not already
+    exist. If they already exist, nothing is done. If only one of them
+    exists, this method returns with an error. Parent directories are
+    created as needed.
+
+    :param service_cert: Path to the service certificate to create
+    :type service_cert: str
+    :param service_key: Path to the service private key to create
+    :type service_key: str
+    :param user: The name of the user that will own the cert and key
+    :type user: str
+
+    :return: True if service_cert and service_key are both created or already present, False otherwise
+
+    """
+    user_pwd = pwd.getpwnam(user)
+    if not user_pwd:
+      self.log("%r user not found, cannot create service cert/key with correct permissions" % user, level=logging.ERROR)
+      return False
+
+    if os.path.isfile(service_cert) and os.path.isfile(service_key):
+      self.log("%s and %s both exist; not creating them" % (service_cert, service_key),
+               level=logging.INFO)
+    elif os.path.isfile(service_cert) and not os.path.isfile(service_key):
+      self.log("%s exists but %s does not! Either remove the cert or copy the matching key" % (service_cert,
+                                                                                               service_key),
+               level=logging.ERROR)
+      return False
+    elif os.path.isfile(service_key) and not os.path.isfile(service_cert):
+      self.log("%s exists but %s does not! Either remove the key or copy the matching cert" % (service_key,
+                                                                                               service_cert),
+               level=logging.ERROR)
+      return False
+    else:
+      for from_path, to_path, mode in [[HOSTCERT_PATH, service_cert, int('644', 8)],
+                                       [HOSTKEY_PATH, service_key, int('600', 8)]]:
+        # Create dirs for the cert/key if they don't exist
+        parent_dir = os.path.abspath(os.path.dirname(to_path))
+        try:
+          os.makedirs(parent_dir)
+        except OSError, err:
+          if err.errno != errno.EEXIST:
+            self.log("Could not create directory %s" % parent_dir, exception=err, level=logging.ERROR)
+            return False
+        try:
+          os.chown(parent_dir, user_pwd.pw_uid, user_pwd.pw_gid)
+        except EnvironmentError, err:
+          self.log("Could not set ownership of %s" % parent_dir, exception=err, level=logging.ERROR)
+          return False
+        from_fh = open(from_path, 'rb')
+        success = utilities.atomic_write(to_path, from_fh.read(), mode=mode)
+        from_fh.close()
+        if not success:
+          self.log("Could not copy %s to %s" % (from_path, to_path), level=logging.ERROR)
+          return False
+        try:
+          os.chown(to_path, user_pwd.pw_uid, user_pwd.pw_gid)
+        except EnvironmentError, err:
+          self.log("Could not set ownership of %s" % to_path, exception=err, level=logging.ERROR)
+          return False
+
+    return True
