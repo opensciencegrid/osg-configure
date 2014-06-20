@@ -9,7 +9,6 @@ import pwd
 from osg_configure.modules import configfile
 from osg_configure.modules import utilities
 from osg_configure.modules import exceptions
-import utilities
 
 __all__ = ['BaseConfiguration']
 
