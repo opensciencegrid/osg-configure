@@ -281,7 +281,7 @@ class CemonConfiguration(BaseConfiguration):
 
     contents = re.sub(r'(</service>)', add + r'\1', contents, 1)
     if not utilities.atomic_write(config_path, contents, mode = 0644):
-      self.log("Error updating configuration file at %s: %s" % (config_path, e),
+      self.log("Error updating configuration file at %s" % (config_path),
                level=logging.ERROR)
       return False
 
