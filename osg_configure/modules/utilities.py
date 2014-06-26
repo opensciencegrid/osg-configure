@@ -426,6 +426,13 @@ def ce_installed():
   return rpm_installed('osg-ce')
 
 
+def gateway_installed():
+  """
+  Check to see if a job gateway (i.e. globus-gatekeeper or htcondor-ce) is installed
+  """
+  return (rpm_installed('globus-gatekeeper') or rpm_installed('htcondor-ce'))
+
+
 def rpm_installed(rpm_name=None):
   """
   Check to see if given rpm is installed

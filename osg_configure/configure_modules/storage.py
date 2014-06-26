@@ -72,9 +72,12 @@ class StorageConfiguration(BaseConfiguration):
       self.log("%s section not in config file" % self.config_section)
       self.log('StorageConfiguration.parseAttributes completed')    
       return
-    if not utilities.ce_installed():
+    # This module is called Storage, but it's actually needed for a CE:
+    # The main script's write_attributes() will fail if certain options,
+    # e.g. 'OSG_GRID' aren't defined, and this module defines them.
+    if not utilities.gateway_installed():
       self.enabled = False
-      self.log("osg-ce rpm not installed, skipping ce specific module")
+      self.log("No job gateway installed, skipping CE specific module")
       self.log('StorageConfiguration.parseAttributes completed')    
       return
     else:
