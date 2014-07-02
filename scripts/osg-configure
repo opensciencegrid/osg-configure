@@ -162,9 +162,11 @@ def configure_system(modules, logger, configure_module=None, force=False):
   except IOError, e:
     error_exit("Can't read configuration files: %s" % e)
 
-  if utilities.ce_installed() and not configfile.jobmanager_enabled(config):
-    logger.error("The osg-ce package is installed but no jobmanager is enabled!")
-    error_exit("You must enable a job manager on a CE installation")
+  if utilities.gateway_installed() and not configfile.jobmanager_enabled(config):
+    logger.warning("CE install detected, but no batch systems are enabled in "
+                   "any of the *.ini files. osg-configure will not configure "
+                   "any of the batch systems. This may lead to your CE being "
+                   "unable to run jobs.")
 
   for module in modules:
     try:
