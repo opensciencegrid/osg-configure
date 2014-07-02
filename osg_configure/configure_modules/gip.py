@@ -196,8 +196,8 @@ class GipConfiguration(BaseConfiguration):
     """
     self.log('GipConfiguration.parseConfiguration started')
 
-    if not utilities.ce_installed():
-      self.log('Not a CE configuration, disabling GIP')
+    if not utilities.rpm_installed('gip'):
+      self.log('GIP not installed, disabling GIP')
       self.log('GipConfiguration.parseConfiguration completed')
       self.enabled = False
       return
