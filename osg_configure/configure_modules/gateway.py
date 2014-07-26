@@ -23,7 +23,12 @@ class GatewayConfiguration(BaseConfiguration):
                       configfile.Option(name='htcondor_gateway_enabled',
                                         required=configfile.Option.OPTIONAL,
                                         opt_type=bool,
-                                        default_value=False)}
+                                        default_value=False),
+                    'job_envvar_PATH' :
+                      configfile.Option(name = 'job_envvar_PATH',
+                                        required = configfile.Option.OPTIONAL,
+                                        default_value = '/bin:/usr/bin:/sbin:/usr/sbin',
+                                        mapping = 'PATH')}
     self.gram_gateway_enabled = True
     self.htcondor_gateway_enabled = False
     self.config_section = "Gateway"
