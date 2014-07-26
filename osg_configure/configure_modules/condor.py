@@ -248,7 +248,8 @@ class CondorConfiguration(JobManagerConfiguration):
 
   def setupHTCondorCEConfig(self):
     """
-    Populate the config file that tells htcondor-ce what host to find condor on.
+    Populate the config file that tells htcondor-ce where the condor
+    pool is and where the spool directory is.
 
     Returns True if successful, False otherwise
     """
@@ -256,34 +257,54 @@ class CondorConfiguration(JobManagerConfiguration):
       self.log("Unable to configure htcondor-ce for Condor: htcondor-ce not installed", level=logging.ERROR)
       return False
 
-    def _add_or_replace(variable, new_value):
+    def add_or_replace(old_buf, variable, new_value):
       """
-      If there is a line setting 'variable' in 'buf', change it to set
+      If there is a line setting 'variable' in 'old_buf', change it to set
       variable to new_value. If there is no such line, add a line to the end
       of buf setting variable to new_value. Return the modified buf.
       """
       new_line = '%s=%s' % (variable, new_value)
-      new_buf, count = re.subn(r'(?m)^\s*%s\s*=.*$' % variable, new_line, buf, 1)
+      new_buf, count = re.subn(r'(?m)^\s*%s\s*=.*$' % re.escape(variable), new_line, old_buf, 1)
       if count == 0:
         new_buf += new_line + "\n"
       return new_buf
 
-    condor_host = utilities.get_condor_config_val('CONDOR_HOST')
-    if not condor_host:
-      self.log("Unable to determine value of CONDOR_HOST", level=logging.ERROR)
-      return False
+    def get_condor_ce_config_val(variable):
+      return utilities.get_condor_config_val(variable, executable='condor_ce_config_val')
 
-    try:
-      buf = open(CondorConfiguration.HTCONDOR_CE_CONFIG_FILE).read()
-    except EnvironmentError:
-      buf = ""
-    if not buf:
-      buf = "# This file is managed by osg-configure\n"
-    buf = _add_or_replace('JOB_ROUTER_SCHEDD2_NAME', condor_host)
-    buf = _add_or_replace('JOB_ROUTER_SCHEDD2_POOL', condor_host)
+    # Get values for the settings we want to update. We can get the
+    # values from condor_config_val; in the case of JOB_ROUTER_SCHEDD2_NAME,
+    # we have FULL_HOSTNAME as a fallback in case SCHEDD_NAME is missing.
+    # We also get the current / default value from condor_ce_config_val;
+    # only update the setting in case the value from
+    # condor_config_val is different from the value from condor_ce_config_val.
+    condor_ce_config = {}
+    for condor_ce_config_key, condor_config_keys in [
+        ('JOB_ROUTER_SCHEDD2_NAME', ['SCHEDD_NAME', 'FULL_HOSTNAME']),
+        ('JOB_ROUTER_SCHEDD2_POOL', ['COLLECTOR_HOST']),
+        ('JOB_ROUTER_SCHEDD2_SPOOL', ['SPOOL'])]:
 
-    if not utilities.atomic_write(CondorConfiguration.HTCONDOR_CE_CONFIG_FILE, buf):
-      return False
+      condor_config_value = None
+      for condor_config_value in (utilities.get_condor_config_val(k) for k in condor_config_keys):
+        if condor_config_value:
+          break
+
+      condor_ce_config_value = get_condor_ce_config_val(condor_ce_config_key)
+      if not (condor_config_value or condor_ce_config_value):
+        self.log("Unable to determine value for %s from %s and default not set; check your Condor config" %
+                 (condor_ce_config_key, ' or '.join(condor_config_keys)), level=logging.ERROR)
+        return False
+      elif not condor_ce_config_value or (condor_config_value and condor_ce_config_value != condor_config_value):
+        condor_ce_config[condor_ce_config_key] = condor_config_value
+
+    if condor_ce_config:
+      buf = utilities.read_file(CondorConfiguration.HTCONDOR_CE_CONFIG_FILE,
+                                default="# This file is managed by osg-configure\n")
+      for key, value in condor_ce_config.items():
+        buf = add_or_replace(buf, key, value)
+
+      if not utilities.atomic_write(CondorConfiguration.HTCONDOR_CE_CONFIG_FILE, buf):
+        return False
 
     return True
 

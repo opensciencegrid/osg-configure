@@ -341,6 +341,27 @@ def get_condor_config_val(variable, executable='condor_config_val'):
     return None
 
 
+def read_file(filename, default=None):
+  """
+  Read the contents of a file, returning default if the file cannot be read.
+
+  :param filename: name of file to read
+  :type filename: str
+  :param default: value to return if file cannot be read
+  :return: contents of the file or default
+  """
+  contents = default
+  try:
+    fh = open(filename, 'r')
+    try:
+      contents = fh.read()
+    finally:
+      fh.close()
+  except EnvironmentError:
+    pass
+  return contents
+
+
 def atomic_write(filename=None, contents=None, **kwargs):
   """
   Atomically write contents to a file
