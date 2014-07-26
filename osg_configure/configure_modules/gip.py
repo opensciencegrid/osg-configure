@@ -203,7 +203,13 @@ class GipConfiguration(BaseConfiguration):
       return
     else:
       self.enabled = True
-    
+
+    if not configuration.has_section(self.config_section):
+      self.log("%s section not in config file" % self.config_section)
+      self.log('GipConfiguration.parseConfiguration completed')
+      self.enabled = False
+      return
+
     self.checkConfig(configuration)
 
     # The following is to set the user that gip files need to belong to
