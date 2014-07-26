@@ -390,12 +390,9 @@ def atomic_write(filename=None, contents=None, **kwargs):
 
 def ce_installed():
   """
-  Check to see if the osg-ce metapackage is installed
-  
-  Returns:
-  True if osg-ce metapackage rpm is installed, False otherwise
+  Return True if one of the base osg-ce metapackages (osg-ce or osg-htcondor-ce) is installed
   """
-  return rpm_installed('osg-ce')
+  return any_rpms_installed('osg-ce', 'osg-htcondor-ce')
 
 
 def gateway_installed():
