@@ -94,16 +94,25 @@ def get_configuration_modules(logger):
   
 
 
-def write_attributes(attributes,
-                     local_site_attributes,
-                     job_environment_attributes):
+def write_attributes(attributes, local_site_attributes, attribute_to_option_map):
   """
-  Write out attributes to osg config files in output_directory
+  Write out attributes to osg config files in output_directory.
+  There are two files: osg-job-environment.conf and
+  osg-local-job-environment.conf. Only local_site_attributes goes in
+  osg-local-job-environment.conf. An error will result if a key in
+  JOB_ENVIRONMENT_ATTRIBUTES is missing from 'attributes'.
+  (Exception: OSG_SQUID_LOCATION)
 
-  Keyword arguments:
-  attributes -- osg attributes
-  local_site_attributes -- local site attributes from ini file
-  job_environment_attributes -- attributes for the job environment
+  :param attributes: OSG attributes from all .ini files, including the
+    local site attributes from the "Local Settings" section
+  :type attributes: dict
+  :param local_site_attributes: OSG attributes from just the
+    "Local Settings" section
+  :type local_site_attributes: dict
+  :param attribute_to_option_map: the (section, name) tuple of the
+    config option that is mapped to each attribute; gives better error
+    messages if required attributes are missing from 'attributes'
+  :type attribute_to_option_map: dict
   """
 
   # write out osg-local-job-environment.conf
@@ -111,26 +120,30 @@ def write_attributes(attributes,
     filename = os.path.join(OUTPUT_DIRECTORY, "osg-local-job-environment.conf")
     utilities.write_attribute_file(filename, local_site_attributes)
   except IOError, exception:
-    error_exit("Error writing attributes to osg-local-job-attributes.conf", exception)
+    error_exit("Error writing attributes to osg-local-job-environment.conf", exception)
 
 
   # write out osg-job-environment.conf
   try:
     filename = os.path.join(OUTPUT_DIRECTORY, "osg-job-environment.conf")
     temp = {}
-    for key in job_environment_attributes:
+    for key in JOB_ENVIRONMENT_ATTRIBUTES:
       try:
         temp[key] = attributes[key]
       except KeyError, exception:
         if key == 'OSG_SQUID_LOCATION':
           continue
         else:
-          error_exit("Missing job environment key (%s), exiting." % key, exception)      
+          errmsg = "Missing job environment key (%s), exiting." % key
+          if key in attribute_to_option_map:
+            section, name = attribute_to_option_map[key]
+            errmsg += " The job environment key is specified in config section %r, option %r." % (section, name)
+          error_exit(errmsg, exception)
     utilities.write_attribute_file(filename, temp)
   except IOError, exception:
     error_exit("Error writing attributes to osg-job-environment.conf", exception)
 
-    
+
 def configure_system(modules, logger, configure_module=None, force=False):
   """
   Read configuration files and try to configure the osg system
@@ -176,13 +189,19 @@ def configure_system(modules, logger, configure_module=None, force=False):
     
   attributes = {}
   local_attributes = {}
+  attribute_to_option_map = {}
   for module in modules:
     if  module.__class__.__name__ == 'LocalSettings':
       local_attributes.update(module.getAttributes())
 
     attributes.update(module.getAttributes())
 
-      
+    section = module.config_section
+    for opt in module.options.values():
+      name, attribute = opt.name, opt.value
+      if attribute:
+        attribute_to_option_map[attribute] = (section, name)
+
   
   if not check_configuration(modules, attributes, logger):
     if force:
@@ -211,7 +230,9 @@ def configure_system(modules, logger, configure_module=None, force=False):
   if utilities.gateway_installed():
     write_attributes(attributes,
                      local_attributes,
-                     JOB_ENVIRONMENT_ATTRIBUTES)
+                     attribute_to_option_map)
+  else:
+    logger.debug("Skipped writing job attributes")
 
 
 def query_option(modules, logger, option=None):
