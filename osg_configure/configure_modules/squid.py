@@ -76,7 +76,7 @@ class SquidConfiguration(BaseConfiguration):
     """Check attributes currently stored and make sure that they are consistent"""
     self.log('SquidConfiguration.checkAttributes started')
     attributes_ok = True
-    if not utilities.ce_installed():
+    if not (utilities.gateway_installed() and utilities.rpm_installed('frontier-squid')):
       return attributes_ok
     
     if not self.enabled:

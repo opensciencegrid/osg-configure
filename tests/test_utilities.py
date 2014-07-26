@@ -143,7 +143,14 @@ class TestUtilities(unittest.TestCase):
     rpm_names = ['filesystem', 'glibc']
     self.assertTrue(utilities.rpm_installed(rpm_names),
                     'filesystem and glibc are installed, but rpm_installed returned False')
-    
+
+  def test_any_rpms_installed(self):
+    """
+    Test any_rpms_installed function
+    """
+    self.assertTrue(utilities.any_rpms_installed('filesystem', '__foo__'))
+    self.assertFalse(utilities.any_rpms_installed('__foo__', '__bar__'))
+
 if __name__ == '__main__':
   unittest.main()
 

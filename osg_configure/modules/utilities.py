@@ -29,6 +29,7 @@ __all__ = ['get_elements',
            'get_condor_config_val'
            'atomic_write',
            'ce_installed',
+           'any_rpms_installed'
            'rpm_installed',           
            'get_test_config',
            'make_directory',
@@ -430,30 +431,33 @@ def gateway_installed():
   """
   Check to see if a job gateway (i.e. globus-gatekeeper or htcondor-ce) is installed
   """
-  return (rpm_installed('globus-gatekeeper') or rpm_installed('htcondor-ce'))
+  return any_rpms_installed('globus-gatekeeper', 'htcondor-ce')
 
 
-def rpm_installed(rpm_name=None):
+def any_rpms_installed(*rpm_names):
+  """
+  Check if any of the rpms in the list are installed
+  :param rpms: One or more RPM names
+  :return: True if any of the listed RPMs are installed, False otherwise
+  """
+  return (True in (rpm_installed(rpm_name) for rpm_name in rpm_names))
+
+
+def rpm_installed(rpm_name):
   """
   Check to see if given rpm is installed
   
   Arguments:
   rpm_name - a string with rpm name to check or a Iteratable with rpms that
              should be checked
-             
+
   Returns:
   True if rpms are installed, False otherwise
   """
-  
-  if rpm_name is None:
-    return True
-  
   trans_set = rpm.TransactionSet()
   if isinstance(rpm_name, types.StringType):
-    if trans_set.dbMatch('name', rpm_name).count() in (1, 2):
-      return True
-    return False
-  
+    return trans_set.dbMatch('name', rpm_name).count() in (1, 2)
+
   # check with iterable type
   try:
     for name in rpm_name:

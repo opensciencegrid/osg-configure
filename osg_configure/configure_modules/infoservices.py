@@ -58,8 +58,9 @@ class InfoServicesConfiguration(BaseConfiguration):
 
     self.checkConfig(configuration)
 
-    if (not configuration.has_section(self.config_section) and
-        utilities.ce_installed()):
+    required_rpms_installed = utilities.gateway_installed() and utilities.rpm_installed('osg-info-services')
+
+    if not configuration.has_section(self.config_section) and required_rpms_installed:
       self.log('Section missing and on a CE, autoconfiguring')
       self.__auto_configure(configuration)
       self.log('InfoServicesConfiguration.parseConfiguration completed')
@@ -74,7 +75,7 @@ class InfoServicesConfiguration(BaseConfiguration):
       self.log('InfoServicesConfiguration.parseConfiguration completed')
       return True
 
-    if utilities.rpm_installed('gip'):
+    if required_rpms_installed:
       if (configuration.has_option('Site Information', 'group') and
           configuration.get('Site Information', 'group') == 'OSG-ITB'):
         self.options['ress_servers'].default_value = self.__itb_defaults['ress_servers']
