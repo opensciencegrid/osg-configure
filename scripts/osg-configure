@@ -24,7 +24,7 @@ ENABLED_SERVICES = 6
 CONFIG_DIRECTORY = '/etc/osg'
 OUTPUT_DIRECTORY = '/var/lib/osg'
 LOG_FILE = '/var/log/osg/osg-configure.log'
-job_environment_attributes = ['GLOBUS_LOCATION',
+JOB_ENVIRONMENT_ATTRIBUTES = ['GLOBUS_LOCATION',
                               'OSG_SITE_NAME',
                               'OSG_HOSTNAME',
                               'OSG_GRID',
@@ -38,16 +38,6 @@ job_environment_attributes = ['GLOBUS_LOCATION',
                               'OSG_SQUID_LOCATION',
                               'OSG_JOB_CONTACT',
                               'OSG_GLEXEC_LOCATION']
-
-
-############################# Global Variables ############################
-
-# attributes dictionary has the following structure 
-# key = attribute name
-# value = tuple (attribute type, attribute value)
-# attribute type is either local, main, or gip to indicate whether the attribute
-# should is a local site attribute, osg attribute or gip attribute
-attributes = {}
 
 
 
@@ -221,7 +211,8 @@ def configure_system(modules, logger, configure_module=None, force=False):
   if utilities.gateway_installed():
     write_attributes(attributes,
                      local_attributes,
-                     job_environment_attributes)
+                     JOB_ENVIRONMENT_ATTRIBUTES)
+
 
 def query_option(modules, logger, option=None):
   """
