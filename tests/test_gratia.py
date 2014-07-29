@@ -67,7 +67,7 @@ class TestGratia(unittest.TestCase):
     """
     
     # need to be on a CE to get CE defaults
-    if not utilities.ce_installed():
+    if not gratia.requirements_are_installed():
       return
 
     config_file = get_test_config("gratia/itb_default.ini")
@@ -98,7 +98,7 @@ class TestGratia(unittest.TestCase):
     """
     
     # need to be on a CE to get CE defaults
-    if not utilities.ce_installed():
+    if not gratia.requirements_are_installed():
       return
 
     config_file = get_test_config("gratia/prod_default.ini")
@@ -129,7 +129,7 @@ class TestGratia(unittest.TestCase):
     """
     
     # need to be on a CE to get CE defaults
-    if not utilities.ce_installed():
+    if not gratia.requirements_are_installed():
       return
     config_file = get_test_config("gratia/itb_default2.ini")
     configuration = ConfigParser.SafeConfigParser()
@@ -180,7 +180,7 @@ class TestGratia(unittest.TestCase):
     """
     
     # need to be on a CE to get CE defaults
-    if not utilities.ce_installed():
+    if not gratia.requirements_are_installed():
       return
     config_file = get_test_config("gratia/prod_default2.ini")
     configuration = ConfigParser.SafeConfigParser()

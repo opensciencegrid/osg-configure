@@ -29,6 +29,12 @@ GRATIA_CONFIG_FILES = {
 CE_PROBE_RPMS = ['gratia-probe-condor', 'gratia-probe-gram', 'gratia-probe-pbs-lsf', 'gratia-probe-sge',
                  'gratia-probe-slurm']
 
+
+def requirements_are_installed():
+  return (utilities.gateway_installed() and
+          utilities.any_rpms_installed(CE_PROBE_RPMS))
+
+
 class GratiaConfiguration(BaseConfiguration):
   """Class to handle attributes and configuration related to gratia services"""
 
@@ -82,11 +88,8 @@ in your config.ini file."""
 
     self.checkConfig(configuration)
 
-    required_rpms_are_installed = (utilities.gateway_installed() and
-                                   utilities.any_rpms_installed(CE_PROBE_RPMS))
-
-    if (not configuration.has_section(self.config_section) and required_rpms_are_installed):
-      self.log('On CE and no Gratia section, auto-configuring gratia')
+    if (not configuration.has_section(self.config_section) and requirements_are_installed()):
+      self.log('CE probes installed but no Gratia section, auto-configuring gratia')
       self.__auto_configure(configuration)
       self.log('GratiaConfiguration.parseConfiguration completed')
       return True
@@ -101,7 +104,7 @@ in your config.ini file."""
       return True
 
     # set the appropriate defaults if we're on a CE
-    if required_rpms_are_installed:
+    if requirements_are_installed():
       if configuration.has_option('Site Information', 'group'):
         self.grid_group = configuration.get('Site Information', 'group')
 
