@@ -204,11 +204,12 @@ class GipConfiguration(BaseConfiguration):
     else:
       self.enabled = True
 
-    if not configuration.has_section(self.config_section):
-      self.log("%s section not in config file" % self.config_section)
-      self.log('GipConfiguration.parseConfiguration completed')
-      self.enabled = False
-      return
+    # TODO Do we want to force the user to have a GIP section? Uncomment the following if not.
+    # if not configuration.has_section(self.config_section):
+    #   self.log("%s section not in config file" % self.config_section)
+    #   self.log('GipConfiguration.parseConfiguration completed')
+    #   self.enabled = False
+    #   return
 
     self.checkConfig(configuration)
 

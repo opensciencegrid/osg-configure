@@ -318,22 +318,26 @@ def get_condor_config(default_config='/etc/condor/condor_config'):
     return os.path.join(get_condor_location(), 'etc/condor_config')
 
 
-def get_condor_config_val(variable, executable='condor_config_val'):
+def get_condor_config_val(variable, executable='condor_config_val', quiet_undefined=False):
   """
   Use condor_config_val to return the expanded value of a variable.
 
   Arguments:
   variable - name of the variable whose value to return
-  executable - the name of the executable to use (in case we want to poll condor_ce_config_val or
-               condor_cron_config_val)
-
+  executable - the name of the executable to use (in case we want to
+               poll condor_ce_config_val or condor_cron_config_val)
+  quiet_undefined - set to True if messages from condor_config_val
+               claiming the variable is undefined should be silenced
   Returns:
-  The stripped output of condor_config_val, or None if condor_config_val reports an error.
+  The stripped output of condor_config_val, or None if
+  condor_config_val reports an error.
   """
   try:
     process = subprocess.Popen([executable, '-expand', variable],
-                               stdout=subprocess.PIPE)
-    output = process.communicate()[0]
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    output, error = process.communicate()
+    if error and not (error.startswith('Not defined:') and quiet_undefined):
+        sys.stderr.write(error)
     if process.returncode != 0:
       return None
     return output.strip()
@@ -429,6 +433,8 @@ def any_rpms_installed(*rpm_names):
   :param rpms: One or more RPM names
   :return: True if any of the listed RPMs are installed, False otherwise
   """
+  if isinstance(rpm_names[0], list) or isinstance(rpm_names[0], tuple):
+    rpm_names = list(rpm_names[0])
   return (True in (rpm_installed(rpm_name) for rpm_name in rpm_names))
 
 

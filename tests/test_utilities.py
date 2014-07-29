@@ -41,18 +41,18 @@ class TestUtilities(unittest.TestCase):
     attribute_file = ("/tmp/temp_attributes.conf")
     attribute_standard = get_test_config("test_files/attributes_output.conf")
     try:
-      attributes = {'Foo' : 123,
-                    'test_attr' : 'abc-234#$',
-                    'my-Attribute' : 'test_attribute'}
-      utilities.write_attribute_file(attribute_file, attributes)
-      self.assertEqual(open(attribute_file).read(), 
-                       open(attribute_standard).read(), 
-                       'Attribute files are not equal')
-      if os.path.exists(attribute_file):
-        os.unlink(attribute_file)
-    except Exception, ex:
-      self.fail('Got exception while testing wite_attribute_file' \
-                "functionality:\n%s" % ex)
+      try:
+        attributes = {'Foo' : 123,
+                      'test_attr' : 'abc-234#$',
+                      'my-Attribute' : 'test_attribute'}
+        utilities.write_attribute_file(attribute_file, attributes)
+        self.assertEqual(open(attribute_file).read(),
+                         open(attribute_standard).read(),
+                         'Attribute files are not equal')
+      except Exception, ex:
+        self.fail('Got exception while testing write_attribute_file' \
+                  "functionality:\n%s" % ex)
+    finally:
       if os.path.exists(attribute_file):
         os.unlink(attribute_file)
     

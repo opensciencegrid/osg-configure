@@ -270,7 +270,7 @@ class CondorConfiguration(JobManagerConfiguration):
       return new_buf
 
     def get_condor_ce_config_val(variable):
-      return utilities.get_condor_config_val(variable, executable='condor_ce_config_val')
+      return utilities.get_condor_config_val(variable, executable='condor_ce_config_val', quiet_undefined=True)
 
     # Get values for the settings we want to update. We can get the
     # values from condor_config_val; in the case of JOB_ROUTER_SCHEDD2_NAME,
@@ -285,7 +285,7 @@ class CondorConfiguration(JobManagerConfiguration):
         ('JOB_ROUTER_SCHEDD2_SPOOL', ['SPOOL'])]:
 
       condor_config_value = None
-      for condor_config_value in (utilities.get_condor_config_val(k) for k in condor_config_keys):
+      for condor_config_value in (utilities.get_condor_config_val(k, quiet_undefined=True) for k in condor_config_keys):
         if condor_config_value:
           break
 
