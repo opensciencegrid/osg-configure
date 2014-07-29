@@ -139,7 +139,10 @@ def write_attributes(attributes, local_site_attributes, attribute_to_option_map)
           errmsg = "Missing job environment key (%s), exiting." % key
           if key in attribute_to_option_map:
             section, name = attribute_to_option_map[key]
-            errmsg += " The job environment key is specified in config section %r, option %r." % (section, name)
+            if section:
+              errmsg += " The job environment key is specified in config section %r, option %r." % (section, name)
+            else:
+              errmsg += " The job environment key is specified as option %r." % name
           error_exit(errmsg, exception)
     utilities.write_attribute_file(filename, temp)
   except IOError, exception:
@@ -200,7 +203,7 @@ def configure_system(modules, logger, configure_module=None, force=False):
 
     section = module.config_section
     for opt in module.options.values():
-      name, attribute = opt.name, opt.value
+      name, attribute = opt.name, opt.mapping
       if attribute:
         attribute_to_option_map[attribute] = (section, name)
 

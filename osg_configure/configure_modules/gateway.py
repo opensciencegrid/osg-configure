@@ -24,14 +24,17 @@ class GatewayConfiguration(BaseConfiguration):
                                         required=configfile.Option.OPTIONAL,
                                         opt_type=bool,
                                         default_value=False),
-                    'job_envvar_PATH' :
-                      configfile.Option(name = 'job_envvar_PATH',
-                                        required = configfile.Option.OPTIONAL,
-                                        default_value = '/bin:/usr/bin:/sbin:/usr/sbin',
-                                        mapping = 'PATH')}
+                    'job_envvar_path' :
+                      configfile.Option(name='job_envvar_path',
+                                        required=configfile.Option.OPTIONAL,
+                                        opt_type=str,
+                                        default_value='/bin:/usr/bin:/sbin:/usr/sbin',
+                                        mapping='PATH')}
     self.gram_gateway_enabled = True
     self.htcondor_gateway_enabled = False
     self.config_section = "Gateway"
+    # Some bits of configuration are skipped if enabled is False (which is the default in BaseConfiguration)
+    self.enabled = True # XXX This needs to be True for mappings to work
     self.log('GatewayConfiguration.__init__ completed')
 
   def parseConfiguration(self, configuration):

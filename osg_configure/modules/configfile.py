@@ -199,7 +199,7 @@ class Option(object):
       self.value = kwargs.get('value', '')
     elif self.opt_type == int or self.opt_type == float:
       self.value = kwargs.get('value', 0)
-      
+    # TODO Add a default for self.value? (None?)
     self.default_value = kwargs.get('default_value', None)
     self.required = kwargs.get('required', Option.MANDATORY)
     self.name = kwargs.get('name', 'option')
