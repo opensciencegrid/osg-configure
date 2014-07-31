@@ -111,7 +111,7 @@ def write_attributes(attributes, local_site_attributes, attribute_to_option_map)
   :param local_site_attributes: OSG attributes from just the
     "Local Settings" section
   :type local_site_attributes: dict
-  :param attribute_to_option_map: the (section, name) tuple of the
+  :param attribute_to_option_map: list of (section, name) tuples of the
     config option that is mapped to each attribute; gives better error
     messages if required attributes are missing from 'attributes'
   :type attribute_to_option_map: dict
@@ -138,11 +138,12 @@ def write_attributes(attributes, local_site_attributes, attribute_to_option_map)
         else:
           errmsg = "Missing job environment key (%s), exiting." % key
           if key in attribute_to_option_map:
-            section, name = attribute_to_option_map[key]
-            if section:
-              errmsg += " The job environment key is specified in config section %r, option %r." % (section, name)
-            else:
-              errmsg += " The job environment key is specified as option %r." % name
+            errmsg += "\nThe job environment key may be specified as:\n"
+            for section, name in attribute_to_option_map[key]:
+              if section:
+                errmsg += "Option %r in section %r\n" % (name, section)
+              else:
+                errmsg += "Option %r\n" % (name)
           error_exit(errmsg, exception)
     utilities.write_attribute_file(filename, temp)
   except IOError, exception:
@@ -205,7 +206,7 @@ def configure_system(modules, logger, configure_module=None, force=False):
     for opt in module.options.values():
       name, attribute = opt.name, opt.mapping
       if attribute:
-        attribute_to_option_map[attribute] = (section, name)
+        attribute_to_option_map[attribute] = attribute_to_option_map.get(attribute, []) + [(section, name)]
 
   
   if not check_configuration(modules, attributes, logger):
