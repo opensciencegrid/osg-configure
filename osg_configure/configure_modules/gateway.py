@@ -24,7 +24,6 @@ class GatewayConfiguration(BaseConfiguration):
                                         required=configfile.Option.OPTIONAL,
                                         opt_type=bool,
                                         default_value=False),
-                    # TODO PATH should only be written to the job environment conf if htcondor-ce and condor are enabled -- right now it's unconditional. See SOFTWARE-1554
                     'job_envvar_path' :
                       configfile.Option(name='job_envvar_path',
                                         required=configfile.Option.OPTIONAL,

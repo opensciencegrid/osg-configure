@@ -244,13 +244,27 @@ def configure_system(modules, logger, configure_module=None, force=False):
       except ValueError:
         pass
     else:
+      gateway_module = condor_module = None
       for module in modules:
-        if getattr(module, 'gram_gateway_enabled', None) is False:
-          try:
-            job_environment_attributes.remove('OSG_JOB_CONTACT')
-            logger.info('Not setting OSG_JOB_CONTACT (GRAM gateway is disabled).')
-          except ValueError:
-            pass
+        if module.__class__.__name__ == 'GatewayConfiguration':
+          gateway_module = module
+        elif module.__class__.__name__ == 'CondorConfiguration':
+          condor_module = module
+
+      if gateway_module and not gateway_module.gram_gateway_enabled:
+        try:
+          job_environment_attributes.remove('OSG_JOB_CONTACT')
+          logger.info('Not setting OSG_JOB_CONTACT (GRAM gateway is disabled).')
+        except ValueError:
+          pass
+
+      if ((gateway_module and not gateway_module.htcondor_gateway_enabled) or
+            (condor_module and not condor_module.enabled)):
+        try:
+          job_environment_attributes.remove('PATH')
+          logger.info('Not setting PATH (not HTCondor-CE with Condor).')
+        except ValueError:
+          pass
 
     write_attributes(attributes, local_attributes, job_environment_attributes, attribute_to_option_map)
   else:
