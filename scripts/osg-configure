@@ -24,7 +24,7 @@ ENABLED_SERVICES = 6
 CONFIG_DIRECTORY = '/etc/osg'
 OUTPUT_DIRECTORY = '/var/lib/osg'
 LOG_FILE = '/var/log/osg/osg-configure.log'
-JOB_ENVIRONMENT_ATTRIBUTES = ['GLOBUS_LOCATION',
+DEFAULT_JOB_ENVIRONMENT_ATTRIBUTES = ['GLOBUS_LOCATION',
                               'OSG_SITE_NAME',
                               'OSG_HOSTNAME',
                               'OSG_GRID',
@@ -96,13 +96,14 @@ def get_configuration_modules(logger):
   
 
 
-def write_attributes(attributes, local_site_attributes, attribute_to_option_map):
+def write_attributes(attributes, local_site_attributes, job_environment_attributes, attribute_to_option_map):
   """
   Write out attributes to osg config files in output_directory.
+  :param job_environment_attributes:
   There are two files: osg-job-environment.conf and
   osg-local-job-environment.conf. Only local_site_attributes goes in
   osg-local-job-environment.conf. An error will result if a key in
-  JOB_ENVIRONMENT_ATTRIBUTES is missing from 'attributes'.
+  'job_environment_attributes' is missing from 'attributes'.
   (Exception: OSG_SQUID_LOCATION)
 
   :param attributes: OSG attributes from all .ini files, including the
@@ -110,6 +111,8 @@ def write_attributes(attributes, local_site_attributes, attribute_to_option_map)
   :type attributes: dict
   :param local_site_attributes: OSG attributes from just the
     "Local Settings" section
+  :type job_environment_attributes: list
+  :param job_environment_attributes: The required job attributes to write
   :type local_site_attributes: dict
   :param attribute_to_option_map: list of (section, name) tuples of the
     config option that is mapped to each attribute; gives better error
@@ -129,7 +132,7 @@ def write_attributes(attributes, local_site_attributes, attribute_to_option_map)
   try:
     filename = os.path.join(OUTPUT_DIRECTORY, "osg-job-environment.conf")
     temp = {}
-    for key in JOB_ENVIRONMENT_ATTRIBUTES:
+    for key in job_environment_attributes:
       try:
         temp[key] = attributes[key]
       except KeyError, exception:
@@ -171,11 +174,6 @@ def configure_system(modules, logger, configure_module=None, force=False):
   except IOError, e:
     error_exit("Can't read configuration files: %s" % e)
 
-  if utilities.ce_installed() and not configfile.jobmanager_enabled(config):
-    logger.warning("CE install detected, but no batch systems are enabled in "
-                   "any of the *.ini files. osg-configure will not configure "
-                   "any of the batch systems. This may lead to your CE being "
-                   "unable to run jobs.")
 
   for module in modules:
     try:
@@ -208,7 +206,6 @@ def configure_system(modules, logger, configure_module=None, force=False):
       if attribute:
         attribute_to_option_map[attribute] = attribute_to_option_map.get(attribute, []) + [(section, name)]
 
-  
   if not check_configuration(modules, attributes, logger):
     if force:
       logger.warn("Invalid attributes found but forcing configuration.")
@@ -234,7 +231,28 @@ def configure_system(modules, logger, configure_module=None, force=False):
       error_exit("Can't configure module, exiting")
 
   if utilities.ce_installed():
-    write_attributes(attributes, local_attributes, attribute_to_option_map)
+    job_environment_attributes = list(DEFAULT_JOB_ENVIRONMENT_ATTRIBUTES)
+
+    if not configfile.jobmanager_enabled(config):
+      logger.warning("CE install detected, but no batch systems are enabled in "
+                     "any of the *.ini files. osg-configure will not configure "
+                     "any of the batch systems. This may lead to your CE being "
+                     "unable to run jobs.")
+      try:
+        job_environment_attributes.remove('OSG_JOB_CONTACT')
+        logger.warning("Not setting OSG_JOB_CONTACT (no place to specify it).")
+      except ValueError:
+        pass
+    else:
+      for module in modules:
+        if getattr(module, 'gram_gateway_enabled', None) is False:
+          try:
+            job_environment_attributes.remove('OSG_JOB_CONTACT')
+            logger.info('Not setting OSG_JOB_CONTACT (GRAM gateway is disabled).')
+          except ValueError:
+            pass
+
+    write_attributes(attributes, local_attributes, job_environment_attributes, attribute_to_option_map)
   else:
     logger.debug("Skipped writing job attributes (not a CE)")
 
