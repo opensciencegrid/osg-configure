@@ -53,36 +53,37 @@ def get_elements(element=None, filename=None):
   return values
 
 
-def write_attribute_file(filename=None, attributes=None):
-  """
-  Write attributes to osg attributes file in an atomic fashion
-  """
-  
-  if attributes is None:
-    attributes = {}
-    
-  if filename is None:
-    return True
-    
+def _compose_attribute_file(attributes):
+  """Make the contents of an osg attributes file"""
+
+  def islist(var):
+    return type(var) is types.ListType
+
   variable_string = ""
   export_string = ""
-  # keep a list of array variables 
+  # keep a list of array variables
   array_vars = {}
   keys = attributes.keys()
   keys.sort()
   for key in keys:
-    if type(attributes[key]) is types.ListType:
-      for item in attributes[key]:
+    value = attributes[key]
+    # Special case for SOFTWARE-1567 (let user explicitly unset OSG_APP)
+    if key == 'OSG_APP' and (value == 'UNSET' or (islist(value) and 'UNSET' in value)):
+      variable_string += 'unset OSG_APP\n'
+    elif islist(value):
+      for item in value:
         variable_string += "%s=\"%s\"\n" % (key, item)
-    else:  
-      variable_string += "%s=\"%s\"\n" % (key, attributes[key])
+    else:
+      variable_string += "%s=\"%s\"\n" % (key, value)
     if len(key.split('[')) > 1:
       real_key = key.split('[')[0]
       if real_key not in array_vars:
         export_string += "export %s\n" % key.split('[')[0]
         array_vars[real_key] = ""
     else:
-      export_string += "export %s\n" % key
+      # Special case for SOFTWARE-1567
+      if not (key == 'OSG_APP' and value == 'UNSET'):
+        export_string += "export %s\n" % key
 
   file_contents = """\
 #!/bin/sh
@@ -96,9 +97,16 @@ def write_attribute_file(filename=None, attributes=None):
 #--- export variables -----
 %s
 """ % (variable_string, export_string)
+  return file_contents
 
-  atomic_write(filename, file_contents, mode=0644)
-  return True
+
+def write_attribute_file(filename=None, attributes=None):
+  """
+  Write attributes to osg attributes file in an atomic fashion
+  """
+  if filename:
+    file_contents = _compose_attribute_file(attributes or {})
+    atomic_write(filename, file_contents, mode=0644)
 
 def get_set_membership(test_set, reference_set, defaults=None):
   """

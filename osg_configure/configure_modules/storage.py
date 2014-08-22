@@ -85,7 +85,7 @@ class StorageConfiguration(BaseConfiguration):
       
     self.getOptions(configuration)
     self.log('StorageConfiguration.parseAttributes completed')    
-       
+
 # pylint: disable-msg=W0613
   def checkAttributes(self, attributes):
     """Check attributes currently stored and make sure that they are consistent"""
@@ -176,10 +176,18 @@ class StorageConfiguration(BaseConfiguration):
     APP_DIR must exist and have a etc directory with 1777 permissions for success.
     
     If APP_DIR begins with /cvmfs/oasis.opensciencegrid.org, skip tests
+
+    If APP_DIR is explicitly UNSET, skip tests
     """
     try:
       if app_dir.startswith('/cvmfs/oasis.opensciencegrid.org'):
         self.log('OSG_APP is an OASIS repository, skipping tests', 
+                 level=logging.INFO)
+        return True
+
+      # Added for SOFTWARE-1567
+      if app_dir == 'UNSET':
+        self.log('OSG_APP is UNSET, skipping tests',
                  level=logging.INFO)
         return True
       
