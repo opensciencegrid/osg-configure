@@ -240,7 +240,10 @@ def configure_system(modules, logger, configure_module=None, force=False):
                      "unable to run jobs.")
       try:
         job_environment_attributes.remove('OSG_JOB_CONTACT')
-        logger.warning("Not setting OSG_JOB_CONTACT (no place to specify it).")
+        logger.warning("Not setting the OSG_JOB_CONTACT variable, since that "
+                       "requires a batch system to be enabled (see above). "
+                       "Other than enabling a batch system, there is no further "
+                       "action to take.")
       except ValueError:
         pass
     else:
