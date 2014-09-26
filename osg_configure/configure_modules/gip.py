@@ -284,7 +284,7 @@ class GipConfiguration(BaseConfiguration):
 
   def checkSC(self, config, section):
     """
-    Check attributes related to a SE and make sure that they are consistent
+    Check attributes related to a subcluster and make sure that they are consistent
     """
     self.log('GipConfiguration.checkSC started')
     attributes_ok = True
