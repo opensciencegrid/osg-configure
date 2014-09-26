@@ -318,10 +318,11 @@ class GipConfiguration(BaseConfiguration):
                                       "outside allowed range, 500-512000" % 
                                       (option, section))
       if (option in ['cpus_per_node', 'cores_per_node'] ) and \
-         (entry < 1 or entry > 32):
+         (entry < 1 or entry > 128):
         raise exceptions.SettingError("Value for %s in section %s, %s, is" \
-                                      " outside allowed range, 1-32" % 
+                                      " outside allowed range, 1-128" %
                                       (option, section, entry))
+
     self.log('GipConfiguration.checkSC completed')
     return attributes_ok
     
