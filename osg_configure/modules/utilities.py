@@ -11,6 +11,7 @@ import tempfile
 import subprocess
 import rpm
 import platform
+import ConfigParser
 
 from osg_configure.modules import validation
 
@@ -33,7 +34,8 @@ __all__ = ['get_elements',
            'rpm_installed',           
            'get_test_config',
            'make_directory',
-           'get_os_version']
+           'get_os_version',
+           'config_safe_get']
   
 CONFIG_DIRECTORY = "/etc/osg"
 
@@ -529,3 +531,17 @@ def get_os_version():
   version_list = [int(x) for x in version.split('.')]
   return version_list
 
+
+def config_safe_get(configuration, section, option, default=None):
+  """
+  Return the value of the option `option` from the config section
+  `section` or `default` if the section or the option are missing
+
+  :type configuration: ConfigParser.ConfigParser
+  :type section: str
+  :type option: str
+  """
+  try:
+    return configuration.get(section, option)
+  except (ConfigParser.NoOptionError, ConfigParser.NoSectionError):
+    return default
