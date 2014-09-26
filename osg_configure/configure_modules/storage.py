@@ -128,6 +128,11 @@ class StorageConfiguration(BaseConfiguration):
       self.log("StorageConfiguration.configure completed")
       return True
       
+    if self.options['app_dir'].value == 'UNSET':
+      self.log('OSG_APP unset, exiting')
+      self.log('StorageConfiguration.configure completed')
+      return True
+
     status = True
     grid3_location = os.path.join(self.options['app_dir'].value,
                                   'etc',
