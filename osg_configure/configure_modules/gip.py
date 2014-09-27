@@ -78,6 +78,14 @@ SE_BANNED_ENTRIES = {
    "srm_endpoint": "httpg://srm.example.com:8443/srm/v2/server",
 }
 
+SC_ATTRIBUTE_RANGES = {'SF00': (500, 5000),
+                       'SI00': (500, 5000),
+                       'HEPSPEC': (2, 50),
+                       'ram_mb': (500, 102400),
+                       'swap_mb': (500, 102400),
+                       'cpus_per_node': (1, 128),
+                       'cores_per_node': (1, 256)}
+
 # Error messages
 mount_point_error = """\
 You have enabled the mount_point option, but your input, %(input)s, is invalid
@@ -303,25 +311,18 @@ class GipConfiguration(BaseConfiguration):
                                       (option, section, SC_BANNED_ENTRIES[option]))      
       if entry is None:
         continue
-      if (option in ['SF00', 'SI00'] ) and \
-         (entry < 500 or entry > 5000):
-        raise exceptions.SettingError("Value for %s in section %s is " \
-                                      "outside allowed range, 500-5000" % 
-                                      (option, section))
-      elif option == 'HEPSPEC' and (entry < 2 or entry > 50):
-        raise exceptions.SettingError("Value for %s in section %s is " \
-          "outside allowed range, 2-50.  The conversion factor from HEPSPEC"
-          " to SI2K is 250." % (option, section))
-      elif (option in ['ram_mb', 'swap_mb'] ) and \
-           (entry < 500 or entry > 512000):
-        raise exceptions.SettingError("Value for %s in section %s is " \
-                                      "outside allowed range, 500-512000" % 
-                                      (option, section))
-      if (option in ['cpus_per_node', 'cores_per_node'] ) and \
-         (entry < 1 or entry > 128):
-        raise exceptions.SettingError("Value for %s in section %s, %s, is" \
-                                      " outside allowed range, 1-128" %
-                                      (option, section, entry))
+
+      try:
+        range_min, range_max = SC_ATTRIBUTE_RANGES[option]
+
+        if not (range_min <= entry <= range_max):
+          msg = ("Value for %(option)s in section %(section)s is outside allowed range"
+                 ", %(range_min)d-%(range_max)d" % locals())
+          if option == 'HEPSPEC':
+            msg += '.  The conversion factor from HEPSPEC to SI2K is 250'
+          raise exceptions.SettingError(msg)
+      except KeyError:
+        pass
 
     self.log('GipConfiguration.checkSC completed')
     return attributes_ok

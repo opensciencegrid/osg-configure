@@ -505,6 +505,12 @@ class TestGip(unittest.TestCase):
       did_fail = True
     self.assertTrue(did_fail, 
                     msg="Invalid HEPSPEC entry did not throw an exception.")
+    try:
+      gip_config.checkSC(config_parser, "Subcluster Formerly Bad Cores")
+    except exceptions.SettingError:
+      did_fail = True
+    self.assertFalse(did_fail,
+                     msg="Formerly Bad Cores entry threw an exception")
 
   def test_user_check(self):
     """
