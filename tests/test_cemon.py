@@ -27,6 +27,8 @@ else:
       pass
   global_logger.addHandler(NullHandler())
 
+have_cemon = utilities.rpm_installed('glite-ce-monitor')
+
 class TestCEMon(unittest.TestCase):
   """
   Unit test class to test CemonConfiguration class
@@ -36,7 +38,9 @@ class TestCEMon(unittest.TestCase):
     """
     Test cemon parsing
     """
-    
+    if not have_cemon:
+      return
+
     config_file = get_test_config("cemon/cemon.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -66,7 +70,8 @@ class TestCEMon(unittest.TestCase):
     """
     Test cemon parsing to make sure it picks up ITB defaults
     """
-    
+    if not have_cemon:
+      return
     # need to be on a CE to get CE defaults
     if not utilities.ce_installed():
       return
@@ -101,7 +106,8 @@ class TestCEMon(unittest.TestCase):
     """
     Test cemon parsing to make sure it picks up production defaults
     """
-    
+    if not have_cemon:
+      return
     # need to be on a CE to get CE defaults
     if not utilities.ce_installed():
       return
@@ -137,7 +143,9 @@ class TestCEMon(unittest.TestCase):
     Test cemon parsing to make sure it picks up ITB defaults 
     when the cemon section is missing
     """
-    
+    if not have_cemon:
+      return
+
     # need to be on a CE to get CE defaults
     if not utilities.ce_installed():
       return
@@ -174,7 +182,9 @@ class TestCEMon(unittest.TestCase):
     Test cemon parsing to make sure it picks up production defaults 
     when the cemon section is missing
     """
-    
+    if not have_cemon:
+      return
+
     # need to be on a CE to get CE defaults
     if not utilities.ce_installed():
       return
@@ -209,7 +219,9 @@ class TestCEMon(unittest.TestCase):
     """
     Test cemon parsing when set to disabled
     """
-    
+    if not have_cemon:
+      return
+
     config_file = get_test_config("cemon/disabled.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -230,7 +242,9 @@ class TestCEMon(unittest.TestCase):
     """
     Test cemon parsing when set to ignored
     """
-    
+    if not have_cemon:
+      return
+
     config_file = get_test_config("cemon/ignored.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -251,7 +265,9 @@ class TestCEMon(unittest.TestCase):
     """
     Test cemon parsing when ignoring just bdii or ress
     """
-    
+    if not have_cemon:
+      return
+
     config_file = get_test_config("cemon/ignore_ress.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -283,7 +299,9 @@ class TestCEMon(unittest.TestCase):
     Test the checkAttributes function to see if it catches invalid
     ress servers
     """
-        
+    if not have_cemon:
+      return
+
     config_file = get_test_config("cemon/invalid_ress1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -298,7 +316,9 @@ class TestCEMon(unittest.TestCase):
     Test the checkAttributes function to see if it catches invalid
     ress servers
     """
-        
+    if not have_cemon:
+      return
+
     config_file = get_test_config("cemon/invalid_ress2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -318,7 +338,9 @@ class TestCEMon(unittest.TestCase):
     Test the checkAttributes function to see if it catches invalid
     ress servers
     """
-        
+    if not have_cemon:
+      return
+
     config_file = get_test_config("cemon/invalid_ress3.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -338,7 +360,9 @@ class TestCEMon(unittest.TestCase):
     Test the checkAttributes function to see if it catches invalid
     bdii servers
     """
-        
+    if not have_cemon:
+      return
+
     config_file = get_test_config("cemon/invalid_bdii1.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -353,7 +377,9 @@ class TestCEMon(unittest.TestCase):
     Test the checkAttributes function to see if it catches invalid
     bdii servers
     """
-        
+    if not have_cemon:
+      return
+
     config_file = get_test_config("cemon/invalid_bdii2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -373,7 +399,9 @@ class TestCEMon(unittest.TestCase):
     Test the checkAttributes function to see if it catches invalid
     bdii servers
     """
-        
+    if not have_cemon:
+      return
+
     config_file = get_test_config("cemon/invalid_bdii3.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -392,7 +420,9 @@ class TestCEMon(unittest.TestCase):
     """
     Test the checkAttributes function to see if it oks good attributes
     """
-        
+    if not have_cemon:
+      return
+
     config_file = get_test_config("cemon/check_ok.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -411,7 +441,9 @@ class TestCEMon(unittest.TestCase):
     """
     Test the checkAttributes function to see if it oks a disabled section
     """
-        
+    if not have_cemon:
+      return
+
     config_file = get_test_config("cemon/disabled.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -431,7 +463,9 @@ class TestCEMon(unittest.TestCase):
     """
     Test the checkAttributes function to see if it oks the itb defaults
     """
-        
+    if not have_cemon:
+      return
+
     # need to be on a CE to get CE defaults
     if not utilities.ce_installed():
       return
@@ -454,7 +488,9 @@ class TestCEMon(unittest.TestCase):
     """
     Test the checkAttributes function to see if it oks the production defaults
     """
-        
+    if not have_cemon:
+      return
+
     # need to be on a CE to get CE defaults
     if not utilities.ce_installed():
       return
@@ -477,7 +513,9 @@ class TestCEMon(unittest.TestCase):
     Test the checkAttributes function to see if it oks the itb defaults
     set when the cemon section is missing
     """
-        
+    if not have_cemon:
+      return
+
     config_file = get_test_config("cemon/itb_defaults2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -497,7 +535,9 @@ class TestCEMon(unittest.TestCase):
     Test the checkAttributes function to see if it oks the production defaults
     set when the cemon section is missing
     """
-        
+    if not have_cemon:
+      return
+
     config_file = get_test_config("cemon/prod_defaults2.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -517,7 +557,9 @@ class TestCEMon(unittest.TestCase):
     Test the checkAttributes function to see if it oks the production defaults
     set when the cemon section is missing
     """
-        
+    if not have_cemon:
+      return
+
     config_file = get_test_config("cemon/multiple_ress.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -536,7 +578,9 @@ class TestCEMon(unittest.TestCase):
     Test the checkAttributes function to see if it oks the production defaults
     set when the cemon section is missing
     """
-        
+    if not have_cemon:
+      return
+
     config_file = get_test_config("cemon/multiple_bdii.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)
@@ -554,7 +598,9 @@ class TestCEMon(unittest.TestCase):
     """
     Test to make sure right services get returned
     """
-    
+    if not have_cemon:
+      return
+
     config_file = get_test_config("cemon/cemon.ini")
     configuration = ConfigParser.SafeConfigParser()
     configuration.read(config_file)

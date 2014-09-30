@@ -46,6 +46,7 @@ class CemonConfiguration(BaseConfiguration):
                                     'http://is2.grid.iu.edu:14001[RAW]'}
     self.bdii_servers = {}
     self.ress_servers = {}
+    self.have_cemon = utilities.rpm_installed('glite-ce-monitor')
     self.log("CemonConfiguration.__init__ completed")
 
   def parseConfiguration(self, configuration):
@@ -53,8 +54,12 @@ class CemonConfiguration(BaseConfiguration):
     Try to get configuration information from ConfigParser or SafeConfigParser object given
     by configuration and write recognized settings to attributes dict    
     """
-    
     self.log('CemonConfiguration.parseConfiguration started')
+
+    if not self.have_cemon:
+      self.log('Cemon not installed')
+      self.log('CemonConfiguration.parseConfiguration completed')
+      return True
 
     self.checkConfig(configuration)
 
@@ -97,6 +102,11 @@ class CemonConfiguration(BaseConfiguration):
   def configure(self, attributes):
     """Configure installation using attributes"""
     self.log("CemonConfiguration.configure started")
+
+    if not self.have_cemon:
+      self.log('Cemon not installed')
+      self.log("CemonConfiguration.configure completed")
+      return True
 
     if self.ignored:
       self.log("%s configuration ignored" % self.config_section, 
@@ -143,7 +153,12 @@ class CemonConfiguration(BaseConfiguration):
   def checkAttributes(self, attributes):
     """Check configuration and make sure things are setup correctly"""
     self.log("CemonConfiguration.checkAttributes started")
-    
+
+    if not self.have_cemon:
+      self.log('Cemon not installed')
+      self.log("CemonConfiguration.checkAttributes completed")
+      return True
+
     if not self.enabled:
       self.log("Not enabled")
       self.log("CemonConfiguration.checkAttributes completed")
