@@ -494,7 +494,6 @@ class TestGip(unittest.TestCase):
     # need to be on a CE to get CE defaults
     if not utilities.ce_installed():
       return
-    did_fail = False
     config_parser = ConfigParser.SafeConfigParser()
     config_file = get_test_config("gip/sc_samples.ini")
     config_parser.read(config_file)
@@ -502,15 +501,13 @@ class TestGip(unittest.TestCase):
     try:
       gip_config.checkSC(config_parser, "Subcluster Bad HEPSPEC")
     except exceptions.SettingError:
-      did_fail = True
-    self.assertTrue(did_fail, 
-                    msg="Invalid HEPSPEC entry did not throw an exception.")
+      pass
+    else:
+      self.fail(msg="Invalid HEPSPEC entry did not throw an exception.")
     try:
       gip_config.checkSC(config_parser, "Subcluster Formerly Bad Cores")
     except exceptions.SettingError:
-      did_fail = True
-    self.assertFalse(did_fail,
-                     msg="Formerly Bad Cores entry threw an exception")
+      self.fail(msg="Formerly Bad Cores entry threw an exception")
 
   def test_user_check(self):
     """
