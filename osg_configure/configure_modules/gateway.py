@@ -1,6 +1,5 @@
 """ Module to handle configuration of the job gateway services (globus-gatekeeper and condor-ce)
 """
-import logging
 
 from osg_configure.modules import configfile
 from osg_configure.modules.configurationbase import BaseConfiguration
