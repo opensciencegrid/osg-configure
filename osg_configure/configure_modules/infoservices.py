@@ -19,6 +19,11 @@ HTCONDOR_INFO_SERVICES_FILE = '/etc/condor-ce/config.d/50-info-services.conf'
 SERVICECERT_PATH = "/etc/grid-security/http/httpcert.pem"
 SERVICEKEY_PATH = "/etc/grid-security/http/httpkey.pem"
 
+# BATCH_SYSTEMS here is both the config sections for the batch systems
+# and the values in the OSG_BatchSystems attribute since they are
+# coincidentally the same. If they ever change, make a mapping.
+BATCH_SYSTEMS = ['Condor', 'LSF', 'PBS', 'SGE', 'SLURM']
+
 class InfoServicesConfiguration(BaseConfiguration):
   """
   Class to handle attributes and configuration related to
@@ -57,6 +62,7 @@ class InfoServicesConfiguration(BaseConfiguration):
     self.htcis_required_rpms_installed = utilities.rpm_installed('htcondor-ce')
     self.osg_resource = ""
     self.osg_resource_group = ""
+    self.enabled_batch_systems = []
 
     self.log("InfoServicesConfiguration.__init__ completed")
 
@@ -108,13 +114,16 @@ class InfoServicesConfiguration(BaseConfiguration):
 
     def csg(section, option):
       return utilities.config_safe_get(configuration, section, option, None)
+    def csgbool(section, option):
+      return utilities.config_safe_getboolean(configuration, section, option, False)
 
     # We get some values for HTCondor-CE from the Site Information section
     self.osg_resource = csg('Site Information', 'resource')
     self.osg_resource_group = csg('Site Information', 'resource_group')
+    # and the enabled batch systems from their respective sections
+    self.enabled_batch_systems = [bs for bs in BATCH_SYSTEMS if csgbool(bs, 'enabled')]
 
-    self.copy_host_cert_for_service_cert = utilities.config_safe_getboolean(
-      configuration, 'Misc Services', 'copy_host_cert_for_service_certs')
+    self.copy_host_cert_for_service_cert = csgbool('Misc Services', 'copy_host_cert_for_service_certs')
 
 
 
@@ -291,9 +300,11 @@ class InfoServicesConfiguration(BaseConfiguration):
     schedd_exprs_list = ["$(SCHEDD_EXPRS)"]
     attributes_file_lines = []
 
-    for name, value in [('OSG_Resource', self.osg_resource),
-                        ('OSG_ResourceGroup', self.osg_resource_group)]:
-
+    for name, value in [
+      ('OSG_Resource', self.osg_resource),
+      ('OSG_ResourceGroup', self.osg_resource_group),
+      ('OSG_BatchSystems', ",".join(self.enabled_batch_systems))
+    ]:
       attributes_file_lines.append("%s = %s" % (name, utilities.classad_quote(value)))
       schedd_exprs_list.append(name)
 
