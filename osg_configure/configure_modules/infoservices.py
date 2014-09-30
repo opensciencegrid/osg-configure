@@ -13,9 +13,9 @@ from osg_configure.modules.configurationbase import BaseConfiguration
 
 __all__ = ['InfoServicesConfiguration']
 
-HTCONDOR_ATTRIBUTES_FILE = '/etc/condor-ce/config.d/50-osg-attributes.conf'
-HTCONDOR_INFO_SERVICES_FILE = '/etc/condor-ce/config.d/50-info-services.conf'
-HTCONDOR_COLLECTOR_PORT = 9619
+CE_COLLECTOR_ATTRIBUTES_FILE = '/etc/condor-ce/config.d/10-osg-attributes-generated.conf'
+CE_COLLECTOR_CONFIG_FILE = '/etc/condor-ce/config.d/10-ce-collector-generated.conf'
+HTCONDOR_CE_COLLECTOR_PORT = 9619
 
 SERVICECERT_PATH = "/etc/grid-security/http/httpcert.pem"
 SERVICEKEY_PATH = "/etc/grid-security/http/httpkey.pem"
@@ -41,18 +41,18 @@ class InfoServicesConfiguration(BaseConfiguration):
                                                        default_value=''),
                     'bdii_servers': configfile.Option(name = 'bdii_servers',
                                                        default_value=''),
-                    'htcondor_ce_info_collectors': configfile.Option(name='htcondor_ce_info_collectors',
-                                                                     default_value='',
-                                                                     required = configfile.Option.OPTIONAL)}
+                    'ce_collectors': configfile.Option(name='ce_collectors',
+                                                       default_value='',
+                                                       required = configfile.Option.OPTIONAL)}
     self.__itb_defaults = {
       'ress_servers': 'https://osg-ress-4.fnal.gov:8443/ig/services/CEInfoCollector[OLD_CLASSAD]',
       'bdii_servers': 'http://is1.grid.iu.edu:14001[RAW],http://is2.grid.iu.edu:14001[RAW]',
-      'htcondor_ce_info_collectors': 'collector-itb.opensciencegrid.org:%d' % HTCONDOR_COLLECTOR_PORT}
+      'ce_collectors': 'collector-itb.opensciencegrid.org:%d' % HTCONDOR_CE_COLLECTOR_PORT}
     self.__production_defaults = {
       'ress_servers': 'https://osg-ress-1.fnal.gov:8443/ig/services/CEInfoCollector[OLD_CLASSAD]',
       'bdii_servers': 'http://is1.grid.iu.edu:14001[RAW],http://is2.grid.iu.edu:14001[RAW]',
-      'htcondor_ce_info_collectors': 'collector1.opensciencegrid.org:%d,collector2.opensciencegrid.org:%d' % (
-        HTCONDOR_COLLECTOR_PORT, HTCONDOR_COLLECTOR_PORT)}
+      'ce_collectors': 'collector1.opensciencegrid.org:%d,collector2.opensciencegrid.org:%d' % (
+        HTCONDOR_CE_COLLECTOR_PORT, HTCONDOR_CE_COLLECTOR_PORT)}
     self.bdii_servers = {}
     self.ress_servers = {}
     self.copy_host_cert_for_service_cert = False
@@ -60,17 +60,18 @@ class InfoServicesConfiguration(BaseConfiguration):
     self.ois_required_rpms_installed = utilities.gateway_installed() and utilities.rpm_installed('osg-info-services')
 
     # for htcondor-ce-info-services:
-    self.htcondor_ce_info_collectors = []
-    self.htcis_required_rpms_installed = utilities.rpm_installed('htcondor-ce')
+    self.ce_collectors = []
+    self.ce_collector_required_rpms_installed = utilities.rpm_installed('htcondor-ce')
     self.osg_resource = ""
     self.osg_resource_group = ""
     self.enabled_batch_systems = []
+    self.htcondor_gateway_enabled = None
 
     self.log("InfoServicesConfiguration.__init__ completed")
 
   def __set_default_servers(self, configuration):
     group = utilities.config_safe_get(configuration, 'Site Information', 'group')
-    for key in ['ress_servers', 'bdii_servers', 'htcondor_ce_info_collectors']:
+    for key in ['ress_servers', 'bdii_servers', 'ce_collectors']:
       if group == 'OSG-ITB':
         self.options[key].default_value = self.__itb_defaults[key]
       else:
@@ -112,7 +113,7 @@ class InfoServicesConfiguration(BaseConfiguration):
 
     self.ress_servers = self.__parse_servers(self.options['ress_servers'].value)
     self.bdii_servers = self.__parse_servers(self.options['bdii_servers'].value)
-    self.htcondor_ce_info_collectors = self.options['htcondor_ce_info_collectors'].value.split(',')
+    self.ce_collectors = self.options['ce_collectors'].value.split(',')
 
     def csg(section, option):
       return utilities.config_safe_get(configuration, section, option, None)
@@ -126,6 +127,7 @@ class InfoServicesConfiguration(BaseConfiguration):
     self.enabled_batch_systems = [bs for bs in BATCH_SYSTEMS if csgbool(bs, 'enabled')]
 
     self.copy_host_cert_for_service_cert = csgbool('Misc Services', 'copy_host_cert_for_service_certs')
+    self.htcondor_gateway_enabled = csgbool('Gateway', 'htcondor_gateway_enabled')
 
 
 
@@ -150,8 +152,8 @@ class InfoServicesConfiguration(BaseConfiguration):
         self.log("Could not create service cert/key", level=logging.ERROR)
         return False
 
-    if self.htcis_required_rpms_installed:
-      self.__configure_htcis()
+    if self.ce_collector_required_rpms_installed and self.htcondor_gateway_enabled:
+      self.__configure_ce_collector()
 
     self.log("InfoServicesConfiguration.configure completed")
     return True
@@ -280,23 +282,23 @@ class InfoServicesConfiguration(BaseConfiguration):
     services = set()
     if self.ois_required_rpms_installed:
       services.add('osg-info-services')
-    if self.htcis_required_rpms_installed:
+    if self.ce_collector_required_rpms_installed and self.htcondor_gateway_enabled:
       services.add('condor-ce')
     return services
 
-  def __configure_htcis(self):
+  def __configure_ce_collector(self):
     for filename, description, writer_func in [
-      (HTCONDOR_ATTRIBUTES_FILE, "attributes file", self.__write_htcondor_attributes_file),
-      (HTCONDOR_INFO_SERVICES_FILE, "info services config file", self.__write_htcondor_info_services_file)
+      (CE_COLLECTOR_ATTRIBUTES_FILE, "attributes file", self.__write_ce_collector_attributes_file),
+      (CE_COLLECTOR_CONFIG_FILE, "CE collector config file", self.__write_ce_collector_file)
     ]:
       if not writer_func(filename):
         self.log("Writing %s %r failed" % (description, filename),
                  level=logging.ERROR)
         return False
 
-  def __write_htcondor_attributes_file(self, attributes_file):
-    """Write config file that causes htcondor-ce to advertise certain
-    OSG attributes
+  def __write_ce_collector_attributes_file(self, attributes_file):
+    """Write config file that contains the osg attributes for the
+    CE-Collector to advertise
 
     """
     schedd_exprs_list = ["$(SCHEDD_EXPRS)"]
@@ -318,12 +320,15 @@ class InfoServicesConfiguration(BaseConfiguration):
 
     return utilities.atomic_write(attributes_file, attributes_file_contents)
 
-  def __write_htcondor_info_services_file(self, info_services_file):
-    """Write htcondor-ce-info-services configuration file"""
+  def __write_ce_collector_file(self, info_services_file):
+    """Write CE-Collector configuration file which specifies which
+    host(s) to forward ads to
+
+    """
     view_hosts = []
-    for host in self.htcondor_ce_info_collectors:
+    for host in self.ce_collectors:
       if host.find(':') == -1:
-        view_hosts.append("%s:%d" % (host, HTCONDOR_COLLECTOR_PORT))
+        view_hosts.append("%s:%d" % (host, HTCONDOR_CE_COLLECTOR_PORT))
       else:
         view_hosts.append(host)
     info_services_file_contents = """\
