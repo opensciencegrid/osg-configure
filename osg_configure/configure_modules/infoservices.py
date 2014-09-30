@@ -13,6 +13,8 @@ from osg_configure.modules.configurationbase import BaseConfiguration
 
 __all__ = ['InfoServicesConfiguration']
 
+HTCONDOR_ATTRIBUTES_FILE = '/etc/condor-ce/config.d/50-osg-attributes.conf'
+HTCONDOR_INFO_SERVICES_FILE = '/etc/condor-ce/config.d/50-info-services.conf'
 
 SERVICECERT_PATH = "/etc/grid-security/http/httpcert.pem"
 SERVICEKEY_PATH = "/etc/grid-security/http/httpkey.pem"
@@ -32,21 +34,39 @@ class InfoServicesConfiguration(BaseConfiguration):
     self.options = {'ress_servers': configfile.Option(name = 'ress_servers',
                                                        default_value=''),
                     'bdii_servers': configfile.Option(name = 'bdii_servers',
-                                                       default_value='')}
-    self.__itb_defaults = {'ress_servers': 'https://osg-ress-4.fnal.gov:8443/ig/'
-                                            'services/CEInfoCollector[OLD_CLASSAD]',
-                           'bdii_servers': 'http://is1.grid.iu.edu:14001[RAW],'
-                                            'http://is2.grid.iu.edu:14001[RAW]'}
-    self.__production_defaults = {'ress_servers':
-                                    'https://osg-ress-1.fnal.gov:8443/ig/'
-                                    'services/CEInfoCollector[OLD_CLASSAD]',
-                                  'bdii_servers':
-                                    'http://is1.grid.iu.edu:14001[RAW],'
-                                    'http://is2.grid.iu.edu:14001[RAW]'}
+                                                       default_value=''),
+                    'htcondor_ce_info_collectors': configfile.Option(name='htcondor_ce_info_collectors',
+                                                                     default_value='',
+                                                                     required = configfile.Option.OPTIONAL)}
+    self.__itb_defaults = {
+      'ress_servers': 'https://osg-ress-4.fnal.gov:8443/ig/services/CEInfoCollector[OLD_CLASSAD]',
+      'bdii_servers': 'http://is1.grid.iu.edu:14001[RAW],http://is2.grid.iu.edu:14001[RAW]',
+      'htcondor_ce_info_collectors': 'collector-itb.opensciencegrid.org'}
+    self.__production_defaults = {
+      'ress_servers': 'https://osg-ress-1.fnal.gov:8443/ig/services/CEInfoCollector[OLD_CLASSAD]',
+      'bdii_servers': 'http://is1.grid.iu.edu:14001[RAW],http://is2.grid.iu.edu:14001[RAW]',
+      'htcondor_ce_info_collectors': 'collector1.opensciencegrid.org,collector2.opensciencegrid.org'}
     self.bdii_servers = {}
     self.ress_servers = {}
     self.copy_host_cert_for_service_cert = False
+
+    self.ois_required_rpms_installed = utilities.gateway_installed() and utilities.rpm_installed('osg-info-services')
+
+    # for htcondor-ce-info-services:
+    self.htcondor_ce_info_collectors = []
+    self.htcis_required_rpms_installed = utilities.rpm_installed('htcondor-ce')
+    self.osg_resource = ""
+    self.osg_resource_group = ""
+
     self.log("InfoServicesConfiguration.__init__ completed")
+
+  def __set_default_servers(self, configuration):
+    group = utilities.config_safe_get(configuration, 'Site Information', 'group')
+    for key in ['ress_servers', 'bdii_servers', 'htcondor_ce_info_collectors']:
+      if group == 'OSG-ITB':
+        self.options[key].default_value = self.__itb_defaults[key]
+      else:
+        self.options[key].default_value = self.__production_defaults[key]
 
   def parseConfiguration(self, configuration):
     """
@@ -58,9 +78,7 @@ class InfoServicesConfiguration(BaseConfiguration):
 
     self.checkConfig(configuration)
 
-    required_rpms_installed = utilities.gateway_installed() and utilities.rpm_installed('osg-info-services')
-
-    if not configuration.has_section(self.config_section) and required_rpms_installed:
+    if not configuration.has_section(self.config_section) and self.ois_required_rpms_installed:
       self.log('Section missing and on a CE, autoconfiguring')
       self.__auto_configure(configuration)
       self.log('InfoServicesConfiguration.parseConfiguration completed')
@@ -75,14 +93,7 @@ class InfoServicesConfiguration(BaseConfiguration):
       self.log('InfoServicesConfiguration.parseConfiguration completed')
       return True
 
-    if required_rpms_installed:
-      if (configuration.has_option('Site Information', 'group') and
-          configuration.get('Site Information', 'group') == 'OSG-ITB'):
-        self.options['ress_servers'].default_value = self.__itb_defaults['ress_servers']
-        self.options['bdii_servers'].default_value = self.__itb_defaults['bdii_servers']
-      else:
-        self.options['ress_servers'].default_value = self.__production_defaults['ress_servers']
-        self.options['bdii_servers'].default_value = self.__production_defaults['bdii_servers']
+    self.__set_default_servers(configuration)
 
     self.getOptions(configuration,
                     ignore_options=['itb-ress-servers',
@@ -93,11 +104,17 @@ class InfoServicesConfiguration(BaseConfiguration):
 
     self.ress_servers = self.__parse_servers(self.options['ress_servers'].value)
     self.bdii_servers = self.__parse_servers(self.options['bdii_servers'].value)
+    self.htcondor_ce_info_collectors = self.options['htcondor_ce_info_collectors'].value
 
-    if configuration.has_section('Misc Services'):
-      if configuration.has_option('Misc Services', 'copy_host_cert_for_service_certs'):
-        self.copy_host_cert_for_service_cert = configuration.getboolean('Misc Services',
-                                                                        'copy_host_cert_for_service_certs')
+    def csg(section, option):
+      return utilities.config_safe_get(configuration, section, option, None)
+
+    # We get some values for HTCondor-CE from the Site Information section
+    self.osg_resource = csg('Site Information', 'resource')
+    self.osg_resource_group = csg('Site Information', 'resource_group')
+
+    self.copy_host_cert_for_service_cert = utilities.config_safe_getboolean(
+      configuration, 'Misc Services', 'copy_host_cert_for_service_certs')
 
 
 
@@ -121,6 +138,9 @@ class InfoServicesConfiguration(BaseConfiguration):
       if not self.create_missing_service_cert_key(SERVICECERT_PATH, SERVICEKEY_PATH, 'tomcat'):
         self.log("Could not create service cert/key", level=logging.ERROR)
         return False
+
+    if self.htcis_required_rpms_installed:
+      self.__configure_htcis()
 
     self.log("InfoServicesConfiguration.configure completed")
     return True
@@ -246,7 +266,51 @@ class InfoServicesConfiguration(BaseConfiguration):
     """
     Return a list of  system services needed for module to work
     """
-    return set(['osg-info-services'])
+    services = set()
+    if self.ois_required_rpms_installed:
+      services.add('osg-info-services')
+    if self.htcis_required_rpms_installed:
+      services.add('condor-ce')
+    return services
 
+  def __configure_htcis(self):
+    for filename, description, writer_func in [
+      (HTCONDOR_ATTRIBUTES_FILE, "attributes file", self.__write_htcondor_attributes_file),
+      (HTCONDOR_INFO_SERVICES_FILE, "info services config file", self.__write_htcondor_info_services_file)
+    ]:
+      if not writer_func(filename):
+        self.log("Writing %s %r failed" % (description, filename),
+                 level=logging.ERROR)
+        return False
 
+  def __write_htcondor_attributes_file(self, attributes_file):
+    """Write config file that causes htcondor-ce to advertise certain
+    OSG attributes
+
+    """
+    schedd_exprs_list = ["$(SCHEDD_EXPRS)"]
+    attributes_file_lines = []
+
+    for name, value in [('OSG_Resource', self.osg_resource),
+                        ('OSG_ResourceGroup', self.osg_resource_group)]:
+
+      attributes_file_lines.append("%s = %s" % (name, utilities.classad_quote(value)))
+      schedd_exprs_list.append(name)
+
+    attributes_file_contents = (
+        "# Do not edit - file generated by osg-configure\n"
+        + "\n".join(attributes_file_lines) + "\n"
+        + "SCHEDD_EXPRS = " + " ".join(schedd_exprs_list) + "\n"
+    )
+
+    return utilities.atomic_write(attributes_file, attributes_file_contents)
+
+  def __write_htcondor_info_services_file(self, info_services_file):
+    """Write htcondor-ce-info-services configuration file"""
+    info_services_file_contents = """\
+# Do not edit - file generated by osg-configure
+CONDOR_VIEW_HOST = %s
+""" % (utilities.classad_quote(self.htcondor_ce_info_collectors))
+
+    return utilities.atomic_write(info_services_file, info_services_file_contents)
 

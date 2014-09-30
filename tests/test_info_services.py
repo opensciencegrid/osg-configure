@@ -569,7 +569,11 @@ class TestInfoServices(unittest.TestCase):
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e)
     services = settings.enabledServices()
-    expected_services = set(['osg-info-services'])
+    expected_services = set()
+    if settings.ois_required_rpms_installed:
+      expected_services.add('osg-info-services')
+    if settings.htcis_required_rpms_installed:
+      expected_services.add('condor-ce')
     self.assertEqual(services, expected_services,
                      "List of enabled services incorrect, " +
                      "got %s but expected %s" % (services, expected_services))

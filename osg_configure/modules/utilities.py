@@ -36,6 +36,7 @@ __all__ = ['get_elements',
            'make_directory',
            'get_os_version',
            'config_safe_get',
+           'config_safe_getboolean',
            'classad_quote']
   
 CONFIG_DIRECTORY = "/etc/osg"
@@ -547,6 +548,22 @@ def config_safe_get(configuration, section, option, default=None):
   except (ConfigParser.NoOptionError, ConfigParser.NoSectionError):
     return default
 
+def config_safe_getboolean(configuration, section, option, default=None):
+  """
+  Wrapper around RawConfigParser.getboolean the way config_safe_get is a
+  wrapper around RawConfigParser.get. Note that it also returns default
+  in case of a ValueError, which is raised if the value is not a valid
+  boolean.
+
+  :type configuration: ConfigParser.ConfigParser
+  :type section: str
+  :type option: str
+  """
+  try:
+    return configuration.getboolean(section, option)
+  except (ConfigParser.NoOptionError, ConfigParser.NoSectionError, ValueError):
+    return default
+
 def fallback_classad_quote(input_value):
   r"""Quote a Python string according to classad syntax (fallback if classad.quote is missing)
 
@@ -581,7 +598,7 @@ def fallback_classad_quote(input_value):
 
   quoted_value = ""
   state = S0
-  for inchar in input_value:
+  for inchar in str(input_value):
     if inchar in STATE_TABLE[state]:
       nextchar_fun, state = STATE_TABLE[state][inchar]
     else:
@@ -599,6 +616,7 @@ def fallback_classad_quote(input_value):
 
 try:
   import classad
-  classad_quote = classad.quote
+  _classad_quote = classad.quote
+  def classad_quote(input_value): return _classad_quote(str(input_value))
 except (ImportError, AttributeError):
   classad_quote = fallback_classad_quote
