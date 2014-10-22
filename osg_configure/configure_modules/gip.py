@@ -44,6 +44,7 @@ SC_ENTRIES = {
    "inbound_network": (REQUIRED, BOOLEAN),
    "outbound_network": (REQUIRED, BOOLEAN),
    "cpu_platform": (REQUIRED, STRING),
+   "allowed_vos": (OPTIONAL, STRING),
 }
 
 SC_BANNED_ENTRIES = {
@@ -407,7 +408,7 @@ class GipConfiguration(BaseConfiguration):
             raise exceptions.SettingError(msg)
     self.log('GipConfiguration.checkSE completed')
     return attributes_ok
-    
+
 # pylint: disable-msg=W0613
   def configure(self, attributes):
     """
