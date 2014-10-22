@@ -37,7 +37,8 @@ __all__ = ['get_elements',
            'get_os_version',
            'config_safe_get',
            'config_safe_getboolean',
-           'classad_quote']
+           'classad_quote',
+           'add_or_replace_var']
   
 CONFIG_DIRECTORY = "/etc/osg"
 
@@ -620,3 +621,16 @@ try:
   def classad_quote(input_value): return _classad_quote(str(input_value))
 except (ImportError, AttributeError):
   classad_quote = fallback_classad_quote
+
+
+def add_or_replace_var(old_buf, variable, new_value):
+  """
+  If there is a line setting 'variable' in 'old_buf' (in a "var=value" format),
+  change it to set variable to new_value. If there is no such line, add a line
+  to the end of buf setting variable to new_value. Return the modified buf.
+  """
+  new_line = '%s=%s' % (variable, new_value)
+  new_buf, count = re.subn(r'(?m)^\s*%s\s*=.*$' % re.escape(variable), new_line, old_buf, 1)
+  if count == 0:
+    new_buf += new_line + "\n"
+  return new_buf

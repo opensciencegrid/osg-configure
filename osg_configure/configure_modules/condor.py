@@ -257,18 +257,6 @@ class CondorConfiguration(JobManagerConfiguration):
       self.log("Unable to configure htcondor-ce for Condor: htcondor-ce not installed", level=logging.ERROR)
       return False
 
-    def add_or_replace(old_buf, variable, new_value):
-      """
-      If there is a line setting 'variable' in 'old_buf', change it to set
-      variable to new_value. If there is no such line, add a line to the end
-      of buf setting variable to new_value. Return the modified buf.
-      """
-      new_line = '%s=%s' % (variable, new_value)
-      new_buf, count = re.subn(r'(?m)^\s*%s\s*=.*$' % re.escape(variable), new_line, old_buf, 1)
-      if count == 0:
-        new_buf += new_line + "\n"
-      return new_buf
-
     def get_condor_ce_config_val(variable):
       return utilities.get_condor_config_val(variable, executable='condor_ce_config_val', quiet_undefined=True)
 
@@ -301,7 +289,7 @@ class CondorConfiguration(JobManagerConfiguration):
       buf = utilities.read_file(CondorConfiguration.HTCONDOR_CE_CONFIG_FILE,
                                 default="# This file is managed by osg-configure\n")
       for key, value in condor_ce_config.items():
-        buf = add_or_replace(buf, key, value)
+        buf = utilities.add_or_replace_var(buf, key, value)
 
       if not utilities.atomic_write(CondorConfiguration.HTCONDOR_CE_CONFIG_FILE, buf):
         return False
