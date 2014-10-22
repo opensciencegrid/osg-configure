@@ -119,6 +119,8 @@ HEPSPEC = 10
 }""")
 
   def testFullWithExtras(self):
+    # Disable this test because the feature is disabled for now
+    return
     config = ConfigParser.SafeConfigParser()
     config_io = cStringIO.StringIO(r"""
 [Subcluster Test]
