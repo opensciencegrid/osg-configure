@@ -77,6 +77,14 @@ class InfoServicesConfiguration(BaseConfiguration):
       else:
         self.options[key].default_value = self.__production_defaults[key]
 
+  def __parse_ce_collectors(self, val):
+    if val == 'PRODUCTION':
+      return self.__production_defaults['ce_collectors'].split(',')
+    elif val == 'ITB':
+      return self.__itb_defaults['ce_collectors'].split(',')
+    else:
+      return val.split(',')
+
   def parseConfiguration(self, configuration):
     """
     Try to get configuration information from ConfigParser or SafeConfigParser object given
@@ -113,7 +121,7 @@ class InfoServicesConfiguration(BaseConfiguration):
 
     self.ress_servers = self.__parse_servers(self.options['ress_servers'].value)
     self.bdii_servers = self.__parse_servers(self.options['bdii_servers'].value)
-    self.ce_collectors = self.options['ce_collectors'].value.split(',')
+    self.ce_collectors = self.__parse_ce_collectors(self.options['ce_collectors'].value)
 
     def csg(section, option):
       return utilities.config_safe_get(configuration, section, option, None)
