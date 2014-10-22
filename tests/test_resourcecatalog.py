@@ -20,9 +20,9 @@ class TestResourceCatalog(unittest.TestCase):
     self.rc.add_entry('sc1', 1, 2000)
     self.assertEqual(self.rc.compose_text().strip(), r"""OSG_ResourceCatalog = { \
   [ \
-    Name = "sc1"; \
     CPUs = 1; \
     Memory = 2000; \
+    Name = "sc1"; \
     Requirements = RequestCPUs <= CPUs && RequestMemory <= Memory; \
   ] \
 }""")
@@ -34,21 +34,21 @@ class TestResourceCatalog(unittest.TestCase):
       .add_entry('sc3', 4, 8000, 'osg   ,,,atlas'))
     self.assertEqual(self.rc.compose_text().strip(), r"""OSG_ResourceCatalog = { \
   [ \
-    Name = "sc1"; \
     CPUs = 1; \
     Memory = 2000; \
+    Name = "sc1"; \
     Requirements = RequestCPUs <= CPUs && RequestMemory <= Memory; \
   ], \
   [ \
-    Name = "sc2"; \
     CPUs = 2; \
     Memory = 4000; \
+    Name = "sc2"; \
     Requirements = RequestCPUs <= CPUs && RequestMemory <= Memory; \
   ], \
   [ \
-    Name = "sc3"; \
     CPUs = 4; \
     Memory = 8000; \
+    Name = "sc3"; \
     Requirements = RequestCPUs <= CPUs && RequestMemory <= Memory && (VO == "osg" || VO == "atlas"); \
   ] \
 }""")
@@ -83,9 +83,9 @@ HEPSPEC = 10
     self.assertEqual(subcluster.resource_catalog_from_config(config).compose_text(),
                      r"""OSG_ResourceCatalog = { \
   [ \
-    Name = "red.unl.edu"; \
     CPUs = 4; \
     Memory = 4000; \
+    Name = "red.unl.edu"; \
     Requirements = RequestCPUs <= CPUs && RequestMemory <= Memory; \
   ] \
 }""")

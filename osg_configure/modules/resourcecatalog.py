@@ -6,7 +6,7 @@ class ResourceCatalog(object):
   """Class for building an OSG_ResourceCatalog attribute in condor-ce configs for the ce-collector"""
 
   def __init__(self):
-    self.entries = []
+    self.entries = {}
 
   def add_entry(self, name, cpus, memory, allowed_vos=None):
     """Composes an entry for a single resource and adds it to the list of entries in the ResourceCatalog
@@ -33,10 +33,9 @@ class ResourceCatalog(object):
     if isinstance(allowed_vos, str):
       allowed_vos = re.split('[ ,]+', allowed_vos)
 
-    lines = ['  [',
-             '    Name = %s;' % utilities.classad_quote(name),
-             '    CPUs = %d;' % cpus,
-             '    Memory = %d;' % memory]
+    attributes = {'Name': utilities.classad_quote(name),
+                  'CPUs': cpus,
+                  'Memory': memory}
 
     requirements_clauses = ['RequestCPUs <= CPUs', 'RequestMemory <= Memory']
 
@@ -45,11 +44,9 @@ class ResourceCatalog(object):
       requirements_clauses.append("(%s)" % " || ".join(vo_clauses))
 
     if requirements_clauses:
-      lines.append('    Requirements = %s;' % ' && '.join(requirements_clauses))
+      attributes['Requirements'] = ' && '.join(requirements_clauses)
 
-    lines.append('  ]')
-
-    self.entries.append(' \\\n'.join(lines))
+    self.entries[name] = attributes
 
     return self
 
@@ -58,8 +55,16 @@ class ResourceCatalog(object):
     if not self.entries:
       catalog = '{}'
     else:
+      entry_texts = []
+      for entrykey in sorted(self.entries):
+        entry = self.entries[entrykey]
+        entry_text = '  [ \\\n'
+        for attribkey in sorted(entry):
+          entry_text += '    %s = %s; \\\n' % (attribkey, entry[attribkey])
+        entry_text += '  ]'
+        entry_texts.append(entry_text)
       catalog = ( '{ \\\n'
-                + ', \\\n'.join(self.entries)
+                + ', \\\n'.join(entry_texts)
                 + ' \\\n}' )
 
     return 'OSG_ResourceCatalog = ' + catalog
