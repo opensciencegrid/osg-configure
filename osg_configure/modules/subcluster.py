@@ -47,13 +47,13 @@ BANNED_ENTRIES = {
 }
 
 ENTRY_RANGES = {
-  'SF00': (500, 5000),
-  'SI00': (500, 5000),
-  'HEPSPEC': (2, 50),
-  'ram_mb': (500, 102400),
-  'swap_mb': (500, 102400),
-  'cpus_per_node': (1, 128),
-  'cores_per_node': (1, 256),
+  'SF00': (500, 320000),
+  'SI00': (500, 320000),
+  'HEPSPEC': (2, 3200),
+  'ram_mb': (512, 8388608),
+  'swap_mb': (512, 8388608),
+  'cpus_per_node': (1, 2048),
+  'cores_per_node': (1, 8192),
 }
 
 
