@@ -88,7 +88,7 @@ SC_ATTRIBUTE_RANGES = {'SF00': (500, 5000),
                        'cores_per_node': (1, 256)}
 
 # Error messages
-mount_point_error = """\
+MOUNT_POINT_ERROR = """\
 You have enabled the mount_point option, but your input, %(input)s, is invalid
 because of:
 %(reason)s
@@ -373,15 +373,15 @@ class GipConfiguration(BaseConfiguration):
         err_info = {'input': value}
         if len(entry) != 2:
           err_info['reason'] = "Only one path was specified!"
-          msg = mount_point_error % err_info
+          msg = MOUNT_POINT_ERROR % err_info
           raise exceptions.SettingError(msg)
         if not regex.match(entry[0]):
           err_info['reason'] = "First path does not pass validation"
-          msg = mount_point_error % err_info
+          msg = MOUNT_POINT_ERROR % err_info
           raise exceptions.SettingError(msg)
         if not regex.match(entry[1]):
           err_info['reason'] = "Second path does not pass validation"
-          msg = mount_point_error % err_info
+          msg = MOUNT_POINT_ERROR % err_info
           raise exceptions.SettingError(msg)
 
       if option == 'srm_endpoint':
