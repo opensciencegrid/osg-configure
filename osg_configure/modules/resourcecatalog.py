@@ -3,10 +3,23 @@ import utilities
 
 
 class ResourceCatalog(object):
+  """Class for building an OSG_ResourceCatalog attribute in condor-ce configs for the ce-collector"""
+
   def __init__(self):
     self.entries = []
 
   def add_entry(self, name, cpus, memory, allowed_vos=None):
+    """Composes an entry for a single resource and adds it to the list of entries in the ResourceCatalog
+    :param name: name of the resource
+    :type name: str
+    :param cpus: number of cores per node
+    :type cpus: int
+    :param memory: megabytes of memory per node
+    :type memory: int
+    :param allowed_vos: a list or string containing the names of all the VOs that are allowed to run on this resource.
+      Optional; if not specified, all VOs can run on this resource.
+    :type allowed_vos: str or list
+    """
     if not name:
       raise ValueError("Required parameter 'name' must be specified")
     # These statements can raise TypeError or ValueError but that's ok
@@ -41,6 +54,7 @@ class ResourceCatalog(object):
     return self
 
   def compose_text(self):
+    """Return the OSG_ResourceCatalog classad attribute made of all the entries in this object"""
     if not self.entries:
       catalog = '{}'
     else:

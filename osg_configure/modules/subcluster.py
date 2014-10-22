@@ -149,6 +149,11 @@ def check_section(config, section):
 
 
 def check_config(config):
+  """
+  Check all subcluster definitions in an entire config
+  :type config: ConfigParser.ConfigParser
+  :return: True if there are any subcluster definitions, False otherwise
+  """
   has_sc = False
   for section in config.sections():
     if not section.lower().startswith('subcluster'):
@@ -157,7 +162,13 @@ def check_config(config):
     check_section(config, section)
   return has_sc
 
+
 def resource_catalog_from_config(config):
+  """
+  Create a ResourceCatalog from the subcluster entries in a config
+  :type config: ConfigParser.ConfigParser
+  :rtype: ResourceCatalog
+  """
   assert isinstance(config, ConfigParser.ConfigParser)
   rc = ResourceCatalog()
   for section in config.sections():
