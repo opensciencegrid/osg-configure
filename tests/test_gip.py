@@ -422,6 +422,16 @@ class TestGip(unittest.TestCase):
     except exceptions.SettingError:
       self.fail(msg="Formerly Bad Cores entry threw an exception")
 
+  def test_no_name(self):
+    """
+    Make sure a missing name causes an error
+    """
+    config_parser = ConfigParser.SafeConfigParser()
+    config_file = get_test_config("gip/sc_samples.ini")
+    config_parser.read(config_file)
+    gip_config = gip.GipConfiguration(logger=global_logger)
+    self.assertRaises(exceptions.SettingError, gip_config.checkSC, config_parser, "Subcluster No Name")
+
   def test_user_check(self):
     """
     Check to make sure gip class will distinguish between valid and 

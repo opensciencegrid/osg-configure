@@ -1,7 +1,9 @@
 import re
 import ConfigParser
 
+from osg_configure.modules.resourcecatalog import ResourceCatalog
 from osg_configure.modules import exceptions
+from osg_configure.modules import utilities
 
 
 REQUIRED = "required"
@@ -59,16 +61,15 @@ def check_entry(config, section, option, status, kind):
   """
   Check entries to make sure that they conform to the correct range of values
   """
-  has_entry = True
   entry = None
   try:
-    entry = config.get(section, option)
+    entry = str(config.get(section, option)).strip()
   except (ConfigParser.NoSectionError, ConfigParser.NoOptionError, ConfigParser.InterpolationError):
-    has_entry = False
-  if not has_entry and status == REQUIRED:
+    pass
+  if not entry and status == REQUIRED:
     raise exceptions.SettingError("Can't get value for mandatory setting %s in section %s." %\
                                   (option, section))
-  elif not has_entry and status == OPTIONAL:
+  elif not entry and status == OPTIONAL:
     return None
   if kind == STRING:
     # No parsing we can do for strings.
@@ -118,7 +119,6 @@ def check_section(config, section):
   """
   Check attributes related to a subcluster and make sure that they are consistent
   """
-  attributes_ok = True
   if section.lower().find('changeme') >= 0:
     msg = "You have a section named 'Subcluster CHANGEME', you must change this name.\n"
     msg += "'Subcluster Main' is an example"
@@ -147,7 +147,6 @@ def check_section(config, section):
     except KeyError:
       pass
 
-  return attributes_ok
 
 def check_config(config):
   has_sc = False
@@ -157,3 +156,19 @@ def check_config(config):
     has_sc = True
     check_section(config, section)
   return has_sc
+
+def resource_catalog_from_config(config):
+  assert isinstance(config, ConfigParser.ConfigParser)
+  rc = ResourceCatalog()
+  for section in config.sections():
+    if section.lower().startswith('subcluster'):
+      check_section(config, section)
+      name = config.get(section, 'name')
+      cpus = config.getint(section, 'cores_per_node')
+      memory = config.getint(section, 'ram_mb')
+      allowed_vos = utilities.config_safe_get(config, section, 'allowed_vos')
+      rc.add_entry(name=name,
+                   cpus=cpus,
+                   memory=memory,
+                   allowed_vos=allowed_vos)
+  return rc
