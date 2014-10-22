@@ -5,6 +5,7 @@ import re
 import pwd
 import logging
 
+from osg_configure.modules import subcluster
 from osg_configure.modules import exceptions
 from osg_configure.modules.configurationbase import BaseConfiguration
 from osg_configure.modules import utilities
@@ -13,52 +14,13 @@ from osg_configure.modules import validation
 
 __all__ = ['GipConfiguration']
 
-REQUIRED = "required"
-OPTIONAL = "optional"
-
-STRING = "str"
-POSITIVE_INT = "positive int"
-POSITIVE_FLOAT = "positive float"
-LIST = "list"
-BOOLEAN = "boolean"
+from osg_configure.modules.subcluster import REQUIRED, OPTIONAL, STRING, POSITIVE_INT, POSITIVE_FLOAT, LIST, BOOLEAN
 
 OSG_ENTRIES = {
    "Site Information": ["host_name", "site_name", "sponsor", "site_policy",
                         "contact", "email", "city", "longitude", "latitude"],
    "Storage": ["app_dir", "data_dir", "worker_node_temp"],
 }
-
-SC_ENTRIES = {
-   "name": (REQUIRED, STRING),
-   "cpu_vendor": (REQUIRED, STRING),
-   "cpu_model": (REQUIRED, STRING),
-   "cores_per_node": (REQUIRED, POSITIVE_INT),
-   "node_count": (REQUIRED, POSITIVE_INT),
-   "cpus_per_node": (REQUIRED, POSITIVE_INT),
-   "cpu_speed_mhz": (REQUIRED, POSITIVE_FLOAT),
-   "ram_mb": (REQUIRED, POSITIVE_INT),
-   "swap_mb": (OPTIONAL, POSITIVE_INT),
-   "SI00": (OPTIONAL, POSITIVE_FLOAT),
-   "HEPSPEC": (OPTIONAL, POSITIVE_FLOAT),
-   "SF00": (OPTIONAL, POSITIVE_FLOAT),
-   "inbound_network": (REQUIRED, BOOLEAN),
-   "outbound_network": (REQUIRED, BOOLEAN),
-   "cpu_platform": (REQUIRED, STRING),
-   "allowed_vos": (OPTIONAL, STRING),
-}
-
-SC_BANNED_ENTRIES = {
-   "name": "SUBCLUSTER_NAME",
-   "node_count": "NUMBER_OF_NODE",
-   "ram_mb": "MB_OF_RAM",
-   "cpu_model": "CPU_MODEL_FROM_/proc/cpuinfo",
-   "cpu_vendor": "VENDOR_AMD_OR_INTEL",
-   "cpu_speed_mhz": "CLOCK_SPEED_MHZ",
-   "cpu_platform": "x86_64_OR_i686",
-   "cpus_per_node": "#_PHYSICAL_CHIPS_PER_NODE",
-   "cores_per_node": "#_CORES_PER_NODE",
-}
-
 
 SE_ENTRIES = {
    "name": (REQUIRED, STRING),
@@ -78,14 +40,6 @@ SE_BANNED_ENTRIES = {
    "name": "SE_CHANGEME",
    "srm_endpoint": "httpg://srm.example.com:8443/srm/v2/server",
 }
-
-SC_ATTRIBUTE_RANGES = {'SF00': (500, 5000),
-                       'SI00': (500, 5000),
-                       'HEPSPEC': (2, 50),
-                       'ram_mb': (500, 102400),
-                       'swap_mb': (500, 102400),
-                       'cpus_per_node': (1, 128),
-                       'cores_per_node': (1, 256)}
 
 # Error messages
 MOUNT_POINT_ERROR = """\
@@ -127,75 +81,8 @@ class GipConfiguration(BaseConfiguration):
 
     self.gip_user = None
     self.log('GipConfiguration.__init__ completed')
-    
-  def _check_entry(self, config, section, option, status, kind):
-    """
-    Check entries to make sure that they conform to the correct range of values 
-    """
-    self.log('GipConfiguration._check_entry started')
-    has_entry = True
-    entry = None
-    try:
-      entry = config.get(section, option)
-    # pylint: disable-msg=W0703
-    except Exception:
-      has_entry = False
-    if not has_entry and status == REQUIRED:
-      self.log("Mandatory setting %s in section %s not found." % \
-                        (option, section))
-      raise exceptions.SettingError("Can't get value for %s in section %s." %\
-                                    (option, section))
-    elif not has_entry and status == OPTIONAL:
-      self.log('GipConfiguration._check_entry completed')
-      return None
-    if kind == STRING:
-      # No parsing we can do for strings.
-      self.log('GipConfiguration._check_entry completed')
-      return entry
-    elif kind == POSITIVE_INT:
-      try:
-        entry = int(entry)
-        if entry < 0:
-          raise ValueError()
-      except:
-        raise exceptions.SettingError("Value of option `%s` in section " \
-                                      "`%s` should be a positive integer, but it is `%s`" % \
-                                      (option, section, entry))
-      self.log('GipConfiguration._check_entry completed')
-      return entry
-    elif kind == POSITIVE_FLOAT:
-      try:
-        entry = float(entry)
-        if entry < 0:
-          raise ValueError()
-      except:
-        raise exceptions.SettingError("Value of option `%s` in section " \
-                                      "`%s` should be a positive float, but it is `%s`" % \
-                                      (option, section, entry))
-      self.log('GipConfiguration._check_entry completed')
-      return entry
-    elif kind == BOOLEAN:
-      entry = entry.lower()
-      possible_vals = ['t', 'true', 'yes', 'y', 'enable', 'enabled', 'f',
-                       'false', 'no', 'n', 'disable', 'disabled']
-      positive_vals = ['t', 'true', 'yes', 'y', 'enable', 'enabled']
-      if entry not in possible_vals:
-        raise exceptions.SettingError("Value of option `%s` in section " \
-                                      "`%s` should be a boolean, but it is `%s`" % (option, 
-                                                                                    section,
-                                                                                    entry))
-      self.log('GipConfiguration._check_entry completed')
-      return entry in positive_vals
-    elif kind == LIST:
-      regex = re.compile(r'\s*,*\s*')
-      entry = regex.split(entry)
-      self.log('GipConfiguration._check_entry completed')
-      return entry
 
-    else:
-      # Kind of entry isn't known... OK for now.
-      self.log('GipConfiguration._check_entry completed')
-      return entry
+  _check_entry = staticmethod(subcluster.check_entry)
 
   def parseConfiguration(self, configuration):
     """
@@ -226,6 +113,8 @@ class GipConfiguration(BaseConfiguration):
 
     self.log('GipConfiguration.parseConfiguration completed')
 
+  check_subclusters = staticmethod(subcluster.check_config)
+
   def _parseConfiguration(self, configuration):
     """
     The meat of parseConfiguration, runs after we've checked that GIP is
@@ -244,12 +133,8 @@ class GipConfiguration(BaseConfiguration):
                                            batch_opt)
         self.log(msg, level=logging.ERROR)
         raise exceptions.SettingError(msg)
-    has_sc = False
-    for section in configuration.sections():
-      if not section.lower().startswith('subcluster'):
-        continue
-      has_sc = True
-      self.checkSC(configuration, section)
+
+    has_sc = self.check_subclusters(configuration)
     if not has_sc:
       try:
         self._check_entry(configuration, "GIP", "sc_number", REQUIRED,
@@ -260,6 +145,7 @@ class GipConfiguration(BaseConfiguration):
               " Please see the configuration documentation."
         raise exceptions.SettingError(msg)
 
+
     # Check for the presence of the classic SE
     has_classic_se = True
     try:
@@ -269,6 +155,7 @@ class GipConfiguration(BaseConfiguration):
     # pylint: disable-msg=W0704
     except Exception:
       pass
+
     has_se = False
     for section in configuration.sections():
       if not section.lower().startswith('se'):
@@ -295,43 +182,8 @@ class GipConfiguration(BaseConfiguration):
         raise exceptions.SettingError(err_msg)
       self.gip_user = username
 
-  def checkSC(self, config, section):
-    """
-    Check attributes related to a subcluster and make sure that they are consistent
-    """
-    self.log('GipConfiguration.checkSC started')
-    attributes_ok = True
-    if section.lower().find('changeme') >= 0:
-      msg = "You have a section named 'Subcluster CHANGEME', you must change this name.\n"
-      msg += "'Subcluster Main' is an example"
-      raise exceptions.SettingError(msg)
-    
-    for option, value in SC_ENTRIES.items():
-      status, kind = value
-      entry = self._check_entry(config, section, option, status, kind)
-      if option in SC_BANNED_ENTRIES and entry == SC_BANNED_ENTRIES[option]:
-        raise exceptions.SettingError("Value for %s in section %s is " \
-                                      "a default or banned entry (%s); " \
-                                      "you must change this value." % \
-                                      (option, section, SC_BANNED_ENTRIES[option]))      
-      if entry is None:
-        continue
+  checkSC = staticmethod(subcluster.check_section)
 
-      try:
-        range_min, range_max = SC_ATTRIBUTE_RANGES[option]
-
-        if not (range_min <= entry <= range_max):
-          msg = ("Value for %(option)s in section %(section)s is outside allowed range"
-                 ", %(range_min)d-%(range_max)d" % locals())
-          if option == 'HEPSPEC':
-            msg += '.  The conversion factor from HEPSPEC to SI2K is 250'
-          raise exceptions.SettingError(msg)
-      except KeyError:
-        pass
-
-    self.log('GipConfiguration.checkSC completed')
-    return attributes_ok
-    
   def checkSE(self, config, section):
     """
     Check attributes currently stored and make sure that they are consistent
