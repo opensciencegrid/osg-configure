@@ -8,7 +8,6 @@ import sys
 import unittest
 import ConfigParser
 import logging
-import imp 
 
 # setup system library path
 pathname = os.path.realpath('../')
@@ -27,22 +26,6 @@ else:
   global_logger.addHandler(NullHandler())
 
 
-pathname = os.path.join('../scripts', 'osg-configure')
-pathname = os.path.abspath(pathname)
-
-if not os.path.exists(pathname):
-  pathname = os.path.join('/', 'usr', 'sbin', 'osg-configure')
-  if not os.path.exists(pathname):
-    raise Exception("Can't find osg-configure script")
-
-try:
-  has_configure_osg = False
-  fp = open(pathname, 'r')
-  configure_osg = imp.load_module('osg-configure', fp, pathname, ('', '', 1))
-  has_configure_osg = True
-except:
-  raise Exception("Can't import osg-configure script")
-
 from osg_configure.configure_modules import gip
 from osg_configure.configure_modules import localsettings
 
@@ -55,28 +38,18 @@ SAMPLE_VO_MAP_LOCATION = 'gip/sample_vo_map'
 
 class TestGip(unittest.TestCase):
   """Class for unit testing GIP configuration code"""
-  def test_configure_osg(self):
-    """
-    Test to see if the configure_osg module properly loaded
-    """
-    self.assertTrue(has_configure_osg, msg="osg-configure failed to " \
-        "load.")
-
 
   def test_missing_sc(self):
     """
     Make sure that we have failures when there is no configured SC.
     """
-    # need to be on a CE to get gip functionality
-    if not utilities.ce_installed():
-      return
     did_fail = False
     try:
       config_parser = ConfigParser.SafeConfigParser()
       config_file = get_test_config("gip/red-missing-sc.ini")
       config_parser.read(config_file)
       gip_config = gip.GipConfiguration(logger=global_logger)
-      gip_config.parseConfiguration(config_parser)
+      gip_config._parseConfiguration(config_parser)
     except exceptions.SettingError:
       did_fail = True
     self.assertTrue(did_fail, msg="Did not properly detect a missing SC.")
@@ -86,16 +59,13 @@ class TestGip(unittest.TestCase):
     Make sure that we have failures when there is no configured SE and there
     is no classic SE.
     """
-    # need to be on a CE to get CE defaults
-    if not utilities.ce_installed():
-      return
     did_fail = False
     try:
       config_parser = ConfigParser.SafeConfigParser()
       config_file = get_test_config("gip/red-missing-se.ini")
       config_parser.read(config_file)
       gip_config = gip.GipConfiguration(logger=global_logger)
-      gip_config.parseConfiguration(config_parser)
+      gip_config._parseConfiguration(config_parser)
     except exceptions.SettingError:
       did_fail = True
     self.assertTrue(did_fail, msg="Did not properly detect a missing SE.")
@@ -105,16 +75,13 @@ class TestGip(unittest.TestCase):
     Make sure that we have no when there is no configured SE and there
     is a classic SE.
     """
-    # need to be on a CE to get CE defaults
-    if not utilities.ce_installed():
-      return
     did_fail = False
     try:
       config_parser = ConfigParser.SafeConfigParser()
       config_file = get_test_config("gip/red-missing-se2.ini")
       config_parser.read(config_file)
       gip_config = gip.GipConfiguration(logger=global_logger)
-      gip_config.parseConfiguration(config_parser)
+      gip_config._parseConfiguration(config_parser)
     except exceptions.SettingError:
       did_fail = True
     self.assertFalse(did_fail, msg="Did not properly detect a missing SE.")
@@ -123,16 +90,13 @@ class TestGip(unittest.TestCase):
     """
     Test should pass if SE CHANGEME section is disabled.
     """
-    # need to be on a CE to get CE defaults
-    if not utilities.ce_installed():
-      return
     did_fail = False
     try:
       config_parser = ConfigParser.SafeConfigParser()
       config_file = get_test_config("gip/changeme_section.ini")
       config_parser.read(config_file)
       gip_config = gip.GipConfiguration(logger=global_logger)
-      gip_config.parseConfiguration(config_parser)
+      gip_config._parseConfiguration(config_parser)
     except exceptions.SettingError:
       did_fail = True
     self.assertFalse(did_fail, msg="Falsely detected an enabled CHANGEME section.")
@@ -141,16 +105,13 @@ class TestGip(unittest.TestCase):
     """
     Test should fail because SE CHANGEME section is enabled.
     """
-    # need to be on a CE to get CE defaults
-    if not utilities.ce_installed():
-      return
     did_fail = False
     try:
       config_parser = ConfigParser.SafeConfigParser()
       config_file = get_test_config("gip/changeme_section_bad.ini")
       config_parser.read(config_file)
       gip_config = gip.GipConfiguration(logger=global_logger)
-      gip_config.parseConfiguration(config_parser)
+      gip_config._parseConfiguration(config_parser)
     except exceptions.SettingError:
       did_fail = True
     self.assertTrue(did_fail, msg="Did not detect SE CHANGEME section.")
@@ -160,16 +121,13 @@ class TestGip(unittest.TestCase):
     Test should fail because SE CHANGEME section is enabled.
     Variant 2.
     """
-    # need to be on a CE to get CE defaults
-    if not utilities.ce_installed():
-      return
     did_fail = False
     try:
       config_parser = ConfigParser.SafeConfigParser()
       config_file = get_test_config("gip/changeme_section_bad2.ini")
       config_parser.read(config_file)
       gip_config = gip.GipConfiguration(logger=global_logger)
-      gip_config.parseConfiguration(config_parser)
+      gip_config._parseConfiguration(config_parser)
     except exceptions.SettingError:
       did_fail = True
     self.assertTrue(did_fail, msg="Did not detect enabled CHANGEME section.")
@@ -179,16 +137,13 @@ class TestGip(unittest.TestCase):
     Test should fail because SC CHANGEME section is present.
     
     """
-    # need to be on a CE to get CE defaults
-    if not utilities.ce_installed():
-      return
     did_fail = False
     try:
       config_parser = ConfigParser.SafeConfigParser()
       config_file = get_test_config("gip/changeme_section_sc.ini")
       config_parser.read(config_file)
       gip_config = gip.GipConfiguration(logger=global_logger)
-      gip_config.parseConfiguration(config_parser)
+      gip_config._parseConfiguration(config_parser)
     except exceptions.SettingError:
       did_fail = True
     self.assertTrue(did_fail, msg="Did not detect enabled CHANGEME section.")
@@ -198,16 +153,13 @@ class TestGip(unittest.TestCase):
     Test should not fail because SE CHANGEME section is disabled.
     Variant 2.
     """
-    # need to be on a CE to get CE defaults
-    if not utilities.ce_installed():
-      return
     did_fail = False
     try:
       config_parser = ConfigParser.SafeConfigParser()
       config_file = get_test_config("gip/changeme_section_bad3.ini")
       config_parser.read(config_file)
       gip_config = gip.GipConfiguration(logger=global_logger)
-      gip_config.parseConfiguration(config_parser)
+      gip_config._parseConfiguration(config_parser)
     except exceptions.SettingError:
       did_fail = True
     self.assertFalse(did_fail, msg="Falsely detected an enabled CHANGEME section.")
@@ -216,16 +168,13 @@ class TestGip(unittest.TestCase):
     """
     Make sure that we have failures when there are missing attributes.
     """
-    # need to be on a CE to get CE defaults
-    if not utilities.ce_installed():
-      return
     did_fail = False
     try:
       config_parser = ConfigParser.SafeConfigParser()
       config_file = get_test_config("gip/red-missing-attributes.ini")
       config_parser.read(config_file)
       gip_config = gip.GipConfiguration(logger=global_logger)
-      gip_config.parseConfiguration(config_parser)
+      gip_config._parseConfiguration(config_parser)
     except exceptions.SettingError:
       did_fail = True
     self.assertTrue(did_fail, msg="Did not properly detect missing attrs.")
@@ -234,48 +183,36 @@ class TestGip(unittest.TestCase):
     """
     Make sure that we can correctly parse an old-style GIP config.
     """
-    # need to be on a CE to get CE defaults
-    if not utilities.ce_installed():
-      return
     config_parser = ConfigParser.SafeConfigParser()
     config_file = get_test_config("gip/red-old-gip-config.ini")
     config_parser.read(config_file)
     gip_config = gip.GipConfiguration(logger=global_logger)
-    gip_config.parseConfiguration(config_parser)
+    gip_config._parseConfiguration(config_parser)
 
   def test_new_config(self):
     """
     Make sure that we can correctly parse a correct new-style GIP config.
     """
-    # need to be on a CE to get CE defaults
-    if not utilities.ce_installed():
-      return
     config_parser = ConfigParser.SafeConfigParser()
     config_file = get_test_config("gip/red-new-gip-config.ini")
     config_parser.read(config_file)
     gip_config = gip.GipConfiguration(logger=global_logger)
-    gip_config.parseConfiguration(config_parser)
+    gip_config._parseConfiguration(config_parser)
 
   def test_doherty(self):
     """
     Make sure that we can correctly parse a correct new-style GIP config.
     """
-    # need to be on a CE to get CE defaults
-    if not utilities.ce_installed():
-      return
     config_parser = ConfigParser.SafeConfigParser()
     config_file = get_test_config("gip/doherty.ini")
     config_parser.read(config_file)
     gip_config = gip.GipConfiguration(logger=global_logger)
-    gip_config.parseConfiguration(config_parser)
+    gip_config._parseConfiguration(config_parser)
 
   def test_local_settings(self):
     """
     Test to see if the local settings parsing works.
     """
-    # need to be on a CE to get CE defaults
-    if not utilities.ce_installed():
-      return
     config_parser = ConfigParser.SafeConfigParser()
     config_parser.optionxform = str
     config_file = get_test_config("gip/local_settings.ini")
@@ -305,9 +242,6 @@ class TestGip(unittest.TestCase):
     """
     Make sure the allowed VOs is filtered properly.
     """
-    # need to be on a CE to get CE defaults
-    if not utilities.ce_installed():
-      return
     config_parser = ConfigParser.SafeConfigParser()
     config_file = get_test_config("gip/allowed_vos.ini")
     config_parser.read(config_file)
@@ -315,15 +249,12 @@ class TestGip(unittest.TestCase):
            'user_vo_map',
            get_test_config(SAMPLE_VO_MAP_LOCATION))    
     gip_config = gip.GipConfiguration(logger=global_logger)
-    gip_config.parseConfiguration(config_parser)
+    gip_config._parseConfiguration(config_parser)
 
   def test_allowed_jobmanagers(self):
     """
     Make sure the allowed VOs is filtered properly.
     """
-    # need to be on a CE to get CE defaults
-    if not utilities.ce_installed():
-      return
     config_parser = ConfigParser.SafeConfigParser()
     config_file = get_test_config("gip/allowed_jobmanager1.ini")
     config_parser.read(config_file)
@@ -331,7 +262,7 @@ class TestGip(unittest.TestCase):
            'user_vo_map',
            get_test_config(SAMPLE_VO_MAP_LOCATION))
     gip_config = gip.GipConfiguration(logger=global_logger)
-    gip_config.parseConfiguration(config_parser)
+    gip_config._parseConfiguration(config_parser)
 
     config_parser = ConfigParser.SafeConfigParser()
     config_file = get_test_config("gip/allowed_jobmanager2.ini")
@@ -340,7 +271,7 @@ class TestGip(unittest.TestCase):
            'user_vo_map',
            get_test_config(SAMPLE_VO_MAP_LOCATION))
     gip_config = gip.GipConfiguration(logger=global_logger)
-    gip_config.parseConfiguration(config_parser)
+    gip_config._parseConfiguration(config_parser)
 
     config_parser = ConfigParser.SafeConfigParser()
     config_file = get_test_config("gip/allowed_jobmanager3.ini")
@@ -349,7 +280,7 @@ class TestGip(unittest.TestCase):
            'user_vo_map',
            get_test_config(SAMPLE_VO_MAP_LOCATION))
     gip_config = gip.GipConfiguration(logger=global_logger)
-    gip_config.parseConfiguration(config_parser)
+    gip_config._parseConfiguration(config_parser)
 
     config_parser = ConfigParser.SafeConfigParser()
     config_file = get_test_config("gip/allowed_jobmanager4.ini")
@@ -358,7 +289,7 @@ class TestGip(unittest.TestCase):
            'user_vo_map',
            get_test_config(SAMPLE_VO_MAP_LOCATION))
     gip_config = gip.GipConfiguration(logger=global_logger)
-    gip_config.parseConfiguration(config_parser)
+    gip_config._parseConfiguration(config_parser)
 
     config_parser = ConfigParser.SafeConfigParser()
     config_file = get_test_config("gip/allowed_jobmanager5.ini")
@@ -367,7 +298,7 @@ class TestGip(unittest.TestCase):
            'user_vo_map',
            get_test_config(SAMPLE_VO_MAP_LOCATION))
     gip_config = gip.GipConfiguration(logger=global_logger)
-    gip_config.parseConfiguration(config_parser)
+    gip_config._parseConfiguration(config_parser)
 
     config_parser = ConfigParser.SafeConfigParser()
     config_file = get_test_config("gip/allowed_jobmanager6.ini")
@@ -376,7 +307,7 @@ class TestGip(unittest.TestCase):
            'user_vo_map',
            get_test_config(SAMPLE_VO_MAP_LOCATION))
     gip_config = gip.GipConfiguration(logger=global_logger)
-    gip_config.parseConfiguration(config_parser)
+    gip_config._parseConfiguration(config_parser)
 
     config_parser = ConfigParser.SafeConfigParser()
     config_file = get_test_config("gip/invalid_jobmanager1.ini")
@@ -386,7 +317,7 @@ class TestGip(unittest.TestCase):
            get_test_config(SAMPLE_VO_MAP_LOCATION))
     gip_config = gip.GipConfiguration(logger=global_logger)
     self.failUnlessRaises(exceptions.SettingError, 
-                          gip_config.parseConfiguration, 
+                          gip_config._parseConfiguration,
                           configuration = config_parser)
 
 
@@ -394,9 +325,6 @@ class TestGip(unittest.TestCase):
     """
     Make sure we pass validation for a valid mount_point specification
     """
-    # need to be on a CE to get CE defaults
-    if not utilities.ce_installed():
-      return
     did_fail = False
     try:
       config_parser = ConfigParser.SafeConfigParser()
@@ -413,9 +341,6 @@ class TestGip(unittest.TestCase):
     Make sure that if the incorrect number of paths were specified
     for mount_point, then an exception is thrown
     """
-    # need to be on a CE to get CE defaults
-    if not utilities.ce_installed():
-      return
     did_fail = False
     try:
       config_parser = ConfigParser.SafeConfigParser()
@@ -433,9 +358,6 @@ class TestGip(unittest.TestCase):
     """ 
     Make sure that if the first path is invalid, then an exception is thrown.
     """
-    # need to be on a CE to get CE defaults
-    if not utilities.ce_installed():
-      return
     did_fail = False
     try:
       config_parser = ConfigParser.SafeConfigParser()
@@ -453,9 +375,6 @@ class TestGip(unittest.TestCase):
     """ 
     Make sure that if the first path is invalid, then an exception is thrown.
     """
-    # need to be on a CE to get CE defaults
-    if not utilities.ce_installed():
-      return
     did_fail = False
     try:
       config_parser = ConfigParser.SafeConfigParser()
@@ -473,9 +392,6 @@ class TestGip(unittest.TestCase):
     """
     Make sure a valid HEPSPEC value is accepted.
     """
-    # need to be on a CE to get CE defaults
-    if not utilities.ce_installed():
-      return
     did_fail = False
     config_parser = ConfigParser.SafeConfigParser()
     config_file = get_test_config("gip/sc_samples.ini")
@@ -491,9 +407,6 @@ class TestGip(unittest.TestCase):
     """
     Make sure a invalid HEPSPEC value causes an error..
     """
-    # need to be on a CE to get CE defaults
-    if not utilities.ce_installed():
-      return
     config_parser = ConfigParser.SafeConfigParser()
     config_file = get_test_config("gip/sc_samples.ini")
     config_parser.read(config_file)
@@ -514,15 +427,12 @@ class TestGip(unittest.TestCase):
     Check to make sure gip class will distinguish between valid and 
     invalid users
     """
-    # need to be on a CE to get CE defaults
-    if not utilities.ce_installed():
-      return
     config_parser = ConfigParser.SafeConfigParser()
     config_file = get_test_config("gip/invalid_user.ini")
     config_parser.read(config_file)
     gip_config = gip.GipConfiguration(logger=global_logger)
     self.assertRaises(exceptions.SettingError, 
-                      gip_config.parseConfiguration,
+                      gip_config._parseConfiguration,
                       config_parser)
     config_parser = ConfigParser.SafeConfigParser()
     config_file = get_test_config("gip/valid_user.ini")
@@ -531,7 +441,7 @@ class TestGip(unittest.TestCase):
            'user_vo_map',
            get_test_config(SAMPLE_VO_MAP_LOCATION))
     gip_config = gip.GipConfiguration(logger=global_logger)
-    self.assertTrue(gip_config.parseConfiguration(config_parser) is None,
+    self.assertTrue(gip_config._parseConfiguration(config_parser) is None,
                     "Flagged valid user as being missing")
     
 if __name__ == '__main__':

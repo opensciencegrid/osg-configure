@@ -221,21 +221,28 @@ class GipConfiguration(BaseConfiguration):
 
     self.checkConfig(configuration)
 
+    self._parseConfiguration(configuration)
+
+    self.log('GipConfiguration.parseConfiguration completed')
+
+  def _parseConfiguration(self, configuration):
+    """
+    The meat of parseConfiguration, runs after we've checked that GIP is
+    enabled and we have the right RPMs installed.
+    """
     # The following is to set the user that gip files need to belong to
     # This can be overridden by setting the 'user' option in the [GIP] section
     self.gip_user = 'tomcat'
-
     if configuration.has_option(self.config_section, 'batch'):
       batch_opt = configuration.get(self.config_section, 'batch').lower()
       if (not utilities.blank(batch_opt) and
-          batch_opt not in self._valid_batch_opt):        
+              batch_opt not in self._valid_batch_opt):
         msg = "The batch setting in %s must be a valid option " \
-              "(e.g. %s), %s was given" % (self.config_section, 
+              "(e.g. %s), %s was given" % (self.config_section,
                                            ",".join(self._valid_batch_opt),
                                            batch_opt)
         self.log(msg, level=logging.ERROR)
         raise exceptions.SettingError(msg)
-    
     has_sc = False
     for section in configuration.sections():
       if not section.lower().startswith('subcluster'):
@@ -261,7 +268,6 @@ class GipConfiguration(BaseConfiguration):
     # pylint: disable-msg=W0704
     except Exception:
       pass
-
     has_se = False
     for section in configuration.sections():
       if not section.lower().startswith('se'):
@@ -274,10 +280,9 @@ class GipConfiguration(BaseConfiguration):
       except:
         msg = "There is no `SE` section, the old-style SE" + \
               "setup in GIP is not configured, and there is no classic SE. " + \
-              " At least one must be configured.  Please see the configuration"\
+              " At least one must be configured.  Please see the configuration" \
               " documentation."
         raise exceptions.SettingError(msg)
-    
     if configuration.has_option(self.config_section, 'user'):
       username = configuration.get(self.config_section, 'user')
       if not validation.valid_user(username):
@@ -288,7 +293,6 @@ class GipConfiguration(BaseConfiguration):
                  level=logging.ERROR)
         raise exceptions.SettingError(err_msg)
       self.gip_user = username
-    self.log('GipConfiguration.parseConfiguration completed')
 
   def checkSC(self, config, section):
     """
@@ -473,17 +477,6 @@ class GipConfiguration(BaseConfiguration):
                                       (gip_logdir, e))        
 
     self.log('GipConfiguration.configure completed')   
-    
-
-  
-# pylint: disable-msg=R0201
-  def passThroughVariable(self, string):
-    """Return true if string fits the format for the name of a pass through
-    variable
-    """
-    if re.match("[A-Z0-9_]+", string):
-      return True
-    return False
 
   def moduleName(self):
     """
