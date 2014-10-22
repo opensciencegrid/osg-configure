@@ -1,6 +1,7 @@
 """ Base class for all job manager configuration classes """
 
 import re
+import os
 import logging
 
 from osg_configure.modules.configurationbase import BaseConfiguration
@@ -16,6 +17,8 @@ class JobManagerConfiguration(BaseConfiguration):
   """Base class for inheritance by jobmanager configuration classes"""
   MISSING_JOBMANAGER_CONF_MSG = ("Unable to load the jobmanager configuration at %s: %s.\n"
                                  "Ensure the Globus jobmanagers for all enabled batch systems are installed.")
+
+  BLAH_CONFIG = '/etc/blah.config'
 
   def __init__(self, *args, **kwargs):
     # pylint: disable-msg=W0142
@@ -243,3 +246,20 @@ class JobManagerConfiguration(BaseConfiguration):
     
     self.log("JobManager.set_default_jobmanager completed")
     return True
+
+  def write_binpaths_to_blah_config(self, jobmanager, submit_binpath):
+    """
+    Change the *_binpath variables in /etc/blah.config for the given
+    jobmanager to point to the locations specified by the user in the
+    config for that jobmanager. Does not do anything if /etc/blah.config
+    is missing (e.g. if blahp is not installed).
+    :param jobmanager: The name of a job manager that has a _binpath
+      variable in /etc/blah.config
+    :param submit_binpath: The fully-qualified path to the submit
+      executables for that jobmanager
+    """
+    if os.path.exists(self.BLAH_CONFIG):
+      contents = utilities.read_file(self.BLAH_CONFIG)
+      utilities.add_or_replace_setting(contents, jobmanager + "_binpath", submit_binpath, quote_value=False)
+      utilities.atomic_write(self.BLAH_CONFIG, contents)
+

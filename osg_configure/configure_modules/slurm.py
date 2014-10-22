@@ -72,6 +72,7 @@ class SlurmConfiguration(JobManagerConfiguration):
                                         opt_type = bool,
                                         default_value = False)}
     self.config_section = "SLURM"
+    self.slurm_bin_location = None
     self.__set_default = True
     self.log('SlurmConfiguration.__init__ completed')
       
@@ -113,7 +114,9 @@ class SlurmConfiguration(JobManagerConfiguration):
         configuration.has_option('Managed Fork', 'enabled') and
         configuration.getboolean('Managed Fork', 'enabled')):
       self.__set_default = False
-      
+
+    self.slurm_bin_location = os.path.join(self.options['slurm_location'].value, 'bin')
+
     self.log('SlurmConfiguration.parseConfiguration completed')    
 
   
@@ -143,6 +146,12 @@ class SlurmConfiguration(JobManagerConfiguration):
                 section = self.config_section,
                 level = logging.ERROR)
                            
+    if not validation.valid_directory(self.slurm_bin_location):
+      attributes_ok = False
+      self.log("Given slurm_location %r has no bin/ directory" % self.options['slurm_location'].value,
+               option='slurm_location',
+               section=self.config_section,
+               level=logging.ERROR)
 
     if not validation.valid_contact(self.options['job_contact'].value, 
                                     'pbs'):
@@ -216,6 +225,9 @@ class SlurmConfiguration(JobManagerConfiguration):
         self.log('Configuring gatekeeper to use regular fork service')
         self.set_default_jobmanager('fork')
 
+    if self.htcondor_gateway_enabled:
+      self.write_binpaths_to_blah_config('slurm', self.slurm_bin_location)
+
     self.log('SlurmConfiguration.configure completed')    
     return True
   
@@ -234,35 +246,11 @@ class SlurmConfiguration(JobManagerConfiguration):
     Returns True if successful, False otherwise
     """    
     contents = open(SlurmConfiguration.GRAM_CONFIG_FILE).read()
-    bin_location = os.path.join(self.options['slurm_location'].value,
-                                'bin',
-                                'qsub')
-    if validation.valid_file(bin_location):
-      re_obj = re.compile('^qsub=.*$', re.MULTILINE)
-      (contents, count) = re_obj.subn("qsub=\"%s\"" % bin_location,
-                                    contents,
-                                    1)
-      if count == 0:
-        contents += "qsub=\"%s\"\n" % bin_location
-    bin_location = os.path.join(self.options['slurm_location'].value,
-                                'bin',
-                                'qstat')
-    if validation.valid_file(bin_location):
-      re_obj = re.compile('^qstat=.*$', re.MULTILINE)
-      (contents, count) = re_obj.subn("qstat=\"%s\"" % bin_location, contents, 1)
-      if count == 0:
-        contents += "qstat=\"%s\"\n" % bin_location
-    bin_location = os.path.join(self.options['slurm_location'].value,
-                                'bin',
-                                'qdel')
-    if validation.valid_file(bin_location):
-      re_obj = re.compile('^qdel=.*$', re.MULTILINE)
-      (contents, count) = re_obj.subn("qdel=\"%s\"" % bin_location,
-                                    contents,
-                                    1)
-      if count == 0:
-        contents += "qdel=\"%s\"\n" % bin_location
-        
+    for binfile in ['qsub', 'qstat', 'qdel']:
+      bin_location = os.path.join(self.slurm_bin_location, binfile)
+      if validation.valid_file(bin_location):
+        contents = utilities.add_or_replace_setting(contents, binfile, bin_location)
+
     if not utilities.atomic_write(SlurmConfiguration.GRAM_CONFIG_FILE, contents):
       return False
     

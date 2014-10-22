@@ -47,6 +47,7 @@ class CondorConfiguration(JobManagerConfiguration):
                                         opt_type = bool,
                                         default_value = False)}
     self.__set_default = True
+    self.condor_bin_location = None
     self.log('CondorConfiguration.__init__ completed')
       
   def parseConfiguration(self, configuration):
@@ -85,6 +86,8 @@ class CondorConfiguration(JobManagerConfiguration):
         configuration.getboolean('Managed Fork', 'enabled')):
       self.__set_default = False
 
+    self.condor_bin_location = os.path.join(self.options['condor_location'].value, 'bin')
+
     self.log('CondorConfiguration.parseConfiguration completed')
 
 # pylint: disable-msg=W0613
@@ -111,6 +114,13 @@ class CondorConfiguration(JobManagerConfiguration):
                 option = 'condor_location',
                 section = self.config_section,
                 level = logging.ERROR)
+
+    if not validation.valid_directory(self.condor_bin_location):
+      attributes_ok = False
+      self.log("Given condor_location %r has no bin/ directory" % self.options['condor_location'].value,
+               option='condor_location',
+               section=self.config_section,
+               level=logging.ERROR)
 
     self.log('checking condor_config')
     if not validation.valid_file(self.options['condor_config'].value):
@@ -191,6 +201,7 @@ class CondorConfiguration(JobManagerConfiguration):
         self.log('Error writing to ' + CondorConfiguration.HTCONDOR_CE_CONFIG_FILE,
                  level=logging.ERROR)
         return False
+      self.write_binpaths_to_blah_config('condor', self.condor_bin_location)
 
     self.log('CondorConfiguration.configure completed')
     return True    
@@ -211,36 +222,13 @@ class CondorConfiguration(JobManagerConfiguration):
     """
 
     buf = open(CondorConfiguration.GRAM_CONFIG_FILE).read()
-    bin_location = os.path.join(self.options['condor_location'].value,
-                                'bin',
-                                'condor_submit')
-    if validation.valid_file(bin_location):
-      re_obj = re.compile('^condor_submit=.*$', re.MULTILINE)
-      (buf, count) = re_obj.subn("condor_submit=\"%s\"" % bin_location, 
-                                 buf,
-                                 1)
-      if count == 0:
-        buf += "condor_submit=\"%s\"\n" % bin_location
-    bin_location = os.path.join(self.options['condor_location'].value,
-                                'bin',
-                                'condor_rm')
-    if validation.valid_file(bin_location):
-      re_obj = re.compile('^condor_rm=.*$', re.MULTILINE)
-      (buf, count) = re_obj.subn("condor_rm=\"%s\"" % bin_location,
-                                 buf,
-                                 1)
-      if count == 0:
-        buf += "condor_rm=\"%s\"\n" % bin_location
+    for binfile in ['condor_submit', 'condor_rm']:
+      bin_location = os.path.join(self.condor_bin_location, binfile)
+      if validation.valid_file(bin_location):
+        buf = utilities.add_or_replace_setting(buf, binfile, bin_location)
     if not utilities.blank(self.options['condor_config'].value):
-      re_obj = re.compile('^condor_config=.*$', re.MULTILINE)
-      (buf, count) = re_obj.subn("condor_config=\"%s\"" % 
-                                 self.options['condor_config'].value,
-                                 buf,
-                                 1)
-      if count == 0:
-        buf += "condor_config=\"%s\"\n" % self.options['condor_config'].value
-        
-    
+      buf = utilities.add_or_replace_setting(buf, 'condor_config', self.options['condor_config'].value)
+
     if not utilities.atomic_write(CondorConfiguration.GRAM_CONFIG_FILE, buf):
       return False
     
@@ -289,7 +277,7 @@ class CondorConfiguration(JobManagerConfiguration):
       buf = utilities.read_file(CondorConfiguration.HTCONDOR_CE_CONFIG_FILE,
                                 default="# This file is managed by osg-configure\n")
       for key, value in condor_ce_config.items():
-        buf = utilities.add_or_replace_var(buf, key, value)
+        buf = utilities.add_or_replace_setting(buf, key, value, quote_value=False)
 
       if not utilities.atomic_write(CondorConfiguration.HTCONDOR_CE_CONFIG_FILE, buf):
         return False

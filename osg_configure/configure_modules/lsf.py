@@ -51,6 +51,7 @@ class LSFConfiguration(JobManagerConfiguration):
                                                       opt_type = bool,
                                                       default_value = False)}    
     self.config_section = 'LSF'
+    self.lsf_bin_location = None
     self.__set_default = True
 
     self.log('LSFConfiguration.__init__ completed')    
@@ -91,7 +92,9 @@ class LSFConfiguration(JobManagerConfiguration):
         configuration.getboolean('Managed Fork', 'enabled')):
       self.__set_default = False
 
-    self.log('LSFConfiguration.parseConfiguration completed')    
+    self.lsf_bin_location = os.path.join(self.options['lsf_location'].value, 'bin')
+
+    self.log('LSFConfiguration.parseConfiguration completed')
 
   
 # pylint: disable-msg=W0613
@@ -121,6 +124,13 @@ class LSFConfiguration(JobManagerConfiguration):
                 option = 'lsf_location',
                 section = self.config_section,
                 level = logging.ERROR)
+
+    if not validation.valid_directory(self.lsf_bin_location):
+      attributes_ok = False
+      self.log("Given lsf_location %r has no bin/ directory" % self.options['lsf_location'].value,
+               option='lsf_location',
+               section=self.config_section,
+               level=logging.ERROR)
 
     if not validation.valid_file(self.options['lsf_profile'].value):
       attributes_ok = False
@@ -201,6 +211,9 @@ class LSFConfiguration(JobManagerConfiguration):
         self.log('Configuring gatekeeper to use regular fork service')
         self.set_default_jobmanager('fork')
 
+    if self.htcondor_gateway_enabled:
+      self.write_binpaths_to_blah_config('lsf', self.lsf_bin_location)
+
     self.log('LSFConfiguration.configure completed')
     return True
   
@@ -219,65 +232,11 @@ class LSFConfiguration(JobManagerConfiguration):
     Returns True if successful, False otherwise
     """    
     buf = open(LSFConfiguration.GRAM_CONFIG_FILE).read()
-    bin_location = os.path.join(self.options['lsf_location'].value,
-                                'bin',
-                                'bsub')
-    if validation.valid_file(bin_location):
-      re_obj = re.compile('^bsub=.*$', re.MULTILINE)
-      (buf, count) = re_obj.subn("bsub=\"%s\"" % bin_location, 
-                                 buf, 
-                                 1)
-      if count == 0:
-        buf += "bsub=\"%s\"\n" % bin_location
-    bin_location = os.path.join(self.options['lsf_location'].value,
-                                'bin',
-                                'bqueues')
-    if validation.valid_file(bin_location):
-      re_obj = re.compile('^bqueues=.*$', re.MULTILINE)
-      (buf, count) = re_obj.subn("bqueues=\"%s\"" % bin_location,
-                                 buf,
-                                 1)
-      if count == 0:
-        buf += "bqueues=\"%s\"\n" % bin_location
-    bin_location = os.path.join(self.options['lsf_location'].value,
-                                'bin',
-                                'bjobs')
-    if validation.valid_file(bin_location):
-      re_obj = re.compile('^bjobs=.*$', re.MULTILINE)
-      (buf, count) = re_obj.subn("bjobs=\"%s\"" % bin_location,
-                                 buf,
-                                 1)
-      if count == 0:
-        buf += "bjobs=\"%s\"\n" % bin_location
-    bin_location = os.path.join(self.options['lsf_location'].value,
-                                'bin',
-                                'bhist')
-    if validation.valid_file(bin_location):
-      re_obj = re.compile('^bhist=.*$', re.MULTILINE)
-      (buf, count) = re_obj.subn("bhist=\"%s\"" % bin_location,
-                                 buf,
-                                 1)
-      if count == 0:
-        buf += "bhist=\"%s\"\n" % bin_location
-    bin_location = os.path.join(self.options['lsf_location'].value,
-                                'bin',
-                                'bacct')
-    if validation.valid_file(bin_location):
-      re_obj = re.compile('^bacct=.*$', re.MULTILINE)
-      (buf, count) = re_obj.subn("bacct=\"%s\"" % bin_location,
-                                 buf,
-                                 1)
-      if count == 0:
-        buf += "bacct=\"%s\"\n" % bin_location
-    bin_location = os.path.join(self.options['lsf_location'].value,
-                                'bin',
-                                'bkill')
-    if validation.valid_file(bin_location):
-      re_obj = re.compile('^bkill=.*$', re.MULTILINE)
-      (buf, count) = re_obj.subn("bkill=\"%s\"" % bin_location, buf, 1)
-      if count == 0:
-        buf += "bkill=\"%s\"\n" % bin_location
-        
+    for binfile in ['bsub', 'bqueues', 'bjobs', 'bhist', 'bacct', 'bkill']:
+      bin_location = os.path.join(self.lsf_bin_location, binfile)
+      if validation.valid_file(bin_location):
+        buf = utilities.add_or_replace_setting(buf, binfile, 'bin_location')
+
     if self.options['seg_enabled'].value:
       if (self.options['log_directory'].value is None or
           not validation.valid_directory(self.options['log_directory'].value)):
@@ -289,18 +248,10 @@ class LSFConfiguration(JobManagerConfiguration):
                  level = logging.ERROR)
         return False
 
-      new_setting = "log_path=\"%s\"" % self.options['log_directory'].value
-      re_obj = re.compile('^log_path=.*$', re.MULTILINE)
-      (buf, count) = re_obj.subn(new_setting, buf, 1)
-      if count == 0:
-        buf += new_setting + "\n"
-    
-    new_setting = "lsf_profile=\"%s\"" % self.options['lsf_profile'].value
-    re_obj = re.compile('^lsf_profile=.*$', re.MULTILINE)
-    (buf, count) = re_obj.subn(new_setting, buf, 1)
-    if count == 0:
-      buf += new_setting + "\n"
-      
+      buf = utilities.add_or_replace_setting(buf, 'log_path', self.options['log_directory'].value)
+
+    buf = utilities.add_or_replace_setting(buf, 'lsf_profile', self.options['lsf_profile'].value)
+
     if not utilities.atomic_write(LSFConfiguration.GRAM_CONFIG_FILE, buf):
       return False
     return True

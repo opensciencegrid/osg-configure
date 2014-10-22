@@ -57,6 +57,7 @@ class PBSConfiguration(JobManagerConfiguration):
                                         opt_type = bool,
                                         default_value = False)}
     self.config_section = "PBS"
+    self.pbs_bin_location = None
     self.__set_default = True
     self.log('PBSConfiguration.__init__ completed')
       
@@ -96,8 +97,10 @@ class PBSConfiguration(JobManagerConfiguration):
         configuration.has_option('Managed Fork', 'enabled') and
         configuration.getboolean('Managed Fork', 'enabled')):
       self.__set_default = False
-      
-    self.log('PBSConfiguration.parseConfiguration completed')    
+
+    self.pbs_bin_location = os.path.join(self.options['pbs_location'].value, 'bin')
+
+    self.log('PBSConfiguration.parseConfiguration completed')
 
   
 # pylint: disable-msg=W0613
@@ -125,7 +128,13 @@ class PBSConfiguration(JobManagerConfiguration):
                 option = 'pbs_location',
                 section = self.config_section,
                 level = logging.ERROR)
-                           
+
+    if not validation.valid_directory(self.pbs_bin_location):
+      attributes_ok = False
+      self.log("Given pbs_location %r has no bin/ directory" % self.options['pbs_location'].value,
+               option='pbs_location',
+               section=self.config_section,
+               level=logging.ERROR)
 
     if not validation.valid_contact(self.options['job_contact'].value, 
                                     'pbs'):
@@ -144,7 +153,7 @@ class PBSConfiguration(JobManagerConfiguration):
                option = 'util_contact',
                section = self.config_section,
                level = logging.ERROR)
-            
+
     self.log('PBSConfiguration.checkAttributes completed')    
     return attributes_ok 
   
@@ -196,6 +205,9 @@ class PBSConfiguration(JobManagerConfiguration):
         self.log('Configuring gatekeeper to use regular fork service')
         self.set_default_jobmanager('fork')
 
+    if self.htcondor_gateway_enabled:
+      self.write_binpaths_to_blah_config('pbs', self.pbs_bin_location)
+
     self.log('PBSConfiguration.configure completed')    
     return True
   
@@ -214,43 +226,14 @@ class PBSConfiguration(JobManagerConfiguration):
     Returns True if successful, False otherwise
     """    
     contents = open(PBSConfiguration.GRAM_CONFIG_FILE).read()
-    bin_location = os.path.join(self.options['pbs_location'].value,
-                                'bin',
-                                'qsub')
-    if validation.valid_file(bin_location):
-      re_obj = re.compile('^qsub=.*$', re.MULTILINE)
-      (contents, count) = re_obj.subn("qsub=\"%s\"" % bin_location,
-                                    contents,
-                                    1)
-      if count == 0:
-        contents += "qsub=\"%s\"\n" % bin_location
-    bin_location = os.path.join(self.options['pbs_location'].value,
-                                'bin',
-                                'qstat')
-    if validation.valid_file(bin_location):
-      re_obj = re.compile('^qstat=.*$', re.MULTILINE)
-      (contents, count) = re_obj.subn("qstat=\"%s\"" % bin_location, contents, 1)
-      if count == 0:
-        contents += "qstat=\"%s\"\n" % bin_location
-    bin_location = os.path.join(self.options['pbs_location'].value,
-                                'bin',
-                                'qdel')
-    if validation.valid_file(bin_location):
-      re_obj = re.compile('^qdel=.*$', re.MULTILINE)
-      (contents, count) = re_obj.subn("qdel=\"%s\"" % bin_location,
-                                    contents,
-                                    1)
-      if count == 0:
-        contents += "qdel=\"%s\"\n" % bin_location
+    for binfile in ['qsub', 'qstat', 'qdel']:
+      bin_location = os.path.join(self.pbs_bin_location, binfile)
+      if validation.valid_file(bin_location):
+        contents = utilities.add_or_replace_setting(contents, binfile, bin_location)
+
     if self.options['pbs_server'].value != '':
-      re_obj = re.compile('^pbs_default=.*$', re.MULTILINE)
-      (contents, count) = re_obj.subn("pbs_default=\"%s\"" % 
-                                    self.options['pbs_server'].value, 
-                                    contents,
-                                    1)
-      if count == 0:
-        contents += "pbs_default=\"%s\"\n" % self.options['pbs_server'].value
-        
+      contents = utilities.add_or_replace_setting(contents, 'pbs_default', self.options['pbs_server'].value)
+
     if self.options['seg_enabled'].value:
       if (self.options['log_directory'].value is None or
           not validation.valid_directory(self.options['log_directory'].value)):
@@ -262,11 +245,7 @@ class PBSConfiguration(JobManagerConfiguration):
                  level = logging.ERROR)
         return False
 
-      new_setting = "log_path=\"%s\"" % self.options['log_directory'].value
-      re_obj = re.compile('^log_path=.*$', re.MULTILINE)
-      (contents, count) = re_obj.subn(new_setting, contents, 1)
-      if count == 0:
-        contents += new_setting + "\n"
+      contents = utilities.add_or_replace_setting(contents, 'log_path', self.options['log_directory'].value)
 
     if not utilities.atomic_write(PBSConfiguration.GRAM_CONFIG_FILE, contents):
       return False

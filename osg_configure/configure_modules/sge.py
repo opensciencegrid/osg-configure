@@ -261,7 +261,10 @@ class SGEConfiguration(JobManagerConfiguration):
       if self.__set_default:
         self.log('Configuring gatekeeper to use regular fork service')
         self.set_default_jobmanager('fork')
-    
+
+    if self.htcondor_gateway_enabled:
+      self.write_binpaths_to_blah_config('sge', self.options['sge_bin_location'])
+
     self.log('SGEConfiguration.configure started')    
     return True
   
@@ -284,24 +287,24 @@ class SGEConfiguration(JobManagerConfiguration):
     for binfile in ['qsub', 'qstat', 'qdel', 'qconf']:
       bin_location = os.path.join(self.options['sge_bin_location'].value, binfile)
       if validation.valid_file(bin_location):
-        buf = replace_or_add_setting(buf, binfile, bin_location)
+        buf = utilities.add_or_replace_setting(buf, binfile, bin_location)
 
     for setting in ['sge_cell', 'sge_root', 'sge_config']:
-      buf = replace_or_add_setting(buf, setting, self.options[setting].value)
+      buf = utilities.add_or_replace_setting(buf, setting, self.options[setting].value)
 
     if self.options['seg_enabled'].value:
-      buf = replace_or_add_setting(buf, 'log_path', self.options['log_file'].value)
+      buf = utilities.add_or_replace_setting(buf, 'log_path', self.options['log_file'].value)
 
     if self.options['default_queue'].value != '':
-      buf = replace_or_add_setting(buf, 'default_queue', self.options['default_queue'].value)
+      buf = utilities.add_or_replace_setting(buf, 'default_queue', self.options['default_queue'].value)
 
       if self.options['validate_queues'].value:
-        buf = replace_or_add_setting(buf, 'validate_queues', 'yes', quote_value=False)
+        buf = utilities.add_or_replace_setting(buf, 'validate_queues', 'yes', quote_value=False)
       else:
-        buf = replace_or_add_setting(buf, 'validate_queues', 'no', quote_value=False)
+        buf = utilities.add_or_replace_setting(buf, 'validate_queues', 'no', quote_value=False)
 
     if self.options['available_queues'].value != '':
-      buf = replace_or_add_setting(buf, 'available_queues', self.options['available_queues'].value)
+      buf = utilities.add_or_replace_setting(buf, 'available_queues', self.options['available_queues'].value)
 
     if not utilities.atomic_write(SGEConfiguration.GRAM_CONFIG_FILE, buf):
       return False
@@ -329,21 +332,3 @@ class SGEConfiguration(JobManagerConfiguration):
                         self.options['sge_cell'].value,
                         'common',
                         'accounting') 
-
-
-def replace_or_add_setting(buf, key, value, quote_value=True):
-  """Change the value of a setting in a buffer, or add the setting if absent
-
-  The buffer should have settings in a format like:
-    key="value"
-
-  """
-  re_obj = re.compile('^%s=.*$' % key, re.MULTILINE)
-  if quote_value:
-    new_text = "%s=\"%s\"" % (key, value)
-  else:
-    new_text = "%s=%s" % (key, value)
-  (buf, count) = re_obj.subn(new_text, buf, 1)
-  if count == 0:
-    buf += new_text + "\n"
-  return buf
