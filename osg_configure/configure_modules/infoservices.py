@@ -88,7 +88,6 @@ class InfoServicesConfiguration(BaseConfiguration):
       return self.__itb_defaults['ce_collectors'].split(',')
     else:
       return val.split(',')
-
   def parseConfiguration(self, configuration):
     """
     Try to get configuration information from ConfigParser or SafeConfigParser object given
