@@ -609,7 +609,6 @@ in your config.ini file."""
       if 'condor' not in self.__probe_config:
           # Don't need this for non-condor probes
           return valid
-      # TODO Change to use utilities.get_condor_config_val (need to add more checking to that function first)
       condor_config_val_bin = os.path.join(self.__probe_config['condor']['condor_location'],
                                 "bin",
                                 "condor_config_val")
