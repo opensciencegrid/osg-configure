@@ -24,6 +24,7 @@ class TestResourceCatalog(unittest.TestCase):
     Memory = 2000; \
     Name = "sc1"; \
     Requirements = RequestCPUs <= CPUs && RequestMemory <= Memory; \
+    Transforms = [ set_RequestCpus = 1; set_MaxMemory = 2000; ]; \
   ] \
 }""")
 
@@ -38,18 +39,21 @@ class TestResourceCatalog(unittest.TestCase):
     Memory = 2000; \
     Name = "sc1"; \
     Requirements = RequestCPUs <= CPUs && RequestMemory <= Memory; \
+    Transforms = [ set_RequestCpus = 1; set_MaxMemory = 2000; ]; \
   ], \
   [ \
     CPUs = 2; \
     Memory = 4000; \
     Name = "sc2"; \
     Requirements = RequestCPUs <= CPUs && RequestMemory <= Memory; \
+    Transforms = [ set_RequestCpus = 2; set_MaxMemory = 4000; ]; \
   ], \
   [ \
     CPUs = 4; \
     Memory = 8000; \
     Name = "sc3"; \
     Requirements = RequestCPUs <= CPUs && RequestMemory <= Memory && (VO == "osg" || VO == "atlas"); \
+    Transforms = [ set_RequestCpus = 4; set_MaxMemory = 8000; ]; \
   ] \
 }""")
 
@@ -59,6 +63,30 @@ class TestResourceCatalog(unittest.TestCase):
   def testOutOfRange(self):
     self.assertRaises(ValueError, self.rc.add_entry, 'sc', -1, 1)
     self.assertRaises(ValueError, self.rc.add_entry, 'sc', 1, 0)
+
+  def testExtraRequirements(self):
+    self.rc.add_entry('sc', 1, 2000, extra_requirements=['WantGPUs =?= 1'])
+    self.assertEqual(self.rc.compose_text().strip(), r"""OSG_ResourceCatalog = { \
+  [ \
+    CPUs = 1; \
+    Memory = 2000; \
+    Name = "sc"; \
+    Requirements = RequestCPUs <= CPUs && RequestMemory <= Memory && WantGPUs =?= 1; \
+    Transforms = [ set_RequestCpus = 1; set_MaxMemory = 2000; ]; \
+  ] \
+}""")
+
+  def testExtraTransforms(self):
+    self.rc.add_entry('sc', 1, 2000, extra_transforms=['set_WantRHEL6 = 1'])
+    self.assertEqual(self.rc.compose_text().strip(), r"""OSG_ResourceCatalog = { \
+  [ \
+    CPUs = 1; \
+    Memory = 2000; \
+    Name = "sc"; \
+    Requirements = RequestCPUs <= CPUs && RequestMemory <= Memory; \
+    Transforms = [ set_RequestCpus = 1; set_MaxMemory = 2000; set_WantRHEL6 = 1; ]; \
+  ] \
+}""")
 
   def testFull(self):
     import ConfigParser
@@ -87,6 +115,7 @@ HEPSPEC = 10
     Memory = 4000; \
     Name = "red.unl.edu"; \
     Requirements = RequestCPUs <= CPUs && RequestMemory <= Memory; \
+    Transforms = [ set_RequestCpus = 4; set_MaxMemory = 4000; ]; \
   ] \
 }""")
 

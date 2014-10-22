@@ -8,7 +8,7 @@ class ResourceCatalog(object):
   def __init__(self):
     self.entries = {}
 
-  def add_entry(self, name, cpus, memory, allowed_vos=None):
+  def add_entry(self, name, cpus, memory, allowed_vos=None, extra_requirements=None, extra_transforms=None):
     """Composes an entry for a single resource and adds it to the list of entries in the ResourceCatalog
     :param name: name of the resource
     :type name: str
@@ -18,7 +18,11 @@ class ResourceCatalog(object):
     :type memory: int
     :param allowed_vos: a list or string containing the names of all the VOs that are allowed to run on this resource.
       Optional; if not specified, all VOs can run on this resource.
-    :type allowed_vos: str or list
+    :type allowed_vos: str or list or None
+    :param extra_requirements: optional list of extra requirements clauses (which are ANDed together)
+    :type extra_requirements: list or None
+    :param extra_transforms; optional list of transforms attributes (which are appended)
+    :type extra_transforms: list or None
     """
     if not name:
       raise ValueError("Required parameter 'name' must be specified")
@@ -37,14 +41,16 @@ class ResourceCatalog(object):
                   'CPUs': cpus,
                   'Memory': memory}
 
-    requirements_clauses = ['RequestCPUs <= CPUs', 'RequestMemory <= Memory']
+    requirements_clauses = ['RequestCPUs <= CPUs', 'RequestMemory <= Memory'] + (extra_requirements or [])
 
     if allowed_vos:
       vo_clauses = ['VO == %s' % utilities.classad_quote(vo) for vo in allowed_vos if vo]
       requirements_clauses.append("(%s)" % " || ".join(vo_clauses))
 
-    if requirements_clauses:
-      attributes['Requirements'] = ' && '.join(requirements_clauses)
+    attributes['Requirements'] = ' && '.join(requirements_clauses)
+
+    transforms_attributes = ['set_RequestCpus = %d' % cpus, 'set_MaxMemory = %d' % memory] + (extra_transforms or [])
+    attributes['Transforms'] = '[ ' + '; '.join(transforms_attributes) + '; ]'
 
     self.entries[name] = attributes
 
