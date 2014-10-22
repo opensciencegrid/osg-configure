@@ -25,7 +25,7 @@ class TestResourceCatalog(unittest.TestCase):
     Memory = 2000; \
     Name = "sc1"; \
     Requirements = RequestCPUs <= CPUs && RequestMemory <= Memory; \
-    Transforms = [ set_RequestCpus = 1; set_MaxMemory = 2000; ]; \
+    Transform = [ set_RequestCpus = 1; set_MaxMemory = 2000; ]; \
   ] \
 }""")
 
@@ -40,21 +40,21 @@ class TestResourceCatalog(unittest.TestCase):
     Memory = 2000; \
     Name = "sc1"; \
     Requirements = RequestCPUs <= CPUs && RequestMemory <= Memory; \
-    Transforms = [ set_RequestCpus = 1; set_MaxMemory = 2000; ]; \
+    Transform = [ set_RequestCpus = 1; set_MaxMemory = 2000; ]; \
   ], \
   [ \
     CPUs = 2; \
     Memory = 4000; \
     Name = "sc2"; \
     Requirements = RequestCPUs <= CPUs && RequestMemory <= Memory; \
-    Transforms = [ set_RequestCpus = 2; set_MaxMemory = 4000; ]; \
+    Transform = [ set_RequestCpus = 2; set_MaxMemory = 4000; ]; \
   ], \
   [ \
     CPUs = 4; \
     Memory = 8000; \
     Name = "sc3"; \
     Requirements = RequestCPUs <= CPUs && RequestMemory <= Memory && (VO == "osg" || VO == "atlas"); \
-    Transforms = [ set_RequestCpus = 4; set_MaxMemory = 8000; ]; \
+    Transform = [ set_RequestCpus = 4; set_MaxMemory = 8000; ]; \
   ] \
 }""")
 
@@ -73,7 +73,7 @@ class TestResourceCatalog(unittest.TestCase):
     Memory = 2000; \
     Name = "sc"; \
     Requirements = RequestCPUs <= CPUs && RequestMemory <= Memory && WantGPUs =?= 1; \
-    Transforms = [ set_RequestCpus = 1; set_MaxMemory = 2000; ]; \
+    Transform = [ set_RequestCpus = 1; set_MaxMemory = 2000; ]; \
   ] \
 }""")
 
@@ -85,7 +85,7 @@ class TestResourceCatalog(unittest.TestCase):
     Memory = 2000; \
     Name = "sc"; \
     Requirements = RequestCPUs <= CPUs && RequestMemory <= Memory; \
-    Transforms = [ set_RequestCpus = 1; set_MaxMemory = 2000; set_WantRHEL6 = 1; ]; \
+    Transform = [ set_RequestCpus = 1; set_MaxMemory = 2000; set_WantRHEL6 = 1; ]; \
   ] \
 }""")
 
@@ -114,7 +114,7 @@ HEPSPEC = 10
     Memory = 4000; \
     Name = "red.unl.edu"; \
     Requirements = RequestCPUs <= CPUs && RequestMemory <= Memory; \
-    Transforms = [ set_RequestCpus = 4; set_MaxMemory = 4000; ]; \
+    Transform = [ set_RequestCpus = 4; set_MaxMemory = 4000; ]; \
   ] \
 }""")
 
@@ -147,7 +147,7 @@ extra_transforms = set_WantRHEL6 = 1
     Memory = 4000; \
     Name = "glow.chtc.wisc.edu"; \
     Requirements = RequestCPUs <= CPUs && RequestMemory <= Memory && WantGPUs =?= 1; \
-    Transforms = [ set_RequestCpus = 4; set_MaxMemory = 4000; set_WantRHEL6 = 1; ]; \
+    Transform = [ set_RequestCpus = 4; set_MaxMemory = 4000; set_WantRHEL6 = 1; ]; \
   ] \
 }""")
 
