@@ -32,6 +32,8 @@ ENTRIES = {
    "outbound_network": (REQUIRED, BOOLEAN),
    "cpu_platform": (REQUIRED, STRING),
    "allowed_vos": (OPTIONAL, STRING),
+   "extra_requirements": (OPTIONAL, STRING),
+   "extra_transforms": (OPTIONAL, STRING),
 }
 
 BANNED_ENTRIES = {
@@ -178,8 +180,14 @@ def resource_catalog_from_config(config):
       cpus = config.getint(section, 'cores_per_node')
       memory = config.getint(section, 'ram_mb')
       allowed_vos = utilities.config_safe_get(config, section, 'allowed_vos')
+      extra_requirements = utilities.config_safe_get(config, section, 'extra_requirements')
+      #extra_requirements = None
+      extra_transforms = utilities.config_safe_get(config, section, 'extra_transforms')
+      #extra_transforms = None
       rc.add_entry(name=name,
                    cpus=cpus,
                    memory=memory,
-                   allowed_vos=allowed_vos)
+                   allowed_vos=allowed_vos,
+                   extra_requirements=extra_requirements,
+                   extra_transforms=extra_transforms)
   return rc

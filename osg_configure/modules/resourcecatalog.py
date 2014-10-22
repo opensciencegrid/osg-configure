@@ -19,10 +19,10 @@ class ResourceCatalog(object):
     :param allowed_vos: a list or string containing the names of all the VOs that are allowed to run on this resource.
       Optional; if not specified, all VOs can run on this resource.
     :type allowed_vos: str or list or None
-    :param extra_requirements: optional list of extra requirements clauses (which are ANDed together)
-    :type extra_requirements: list or None
-    :param extra_transforms; optional list of transforms attributes (which are appended)
-    :type extra_transforms: list or None
+    :param extra_requirements: optional string of extra requirements clauses (which are ANDed together)
+    :type extra_requirements: str or None
+    :param extra_transforms; optional string of transforms attributes (which are appended)
+    :type extra_transforms: str or None
     """
     if not name:
       raise ValueError("Required parameter 'name' must be specified")
@@ -41,7 +41,9 @@ class ResourceCatalog(object):
                   'CPUs': cpus,
                   'Memory': memory}
 
-    requirements_clauses = ['RequestCPUs <= CPUs', 'RequestMemory <= Memory'] + (extra_requirements or [])
+    requirements_clauses = ['RequestCPUs <= CPUs', 'RequestMemory <= Memory']
+    if extra_requirements:
+      requirements_clauses.append(extra_requirements)
 
     if allowed_vos:
       vo_clauses = ['VO == %s' % utilities.classad_quote(vo) for vo in allowed_vos if vo]
@@ -49,7 +51,9 @@ class ResourceCatalog(object):
 
     attributes['Requirements'] = ' && '.join(requirements_clauses)
 
-    transforms_attributes = ['set_RequestCpus = %d' % cpus, 'set_MaxMemory = %d' % memory] + (extra_transforms or [])
+    transforms_attributes = ['set_RequestCpus = %d' % cpus, 'set_MaxMemory = %d' % memory]
+    if extra_transforms:
+      transforms_attributes.append(extra_transforms)
     attributes['Transforms'] = '[ ' + '; '.join(transforms_attributes) + '; ]'
 
     self.entries[name] = attributes

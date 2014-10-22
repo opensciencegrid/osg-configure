@@ -1,5 +1,6 @@
 import unittest, os, sys
 import cStringIO
+import ConfigParser
 
 # setup system library path
 pathname = os.path.realpath('../')
@@ -7,7 +8,7 @@ sys.path.insert(0, pathname)
 sys.path.insert(0, '.')
 
 from osg_configure.modules.resourcecatalog import ResourceCatalog
-
+from osg_configure.modules import subcluster
 
 class TestResourceCatalog(unittest.TestCase):
   def setUp(self):
@@ -65,7 +66,7 @@ class TestResourceCatalog(unittest.TestCase):
     self.assertRaises(ValueError, self.rc.add_entry, 'sc', 1, 0)
 
   def testExtraRequirements(self):
-    self.rc.add_entry('sc', 1, 2000, extra_requirements=['WantGPUs =?= 1'])
+    self.rc.add_entry('sc', 1, 2000, extra_requirements='WantGPUs =?= 1')
     self.assertEqual(self.rc.compose_text().strip(), r"""OSG_ResourceCatalog = { \
   [ \
     CPUs = 1; \
@@ -77,7 +78,7 @@ class TestResourceCatalog(unittest.TestCase):
 }""")
 
   def testExtraTransforms(self):
-    self.rc.add_entry('sc', 1, 2000, extra_transforms=['set_WantRHEL6 = 1'])
+    self.rc.add_entry('sc', 1, 2000, extra_transforms='set_WantRHEL6 = 1')
     self.assertEqual(self.rc.compose_text().strip(), r"""OSG_ResourceCatalog = { \
   [ \
     CPUs = 1; \
@@ -89,8 +90,6 @@ class TestResourceCatalog(unittest.TestCase):
 }""")
 
   def testFull(self):
-    import ConfigParser
-    from osg_configure.modules import subcluster
     config = ConfigParser.SafeConfigParser()
     config_io = cStringIO.StringIO(r"""
 [Subcluster Valid]
@@ -116,6 +115,37 @@ HEPSPEC = 10
     Name = "red.unl.edu"; \
     Requirements = RequestCPUs <= CPUs && RequestMemory <= Memory; \
     Transforms = [ set_RequestCpus = 4; set_MaxMemory = 4000; ]; \
+  ] \
+}""")
+
+  def testFullWithExtras(self):
+    config = ConfigParser.SafeConfigParser()
+    config_io = cStringIO.StringIO(r"""
+[Subcluster Test]
+name = glow.chtc.wisc.edu
+node_count = 60
+ram_mb = 4000
+cpu_model = Opteron 275
+cpu_vendor = AMD
+cpu_speed_mhz = 2200
+cpu_platform = x86_64
+cpus_per_node = 2
+cores_per_node = 4
+inbound_network = FALSE
+outbound_network = TRUE
+HEPSPEC = 10
+extra_requirements = WantGPUs =?= 1
+extra_transforms = set_WantRHEL6 = 1
+""")
+    config.readfp(config_io)
+    self.assertEqual(subcluster.resource_catalog_from_config(config).compose_text(),
+                     r"""OSG_ResourceCatalog = { \
+  [ \
+    CPUs = 4; \
+    Memory = 4000; \
+    Name = "glow.chtc.wisc.edu"; \
+    Requirements = RequestCPUs <= CPUs && RequestMemory <= Memory && WantGPUs =?= 1; \
+    Transforms = [ set_RequestCpus = 4; set_MaxMemory = 4000; set_WantRHEL6 = 1; ]; \
   ] \
 }""")
 
