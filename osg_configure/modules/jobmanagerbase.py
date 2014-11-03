@@ -260,6 +260,6 @@ class JobManagerConfiguration(BaseConfiguration):
     """
     if os.path.exists(self.BLAH_CONFIG):
       contents = utilities.read_file(self.BLAH_CONFIG)
-      utilities.add_or_replace_setting(contents, jobmanager + "_binpath", submit_binpath, quote_value=False)
+      contents = utilities.add_or_replace_setting(contents, jobmanager + "_binpath", submit_binpath, quote_value=False)
       utilities.atomic_write(self.BLAH_CONFIG, contents)
 
