@@ -65,6 +65,8 @@ class PBSConfiguration(JobManagerConfiguration):
     """Try to get configuration information from ConfigParser or SafeConfigParser object given
     by configuration and write recognized settings to attributes dict
     """
+    super(PBSConfiguration, self).parseConfiguration(configuration)
+
     self.log('PBSConfiguration.parseConfiguration started')    
 
     self.checkConfig(configuration)
