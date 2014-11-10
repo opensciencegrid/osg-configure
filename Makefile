@@ -12,6 +12,7 @@ _default:
 
 install-common:
 	python setup.py install --root=$(DESTDIR)/
+	mkdir -p  $(DESTDIR)$(SBINDIR)
 	mv -f  $(DESTDIR)$(BINDIR)/$(NAME)  $(DESTDIR)$(SBINDIR)/$(NAME)
 	ln -snf  $(SBINDIR)/$(NAME)  $(DESTDIR)$(SBINDIR)/configure-osg
 
