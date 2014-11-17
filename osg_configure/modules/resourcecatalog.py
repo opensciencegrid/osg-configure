@@ -41,12 +41,12 @@ class ResourceCatalog(object):
                   'CPUs': cpus,
                   'Memory': memory}
 
-    requirements_clauses = ['RequestCPUs <= CPUs', 'RequestMemory <= Memory']
+    requirements_clauses = ['TARGET.RequestCPUs <= CPUs', 'TARGET.RequestMemory <= Memory']
     if extra_requirements:
       requirements_clauses.append(extra_requirements)
 
     if allowed_vos:
-      vo_clauses = ['VO == %s' % utilities.classad_quote(vo) for vo in allowed_vos if vo]
+      vo_clauses = ['TARGET.VO == %s' % utilities.classad_quote(vo) for vo in allowed_vos if vo]
       requirements_clauses.append("(%s)" % " || ".join(vo_clauses))
 
     attributes['Requirements'] = ' && '.join(requirements_clauses)
