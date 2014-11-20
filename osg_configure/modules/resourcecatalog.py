@@ -34,9 +34,6 @@ class ResourceCatalog(object):
     if not memory > 0:
       raise ValueError("Parameter 'memory' out of range at %r; must be > 0" % memory)
 
-    if isinstance(allowed_vos, str):
-      allowed_vos = re.split('[ ,]+', allowed_vos)
-
     attributes = {'Name': utilities.classad_quote(name),
                   'CPUs': cpus,
                   'Memory': memory}
@@ -46,8 +43,11 @@ class ResourceCatalog(object):
       requirements_clauses.append(extra_requirements)
 
     if allowed_vos:
-      vo_clauses = ['TARGET.VO == %s' % utilities.classad_quote(vo) for vo in allowed_vos if vo]
-      requirements_clauses.append("(%s)" % " || ".join(vo_clauses))
+      if isinstance(allowed_vos, str):
+        allowed_vos = re.split('[ ,]+', allowed_vos)
+      allowed_vos = "{ " + ", ".join([utilities.classad_quote(vo) for vo in allowed_vos]) + " }"
+      attributes['AllowedVOs'] = allowed_vos
+      requirements_clauses.append("member(TARGET.VO, AllowedVOs)")
 
     attributes['Requirements'] = ' && '.join(requirements_clauses)
 
