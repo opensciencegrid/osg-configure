@@ -8,7 +8,7 @@ class ResourceCatalog(object):
   def __init__(self):
     self.entries = {}
 
-  def add_entry(self, name, cpus, memory, allowed_vos=None, extra_requirements=None, extra_transforms=None):
+  def add_entry(self, name, cpus, memory, allowed_vos=None, max_wall_time=None, extra_requirements=None, extra_transforms=None):
     """Composes an entry for a single resource and adds it to the list of entries in the ResourceCatalog
     :param name: name of the resource
     :type name: str
@@ -19,6 +19,8 @@ class ResourceCatalog(object):
     :param allowed_vos: a list or string containing the names of all the VOs that are allowed to run on this resource.
       Optional; if not specified, all VOs can run on this resource.
     :type allowed_vos: str or list or None
+    :param max_wall_time: max run time of job on these nodes in minutes
+    :type max_wall_time: int or None
     :param extra_requirements: optional string of extra requirements clauses (which are ANDed together)
     :type extra_requirements: str or None
     :param extra_transforms; optional string of transform attributes (which are appended)
@@ -37,6 +39,12 @@ class ResourceCatalog(object):
     attributes = {'Name': utilities.classad_quote(name),
                   'CPUs': cpus,
                   'Memory': memory}
+
+    if max_wall_time is not None:
+      max_wall_time = int(max_wall_time)
+      if not max_wall_time > 0:
+        raise ValueError("Parameter 'max_wall_time' out of range at %r; must be > 0" % max_wall_time)
+      attributes['MaxWallTime'] = max_wall_time
 
     requirements_clauses = ['TARGET.RequestCPUs <= CPUs', 'TARGET.RequestMemory <= Memory']
     if extra_requirements:

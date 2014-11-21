@@ -32,6 +32,7 @@ ENTRIES = {
    "outbound_network": (REQUIRED, BOOLEAN),
    "cpu_platform": (REQUIRED, STRING),
    "allowed_vos": (OPTIONAL, STRING),
+   "max_wall_time": (OPTIONAL, POSITIVE_INT),
    "extra_requirements": (OPTIONAL, STRING),
    "extra_transforms": (OPTIONAL, STRING),
 }
@@ -180,6 +181,7 @@ def resource_catalog_from_config(config):
       cpus = config.getint(section, 'cores_per_node')
       memory = config.getint(section, 'ram_mb')
       allowed_vos = utilities.config_safe_get(config, section, 'allowed_vos')
+      max_wall_time = utilities.config_safe_get(config, section, 'max_wall_time')
 
       # The ability to specify extra requirements and transforms is disabled until admins demand it
 
@@ -192,6 +194,7 @@ def resource_catalog_from_config(config):
                    cpus=cpus,
                    memory=memory,
                    allowed_vos=allowed_vos,
+                   max_wall_time=max_wall_time,
                    extra_requirements=extra_requirements,
                    extra_transforms=extra_transforms)
   return rc
