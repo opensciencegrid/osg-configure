@@ -24,7 +24,7 @@ class TestResourceCatalog(unittest.TestCase):
     CPUs = 1; \
     Memory = 2000; \
     Name = "sc1"; \
-    Requirements = RequestCPUs <= CPUs && RequestMemory <= Memory; \
+    Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory; \
     Transform = [ set_RequestCpus = 1; set_MaxMemory = 2000; ]; \
   ] \
 }""")
@@ -39,21 +39,22 @@ class TestResourceCatalog(unittest.TestCase):
     CPUs = 1; \
     Memory = 2000; \
     Name = "sc1"; \
-    Requirements = RequestCPUs <= CPUs && RequestMemory <= Memory; \
+    Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory; \
     Transform = [ set_RequestCpus = 1; set_MaxMemory = 2000; ]; \
   ], \
   [ \
     CPUs = 2; \
     Memory = 4000; \
     Name = "sc2"; \
-    Requirements = RequestCPUs <= CPUs && RequestMemory <= Memory; \
+    Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory; \
     Transform = [ set_RequestCpus = 2; set_MaxMemory = 4000; ]; \
   ], \
   [ \
+    AllowedVOs = { "osg", "atlas" }; \
     CPUs = 4; \
     Memory = 8000; \
     Name = "sc3"; \
-    Requirements = RequestCPUs <= CPUs && RequestMemory <= Memory && (VO == "osg" || VO == "atlas"); \
+    Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory && member(TARGET.VO, AllowedVOs); \
     Transform = [ set_RequestCpus = 4; set_MaxMemory = 8000; ]; \
   ] \
 }""")
@@ -66,13 +67,13 @@ class TestResourceCatalog(unittest.TestCase):
     self.assertRaises(ValueError, self.rc.add_entry, 'sc', 1, 0)
 
   def testExtraRequirements(self):
-    self.rc.add_entry('sc', 1, 2000, extra_requirements='WantGPUs =?= 1')
+    self.rc.add_entry('sc', 1, 2000, extra_requirements='TARGET.WantGPUs =?= 1')
     self.assertEqual(self.rc.compose_text().strip(), r"""OSG_ResourceCatalog = { \
   [ \
     CPUs = 1; \
     Memory = 2000; \
     Name = "sc"; \
-    Requirements = RequestCPUs <= CPUs && RequestMemory <= Memory && WantGPUs =?= 1; \
+    Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory && TARGET.WantGPUs =?= 1; \
     Transform = [ set_RequestCpus = 1; set_MaxMemory = 2000; ]; \
   ] \
 }""")
@@ -84,7 +85,7 @@ class TestResourceCatalog(unittest.TestCase):
     CPUs = 1; \
     Memory = 2000; \
     Name = "sc"; \
-    Requirements = RequestCPUs <= CPUs && RequestMemory <= Memory; \
+    Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory; \
     Transform = [ set_RequestCpus = 1; set_MaxMemory = 2000; set_WantRHEL6 = 1; ]; \
   ] \
 }""")
@@ -113,7 +114,7 @@ HEPSPEC = 10
     CPUs = 4; \
     Memory = 4000; \
     Name = "red.unl.edu"; \
-    Requirements = RequestCPUs <= CPUs && RequestMemory <= Memory; \
+    Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory; \
     Transform = [ set_RequestCpus = 4; set_MaxMemory = 4000; ]; \
   ] \
 }""")
@@ -138,15 +139,17 @@ outbound_network = TRUE
 HEPSPEC = 10
 extra_requirements = WantGPUs =?= 1
 extra_transforms = set_WantRHEL6 = 1
+max_wall_time = 1440
 """)
     config.readfp(config_io)
     self.assertEqual(subcluster.resource_catalog_from_config(config).compose_text(),
                      r"""OSG_ResourceCatalog = { \
   [ \
     CPUs = 4; \
+    MaxWallTime = 1440; \
     Memory = 4000; \
     Name = "glow.chtc.wisc.edu"; \
-    Requirements = RequestCPUs <= CPUs && RequestMemory <= Memory && WantGPUs =?= 1; \
+    Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory && WantGPUs =?= 1; \
     Transform = [ set_RequestCpus = 4; set_MaxMemory = 4000; set_WantRHEL6 = 1; ]; \
   ] \
 }""")
