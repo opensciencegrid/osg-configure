@@ -28,5 +28,9 @@ if __name__ == '__main__':
         pass # no exclusions specified
 
     test_suite = unittest.defaultTestLoader.loadTestsFromNames(test_files)
-    unittest.TextTestRunner(stream=sys.stdout, verbosity=2).run(test_suite)
+    result = unittest.TextTestRunner(stream=sys.stdout, verbosity=2).run(test_suite)
+    if result.failures or result.errors:
+        sys.exit(1)
+    else:
+        sys.exit(0)
 
