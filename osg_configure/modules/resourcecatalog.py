@@ -59,7 +59,7 @@ class ResourceCatalog(object):
 
     attributes['Requirements'] = ' && '.join(requirements_clauses)
 
-    transform_attributes = ['set_RequestCpus = %d' % cpus, 'set_MaxMemory = %d' % memory]
+    transform_attributes = ['set_xcount = RequestCPUs', 'set_MaxMemory = RequestMemory']
     if extra_transforms:
       transform_attributes.append(extra_transforms)
     attributes['Transform'] = '[ ' + '; '.join(transform_attributes) + '; ]'
