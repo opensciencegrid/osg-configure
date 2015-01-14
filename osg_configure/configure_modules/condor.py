@@ -1,6 +1,7 @@
 """ Module to handle attributes and configuration related to the condor 
 jobmanager configuration """
 
+import re
 import os
 import logging
 
@@ -19,6 +20,7 @@ class CondorConfiguration(JobManagerConfiguration):
   CONDOR_CONFIG_FILE = '/etc/grid-services/available/jobmanager-condor'
   GRAM_CONFIG_FILE = '/etc/globus/globus-condor.conf'
   HTCONDOR_CE_CONFIG_FILE = '/etc/condor-ce/config.d/50-osg-configure.conf'
+  DEFAULT_LOCAL_CONFIG_DIR = '/etc/condor/config.d'
 
   def __init__(self, *args, **kwargs):
     # pylint: disable-msg=W0142
@@ -207,6 +209,8 @@ class CondorConfiguration(JobManagerConfiguration):
     if not self.reconfigService('condor', 'condor_reconfig'):
       self.log('Error reloading condor config', level=logging.WARNING)
 
+    self.warnOnNonDefaultLocalConfigDir()
+
     self.log('CondorConfiguration.configure completed')
     return True    
     
@@ -274,7 +278,16 @@ class CondorConfiguration(JobManagerConfiguration):
         self.log("Unable to determine value for %s from %s and default not set; check your Condor config" %
                  (condor_ce_config_key, ' or '.join(condor_config_keys)), level=logging.ERROR)
         return False
-      elif not condor_ce_config_value or (condor_config_value and condor_ce_config_value != condor_config_value):
+      elif not condor_config_value:
+        continue # can't set anything for this
+
+      # Special case for JOB_ROUTER_SCHEDD2_POOL: append port if necessary (SOFTWARE-1744)
+      if condor_ce_config_key == 'JOB_ROUTER_SCHEDD2_POOL' and ':' not in condor_config_value:
+        condor_collector_port = (utilities.get_condor_config_val('COLLECTOR_PORT', quiet_undefined=True)
+                                 or '9618')
+        condor_config_value += ':' + condor_collector_port
+
+      if not condor_ce_config_value or condor_ce_config_value != condor_config_value:
         condor_ce_config[condor_ce_config_key] = condor_config_value
 
     if condor_ce_config:
@@ -300,6 +313,33 @@ class CondorConfiguration(JobManagerConfiguration):
       return True
 
     return False
+
+  def warnOnNonDefaultLocalConfigDir(self):
+    """Warn the user if the default condor local config dir
+    (/etc/condor/config.d) is not searched by their Condor install,
+    i.e. is not in the LOCAL_CONFIG_DIR variable.  (Note that despite
+    the name, LOCAL_CONFIG_DIR may be a list).
+
+    """
+    real_default_local_config_dir = os.path.realpath(self.DEFAULT_LOCAL_CONFIG_DIR)
+
+    if not os.path.exists(real_default_local_config_dir):
+      self.log("%s does not exist; check your Condor installation" % self.DEFAULT_LOCAL_CONFIG_DIR,
+               level=logging.WARNING)
+      return
+
+    local_config_dir = utilities.get_condor_config_val('LOCAL_CONFIG_DIR', quiet_undefined=True)
+    if not local_config_dir:
+      self.log("LOCAL_CONFIG_DIR cannot be determined; check your Condor config", level=logging.WARNING)
+      return
+
+    # does not handle dir names with spaces or commas but apparently neither does condor
+    real_local_config_dirs = [os.path.realpath(x) for x in re.split('[, ]+', local_config_dir)]
+    if real_default_local_config_dir not in real_local_config_dirs:
+      self.log("%s not found in LOCAL_CONFIG_DIR; this may cause failures with gratia and htcondor-ce."
+               " Check your Condor config" % self.DEFAULT_LOCAL_CONFIG_DIR,
+               level=logging.WARNING)
+      return
 
   @staticmethod
   def getCondorLocation(configuration):
