@@ -3,7 +3,6 @@ jobmanager configuration """
 
 import os
 import logging
-import re
 
 from osg_configure.modules import utilities
 from osg_configure.modules import validation
