@@ -308,7 +308,7 @@ class CondorConfiguration(JobManagerConfiguration):
       return True
 
     self.log("Reconfiguring %s using %s" % (service, reconfig_cmd), level=logging.INFO)
-    if os.system(reconfig_cmd) == 0:
+    if os.system(reconfig_cmd + ' >/dev/null') == 0:
       self.log("Reconfigure successful", level=logging.INFO)
       return True
 
