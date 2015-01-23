@@ -282,10 +282,10 @@ class CondorConfiguration(JobManagerConfiguration):
         continue # can't set anything for this
 
       # Special case for JOB_ROUTER_SCHEDD2_POOL: append port if necessary (SOFTWARE-1744)
-      if condor_ce_config_key == 'JOB_ROUTER_SCHEDD2_POOL' and ':' not in condor_config_value:
+      if condor_ce_config_key == 'JOB_ROUTER_SCHEDD2_POOL':
         condor_collector_port = (utilities.get_condor_config_val('COLLECTOR_PORT', quiet_undefined=True)
                                  or '9618')
-        condor_config_value += ':' + condor_collector_port
+        condor_config_value = self._addPortIfNecessary(condor_config_value, condor_collector_port)
 
       if not condor_ce_config_value or condor_ce_config_value != condor_config_value:
         condor_ce_config[condor_ce_config_key] = condor_config_value
@@ -300,6 +300,26 @@ class CondorConfiguration(JobManagerConfiguration):
         return False
 
     return True
+
+  @staticmethod
+  def _addPortIfNecessary(hoststr, port):
+    assert port
+    colon_count = hoststr.count(':')
+    if colon_count == 0:
+      # hostname or ipv4 address without port
+      return '%s:%s' % (hoststr, port)
+    elif colon_count == 1:
+      # hostname or ipv4 address with port
+      return hoststr
+    elif colon_count > 1:
+      # ipv6 address, must be bracketed if it has a port at the end, i.e. [ADDR]:PORT
+      if ']:' not in hoststr:
+        # no port
+        # take off the brackets if they're already there so we don't get double
+        hoststr_no_brackets = hoststr.lstrip('[').rstrip(']')
+        return '[%s]:%s' % (hoststr_no_brackets, port)
+      else:
+        return hoststr
 
   def reconfigService(self, service, reconfig_cmd):
     """If condor is running, run condor_reconfig to make it reload its configuration"""
