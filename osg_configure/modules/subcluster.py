@@ -182,19 +182,20 @@ def resource_catalog_from_config(config):
       memory = config.getint(section, 'ram_mb')
       allowed_vos = utilities.config_safe_get(config, section, 'allowed_vos')
       max_wall_time = utilities.config_safe_get(config, section, 'max_wall_time')
+      queue = utilities.config_safe_get(config, section, 'queue')
 
-      # The ability to specify extra requirements and transforms is disabled until admins demand it
+      # The ability to specify extra requirements is disabled until admins demand it
 
       #extra_requirements = utilities.config_safe_get(config, section, 'extra_requirements')
       extra_requirements = None
-      #extra_transforms = utilities.config_safe_get(config, section, 'extra_transforms')
-      extra_transforms = None
+      extra_transforms = utilities.config_safe_get(config, section, 'extra_transforms')
 
       rc.add_entry(name=name,
                    cpus=cpus,
                    memory=memory,
                    allowed_vos=allowed_vos,
                    max_wall_time=max_wall_time,
+                   queue=queue,
                    extra_requirements=extra_requirements,
                    extra_transforms=extra_transforms)
   return rc

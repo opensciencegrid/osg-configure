@@ -8,7 +8,7 @@ class ResourceCatalog(object):
   def __init__(self):
     self.entries = {}
 
-  def add_entry(self, name, cpus, memory, allowed_vos=None, max_wall_time=None, extra_requirements=None, extra_transforms=None):
+  def add_entry(self, name, cpus, memory, allowed_vos=None, max_wall_time=None, queue=None, extra_requirements=None, extra_transforms=None):
     """Composes an entry for a single resource and adds it to the list of entries in the ResourceCatalog
     :param name: name of the resource
     :type name: str
@@ -21,6 +21,8 @@ class ResourceCatalog(object):
     :type allowed_vos: str or list or None
     :param max_wall_time: max run time of job on these nodes in minutes
     :type max_wall_time: int or None
+    :param queue: remote queue name
+    :type queue: str or None
     :param extra_requirements: optional string of extra requirements clauses (which are ANDed together)
     :type extra_requirements: str or None
     :param extra_transforms; optional string of transform attributes (which are appended)
@@ -60,6 +62,8 @@ class ResourceCatalog(object):
     attributes['Requirements'] = ' && '.join(requirements_clauses)
 
     transform_attributes = ['set_xcount = RequestCPUs', 'set_MaxMemory = RequestMemory']
+    if queue:
+      transform_attributes.append('set_remote_queue = ' + utilities.classad_quote(queue))
     if extra_transforms:
       transform_attributes.append(extra_transforms)
     attributes['Transform'] = '[ ' + '; '.join(transform_attributes) + '; ]'
