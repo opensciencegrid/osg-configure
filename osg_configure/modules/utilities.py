@@ -264,7 +264,7 @@ def fetch_crl():
       'CRL retrieval for',
       r'^\s*$',
     ]
-    fetch_crl_process = subprocess.Popen([crl_path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    fetch_crl_process = subprocess.Popen([crl_path, '-p', '10', '-T', '30'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     outerr = fetch_crl_process.communicate()[0]
     if fetch_crl_process.returncode != 0:
       sys.stdout.write("fetch-crl script had some errors:\n" + outerr + "\n")
