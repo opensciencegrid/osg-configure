@@ -25,7 +25,7 @@ class TestResourceCatalog(unittest.TestCase):
     Memory = 2000; \
     Name = "sc1"; \
     Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory; \
-    Transform = [ set_xcount = RequestCPUs; set_MaxMemory = RequestMemory; ]; \
+    Transform = [ set_MaxMemory = RequestMemory; set_xcount = RequestCPUs; ]; \
   ] \
 }""")
 
@@ -40,14 +40,14 @@ class TestResourceCatalog(unittest.TestCase):
     Memory = 2000; \
     Name = "sc1"; \
     Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory; \
-    Transform = [ set_xcount = RequestCPUs; set_MaxMemory = RequestMemory; ]; \
+    Transform = [ set_MaxMemory = RequestMemory; set_xcount = RequestCPUs; ]; \
   ], \
   [ \
     CPUs = 2; \
     Memory = 4000; \
     Name = "sc2"; \
     Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory; \
-    Transform = [ set_xcount = RequestCPUs; set_MaxMemory = RequestMemory; ]; \
+    Transform = [ set_MaxMemory = RequestMemory; set_xcount = RequestCPUs; ]; \
   ], \
   [ \
     AllowedVOs = { "osg", "atlas" }; \
@@ -55,7 +55,7 @@ class TestResourceCatalog(unittest.TestCase):
     Memory = 8000; \
     Name = "sc3"; \
     Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory && member(TARGET.VO, AllowedVOs); \
-    Transform = [ set_xcount = RequestCPUs; set_MaxMemory = RequestMemory; ]; \
+    Transform = [ set_MaxMemory = RequestMemory; set_xcount = RequestCPUs; ]; \
   ] \
 }""")
 
@@ -74,7 +74,7 @@ class TestResourceCatalog(unittest.TestCase):
     Memory = 2000; \
     Name = "sc"; \
     Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory && TARGET.WantGPUs =?= 1; \
-    Transform = [ set_xcount = RequestCPUs; set_MaxMemory = RequestMemory; ]; \
+    Transform = [ set_MaxMemory = RequestMemory; set_xcount = RequestCPUs; ]; \
   ] \
 }""")
 
@@ -86,7 +86,7 @@ class TestResourceCatalog(unittest.TestCase):
     Memory = 2000; \
     Name = "sc"; \
     Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory; \
-    Transform = [ set_xcount = RequestCPUs; set_MaxMemory = RequestMemory; set_WantRHEL6 = 1; ]; \
+    Transform = [ set_MaxMemory = RequestMemory; set_WantRHEL6 = 1; set_xcount = RequestCPUs; ]; \
   ] \
 }""")
 
@@ -115,7 +115,7 @@ HEPSPEC = 10
     Memory = 4000; \
     Name = "red.unl.edu"; \
     Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory; \
-    Transform = [ set_xcount = RequestCPUs; set_MaxMemory = RequestMemory; ]; \
+    Transform = [ set_MaxMemory = RequestMemory; set_xcount = RequestCPUs; ]; \
   ] \
 }""")
 
@@ -148,7 +148,7 @@ max_wall_time = 1440
     Memory = 4000; \
     Name = "glow.chtc.wisc.edu"; \
     Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory; \
-    Transform = [ set_xcount = RequestCPUs; set_MaxMemory = RequestMemory; set_remote_queue = "blue"; set_WantRHEL6 = 1; ]; \
+    Transform = [ set_MaxMemory = RequestMemory; set_WantRHEL6 = 1; set_remote_queue = "blue"; set_xcount = RequestCPUs; ]; \
   ] \
 }""")
 
@@ -184,7 +184,7 @@ max_wall_time = 1440
     Memory = 4000; \
     Name = "glow.chtc.wisc.edu"; \
     Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory && WantGPUs =?= 1; \
-    Transform = [ set_xcount = RequestCPUs; set_MaxMemory = RequestMemory; set_remote_queue = "blue"; set_WantRHEL6 = 1; ]; \
+    Transform = [ set_MaxMemory = RequestMemory; set_WantRHEL6 = 1; set_remote_queue = "blue"; set_xcount = RequestCPUs; ]; \
   ] \
 }""")
 

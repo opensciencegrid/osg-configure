@@ -1,3 +1,4 @@
+import classad
 import re
 import utilities
 
@@ -27,6 +28,7 @@ class ResourceCatalog(object):
     :type extra_requirements: str or None
     :param extra_transforms; optional string of transform attributes (which are appended)
     :type extra_transforms: str or None
+    :raise ValueError: if cpus, memory or max_wall_time are out of range or extra_transforms is unparseable
     """
     if not name:
       raise ValueError("Required parameter 'name' must be specified")
@@ -61,16 +63,30 @@ class ResourceCatalog(object):
 
     attributes['Requirements'] = ' && '.join(requirements_clauses)
 
-    transform_attributes = ['set_xcount = RequestCPUs', 'set_MaxMemory = RequestMemory']
+    transform_classad = classad.parse('[set_xcount = RequestCPUs; set_MaxMemory = RequestMemory]')
     if queue:
-      transform_attributes.append('set_remote_queue = ' + utilities.classad_quote(queue))
+      transform_classad['set_remote_queue'] = utilities.classad_quote(queue)
     if extra_transforms:
-      transform_attributes.append(extra_transforms)
-    attributes['Transform'] = '[ ' + '; '.join(transform_attributes) + '; ]'
+      try:
+        extra_transforms_classad = classad.parse(self._munge_extra_transforms(extra_transforms))
+      except SyntaxError, e:
+        raise ValueError("Unable to parse 'extra_transforms': %s" % e)
+      transform_classad.update(extra_transforms_classad)
+    attributes['Transform'] = '['
+    for key in sorted(transform_classad.keys()):
+      attributes['Transform'] += " %s = %s;" % (key, transform_classad[key])
+    attributes['Transform'] += ' ]'
 
     self.entries[name] = attributes
 
     return self
+
+  @staticmethod
+  def _munge_extra_transforms(extra_transforms):
+    """Ensure extra_transforms is surrounded by exactly one pair of brackets
+    so it can be parsed as a classad
+    """
+    return '[' + extra_transforms.lstrip('[ \t').rstrip('] \t') + ']'
 
   def compose_text(self):
     """Return the OSG_ResourceCatalog classad attribute made of all the entries in this object"""
