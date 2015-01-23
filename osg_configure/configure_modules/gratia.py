@@ -632,14 +632,32 @@ in your config.ini file."""
         history_dir = self.__get_history_dir(condor_config_val_bin)
         if not history_dir:
           self.log("Could not verify DataFolder correctness: unable to get PER_JOB_HISTORY_DIR. "
-                   "This may be caused by the condor schedd not running.", level=logging.WARNING)
+                   "This may be caused by the condor schedd not running, or by PER_JOB_HISTORY_DIR "
+                   "not being defined.", level=logging.WARNING)
         else:
-          if not os.path.samefile(data_folder, history_dir):
-            self.log("DataFolder setting in %s and condor PER_JOB_HISTORY_DIR %s "
-                     "do not match, these settings must match!" % (config_location,
-                                                                   history_dir),
+          # os.path.samefile will die if the paths don't exist so check that explicitly (SOFTWARE-1735)
+          if not os.path.exists(data_folder):
+            self.log("DataFolder setting in %s (%s) points to a nonexistant location" % (config_location, data_folder),
                      level=logging.ERROR)
             valid = False
+          elif not os.path.exists(history_dir):
+            self.log("Condor PER_JOB_HISTORY_DIR %s points to a nonexistant location" % history_dir,
+                     level=logging.ERROR)
+            valid = False
+          else:
+            try:
+              if not os.path.samefile(data_folder, history_dir):
+                self.log("DataFolder setting in %s (%s) and condor PER_JOB_HISTORY_DIR %s "
+                         "do not match, these settings must match!" % (config_location,
+                                                                       data_folder,
+                                                                       history_dir),
+                         level=logging.ERROR)
+                valid = False
+            except OSError, e:
+              self.log("Error comparing DataFolder setting in %s (%s) and condor PER_JOB_HISTORY_DIR %s:\n%s"
+                       % (config_location, data_folder, history_dir, e),
+                       level=logging.ERROR)
+              valid = False
 
         # Per Gratia-126 DataFolder must end in / otherwise gratia won't find certinfo files
         if not data_folder.endswith('/'):
@@ -662,7 +680,10 @@ in your config.ini file."""
       self.log("While checking gratia parameters: Error running %s: %s" % (condor_config_val_bin, str(err)),
                level=logging.INFO)
       return None
-    return history_dir.strip()
+    history_dir = history_dir.strip()
+    if history_dir.startswith('Not defined'):
+      return None
+    return history_dir
 
   @staticmethod
   def replaceSetting(buf, setting, value, xml_file=True):
