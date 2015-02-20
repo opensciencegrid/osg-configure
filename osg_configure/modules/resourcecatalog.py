@@ -46,8 +46,8 @@ class ResourceCatalog(object):
 
     if max_wall_time is not None:
       max_wall_time = int(max_wall_time)
-      if not max_wall_time > 0:
-        raise ValueError("Parameter 'max_wall_time' out of range at %r; must be > 0" % max_wall_time)
+      if not max_wall_time >= 0:
+        raise ValueError("Parameter 'max_wall_time' out of range at %r; must be >= 0" % max_wall_time)
       attributes['MaxWallTime'] = max_wall_time
 
     requirements_clauses = ['TARGET.RequestCPUs <= CPUs', 'TARGET.RequestMemory <= Memory']

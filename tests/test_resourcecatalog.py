@@ -11,6 +11,12 @@ from osg_configure.modules.resourcecatalog import ResourceCatalog
 from osg_configure.modules import subcluster
 
 class TestResourceCatalog(unittest.TestCase):
+  def assertDoesNotRaise(self, exception, function, *args, **kwargs):
+    try:
+      function(*args, **kwargs)
+    except exception:
+      self.fail('%s called with %r and %r raised %s' % (function.__name__, args, kwargs, exception.__name__))
+
   def setUp(self):
     self.rc = ResourceCatalog()
 
@@ -65,6 +71,10 @@ class TestResourceCatalog(unittest.TestCase):
   def testOutOfRange(self):
     self.assertRaises(ValueError, self.rc.add_entry, 'sc', -1, 1)
     self.assertRaises(ValueError, self.rc.add_entry, 'sc', 1, 0)
+
+  def testZeroMaxWallTime(self):
+    self.assertDoesNotRaise(ValueError, self.rc.add_entry, 'sc', 1, 1, None, None)
+    self.assertDoesNotRaise(ValueError, self.rc.add_entry, 'sc', 1, 1, None, 0)
 
   def testExtraRequirements(self):
     self.rc.add_entry('sc', 1, 2000, extra_requirements='TARGET.WantGPUs =?= 1')

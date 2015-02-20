@@ -182,6 +182,8 @@ def resource_catalog_from_config(config):
       memory = config.getint(section, 'ram_mb')
       allowed_vos = utilities.config_safe_get(config, section, 'allowed_vos')
       max_wall_time = utilities.config_safe_get(config, section, 'max_wall_time')
+      if str(max_wall_time).strip() == '':
+        max_wall_time = None
       queue = utilities.config_safe_get(config, section, 'queue')
 
       # The ability to specify extra requirements is disabled until admins demand it
