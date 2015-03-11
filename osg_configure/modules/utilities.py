@@ -217,7 +217,7 @@ def create_map_file(using_gums=False):
     if using_gums:
       gums_script = '/usr/bin/gums-host-cron'
     else:
-      gums_script = '/usr/bin/edg-mkgridmap'
+      gums_script = '/usr/sbin/edg-mkgridmap'
       
     sys.stdout.write("Running %s, this process may take some time " % gums_script +
                      "to query vo and gums servers\n")
