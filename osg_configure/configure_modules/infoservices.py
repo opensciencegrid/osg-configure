@@ -2,6 +2,7 @@
  for OSG info services subscriptions"""
 
 import re
+import subprocess
 import urlparse
 import logging
 
@@ -11,7 +12,6 @@ from osg_configure.modules import configfile
 from osg_configure.modules import validation
 from osg_configure.modules.configurationbase import BaseConfiguration
 from osg_configure.modules import subcluster
-from osg_configure.modules import resourcecatalog
 
 
 __all__ = ['InfoServicesConfiguration']
@@ -310,6 +310,16 @@ class InfoServicesConfiguration(BaseConfiguration):
                  level=logging.ERROR)
         return False
 
+    resourcecatalog_location = self.__resourcecatalog_location()
+    if not resourcecatalog_location:
+      # shouldn't happen -- we just wrote this
+      self.log("Verifying OSG_ResourceCatalog failed!", level=logging.ERROR)
+      return False
+    else:
+      if resourcecatalog_location != CE_COLLECTOR_ATTRIBUTES_FILE:
+        self.log("Generated OSG_ResourceCatalog is overridden by %s" % resourcecatalog_location, level=logging.WARNING)
+
+
   def __write_ce_collector_attributes_file(self, attributes_file):
     """Write config file that contains the osg attributes for the
     CE-Collector to advertise
@@ -355,4 +365,31 @@ CONDOR_VIEW_HOST = %s
 """ % ",".join(view_hosts)
 
     return utilities.atomic_write(info_services_file, info_services_file_contents)
+
+  def __resourcecatalog_location(self):
+    """Returns the name of the condor-ce config file where OSG_ResourceCatalog
+    is actually defined (from condor_ce_config_val), or None if not defined
+
+    """
+    errlevel = logging.ERROR
+    try:
+      process = subprocess.Popen(['condor_ce_config_val', '-verbose', 'OSG_ResourceCatalog'],
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+      output, error = process.communicate()
+      if process.returncode != 0:
+        if not (error and error.startswith('Not defined:')):
+          self.log('condor_ce_config_val OSG_ResourceCatalog failed; exit %d; error %s' % (process.returncode, error),
+                   level=errlevel)
+        return None
+    except OSError, err:
+      self.log('Could not run condor_ce_config_val: %s' % str(err), level=errlevel)
+      return None
+    output = output.strip()
+    match = re.search(r'# at: (\S+), line \d+', output)
+    if not match:
+      self.log('Could not find definition of OSG_ResourceCatalog; condor_ce_config_val output was: \n%s' % output,
+               level=errlevel)
+      return None
+    else:
+      return match.group(1)
 
