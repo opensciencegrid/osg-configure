@@ -227,6 +227,7 @@ class SlurmConfiguration(JobManagerConfiguration):
 
     if self.htcondor_gateway_enabled:
       self.write_binpaths_to_blah_config('slurm', self.slurm_bin_location)
+      self.write_blah_disable_wn_proxy_renewal_to_blah_config()
 
     self.log('SlurmConfiguration.configure completed')    
     return True

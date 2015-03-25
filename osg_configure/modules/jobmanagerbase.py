@@ -263,3 +263,9 @@ class JobManagerConfiguration(BaseConfiguration):
       contents = utilities.add_or_replace_setting(contents, jobmanager + "_binpath", submit_binpath, quote_value=False)
       utilities.atomic_write(self.BLAH_CONFIG, contents)
 
+  def write_blah_disable_wn_proxy_renewal_to_blah_config(self):
+    if os.path.exists(self.BLAH_CONFIG):
+      contents = utilities.read_file(self.BLAH_CONFIG)
+      contents = utilities.add_or_replace_setting(contents, "blah_disable_wn_proxy_renewal", "yes", quote_value=False)
+      utilities.atomic_write(self.BLAH_CONFIG, contents)
+

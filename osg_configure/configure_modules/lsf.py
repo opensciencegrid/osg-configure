@@ -213,6 +213,7 @@ class LSFConfiguration(JobManagerConfiguration):
 
     if self.htcondor_gateway_enabled:
       self.write_binpaths_to_blah_config('lsf', self.lsf_bin_location)
+      self.write_blah_disable_wn_proxy_renewal_to_blah_config()
 
     self.log('LSFConfiguration.configure completed')
     return True
