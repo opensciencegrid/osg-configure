@@ -1,7 +1,6 @@
 import re
 import ConfigParser
 
-from osg_configure.modules.resourcecatalog import ResourceCatalog
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
 
@@ -173,6 +172,7 @@ def resource_catalog_from_config(config):
   :rtype: ResourceCatalog
   """
   assert isinstance(config, ConfigParser.ConfigParser)
+  from osg_configure.modules.resourcecatalog import ResourceCatalog
   rc = ResourceCatalog()
   for section in config.sections():
     if section.lower().startswith('subcluster'):
