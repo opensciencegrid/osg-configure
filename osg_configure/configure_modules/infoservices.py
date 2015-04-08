@@ -33,6 +33,11 @@ class InfoServicesConfiguration(BaseConfiguration):
   Class to handle attributes and configuration related to
   miscellaneous services
   """
+  have_condor_python = True
+  try:
+    import classad
+  except ImportError:
+    have_condor_python = False
 
   def __init__(self, *args, **kwargs):
     # pylint: disable-msg=W0142
@@ -140,7 +145,14 @@ class InfoServicesConfiguration(BaseConfiguration):
     self.copy_host_cert_for_service_cert = csgbool('Misc Services', 'copy_host_cert_for_service_certs')
     self.htcondor_gateway_enabled = csgbool('Gateway', 'htcondor_gateway_enabled')
     if self.htcondor_gateway_enabled and self.ce_collector_required_rpms_installed:
-      self.resource_catalog = subcluster.resource_catalog_from_config(configuration)
+      if self.have_condor_python:
+        self.resource_catalog = subcluster.resource_catalog_from_config(configuration)
+      else:
+        self.log("Cannot configure HTCondor CE info services: unable to import HTCondor Python bindings."
+                 "\nEnsure the 'classad' Python module is installed and accessible to Python scripts."
+                 "\nIf using HTCondor from RPMs, install the 'condor-python' RPM."
+                 "\nIf not, you may need to add the directory containing the Python bindings to PYTHONPATH."
+                 "\nHTCondor version must be at least 8.2.0.", level=logging.WARNING)
 
     self.log('InfoServicesConfiguration.parseConfiguration completed')
 
@@ -166,7 +178,7 @@ class InfoServicesConfiguration(BaseConfiguration):
         self.log("Could not create service cert/key", level=logging.ERROR)
         return False
 
-    if self.ce_collector_required_rpms_installed and self.htcondor_gateway_enabled:
+    if self.ce_collector_required_rpms_installed and self.htcondor_gateway_enabled and self.have_condor_python:
       self.__configure_ce_collector()
 
     self.log("InfoServicesConfiguration.configure completed")
