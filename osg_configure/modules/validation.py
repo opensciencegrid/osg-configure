@@ -124,12 +124,12 @@ def valid_user_vo_file(map_file = None, return_invalid_lines = False):
       continue
 
     if not comment.match(line):
-      if len(line.strip().split(' ')) != 2:
+      if len(line.strip().split()) != 2:
         invalid_lines.append(line)
         valid = False
         continue
         
-      (account, vo) = line.strip().split(' ')
+      (account, vo) = line.strip().split()
       if not (account_regex.match(account) and valid_vo_name(vo)):
         # not a comment or entry
         invalid_lines.append(line)
