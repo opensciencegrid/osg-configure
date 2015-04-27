@@ -28,17 +28,16 @@ SERVICEKEY_PATH = "/etc/grid-security/http/httpkey.pem"
 # coincidentally the same. If they ever change, make a mapping.
 BATCH_SYSTEMS = ['Condor', 'LSF', 'PBS', 'SGE', 'SLURM']
 
+try:
+  import classad
+except ImportError:
+  classad = None
+
 class InfoServicesConfiguration(BaseConfiguration):
   """
   Class to handle attributes and configuration related to
   miscellaneous services
   """
-  have_condor_python = True
-  try:
-    import classad
-  except ImportError:
-    have_condor_python = False
-
   def __init__(self, *args, **kwargs):
     # pylint: disable-msg=W0142
     super(InfoServicesConfiguration, self).__init__(*args, **kwargs)
@@ -145,7 +144,7 @@ class InfoServicesConfiguration(BaseConfiguration):
     self.copy_host_cert_for_service_cert = csgbool('Misc Services', 'copy_host_cert_for_service_certs')
     self.htcondor_gateway_enabled = csgbool('Gateway', 'htcondor_gateway_enabled')
     if self.htcondor_gateway_enabled and self.ce_collector_required_rpms_installed:
-      if self.have_condor_python:
+      if classad is not None:
         self.resource_catalog = subcluster.resource_catalog_from_config(configuration)
       else:
         self.log("Cannot configure HTCondor CE info services: unable to import HTCondor Python bindings."
@@ -178,7 +177,7 @@ class InfoServicesConfiguration(BaseConfiguration):
         self.log("Could not create service cert/key", level=logging.ERROR)
         return False
 
-    if self.ce_collector_required_rpms_installed and self.htcondor_gateway_enabled and self.have_condor_python:
+    if self.ce_collector_required_rpms_installed and self.htcondor_gateway_enabled and classad is not None:
       self.__configure_ce_collector()
 
     self.log("InfoServicesConfiguration.configure completed")
