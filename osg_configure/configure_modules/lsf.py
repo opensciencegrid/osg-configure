@@ -2,7 +2,6 @@
 configuration """
 
 import os
-import re
 import logging
 
 from osg_configure.modules import utilities
