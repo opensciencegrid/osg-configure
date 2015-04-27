@@ -122,6 +122,7 @@ HEPSPEC = 10
                      r"""OSG_ResourceCatalog = { \
   [ \
     CPUs = 4; \
+    MaxWallTime = 1440; \
     Memory = 4000; \
     Name = "red.unl.edu"; \
     Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory; \

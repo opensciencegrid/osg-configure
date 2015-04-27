@@ -145,7 +145,7 @@ class InfoServicesConfiguration(BaseConfiguration):
     self.htcondor_gateway_enabled = csgbool('Gateway', 'htcondor_gateway_enabled')
     if self.htcondor_gateway_enabled and self.ce_collector_required_rpms_installed:
       if classad is not None:
-        self.resource_catalog = subcluster.resource_catalog_from_config(configuration)
+        self.resource_catalog = subcluster.resource_catalog_from_config(configuration, logger=self.logger)
       else:
         self.log("Cannot configure HTCondor CE info services: unable to import HTCondor Python bindings."
                  "\nEnsure the 'classad' Python module is installed and accessible to Python scripts."

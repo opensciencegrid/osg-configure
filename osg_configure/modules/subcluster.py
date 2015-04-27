@@ -1,3 +1,4 @@
+import logging
 import re
 import ConfigParser
 
@@ -165,10 +166,11 @@ def check_config(config):
   return has_sc
 
 
-def resource_catalog_from_config(config):
+def resource_catalog_from_config(config, logger=None):
   """
   Create a ResourceCatalog from the subcluster entries in a config
   :type config: ConfigParser.ConfigParser
+  :type logger: logging.Logger or None
   :rtype: ResourceCatalog
   """
   assert isinstance(config, ConfigParser.ConfigParser)
@@ -182,8 +184,13 @@ def resource_catalog_from_config(config):
       memory = config.getint(section, 'ram_mb')
       allowed_vos = utilities.config_safe_get(config, section, 'allowed_vos')
       max_wall_time = utilities.config_safe_get(config, section, 'max_wall_time')
-      if str(max_wall_time).strip() == '':
-        max_wall_time = None
+      if not max_wall_time:
+        max_wall_time = 1440
+        if logger:
+          logger.warning("No max_wall_time specified for %(section)s; defaulting to '1440'."
+                         " Add 'max_wall_time=1440' to section '%(section)s to clear this warning" % locals())
+      else:
+        max_wall_time = str(max_wall_time).strip()
       queue = utilities.config_safe_get(config, section, 'queue')
 
       # The ability to specify extra requirements is disabled until admins demand it
