@@ -31,6 +31,10 @@ class LSFConfiguration(JobManagerConfiguration):
                     'lsf_profile' : 
                       configfile.Option(name = 'lsf_profile',
                                         default_value = ''),
+                    'lsf_conf' :
+                      configfile.Option(name = 'lsf_conf',
+                                        required = configfile.Option.OPTIONAL,
+                                        default_value = '/etc'),
                     'job_contact' : 
                       configfile.Option(name = 'job_contact',
                                         mapping = 'OSG_JOB_CONTACT'),
@@ -132,6 +136,14 @@ class LSFConfiguration(JobManagerConfiguration):
                section=self.config_section,
                level=logging.ERROR)
 
+    if self.options['lsf_conf'].value and not validation.valid_directory(self.options['lsf_conf'].value):
+      attributes_ok = False
+      self.log("Non-existent directory given: %s" %
+               (self.options['lsf_conf'].value),
+               option = 'lsf_conf',
+               section = self.config_section,
+               level = logging.ERROR)
+
     if not validation.valid_file(self.options['lsf_profile'].value):
       attributes_ok = False
       self.log("Non-existent location given: %s" % 
@@ -214,6 +226,8 @@ class LSFConfiguration(JobManagerConfiguration):
     if self.htcondor_gateway_enabled:
       self.write_binpaths_to_blah_config('lsf', self.lsf_bin_location)
       self.write_blah_disable_wn_proxy_renewal_to_blah_config()
+      if self.options['lsf_conf'].value:
+        self.write_lsf_confpath_to_blah_config()
 
     self.log('LSFConfiguration.configure completed')
     return True
@@ -225,6 +239,13 @@ class LSFConfiguration(JobManagerConfiguration):
   def separatelyConfigurable(self):
     """Return a boolean that indicates whether this module can be configured separately"""
     return True
+
+  def write_lsf_confpath_to_blah_config(self):
+    if os.path.exists(self.BLAH_CONFIG):
+      contents = utilities.read_file(self.BLAH_CONFIG)
+      contents = utilities.add_or_replace_setting(contents, 'lsf_confpath', self.options['lsf_conf'].value,
+                                                  quote_value=False)
+      utilities.atomic_write(self.BLAH_CONFIG, contents)
 
   def setupGramConfig(self):
     """
