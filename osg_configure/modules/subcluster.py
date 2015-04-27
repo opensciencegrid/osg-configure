@@ -176,9 +176,13 @@ def resource_catalog_from_config(config, logger=None):
   assert isinstance(config, ConfigParser.ConfigParser)
   from osg_configure.modules.resourcecatalog import ResourceCatalog
   rc = ResourceCatalog()
+
+  subclusters_without_max_wall_time = []
   for section in config.sections():
     if section.lower().startswith('subcluster'):
       check_section(config, section)
+
+      subcluster = section[len('subcluster'):].lstrip()
       name = config.get(section, 'name')
       cpus = config.getint(section, 'cores_per_node')
       memory = config.getint(section, 'ram_mb')
@@ -186,9 +190,7 @@ def resource_catalog_from_config(config, logger=None):
       max_wall_time = utilities.config_safe_get(config, section, 'max_wall_time')
       if not max_wall_time:
         max_wall_time = 1440
-        if logger:
-          logger.warning("No max_wall_time specified for %(section)s; defaulting to '1440'."
-                         " Add 'max_wall_time=1440' to section '%(section)s to clear this warning" % locals())
+        subclusters_without_max_wall_time.append(subcluster)
       else:
         max_wall_time = str(max_wall_time).strip()
       queue = utilities.config_safe_get(config, section, 'queue')
@@ -207,4 +209,12 @@ def resource_catalog_from_config(config, logger=None):
                    queue=queue,
                    extra_requirements=extra_requirements,
                    extra_transforms=extra_transforms)
+  #end for section in config.sections()
+
+  if logger:
+    if subclusters_without_max_wall_time:
+      logger.warning("No max_wall_time specified for the following subcluster(s): %s; defaulting to '1440'."
+                     " Add 'max_wall_time=1440' to these subclusters to clear this warning"
+                     % ", ".join(subclusters_without_max_wall_time))
+
   return rc
