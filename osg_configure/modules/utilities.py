@@ -96,7 +96,7 @@ def _compose_attribute_file(attributes):
 #---------- This is periodically overwritten.  DO NOT HAND EDIT
 #---------- Instead, write any environment variable customizations into
 #---------- the config.ini [Local Settings] section, as documented here:
-#---------- https://twiki.grid.iu.edu/bin/view/ReleaseDocumentation/ConfigurationFileLocalSettings
+#---------- https://twiki.opensciencegrid.org/bin/view/Documentation/Release3/IniConfigurationOptions#Local_Settings
 #---  variables -----
 %s
 #--- export variables -----
