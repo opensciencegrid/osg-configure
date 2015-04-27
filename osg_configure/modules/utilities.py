@@ -210,10 +210,9 @@ def create_map_file(using_gums=False):
   """
 
   map_file = '/var/lib/osg/osg-user-vo-map'
-  result = True
   try:
     if validation.valid_user_vo_file(map_file):
-      return result
+      return True
     if using_gums:
       gums_script = '/usr/bin/gums-host-cron'
     else:
@@ -225,8 +224,8 @@ def create_map_file(using_gums=False):
     if not run_script([gums_script]):
       return False    
   except IOError:
-    result = False
-  return result
+    return False
+  return True
 
 
 def fetch_crl():
