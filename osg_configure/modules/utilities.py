@@ -269,12 +269,10 @@ def fetch_crl():
       sys.stdout.write("fetch-crl script had some errors:\n" + outerr + "\n")
       sys.stdout.flush()
       for line in outerr.rstrip("\n").split("\n"):
-        found = False
         for msg in error_message_whitelist:
           if re.search(msg, line):
-            found = True
             break
-        if not found:
+        else:
           return False
       sys.stdout.write("Ignoring errors and continuing\n")
       sys.stdout.flush()
