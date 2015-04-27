@@ -213,8 +213,8 @@ def resource_catalog_from_config(config, logger=None):
 
   if logger:
     if subclusters_without_max_wall_time:
-      logger.warning("No max_wall_time specified for the following subcluster(s): %s; defaulting to '1440'."
-                     " Add 'max_wall_time=1440' to these subclusters to clear this warning"
-                     % ", ".join(subclusters_without_max_wall_time))
+      logger.warning("No max_wall_time specified for some subclusters; defaulting to 1440."
+                     "\nAdd 'max_wall_time=1440' to the following subcluster(s) to clear this warning:"
+                     "\n%s" % ", ".join(subclusters_without_max_wall_time))
 
   return rc
