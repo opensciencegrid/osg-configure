@@ -214,7 +214,7 @@ class TestPBS(unittest.TestCase):
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e)
     services = settings.enabledServices()
-    expected_services = set(['globus-gatekeeper',
+    expected_services = set(['condor-ce',
                                   'globus-gridftp-server'])
     self.assertEqual(services, expected_services,
                      "List of enabled services incorrect, " +
@@ -230,7 +230,8 @@ class TestPBS(unittest.TestCase):
     except Exception, e:
       self.fail("Received exception while parsing configuration: %s" % e)
     services = settings.enabledServices()
-    expected_services = set(['globus-gatekeeper', 
+    expected_services = set(['condor-ce', 
+                             'globus-gatekeeper',
                              'globus-gridftp-server',
                              'globus-scheduler-event-generator'])
     self.assertEqual(services, expected_services,
