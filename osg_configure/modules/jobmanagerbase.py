@@ -26,8 +26,8 @@ class JobManagerConfiguration(BaseConfiguration):
     self.attributes = {}
     self.lrms = ['pbs', 'sge', 'lsf', 'condor']
     self.seg_admin_path = '/usr/sbin/globus-scheduler-event-generator-admin'
-    self.gram_gateway_enabled = True
-    self.htcondor_gateway_enabled = False
+    self.gram_gateway_enabled = False
+    self.htcondor_gateway_enabled = True
 
   def parseConfiguration(self, configuration):
     super(JobManagerConfiguration, self).parseConfiguration(configuration)
