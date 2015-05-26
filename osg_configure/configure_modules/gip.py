@@ -134,16 +134,18 @@ class GipConfiguration(BaseConfiguration):
         self.log(msg, level=logging.ERROR)
         raise exceptions.SettingError(msg)
 
-    has_sc = self.check_subclusters(configuration)
-    if not has_sc:
-      try:
-        self._check_entry(configuration, "GIP", "sc_number", REQUIRED,
-                          POSITIVE_INT)
-      except:
-        msg = "There is no `subcluster` section and the old-style subcluster" + \
-              "setup in GIP is not configured. " + \
-              " Please see the configuration documentation."
-        raise exceptions.SettingError(msg)
+    if utilities.ce_installed():
+      # All CEs must advertise subclusters
+      has_sc = self.check_subclusters(configuration)
+      if not has_sc:
+        try:
+          self._check_entry(configuration, "GIP", "sc_number", REQUIRED,
+                            POSITIVE_INT)
+        except (TypeError, ValueError, exceptions.SettingError):
+          msg = "There is no `subcluster` section and the old-style subcluster" + \
+                "setup in GIP is not configured. " + \
+                " Please see the configuration documentation."
+          raise exceptions.SettingError(msg)
 
 
     # Check for the presence of the classic SE
