@@ -1,7 +1,7 @@
 """Unit tests to test misc configuration"""
 
-#pylint: disable=W0703
-#pylint: disable=R0904
+# pylint: disable=W0703
+# pylint: disable=R0904
 
 import os
 import sys
@@ -20,332 +20,321 @@ from osg_configure.modules.utilities import get_test_config
 
 global_logger = logging.getLogger(__name__)
 if sys.version_info[0] >= 2 and sys.version_info[1] > 6:
-  global_logger.addHandler(logging.NullHandler())
+    global_logger.addHandler(logging.NullHandler())
 else:
-  # NullHandler is only in python 2.7 and above
-  class NullHandler(logging.Handler):
-    def emit(self, record):
-      pass
-            
-  global_logger.addHandler(NullHandler())
+    # NullHandler is only in python 2.7 and above
+    class NullHandler(logging.Handler):
+        def emit(self, record):
+            pass
+
+    global_logger.addHandler(NullHandler())
+
 
 class TestMisc(unittest.TestCase):
-  """
-  Unit test class to test MiscConfiguration class
-  """
-
-  def testParsing1(self):
     """
-    Test misc parsing
+    Unit test class to test MiscConfiguration class
     """
-    
-    config_file = get_test_config("misc/misc1.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
 
-    settings = misc.MiscConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
+    def testParsing1(self):
+        """
+        Test misc parsing
+        """
 
-    options = settings.options
-    variables = {'glexec_location' : './configs/misc',
-                 'gums_host' : 'my.gums.org',
-                 'authorization_method' : 'xacml'}
-    for var in variables:      
-      self.assertTrue(options.has_key(var), 
-                      "Option %s missing" % var)
-      self.assertEqual(options[var].value, 
-                       variables[var], 
-                       "Wrong value obtained for %s, got %s but " \
-                       "expected %s" % (var, options[var].value, variables[var]))
-    attributes = settings.getAttributes()
-    variables = {'OSG_GLEXEC_LOCATION' : './configs/misc'}
-    for var in variables:      
-      self.assertTrue(attributes.has_key(var), 
-                      "Attribute %s missing" % var)
-      self.assertEqual(attributes[var], 
-                       variables[var], 
-                       "Wrong value obtained for %s, got %s but " \
-                       "expected %s" % (var, attributes[var], variables[var]))
-    
+        config_file = get_test_config("misc/misc1.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.read(config_file)
 
-  def testParsing2(self):
-    """
-    Test misc parsing with negative values
-    """
-    
-    config_file = get_test_config("misc/misc2.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
+        settings = misc.MiscConfiguration(logger=global_logger)
+        try:
+            settings.parseConfiguration(configuration)
+        except Exception, e:
+            self.fail("Received exception while parsing configuration: %s" % e)
 
-    settings = misc.MiscConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
+        options = settings.options
+        variables = {'glexec_location': './configs/misc',
+                     'gums_host': 'my.gums.org',
+                     'authorization_method': 'xacml'}
+        for var in variables:
+            self.assertTrue(options.has_key(var),
+                            "Option %s missing" % var)
+            self.assertEqual(options[var].value,
+                             variables[var],
+                             "Wrong value obtained for %s, got %s but " \
+                             "expected %s" % (var, options[var].value, variables[var]))
+        attributes = settings.getAttributes()
+        variables = {'OSG_GLEXEC_LOCATION': './configs/misc'}
+        for var in variables:
+            self.assertTrue(attributes.has_key(var),
+                            "Attribute %s missing" % var)
+            self.assertEqual(attributes[var],
+                             variables[var],
+                             "Wrong value obtained for %s, got %s but " \
+                             "expected %s" % (var, attributes[var], variables[var]))
 
-    options = settings.options
-    variables = {'glexec_location' : './configs/misc',
-                 'gums_host' : 'my.gums.org',
-                 'authorization_method' : 'xacml'}
-    for var in variables:      
-      self.assertTrue(options.has_key(var), 
-                      "Option %s missing" % var)
-      self.assertEqual(options[var].value, 
-                       variables[var], 
-                       "Wrong value obtained for %s, got %s but " \
-                       "expected %s" % (var, options[var].value, variables[var]))
-    attributes = settings.getAttributes()
-    variables = {'OSG_GLEXEC_LOCATION' : './configs/misc'}
-    for var in variables:      
-      self.assertTrue(attributes.has_key(var), 
-                      "Attribute %s missing" % var)
-      self.assertEqual(attributes[var], 
-                       variables[var], 
-                       "Wrong value obtained for %s, got %s but " \
-                       "expected %s" % (var, attributes[var], variables[var]))
-    
+    def testParsing2(self):
+        """
+        Test misc parsing with negative values
+        """
 
-  def testParsingAuthentication(self):
-    """
-    Test misc parsing with negative values
-    """
-    
-    config_file = get_test_config("misc/misc_xacml.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
+        config_file = get_test_config("misc/misc2.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.read(config_file)
 
-    settings = misc.MiscConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
+        settings = misc.MiscConfiguration(logger=global_logger)
+        try:
+            settings.parseConfiguration(configuration)
+        except Exception, e:
+            self.fail("Received exception while parsing configuration: %s" % e)
 
-    self.assertTrue(settings.options.has_key('authorization_method'), 
-                    "Attribute authorization_method missing")
-    self.assertEqual(settings.options['authorization_method'].value, 
-                     'xacml', 
-                     "Wrong value obtained for %s, got %s but " \
-                     "expected %s" % ('authorization_method',
-                                      settings.options['authorization_method'].value,
-                                      'xacml'))
+        options = settings.options
+        variables = {'glexec_location': './configs/misc',
+                     'gums_host': 'my.gums.org',
+                     'authorization_method': 'xacml'}
+        for var in variables:
+            self.assertTrue(options.has_key(var),
+                            "Option %s missing" % var)
+            self.assertEqual(options[var].value,
+                             variables[var],
+                             "Wrong value obtained for %s, got %s but " \
+                             "expected %s" % (var, options[var].value, variables[var]))
+        attributes = settings.getAttributes()
+        variables = {'OSG_GLEXEC_LOCATION': './configs/misc'}
+        for var in variables:
+            self.assertTrue(attributes.has_key(var),
+                            "Attribute %s missing" % var)
+            self.assertEqual(attributes[var],
+                             variables[var],
+                             "Wrong value obtained for %s, got %s but " \
+                             "expected %s" % (var, attributes[var], variables[var]))
 
-    config_file = get_test_config("misc/misc_gridmap.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
+    def testParsingAuthentication(self):
+        """
+        Test misc parsing with negative values
+        """
 
-    settings = misc.MiscConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
+        config_file = get_test_config("misc/misc_xacml.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.read(config_file)
 
-    self.assertTrue(settings.options.has_key('authorization_method'), 
-                    "Attribute authorization_method missing")
-    self.assertEqual(settings.options['authorization_method'].value, 
-                     'gridmap', 
-                     "Wrong value obtained for %s, got %s but " \
-                     "expected %s" % ('authorization_method',                                             
-                                      settings.options['authorization_method'].value,
-                                      'gridmap'))
+        settings = misc.MiscConfiguration(logger=global_logger)
+        try:
+            settings.parseConfiguration(configuration)
+        except Exception, e:
+            self.fail("Received exception while parsing configuration: %s" % e)
 
-    config_file = get_test_config("misc/misc_local_gridmap.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
+        self.assertTrue(settings.options.has_key('authorization_method'),
+                        "Attribute authorization_method missing")
+        self.assertEqual(settings.options['authorization_method'].value,
+                         'xacml',
+                         "Wrong value obtained for %s, got %s but " \
+                         "expected %s" % ('authorization_method',
+                                          settings.options['authorization_method'].value,
+                                          'xacml'))
 
-    settings = misc.MiscConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
+        config_file = get_test_config("misc/misc_gridmap.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.read(config_file)
 
-    self.assertTrue(settings.options.has_key('authorization_method'), 
-                    "Attribute authorization_method missing")
-    self.assertEqual(settings.options['authorization_method'].value, 
-                     'local-gridmap', 
-                     "Wrong value obtained for %s, got %s but " \
-                     "expected %s" % ('authorization_method',                                             
-                                      settings.options['authorization_method'].value,
-                                      'local-gridmap'))
+        settings = misc.MiscConfiguration(logger=global_logger)
+        try:
+            settings.parseConfiguration(configuration)
+        except Exception, e:
+            self.fail("Received exception while parsing configuration: %s" % e)
 
-  def testMissingAttribute(self):
-    """
-    Test the parsing when attributes are missing, should get exceptions
-    """
-        
-    mandatory = ['gums_host']
-    for option in mandatory:
-      config_file = get_test_config("misc/misc1.ini")
-      configuration = ConfigParser.SafeConfigParser()
-      configuration.read(config_file)
-      configuration.remove_option('Misc Services', option)
+        self.assertTrue(settings.options.has_key('authorization_method'),
+                        "Attribute authorization_method missing")
+        self.assertEqual(settings.options['authorization_method'].value,
+                         'gridmap',
+                         "Wrong value obtained for %s, got %s but " \
+                         "expected %s" % ('authorization_method',
+                                          settings.options['authorization_method'].value,
+                                          'gridmap'))
 
-      settings = misc.MiscConfiguration(logger=global_logger)
-      settings.parseConfiguration(configuration)
-      self.assertTrue(not settings.checkAttributes({})) 
+        config_file = get_test_config("misc/misc_local_gridmap.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.read(config_file)
 
-  def testXacmlMissingGums(self):
-    """
-    Test the checkAttributes function when xacml is specified but the
-    gums host isn't 
-    """
-        
+        settings = misc.MiscConfiguration(logger=global_logger)
+        try:
+            settings.parseConfiguration(configuration)
+        except Exception, e:
+            self.fail("Received exception while parsing configuration: %s" % e)
 
-    config_file = get_test_config("misc/misc_xacml_missing_gums.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
+        self.assertTrue(settings.options.has_key('authorization_method'),
+                        "Attribute authorization_method missing")
+        self.assertEqual(settings.options['authorization_method'].value,
+                         'local-gridmap',
+                         "Wrong value obtained for %s, got %s but " \
+                         "expected %s" % ('authorization_method',
+                                          settings.options['authorization_method'].value,
+                                          'local-gridmap'))
 
-    settings = misc.MiscConfiguration(logger=global_logger)
-    settings.parseConfiguration(configuration)
-    self.assertTrue(exceptions.ConfigureError,
-                    settings.checkAttributes({}))
-    
-  def testXacmlBadGums(self):
-    """
-    Test the checkAttributes function when xacml is specified but the
-    gums host isn't valid
-    """
-        
+    def testMissingAttribute(self):
+        """
+        Test the parsing when attributes are missing, should get exceptions
+        """
 
-    config_file = get_test_config("misc/misc_xacml_bad_gums.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
+        mandatory = ['gums_host']
+        for option in mandatory:
+            config_file = get_test_config("misc/misc1.ini")
+            configuration = ConfigParser.SafeConfigParser()
+            configuration.read(config_file)
+            configuration.remove_option('Misc Services', option)
 
-    settings = misc.MiscConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
+            settings = misc.MiscConfiguration(logger=global_logger)
+            settings.parseConfiguration(configuration)
+            self.assertTrue(not settings.checkAttributes({}))
 
-    attributes = settings.getAttributes()
-    self.assertFalse(settings.checkAttributes(attributes), 
-                     "Did not notice bad gums host")
+    def testXacmlMissingGums(self):
+        """
+        Test the checkAttributes function when xacml is specified but the
+        gums host isn't
+        """
 
-  def testValidSettings(self):
-    """
-    Test the checkAttributes function to see if it oks good attributes
-    """
-        
-    config_file = get_test_config("misc/valid_settings.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
+        config_file = get_test_config("misc/misc_xacml_missing_gums.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.read(config_file)
 
-    settings = misc.MiscConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
-    attributes = settings.getAttributes()
-    self.assertTrue(settings.checkAttributes(attributes), 
-                    "Correct locations incorrectly flagged as missing")
+        settings = misc.MiscConfiguration(logger=global_logger)
+        settings.parseConfiguration(configuration)
+        self.assertTrue(exceptions.ConfigureError,
+                        settings.checkAttributes({}))
 
-  def testValidSettings2(self):
-    """
-    Test the checkAttributes function to see if it oks good attributes
-    """
-        
-    config_file = get_test_config("misc/valid_settings2.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
+    def testXacmlBadGums(self):
+        """
+        Test the checkAttributes function when xacml is specified but the
+        gums host isn't valid
+        """
 
-    settings = misc.MiscConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
-    attributes = settings.getAttributes()
-    self.assertTrue(settings.checkAttributes(attributes), 
-                    "Correct locations incorrectly flagged as invalid")
+        config_file = get_test_config("misc/misc_xacml_bad_gums.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.read(config_file)
 
-  def testInvalidSettings(self):
-    """
-    Test the checkAttributes function to see if it flags bad attributes
-    """
-        
-    config_file = get_test_config("misc/invalid_settings1.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
+        settings = misc.MiscConfiguration(logger=global_logger)
+        try:
+            settings.parseConfiguration(configuration)
+        except Exception, e:
+            self.fail("Received exception while parsing configuration: %s" % e)
 
-    settings = misc.MiscConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
-    attributes = settings.getAttributes()
-    self.assertFalse(settings.checkAttributes(attributes), 
-                     "Bad config incorrectly flagged as okay")    
+        attributes = settings.getAttributes()
+        self.assertFalse(settings.checkAttributes(attributes),
+                         "Did not notice bad gums host")
 
-  def testServiceList(self):
-    """
-    Test to make sure right services get returned
-    """
-    
-    config_file = get_test_config("misc/misc_xacml.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
+    def testValidSettings(self):
+        """
+        Test the checkAttributes function to see if it oks good attributes
+        """
 
-    settings = misc.MiscConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
-    services = settings.enabledServices()
-    if utilities.rpm_installed('fetch-crl'):
-      expected_services = set(['fetch-crl-cron', 
-                               'fetch-crl-boot', 
-                               'gums-client-cron'])
-    elif utilities.rpm_installed('fetch-crl3'):
-      expected_services = set(['fetch-crl3-cron', 
-                               'fetch-crl3-boot', 
-                               'gums-client-cron'])
-    else:
-      expected_services = set(['gums-client-cron'])
-      
-      
-    self.assertEqual(services, expected_services,
-                     "List of enabled services incorrect, " +
-                     "got %s but expected %s" % (services, expected_services))
-    
-    config_file = get_test_config("misc/misc_gridmap.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
+        config_file = get_test_config("misc/valid_settings.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.read(config_file)
 
-    settings = misc.MiscConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
-    services = settings.enabledServices()
-    if utilities.rpm_installed('fetch-crl'):
-      expected_services = set(['fetch-crl-cron', 
-                               'fetch-crl-boot', 
-                               'edg-mkgridmap'])
-    elif utilities.rpm_installed('fetch-crl3'):
-      expected_services = set(['fetch-crl3-cron', 
-                               'fetch-crl3-boot', 
-                               'edg-mkgridmap'])
-    else:
-      expected_services = set(['edg-mkgridmap'])
-      
-    
-    self.assertEqual(services, expected_services,
-                     "List of enabled services incorrect, " +
-                     "got %s but expected %s" % (services, expected_services))
-    
+        settings = misc.MiscConfiguration(logger=global_logger)
+        try:
+            settings.parseConfiguration(configuration)
+        except Exception, e:
+            self.fail("Received exception while parsing configuration: %s" % e)
+
+        attributes = settings.getAttributes()
+        self.assertTrue(settings.checkAttributes(attributes),
+                        "Correct locations incorrectly flagged as missing")
+
+    def testValidSettings2(self):
+        """
+        Test the checkAttributes function to see if it oks good attributes
+        """
+
+        config_file = get_test_config("misc/valid_settings2.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.read(config_file)
+
+        settings = misc.MiscConfiguration(logger=global_logger)
+        try:
+            settings.parseConfiguration(configuration)
+        except Exception, e:
+            self.fail("Received exception while parsing configuration: %s" % e)
+
+        attributes = settings.getAttributes()
+        self.assertTrue(settings.checkAttributes(attributes),
+                        "Correct locations incorrectly flagged as invalid")
+
+    def testInvalidSettings(self):
+        """
+        Test the checkAttributes function to see if it flags bad attributes
+        """
+
+        config_file = get_test_config("misc/invalid_settings1.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.read(config_file)
+
+        settings = misc.MiscConfiguration(logger=global_logger)
+        try:
+            settings.parseConfiguration(configuration)
+        except Exception, e:
+            self.fail("Received exception while parsing configuration: %s" % e)
+
+        attributes = settings.getAttributes()
+        self.assertFalse(settings.checkAttributes(attributes),
+                         "Bad config incorrectly flagged as okay")
+
+    def testServiceList(self):
+        """
+        Test to make sure right services get returned
+        """
+
+        config_file = get_test_config("misc/misc_xacml.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.read(config_file)
+
+        settings = misc.MiscConfiguration(logger=global_logger)
+        try:
+            settings.parseConfiguration(configuration)
+        except Exception, e:
+            self.fail("Received exception while parsing configuration: %s" % e)
+        services = settings.enabledServices()
+        if utilities.rpm_installed('fetch-crl'):
+            expected_services = set(['fetch-crl-cron',
+                                     'fetch-crl-boot',
+                                     'gums-client-cron'])
+        elif utilities.rpm_installed('fetch-crl3'):
+            expected_services = set(['fetch-crl3-cron',
+                                     'fetch-crl3-boot',
+                                     'gums-client-cron'])
+        else:
+            expected_services = set(['gums-client-cron'])
+
+        self.assertEqual(services, expected_services,
+                         "List of enabled services incorrect, " +
+                         "got %s but expected %s" % (services, expected_services))
+
+        config_file = get_test_config("misc/misc_gridmap.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.read(config_file)
+
+        settings = misc.MiscConfiguration(logger=global_logger)
+        try:
+            settings.parseConfiguration(configuration)
+        except Exception, e:
+            self.fail("Received exception while parsing configuration: %s" % e)
+        services = settings.enabledServices()
+        if utilities.rpm_installed('fetch-crl'):
+            expected_services = set(['fetch-crl-cron',
+                                     'fetch-crl-boot',
+                                     'edg-mkgridmap'])
+        elif utilities.rpm_installed('fetch-crl3'):
+            expected_services = set(['fetch-crl3-cron',
+                                     'fetch-crl3-boot',
+                                     'edg-mkgridmap'])
+        else:
+            expected_services = set(['edg-mkgridmap'])
+
+        self.assertEqual(services, expected_services,
+                         "List of enabled services incorrect, " +
+                         "got %s but expected %s" % (services, expected_services))
+
 
 if __name__ == '__main__':
-  console = logging.StreamHandler()
-  console.setLevel(logging.ERROR)
-  global_logger.addHandler(console)
-  unittest.main()
-
+    console = logging.StreamHandler()
+    console.setLevel(logging.ERROR)
+    global_logger.addHandler(console)
+    unittest.main()

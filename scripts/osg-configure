@@ -25,285 +25,303 @@ CONFIG_DIRECTORY = '/etc/osg'
 OUTPUT_DIRECTORY = '/var/lib/osg'
 LOG_FILE = '/var/log/osg/osg-configure.log'
 DEFAULT_JOB_ENVIRONMENT_ATTRIBUTES = ['GLOBUS_LOCATION',
-                              'OSG_SITE_NAME',
-                              'OSG_HOSTNAME',
-                              'OSG_GRID',
-                              'OSG_APP',
-                              'OSG_DATA',
-                              'OSG_WN_TMP',
-                              'OSG_STORAGE_ELEMENT',
-                              'OSG_DEFAULT_SE',
-                              'OSG_SITE_READ',
-                              'OSG_SITE_WRITE',
-                              'OSG_SQUID_LOCATION',
-                              'OSG_JOB_CONTACT',
-                              'OSG_GLEXEC_LOCATION',
-                              'PATH']
+                                      'OSG_SITE_NAME',
+                                      'OSG_HOSTNAME',
+                                      'OSG_GRID',
+                                      'OSG_APP',
+                                      'OSG_DATA',
+                                      'OSG_WN_TMP',
+                                      'OSG_STORAGE_ELEMENT',
+                                      'OSG_DEFAULT_SE',
+                                      'OSG_SITE_READ',
+                                      'OSG_SITE_WRITE',
+                                      'OSG_SQUID_LOCATION',
+                                      'OSG_JOB_CONTACT',
+                                      'OSG_GLEXEC_LOCATION',
+                                      'PATH']
 BATCH_SYSTEM_CONFIG_RPMS = ['osg-configure-condor', 'osg-configure-lsf', 'osg-configure-pbs', 'osg-configure-sge',
                             'osg-configure-slurm']
 
 
 ############################# Function Definitions ############################
 
-  
+
 def real_error_exit(logger, message="Critical error occurred, exiting", exception=None):
-  """Function to do all the cleanup and exit if an error occurs"""  
-  logger.critical(message)
-  if exception is not None:
-    logger.critical("Exception: %s" % (exception))
-  sys.stderr.write("%s\n" % message)
-  sys.stderr.write("You may be able to get more details rerunning %s with the -d " \
-                   "option and/or by examining %s\n" % (sys.argv[0], LOG_FILE))
-  sys.exit(1)
+    """Function to do all the cleanup and exit if an error occurs"""
+    logger.critical(message)
+    if exception is not None:
+        logger.critical("Exception: %s" % (exception))
+    sys.stderr.write("%s\n" % message)
+    sys.stderr.write("You may be able to get more details rerunning %s with the -d " \
+                     "option and/or by examining %s\n" % (sys.argv[0], LOG_FILE))
+    sys.exit(1)
+
 
 def real_normal_exit(logger, message="Configuration completed, exiting..."):
-  """Function to do all the cleanup and exit"""  
-  logger.info(message)
-  sys.stdout.write("%s\n" % message)
-  sys.exit(0)
- 
+    """Function to do all the cleanup and exit"""
+    logger.info(message)
+    sys.stdout.write("%s\n" % message)
+    sys.exit(0)
+
+
 # The next two functions are redefined in the main() function once the logger
 # has been set up
-def error_exit(msg, exception=None):    
-  sys.stderr.write("%s\n" % msg)
-  sys.stderr.write("You may be able to get more details rerunning %s with " \
-                   "the -d option and/or by examining %s\n" % (sys.argv[0], LOG_FILE))
-  sys.exit(1)
+def error_exit(msg, exception=None):
+    sys.stderr.write("%s\n" % msg)
+    sys.stderr.write("You may be able to get more details rerunning %s with " \
+                     "the -d option and/or by examining %s\n" % (sys.argv[0], LOG_FILE))
+    sys.exit(1)
 
-def normal_exit(msg):    
-  sys.stdout.write("%s\n" % msg)
-  sys.exit(0)
-   
+
+def normal_exit(msg):
+    sys.stdout.write("%s\n" % msg)
+    sys.exit(0)
+
+
 def get_configuration_modules(logger):
-  """Instantiate and return modules in configure_modules directory"""  
-  try:
-    module_dirs = os.path.split(os.path.dirname(utilities.__file__))[0]
-    modules = os.listdir(os.path.join(module_dirs, "configure_modules"))
-  except OSError, exception:
-    error_exit("Can't get configuration modules, exiting...", exception)
-    
-  objects = []
-  for module in modules:      
-    if module.split(".")[-1] == "py" and module != "__init__.py":
-      module_name = module.split(".")[0]
-      module_ref = __import__('osg_configure.configure_modules.' + module_name,
-                              globals(),
-                              locals(),
-                              [''])
-      objects.append(getattr(module_ref, module_ref.__all__[0])(logger=logger))
-  return objects
+    """Instantiate and return modules in configure_modules directory"""
+    try:
+        module_dirs = os.path.split(os.path.dirname(utilities.__file__))[0]
+        modules = os.listdir(os.path.join(module_dirs, "configure_modules"))
+    except OSError, exception:
+        error_exit("Can't get configuration modules, exiting...", exception)
 
-  
+    objects = []
+    for module in modules:
+        if module.split(".")[-1] == "py" and module != "__init__.py":
+            module_name = module.split(".")[0]
+            module_ref = __import__('osg_configure.configure_modules.' + module_name,
+                                    globals(),
+                                    locals(),
+                                    [''])
+            objects.append(getattr(module_ref, module_ref.__all__[0])(logger=logger))
+    return objects
 
 
 def write_attributes(attributes, local_site_attributes, job_environment_attributes, attribute_to_option_map):
-  """
-  Write out attributes to osg config files in output_directory.
-  :param job_environment_attributes:
-  There are two files: osg-job-environment.conf and
-  osg-local-job-environment.conf. Only local_site_attributes goes in
-  osg-local-job-environment.conf. An error will result if a key in
-  'job_environment_attributes' is missing from 'attributes'.
-  (Exception: OSG_SQUID_LOCATION)
+    """
+    Write out attributes to osg config files in output_directory.
+    :param job_environment_attributes:
+    There are two files: osg-job-environment.conf and
+    osg-local-job-environment.conf. Only local_site_attributes goes in
+    osg-local-job-environment.conf. An error will result if a key in
+    'job_environment_attributes' is missing from 'attributes'.
+    (Exception: OSG_SQUID_LOCATION)
 
-  :param attributes: OSG attributes from all .ini files, including the
-    local site attributes from the "Local Settings" section
-  :type attributes: dict
-  :param local_site_attributes: OSG attributes from just the
-    "Local Settings" section
-  :type job_environment_attributes: list
-  :param job_environment_attributes: The required job attributes to write
-  :type local_site_attributes: dict
-  :param attribute_to_option_map: list of (section, name) tuples of the
-    config option that is mapped to each attribute; gives better error
-    messages if required attributes are missing from 'attributes'
-  :type attribute_to_option_map: dict
-  """
+    :param attributes: OSG attributes from all .ini files, including the
+      local site attributes from the "Local Settings" section
+    :type attributes: dict
+    :param local_site_attributes: OSG attributes from just the
+      "Local Settings" section
+    :type job_environment_attributes: list
+    :param job_environment_attributes: The required job attributes to write
+    :type local_site_attributes: dict
+    :param attribute_to_option_map: list of (section, name) tuples of the
+      config option that is mapped to each attribute; gives better error
+      messages if required attributes are missing from 'attributes'
+    :type attribute_to_option_map: dict
+    """
 
-  # write out osg-local-job-environment.conf
-  try:
-    filename = os.path.join(OUTPUT_DIRECTORY, "osg-local-job-environment.conf")
-    utilities.write_attribute_file(filename, local_site_attributes)
-  except IOError, exception:
-    error_exit("Error writing attributes to osg-local-job-environment.conf", exception)
+    # write out osg-local-job-environment.conf
+    try:
+        filename = os.path.join(OUTPUT_DIRECTORY, "osg-local-job-environment.conf")
+        utilities.write_attribute_file(filename, local_site_attributes)
+    except IOError, exception:
+        error_exit("Error writing attributes to osg-local-job-environment.conf", exception)
 
 
-  # write out osg-job-environment.conf
-  try:
-    filename = os.path.join(OUTPUT_DIRECTORY, "osg-job-environment.conf")
-    temp = {}
-    for key in job_environment_attributes:
-      try:
-        temp[key] = attributes[key]
-      except KeyError, exception:
-        if key == 'OSG_SQUID_LOCATION':
-          continue
-        else:
-          errmsg = "Missing job environment key (%s), exiting." % key
-          if key in attribute_to_option_map:
-            errmsg += "\nThe job environment key may be specified as:\n"
-            for section, name in attribute_to_option_map[key]:
-              if section:
-                errmsg += "Option %r in section %r\n" % (name, section)
-              else:
-                errmsg += "Option %r\n" % (name)
-          error_exit(errmsg, exception)
-    utilities.write_attribute_file(filename, temp)
-  except IOError, exception:
-    error_exit("Error writing attributes to osg-job-environment.conf", exception)
+    # write out osg-job-environment.conf
+    try:
+        filename = os.path.join(OUTPUT_DIRECTORY, "osg-job-environment.conf")
+        temp = {}
+        for key in job_environment_attributes:
+            try:
+                temp[key] = attributes[key]
+            except KeyError, exception:
+                if key == 'OSG_SQUID_LOCATION':
+                    continue
+                else:
+                    errmsg = "Missing job environment key (%s), exiting." % key
+                    if key in attribute_to_option_map:
+                        errmsg += "\nThe job environment key may be specified as:\n"
+                        for section, name in attribute_to_option_map[key]:
+                            if section:
+                                errmsg += "Option %r in section %r\n" % (name, section)
+                            else:
+                                errmsg += "Option %r\n" % (name)
+                    error_exit(errmsg, exception)
+        utilities.write_attribute_file(filename, temp)
+    except IOError, exception:
+        error_exit("Error writing attributes to osg-job-environment.conf", exception)
 
 
 def configure_system(modules, logger, configure_module=None, force=False):
-  """
-  Read configuration files and try to configure the osg system
-  
-  Keyword arguments:
-  modules -- list of module objects installed 
-  logger -- logger instance to log messages to
-  configure_module -- if not None, the specific module to configure
-  force -- if True, force configuration even if verification fails
-  """
-  
-  if not modules:
-    error_exit("No modules found, exiting")
-  if not validation.valid_location(CONFIG_DIRECTORY):
-    error_exit("Output directory %s not present" % CONFIG_DIRECTORY)
+    """
+    Read configuration files and try to configure the osg system
 
-  try:
-    config = configfile.read_config_files()
-  except IOError, e:
-    error_exit("Can't read configuration files: %s" % e)
+    Keyword arguments:
+    modules -- list of module objects installed
+    logger -- logger instance to log messages to
+    configure_module -- if not None, the specific module to configure
+    force -- if True, force configuration even if verification fails
+    """
 
+    if not modules:
+        error_exit("No modules found, exiting")
+    if not validation.valid_location(CONFIG_DIRECTORY):
+        error_exit("Output directory %s not present" % CONFIG_DIRECTORY)
 
-  for module in modules:
     try:
-      if  module.__class__.__name__ == 'LocalSettings':
-        # Need to preserve case for variables being set in the environment
-        local_config = configfile.read_config_files(case_sensitive = True)
-        module.parseConfiguration(local_config)
-        continue
-      else:
-        module.parseConfiguration(config)
-    except exceptions.SettingError, exception:
-      error_exit("Error in %s while parsing configuration" % \
-                 (module.__class__.__name__),
-                 exception)
-    except ConfigParser.ParsingError, exception:
-      error_exit("Error while parsing configuration: %s" % exception)
-    
-  attributes = {}
-  local_attributes = {}
-  attribute_to_option_map = {}
-  for module in modules:
-    if  module.__class__.__name__ == 'LocalSettings':
-      local_attributes.update(module.getAttributes())
+        config = configfile.read_config_files()
+    except IOError, e:
+        error_exit("Can't read configuration files: %s" % e)
 
-    attributes.update(module.getAttributes())
+    for module in modules:
+        try:
+            if module.__class__.__name__ == 'LocalSettings':
+                # Need to preserve case for variables being set in the environment
+                local_config = configfile.read_config_files(case_sensitive=True)
+                module.parseConfiguration(local_config)
+                continue
+            else:
+                module.parseConfiguration(config)
+        except exceptions.SettingError, exception:
+            error_exit("Error in %s while parsing configuration" % \
+                       (module.__class__.__name__),
+                       exception)
+        except ConfigParser.ParsingError, exception:
+            error_exit("Error while parsing configuration: %s" % exception)
 
-    section = module.config_section
-    for opt in module.options.values():
-      name, attribute = opt.name, opt.mapping
-      if attribute:
-        attribute_to_option_map[attribute] = attribute_to_option_map.get(attribute, []) + [(section, name)]
+    attributes = {}
+    local_attributes = {}
+    attribute_to_option_map = {}
+    for module in modules:
+        if module.__class__.__name__ == 'LocalSettings':
+            local_attributes.update(module.getAttributes())
 
-  if not check_configuration(modules, attributes, logger):
-    if force:
-      logger.warn("Invalid attributes found but forcing configuration.")
-      sys.stderr.write("Invalid attributes found but forcing configuration.\n")
-    else:
-      error_exit("Invalid attributes found, exiting")
-        
-  if configure_module is not None:
-    # check whether the module we want to configure is present
-    if configure_module.lower() not in [x.moduleName().lower() for x in modules]:
-      error_exit("%s specified but that module is not present" % configure_module) 
+        attributes.update(module.getAttributes())
 
-  for module in modules:
-    logger.debug("Configuring %s" % (module.__class__.__name__))
+        section = module.config_section
+        for opt in module.options.values():
+            name, attribute = opt.name, opt.mapping
+            if attribute:
+                attribute_to_option_map[attribute] = attribute_to_option_map.get(attribute, []) + [(section, name)]
+
+    if not check_configuration(modules, attributes, logger):
+        if force:
+            logger.warn("Invalid attributes found but forcing configuration.")
+            sys.stderr.write("Invalid attributes found but forcing configuration.\n")
+        else:
+            error_exit("Invalid attributes found, exiting")
+
     if configure_module is not None:
-      if module.moduleName().lower() != configure_module.lower():
-        logger.debug("Skipping %s configuration" % (module.__class__.__name__))
-        continue
-    try:
-      module.configure(attributes)
-    except exceptions.ConfigureError, e:
-      logger.debug("Got ConfigureError %s" % e)
-      error_exit("Can't configure module, exiting")
+        # check whether the module we want to configure is present
+        if configure_module.lower() not in [x.moduleName().lower() for x in modules]:
+            error_exit("%s specified but that module is not present" % configure_module)
 
-  if utilities.ce_installed():
-    job_environment_attributes = list(DEFAULT_JOB_ENVIRONMENT_ATTRIBUTES)
+    for module in modules:
+        logger.debug("Configuring %s" % (module.__class__.__name__))
+        if configure_module is not None:
+            if module.moduleName().lower() != configure_module.lower():
+                logger.debug("Skipping %s configuration" % (module.__class__.__name__))
+                continue
+        try:
+            module.configure(attributes)
+        except exceptions.ConfigureError, e:
+            logger.debug("Got ConfigureError %s" % e)
+            error_exit("Can't configure module, exiting")
 
-    if not configfile.jobmanager_enabled(config):
-      logger.warning("CE install detected, but no batch systems are enabled in "
-                     "any of the *.ini files. osg-configure will not configure "
-                     "any of the batch systems. This may lead to your CE being "
-                     "unable to run jobs.")
-      try:
-        job_environment_attributes.remove('OSG_JOB_CONTACT')
-        logger.warning("Not setting the OSG_JOB_CONTACT variable, since that "
-                       "requires a batch system to be enabled (see above). "
-                       "Other than enabling a batch system, there is no further "
-                       "action to take.")
-      except ValueError:
-        pass
+    if utilities.ce_installed():
+        job_environment_attributes = list(DEFAULT_JOB_ENVIRONMENT_ATTRIBUTES)
+
+        if not configfile.jobmanager_enabled(config):
+            logger.warning("CE install detected, but no batch systems are enabled in "
+                           "any of the *.ini files. osg-configure will not configure "
+                           "any of the batch systems. This may lead to your CE being "
+                           "unable to run jobs.")
+            try:
+                job_environment_attributes.remove('OSG_JOB_CONTACT')
+                logger.warning("Not setting the OSG_JOB_CONTACT variable, since that "
+                               "requires a batch system to be enabled (see above). "
+                               "Other than enabling a batch system, there is no further "
+                               "action to take.")
+            except ValueError:
+                pass
+        else:
+            gateway_module = condor_module = None
+            for module in modules:
+                if module.__class__.__name__ == 'GatewayConfiguration':
+                    gateway_module = module
+                elif module.__class__.__name__ == 'CondorConfiguration':
+                    condor_module = module
+
+            if gateway_module and not gateway_module.gram_gateway_enabled:
+                try:
+                    job_environment_attributes.remove('OSG_JOB_CONTACT')
+                    logger.info('Not setting OSG_JOB_CONTACT (GRAM gateway is disabled).')
+                except ValueError:
+                    pass
+
+            if ((gateway_module and not gateway_module.htcondor_gateway_enabled) or
+                    (condor_module and not condor_module.enabled)):
+                try:
+                    job_environment_attributes.remove('PATH')
+                    logger.info('Not setting PATH (not HTCondor-CE with Condor).')
+                except ValueError:
+                    pass
+
+        write_attributes(attributes, local_attributes, job_environment_attributes, attribute_to_option_map)
     else:
-      gateway_module = condor_module = None
-      for module in modules:
-        if module.__class__.__name__ == 'GatewayConfiguration':
-          gateway_module = module
-        elif module.__class__.__name__ == 'CondorConfiguration':
-          condor_module = module
+        logger.debug("Skipped writing job attributes (not a CE)")
 
-      if gateway_module and not gateway_module.gram_gateway_enabled:
-        try:
-          job_environment_attributes.remove('OSG_JOB_CONTACT')
-          logger.info('Not setting OSG_JOB_CONTACT (GRAM gateway is disabled).')
-        except ValueError:
-          pass
-
-      if ((gateway_module and not gateway_module.htcondor_gateway_enabled) or
-            (condor_module and not condor_module.enabled)):
-        try:
-          job_environment_attributes.remove('PATH')
-          logger.info('Not setting PATH (not HTCondor-CE with Condor).')
-        except ValueError:
-          pass
-
-    write_attributes(attributes, local_attributes, job_environment_attributes, attribute_to_option_map)
-  else:
-    logger.debug("Skipped writing job attributes (not a CE)")
 
 def query_option(modules, logger, option=None):
-  """
-  Read configuration files and get the file a given option is defined in
-  
-  Arguments:
-  modules -- list of module objects to verify 
-  logger -- logger instance to log messages to
-  option -- the option to search for given as section.option, 
-            if section is omitted then, the each section is searched
-  """
-  if modules == []:
-    error_exit("No modules found, exiting")
+    """
+    Read configuration files and get the file a given option is defined in
 
-  if option is None:
-    error_exit('No option given, exiting')
-    
-  try:
-    config = configfile.read_config_files()
-  except IOError, e:
-    error_exit("Can't read configuration files: %s" % e)
-  
-  if '.' in option:
-    (section, option_name) = option.split('.')
-    if config.has_option(section, option_name):
-      option_value = config.get(section, option_name)
-    else:
-      option_value = ''
-    location = configfile.get_option_location(option_name, section)
-    if location is None:
-      sys.stdout.write("%s not found in section %s\n" % (option_name, section))
-      normal_exit("Query completed")
+    Arguments:
+    modules -- list of module objects to verify
+    logger -- logger instance to log messages to
+    option -- the option to search for given as section.option,
+              if section is omitted then, the each section is searched
+    """
+    if modules == []:
+        error_exit("No modules found, exiting")
+
+    if option is None:
+        error_exit('No option given, exiting')
+
+    try:
+        config = configfile.read_config_files()
+    except IOError, e:
+        error_exit("Can't read configuration files: %s" % e)
+
+    if '.' in option:
+        (section, option_name) = option.split('.')
+        if config.has_option(section, option_name):
+            option_value = config.get(section, option_name)
+        else:
+            option_value = ''
+        location = configfile.get_option_location(option_name, section)
+        if location is None:
+            sys.stdout.write("%s not found in section %s\n" % (option_name, section))
+            normal_exit("Query completed")
+        sys.stdout.write("%s %s %s %s\n" % ('Option'.ljust(20),
+                                            'Section'.ljust(20),
+                                            'Value'.ljust(30),
+                                            'File'.ljust(30)))
+        sys.stdout.write("%s %s %s %s\n" % (''.ljust(20, '-'),
+                                            ''.ljust(20, '-'),
+                                            ''.ljust(30, '-'),
+                                            ''.ljust(30, '-')))
+        sys.stdout.write("%s %s %s %s\n" % (option_name.ljust(20),
+                                            section.ljust(20),
+                                            option_value.ljust(30),
+                                            location.ljust(30)))
+        normal_exit("Query completed")
+
+    option_name = option
+    # check all sections for option
     sys.stdout.write("%s %s %s %s\n" % ('Option'.ljust(20),
                                         'Section'.ljust(20),
                                         'Value'.ljust(30),
@@ -311,321 +329,307 @@ def query_option(modules, logger, option=None):
     sys.stdout.write("%s %s %s %s\n" % (''.ljust(20, '-'),
                                         ''.ljust(20, '-'),
                                         ''.ljust(30, '-'),
-                                        ''.ljust(30, '-'))) 
-    sys.stdout.write("%s %s %s %s\n" % (option_name.ljust(20),
-                                        section.ljust(20),
-                                        option_value.ljust(30),
-                                        location.ljust(30)))
+                                        ''.ljust(30, '-')))
+    for section_name in config.sections():
+        location = configfile.get_option_location(option_name, section_name)
+        if location is None:
+            continue
+        if config.has_option(section_name, option_name):
+            option_value = config.get(section_name, option_name)
+        else:
+            option_value = ''
+        sys.stdout.write("%s %s %s %s\n" % (option_name.ljust(20),
+                                            section_name.ljust(20),
+                                            option_value.ljust(30),
+                                            location.ljust(30)))
     normal_exit("Query completed")
-    
-  option_name = option
-  # check all sections for option
-  sys.stdout.write("%s %s %s %s\n" % ('Option'.ljust(20),
-                                      'Section'.ljust(20),
-                                      'Value'.ljust(30),
-                                      'File'.ljust(30)))
-  sys.stdout.write("%s %s %s %s\n" % (''.ljust(20, '-'),
-                                      ''.ljust(20, '-'),
-                                      ''.ljust(30, '-'),
-                                      ''.ljust(30, '-')))
-  for section_name in config.sections():
-    location = configfile.get_option_location(option_name, section_name)
-    if location is None:
-      continue
-    if config.has_option(section_name, option_name):
-      option_value = config.get(section_name, option_name)
-    else:
-      option_value = ''
-    sys.stdout.write("%s %s %s %s\n" % (option_name.ljust(20),
-                                        section_name.ljust(20),
-                                        option_value.ljust(30),
-                                        location.ljust(30)))
-  normal_exit("Query completed")
-        
+
+
 def list_enabled_services(modules, logger):
-  """Read configuration files and list system services that should be enabled 
-  
-  Arguments:
-  modules -- list of module objects to verify 
-  logger -- logger instance to log messages to
-  """
-  if modules == []:
-    error_exit("No modules found, exiting")
+    """Read configuration files and list system services that should be enabled
 
-  try:
-    config = configfile.read_config_files()
-  except IOError, e:
-    error_exit("Can't read configuration files: %s" % e)
+    Arguments:
+    modules -- list of module objects to verify
+    logger -- logger instance to log messages to
+    """
+    if modules == []:
+        error_exit("No modules found, exiting")
 
-  for module in modules:
     try:
-      module.parseConfiguration(config)
-    except exceptions.SettingError, exception:
-      error_exit("Error in %s while parsing configuration" % \
-                 (module.__class__.__name__),
-                 exception)
-    except ConfigParser.ParsingError, exception:
-      error_exit("Error while parsing configuration: %s" % exception)
-  
-  sys.stdout.write("System services associated with current configuration:\n")
-  services = set()
-  for module in modules:
-    services |= module.enabledServices()
-  for service in services:
-    sys.stdout.write(service + "\n")
-  
-  normal_exit("Completed successfully")
-     
+        config = configfile.read_config_files()
+    except IOError, e:
+        error_exit("Can't read configuration files: %s" % e)
+
+    for module in modules:
+        try:
+            module.parseConfiguration(config)
+        except exceptions.SettingError, exception:
+            error_exit("Error in %s while parsing configuration" % \
+                       (module.__class__.__name__),
+                       exception)
+        except ConfigParser.ParsingError, exception:
+            error_exit("Error while parsing configuration: %s" % exception)
+
+    sys.stdout.write("System services associated with current configuration:\n")
+    services = set()
+    for module in modules:
+        services |= module.enabledServices()
+    for service in services:
+        sys.stdout.write(service + "\n")
+
+    normal_exit("Completed successfully")
 
 
 def verify_system(modules, logger):
-  """
-  Read configuration files and try to verify the configuration 
-  to make sure that it's sane and points to valid information
-  
-  Keyword arguments:
-  modules -- list of module objects to verify 
-  logger -- logger instance to log messages to
-  """
-  if modules == []:
-    error_exit("No modules found, exiting")
+    """
+    Read configuration files and try to verify the configuration
+    to make sure that it's sane and points to valid information
 
-  try:
-    config = configfile.read_config_files()
-  except IOError, e:
-    error_exit("Can't read configuration files: %s" % e)
-  
-  for module in modules:
+    Keyword arguments:
+    modules -- list of module objects to verify
+    logger -- logger instance to log messages to
+    """
+    if modules == []:
+        error_exit("No modules found, exiting")
+
     try:
-      if  module.__class__.__name__ == 'LocalSettings':
-        local_config = configfile.read_config_files(case_sensitive = True)
-        module.parseConfiguration(local_config)
-        continue
-      else:
-        module.parseConfiguration(config)
-    except exceptions.SettingError, exception:
-      error_exit("Error in %s while parsing configuration" % (module.__class__.__name__),
-                 exception)
-    except ConfigParser.ParsingError, exception:
-      error_exit("Error while parsing configuration: %s" % exception)
-      
-  attributes = {}
-  local_attributes = {}
-  for module in modules:
-    if  module.__class__.__name__ == 'LocalSettings':
-      local_attributes.update(module.getAttributes())
-    attributes.update(module.getAttributes())
-      
-  if not check_configuration(modules, attributes, logger):
-    error_exit("Invalid attributes found, exiting")
-  normal_exit("Configuration verified successfully")
+        config = configfile.read_config_files()
+    except IOError, e:
+        error_exit("Can't read configuration files: %s" % e)
+
+    for module in modules:
+        try:
+            if module.__class__.__name__ == 'LocalSettings':
+                local_config = configfile.read_config_files(case_sensitive=True)
+                module.parseConfiguration(local_config)
+                continue
+            else:
+                module.parseConfiguration(config)
+        except exceptions.SettingError, exception:
+            error_exit("Error in %s while parsing configuration" % (module.__class__.__name__),
+                       exception)
+        except ConfigParser.ParsingError, exception:
+            error_exit("Error while parsing configuration: %s" % exception)
+
+    attributes = {}
+    local_attributes = {}
+    for module in modules:
+        if module.__class__.__name__ == 'LocalSettings':
+            local_attributes.update(module.getAttributes())
+        attributes.update(module.getAttributes())
+
+    if not check_configuration(modules, attributes, logger):
+        error_exit("Invalid attributes found, exiting")
+    normal_exit("Configuration verified successfully")
+
 
 def list_modules(modules, logger):
-  """
-  Print out a list of all modules available on the system
+    """
+    Print out a list of all modules available on the system
 
-  Keyword arguments:
-  modules -- list of module objects installed 
-  logger -- logger instance to log messages to
-  """
-  if modules == []:
-    error_exit("No modules found, exiting")
-  
-  sys.stdout.write("%s%s\n" % ("Module name".ljust(30), "Can configure separately?".ljust(40)))
-  for module in modules:
-    name = module.moduleName()
-    if  module.separatelyConfigurable():
-      configurable = "Yes"
-    else:
-      configurable = "No"
-    sys.stdout.write("%s%s\n" % (name.ljust(30), configurable.ljust(40)))                                    
-  
-  normal_exit("Modules listed successfully")
-  
-    
+    Keyword arguments:
+    modules -- list of module objects installed
+    logger -- logger instance to log messages to
+    """
+    if modules == []:
+        error_exit("No modules found, exiting")
+
+    sys.stdout.write("%s%s\n" % ("Module name".ljust(30), "Can configure separately?".ljust(40)))
+    for module in modules:
+        name = module.moduleName()
+        if module.separatelyConfigurable():
+            configurable = "Yes"
+        else:
+            configurable = "No"
+        sys.stdout.write("%s%s\n" % (name.ljust(30), configurable.ljust(40)))
+
+    normal_exit("Modules listed successfully")
+
+
 def check_configuration(modules, attributes, logger):
-  """
-  Read a configuration file and check it to make sure that it will work
+    """
+    Read a configuration file and check it to make sure that it will work
 
-  Keyword arguments:
-  modules -- list of module objects to check 
-  logger -- logger instance to log messages to
-  """
-  # get a list of configuration modules
-  
-  if modules == []:
-    logger.warning("No configuration modules found")
-    return False
+    Keyword arguments:
+    modules -- list of module objects to check
+    logger -- logger instance to log messages to
+    """
+    # get a list of configuration modules
 
-  try:
-    configfile.read_config_files()
-  except IOError, e:
-    error_exit("Can't read configuration files: %s" % e)
+    if modules == []:
+        logger.warning("No configuration modules found")
+        return False
 
-  status = True
-  for module in modules:
-    status &= module.checkAttributes(attributes)
-  return status
-  
+    try:
+        configfile.read_config_files()
+    except IOError, e:
+        error_exit("Can't read configuration files: %s" % e)
+
+    status = True
+    for module in modules:
+        status &= module.checkAttributes(attributes)
+    return status
+
+
 ############################# Main Program ##############################
 
 def main():
-  global error_exit
-  global normal_exit
-  
-  normal_exit_message = "Configuration completed, exiting..."
-  error_exit_message = "Critical error occurred, exiting..."
+    global error_exit
+    global normal_exit
 
-  parser = optparse.OptionParser(usage='Usage: %prog [options] arg1 arg2', version='%prog ' + VERSION)
-  parser.add_option('-d',
-                    '--debug',
-                    action='store_true',
-                    dest='debug',
-                    default=False,
-                    help='Output debugging information to /var/log/osg/osg-configure.log')
-  parser.add_option('-v',
-                    '--verify',
-                    action='store_const',
-                    const=VERIFY,
-                    dest='mode',
-                    help='Verify configuration and output an errors present')
-  parser.add_option('-c',
-                    '--configure',
-                    action='store_const',
-                    const=CONFIGURE,
-                    dest='mode',
-                    help='Configure osg software')
-  parser.add_option('-l',
-                    '--list',
-                    action='store_const',
-                    const=LIST,
-                    dest='mode',
-                    help='List configuration modules present')
-  parser.add_option('-q',
-                    '--query',
-                    action='store_const',
-                    const=QUERY,
-                    dest='mode',
-                    help='Query to see where a particular option is defined')
-  parser.add_option('--enabled-services',
-                    action='store_const',
-                    const=ENABLED_SERVICES,
-                    dest='mode',
-                    help='List system services that should be enabled ' +
-                         'given current configuration')
-  parser.add_option('-o',
-                    '--option',
-                    action='store',
-                    dest='option',
-                    help='Specify option to query, formatted as section.option ' +
-                          'with the section portion being optional')
-  parser.add_option('-m',
-                    '--module',
-                    action='store',
-                    dest='module',
-                    default=None,
-                    help='Indicate module to configure')
-  parser.add_option('-f',
-                    '--force',
-                    action='store_true',
-                    dest='force',
-                    default=False,
-                    help='Force configuration despite any errors present')
-  parser.add_option('--verbose',
-                    dest='verbose',
-                    default=False,
-                    help='Output all log messages to the console')
-  (options, args) = parser.parse_args()
-  log_level = logging.INFO
+    normal_exit_message = "Configuration completed, exiting..."
+    error_exit_message = "Critical error occurred, exiting..."
 
-  if os.getuid() != 0:
-    error_exit("You must be root when running %s" % sys.argv[0])
+    parser = optparse.OptionParser(usage='Usage: %prog [options] arg1 arg2', version='%prog ' + VERSION)
+    parser.add_option('-d',
+                      '--debug',
+                      action='store_true',
+                      dest='debug',
+                      default=False,
+                      help='Output debugging information to /var/log/osg/osg-configure.log')
+    parser.add_option('-v',
+                      '--verify',
+                      action='store_const',
+                      const=VERIFY,
+                      dest='mode',
+                      help='Verify configuration and output an errors present')
+    parser.add_option('-c',
+                      '--configure',
+                      action='store_const',
+                      const=CONFIGURE,
+                      dest='mode',
+                      help='Configure osg software')
+    parser.add_option('-l',
+                      '--list',
+                      action='store_const',
+                      const=LIST,
+                      dest='mode',
+                      help='List configuration modules present')
+    parser.add_option('-q',
+                      '--query',
+                      action='store_const',
+                      const=QUERY,
+                      dest='mode',
+                      help='Query to see where a particular option is defined')
+    parser.add_option('--enabled-services',
+                      action='store_const',
+                      const=ENABLED_SERVICES,
+                      dest='mode',
+                      help='List system services that should be enabled ' +
+                           'given current configuration')
+    parser.add_option('-o',
+                      '--option',
+                      action='store',
+                      dest='option',
+                      help='Specify option to query, formatted as section.option ' +
+                           'with the section portion being optional')
+    parser.add_option('-m',
+                      '--module',
+                      action='store',
+                      dest='module',
+                      default=None,
+                      help='Indicate module to configure')
+    parser.add_option('-f',
+                      '--force',
+                      action='store_true',
+                      dest='force',
+                      default=False,
+                      help='Force configuration despite any errors present')
+    parser.add_option('--verbose',
+                      dest='verbose',
+                      default=False,
+                      help='Output all log messages to the console')
+    (options, args) = parser.parse_args()
+    log_level = logging.INFO
 
-  # os.umask sets the umask so we need to call it twice to get and then
-  # restore the original umask    
-  umask = os.umask(0)
-  os.umask(umask)
-  if ((umask != 022) and (umask != 002)):
-    error_exit("Your umask is not set to 022 or 002, this probably caused " \
-               "files to be installed from the rpms with incorrect " \
-               "permissions, please check your the file permissions for your " \
-               "installation")
-  
-  if 'VDT_LOCATION' in os.environ:
-    error_exit("$VDT_LOCATION exists in the environment, it looks like " +
-               "the setup.sh from a pacman install exists in the environment " + 
-               "exiting to avoid errors")
-    
-  if options.debug == True:
-    sys.stdout.write("Writing debug information to " +
-                     "/var/log/osg/osg-configure.log\n")
-    log_level = logging.DEBUG
-  
-  configure_module = options.module
-  if options.mode == VERIFY:
-    normal_exit_message = "Verification completed, exiting..."
-  elif options.mode == LIST:
-    normal_exit_message = "List modules completed, exiting..."
-      
-        
-  # setup logging
-  try:
-    logger = logging.getLogger(__name__)
-    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-    handler = logging.FileHandler(LOG_FILE, 'a')
-    logger.setLevel(log_level)
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-    console = logging.StreamHandler()
-    console.setLevel(logging.WARNING)
-    if options.verbose:
-      console.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(levelname)-8s %(message)s')
-    console.setFormatter(formatter)
-    logger.addHandler(console)
-      
-    error_exit = lambda mesg = error_exit_message, exception = None: real_error_exit(logger, mesg, exception)    
-    normal_exit = lambda mesg = normal_exit_message: real_normal_exit(logger, mesg)
-      
-      
-  except IOError:
-    sys.stderr.write("Can't open %s for logging, exiting...\n" % LOG_FILE)
-    sys.exit(1)  
-  
-  try:
-    # get a list of configuration modules
-    modules = get_configuration_modules(logger)
-    
-    if options.mode == CONFIGURE:
-      # configure settings
-      configure_system(modules, logger, configure_module)
-      pass
-    elif options.mode == VERIFY:
-      # verify settings
-      verify_system(modules, logger)
-    elif options.mode == LIST: 
-      list_modules(modules, logger)
-    elif options.mode == QUERY:
-      query_option(modules, logger, option = options.option)
-    elif options.mode == ENABLED_SERVICES:
-      list_enabled_services(modules, logger)
-    else:
-      parser.print_usage()
-      error_exit("Must specify either -c, -v, or -l")
-  except SystemExit:
-    # needed since SystemExit inherits from Exception
-    raise
-  except Exception, e:
-    debug_info = "Unhandled exception %s\n%s" % (e, traceback.format_exc())
-    if logger:
-      logger.debug(debug_info)
-    else:
-      sys.stderr.write(debug_info + "\n")
-    sys.stderr.write("Please contact the developer, an unknown error occurred\n")
-    error_exit("Unknown exception encountered while running: %s" % e)  
-  
-  normal_exit("%s completed" % (sys.argv[0],))
-  
-  
+    if os.getuid() != 0:
+        error_exit("You must be root when running %s" % sys.argv[0])
+
+    # os.umask sets the umask so we need to call it twice to get and then
+    # restore the original umask
+    umask = os.umask(0)
+    os.umask(umask)
+    if ((umask != 022) and (umask != 002)):
+        error_exit("Your umask is not set to 022 or 002, this probably caused " \
+                   "files to be installed from the rpms with incorrect " \
+                   "permissions, please check your the file permissions for your " \
+                   "installation")
+
+    if 'VDT_LOCATION' in os.environ:
+        error_exit("$VDT_LOCATION exists in the environment, it looks like " +
+                   "the setup.sh from a pacman install exists in the environment " +
+                   "exiting to avoid errors")
+
+    if options.debug == True:
+        sys.stdout.write("Writing debug information to " +
+                         "/var/log/osg/osg-configure.log\n")
+        log_level = logging.DEBUG
+
+    configure_module = options.module
+    if options.mode == VERIFY:
+        normal_exit_message = "Verification completed, exiting..."
+    elif options.mode == LIST:
+        normal_exit_message = "List modules completed, exiting..."
+
+
+    # setup logging
+    try:
+        logger = logging.getLogger(__name__)
+        formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+        handler = logging.FileHandler(LOG_FILE, 'a')
+        logger.setLevel(log_level)
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+        console = logging.StreamHandler()
+        console.setLevel(logging.WARNING)
+        if options.verbose:
+            console.setLevel(logging.DEBUG)
+        formatter = logging.Formatter('%(levelname)-8s %(message)s')
+        console.setFormatter(formatter)
+        logger.addHandler(console)
+
+        error_exit = lambda mesg=error_exit_message, exception=None: real_error_exit(logger, mesg, exception)
+        normal_exit = lambda mesg=normal_exit_message: real_normal_exit(logger, mesg)
+
+
+    except IOError:
+        sys.stderr.write("Can't open %s for logging, exiting...\n" % LOG_FILE)
+        sys.exit(1)
+
+    try:
+        # get a list of configuration modules
+        modules = get_configuration_modules(logger)
+
+        if options.mode == CONFIGURE:
+            # configure settings
+            configure_system(modules, logger, configure_module)
+            pass
+        elif options.mode == VERIFY:
+            # verify settings
+            verify_system(modules, logger)
+        elif options.mode == LIST:
+            list_modules(modules, logger)
+        elif options.mode == QUERY:
+            query_option(modules, logger, option=options.option)
+        elif options.mode == ENABLED_SERVICES:
+            list_enabled_services(modules, logger)
+        else:
+            parser.print_usage()
+            error_exit("Must specify either -c, -v, or -l")
+    except SystemExit:
+        # needed since SystemExit inherits from Exception
+        raise
+    except Exception, e:
+        debug_info = "Unhandled exception %s\n%s" % (e, traceback.format_exc())
+        if logger:
+            logger.debug(debug_info)
+        else:
+            sys.stderr.write(debug_info + "\n")
+        sys.stderr.write("Please contact the developer, an unknown error occurred\n")
+        error_exit("Unknown exception encountered while running: %s" % e)
+
+    normal_exit("%s completed" % (sys.argv[0],))
+
+
 if __name__ == '__main__':
     main()

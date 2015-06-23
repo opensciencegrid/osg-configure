@@ -10,22 +10,23 @@ sys.path.insert(0, '.')
 from osg_configure.modules.resourcecatalog import ResourceCatalog
 from osg_configure.modules import subcluster
 
+
 class TestResourceCatalog(unittest.TestCase):
-  def assertDoesNotRaise(self, exception, function, *args, **kwargs):
-    try:
-      function(*args, **kwargs)
-    except exception:
-      self.fail('%s called with %r and %r raised %s' % (function.__name__, args, kwargs, exception.__name__))
+    def assertDoesNotRaise(self, exception, function, *args, **kwargs):
+        try:
+            function(*args, **kwargs)
+        except exception:
+            self.fail('%s called with %r and %r raised %s' % (function.__name__, args, kwargs, exception.__name__))
 
-  def setUp(self):
-    self.rc = ResourceCatalog()
+    def setUp(self):
+        self.rc = ResourceCatalog()
 
-  def testEmpty(self):
-    self.assertEqual(self.rc.compose_text().strip(), "OSG_ResourceCatalog = {}")
+    def testEmpty(self):
+        self.assertEqual(self.rc.compose_text().strip(), "OSG_ResourceCatalog = {}")
 
-  def testSingle(self):
-    self.rc.add_entry('sc1', 1, 2000)
-    self.assertEqual(self.rc.compose_text().strip(), r"""OSG_ResourceCatalog = { \
+    def testSingle(self):
+        self.rc.add_entry('sc1', 1, 2000)
+        self.assertEqual(self.rc.compose_text().strip(), r"""OSG_ResourceCatalog = { \
   [ \
     CPUs = 1; \
     Memory = 2000; \
@@ -35,12 +36,12 @@ class TestResourceCatalog(unittest.TestCase):
   ] \
 }""")
 
-  def testMulti(self):
-    (self.rc
-      .add_entry('sc1', 1, 2000)
-      .add_entry('sc2', 2, 4000)
-      .add_entry('sc3', 4, 8000, 'osg   ,,,atlas'))
-    self.assertEqual(self.rc.compose_text().strip(), r"""OSG_ResourceCatalog = { \
+    def testMulti(self):
+        (self.rc
+         .add_entry('sc1', 1, 2000)
+         .add_entry('sc2', 2, 4000)
+         .add_entry('sc3', 4, 8000, 'osg   ,,,atlas'))
+        self.assertEqual(self.rc.compose_text().strip(), r"""OSG_ResourceCatalog = { \
   [ \
     CPUs = 1; \
     Memory = 2000; \
@@ -65,20 +66,20 @@ class TestResourceCatalog(unittest.TestCase):
   ] \
 }""")
 
-  def testNoName(self):
-    self.assertRaises(ValueError, self.rc.add_entry, '', 1, 1)
+    def testNoName(self):
+        self.assertRaises(ValueError, self.rc.add_entry, '', 1, 1)
 
-  def testOutOfRange(self):
-    self.assertRaises(ValueError, self.rc.add_entry, 'sc', -1, 1)
-    self.assertRaises(ValueError, self.rc.add_entry, 'sc', 1, 0)
+    def testOutOfRange(self):
+        self.assertRaises(ValueError, self.rc.add_entry, 'sc', -1, 1)
+        self.assertRaises(ValueError, self.rc.add_entry, 'sc', 1, 0)
 
-  def testZeroMaxWallTime(self):
-    self.assertDoesNotRaise(ValueError, self.rc.add_entry, 'sc', 1, 1, None, None)
-    self.assertDoesNotRaise(ValueError, self.rc.add_entry, 'sc', 1, 1, None, 0)
+    def testZeroMaxWallTime(self):
+        self.assertDoesNotRaise(ValueError, self.rc.add_entry, 'sc', 1, 1, None, None)
+        self.assertDoesNotRaise(ValueError, self.rc.add_entry, 'sc', 1, 1, None, 0)
 
-  def testExtraRequirements(self):
-    self.rc.add_entry('sc', 1, 2000, extra_requirements='TARGET.WantGPUs =?= 1')
-    self.assertEqual(self.rc.compose_text().strip(), r"""OSG_ResourceCatalog = { \
+    def testExtraRequirements(self):
+        self.rc.add_entry('sc', 1, 2000, extra_requirements='TARGET.WantGPUs =?= 1')
+        self.assertEqual(self.rc.compose_text().strip(), r"""OSG_ResourceCatalog = { \
   [ \
     CPUs = 1; \
     Memory = 2000; \
@@ -88,9 +89,9 @@ class TestResourceCatalog(unittest.TestCase):
   ] \
 }""")
 
-  def testExtraTransforms(self):
-    self.rc.add_entry('sc', 1, 2000, extra_transforms='set_WantRHEL6 = 1')
-    self.assertEqual(self.rc.compose_text().strip(), r"""OSG_ResourceCatalog = { \
+    def testExtraTransforms(self):
+        self.rc.add_entry('sc', 1, 2000, extra_transforms='set_WantRHEL6 = 1')
+        self.assertEqual(self.rc.compose_text().strip(), r"""OSG_ResourceCatalog = { \
   [ \
     CPUs = 1; \
     Memory = 2000; \
@@ -100,9 +101,9 @@ class TestResourceCatalog(unittest.TestCase):
   ] \
 }""")
 
-  def testFull(self):
-    config = ConfigParser.SafeConfigParser()
-    config_io = cStringIO.StringIO(r"""
+    def testFull(self):
+        config = ConfigParser.SafeConfigParser()
+        config_io = cStringIO.StringIO(r"""
 [Subcluster Valid]
 name = red.unl.edu
 node_count = 60
@@ -117,9 +118,9 @@ inbound_network = FALSE
 outbound_network = TRUE
 HEPSPEC = 10
 """)
-    config.readfp(config_io)
-    self.assertEqual(subcluster.resource_catalog_from_config(config).compose_text(),
-                     r"""OSG_ResourceCatalog = { \
+        config.readfp(config_io)
+        self.assertEqual(subcluster.resource_catalog_from_config(config).compose_text(),
+                         r"""OSG_ResourceCatalog = { \
   [ \
     CPUs = 4; \
     MaxWallTime = 1440; \
@@ -130,9 +131,9 @@ HEPSPEC = 10
   ] \
 }""")
 
-  def testFullWithExtraTransforms(self):
-    config = ConfigParser.SafeConfigParser()
-    config_io = cStringIO.StringIO(r"""
+    def testFullWithExtraTransforms(self):
+        config = ConfigParser.SafeConfigParser()
+        config_io = cStringIO.StringIO(r"""
 [Subcluster Test]
 name = glow.chtc.wisc.edu
 node_count = 60
@@ -150,9 +151,9 @@ queue = blue
 extra_transforms = set_WantRHEL6 = 1
 max_wall_time = 1440
 """)
-    config.readfp(config_io)
-    self.assertEqual(subcluster.resource_catalog_from_config(config).compose_text(),
-                     r"""OSG_ResourceCatalog = { \
+        config.readfp(config_io)
+        self.assertEqual(subcluster.resource_catalog_from_config(config).compose_text(),
+                         r"""OSG_ResourceCatalog = { \
   [ \
     CPUs = 4; \
     MaxWallTime = 1440; \
@@ -163,11 +164,11 @@ max_wall_time = 1440
   ] \
 }""")
 
-  def testFullWithExtras(self):
-    # Disable this test because the feature is disabled for now
-    return
-    config = ConfigParser.SafeConfigParser()
-    config_io = cStringIO.StringIO(r"""
+    def testFullWithExtras(self):
+        # Disable this test because the feature is disabled for now
+        return
+        config = ConfigParser.SafeConfigParser()
+        config_io = cStringIO.StringIO(r"""
 [Subcluster Test]
 name = glow.chtc.wisc.edu
 node_count = 60
@@ -186,9 +187,9 @@ extra_requirements = WantGPUs =?= 1
 extra_transforms = set_WantRHEL6 = 1
 max_wall_time = 1440
 """)
-    config.readfp(config_io)
-    self.assertEqual(subcluster.resource_catalog_from_config(config).compose_text(),
-                     r"""OSG_ResourceCatalog = { \
+        config.readfp(config_io)
+        self.assertEqual(subcluster.resource_catalog_from_config(config).compose_text(),
+                         r"""OSG_ResourceCatalog = { \
   [ \
     CPUs = 4; \
     MaxWallTime = 1440; \
@@ -199,5 +200,6 @@ max_wall_time = 1440
   ] \
 }""")
 
+
 if __name__ == '__main__':
-  unittest.main()
+    unittest.main()

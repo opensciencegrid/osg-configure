@@ -1,7 +1,7 @@
 """Unit tests to test gratia configuration class"""
 
-#pylint: disable=W0703
-#pylint: disable=R0904
+# pylint: disable=W0703
+# pylint: disable=R0904
 
 import os
 import sys
@@ -20,429 +20,420 @@ from osg_configure.modules.utilities import get_test_config
 
 global_logger = logging.getLogger(__name__)
 if sys.version_info[0] >= 2 and sys.version_info[1] > 6:
-  global_logger.addHandler(logging.NullHandler())
+    global_logger.addHandler(logging.NullHandler())
 else:
-  # NullHandler is only in python 2.7 and above
-  class NullHandler(logging.Handler):
-    def emit(self, record):
-      pass
-            
-  global_logger.addHandler(NullHandler())
+    # NullHandler is only in python 2.7 and above
+    class NullHandler(logging.Handler):
+        def emit(self, record):
+            pass
+
+    global_logger.addHandler(NullHandler())
+
 
 class TestGratia(unittest.TestCase):
-  """
-  Unit test class to test GratiaConfiguration class
-  """
-
-  def testParsing1(self):
     """
-    Test gratia parsing
+    Unit test class to test GratiaConfiguration class
     """
-    
-    config_file = get_test_config("gratia/gratia.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
 
-    settings = gratia.GratiaConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
+    def testParsing1(self):
+        """
+        Test gratia parsing
+        """
 
-    options = settings.options
-    variables = {'probes' : 'jobmanager:gratia-osg-prod.opensciencegrid.org:80, '\
-                            'gridftp:gratia-osg-transfer.opensciencegrid.org:80'}
-    for var in variables:      
-      self.assertTrue(options.has_key(var), 
-                      "Attribute %s missing" % var)
-      self.assertEqual(options[var].value, 
-                       variables[var], 
-                       "Wrong value obtained for %s, got %s but " \
-                       "expected %s" % (var, options[var].value, variables[var]))
+        config_file = get_test_config("gratia/gratia.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.read(config_file)
 
-  def testParsingITBDefault(self):
-    """
-    Make sure gratia picks up the itb defaults 
-    """
-    
-    # need to be on a CE to get CE defaults
-    if not gratia.requirements_are_installed():
-      return
+        settings = gratia.GratiaConfiguration(logger=global_logger)
+        try:
+            settings.parseConfiguration(configuration)
+        except Exception, e:
+            self.fail("Received exception while parsing configuration: %s" % e)
 
-    config_file = get_test_config("gratia/itb_default.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
+        options = settings.options
+        variables = {'probes': 'jobmanager:gratia-osg-prod.opensciencegrid.org:80, ' \
+                               'gridftp:gratia-osg-transfer.opensciencegrid.org:80'}
+        for var in variables:
+            self.assertTrue(options.has_key(var),
+                            "Attribute %s missing" % var)
+            self.assertEqual(options[var].value,
+                             variables[var],
+                             "Wrong value obtained for %s, got %s but " \
+                             "expected %s" % (var, options[var].value, variables[var]))
 
-    settings = gratia.GratiaConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
+    def testParsingITBDefault(self):
+        """
+        Make sure gratia picks up the itb defaults
+        """
 
-    options = settings.options
-    variables = {'probes' : 'jobmanager:gratia-osg-itb.opensciencegrid.org:80'}
-    for var in variables:      
-      self.assertTrue(options.has_key(var), 
-                      "Attribute %s missing" % var)
-      self.assertEqual(options[var].value, 
-                           variables[var], 
-                           "Wrong value obtained for %s, got %s but " \
-                           "expected %s" % (var, options[var].value, variables[var]))
+        # need to be on a CE to get CE defaults
+        if not gratia.requirements_are_installed():
+            return
 
-    
-  def testParsingProductionDefault(self):
-    """
-    Make sure gratia picks up the itb defaults 
-    """
-    
-    # need to be on a CE to get CE defaults
-    if not gratia.requirements_are_installed():
-      return
+        config_file = get_test_config("gratia/itb_default.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.read(config_file)
 
-    config_file = get_test_config("gratia/prod_default.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
+        settings = gratia.GratiaConfiguration(logger=global_logger)
+        try:
+            settings.parseConfiguration(configuration)
+        except Exception, e:
+            self.fail("Received exception while parsing configuration: %s" % e)
 
-    settings = gratia.GratiaConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
+        options = settings.options
+        variables = {'probes': 'jobmanager:gratia-osg-itb.opensciencegrid.org:80'}
+        for var in variables:
+            self.assertTrue(options.has_key(var),
+                            "Attribute %s missing" % var)
+            self.assertEqual(options[var].value,
+                             variables[var],
+                             "Wrong value obtained for %s, got %s but " \
+                             "expected %s" % (var, options[var].value, variables[var]))
 
-    options = settings.options
-    variables = {'probes' : 'jobmanager:gratia-osg-prod.opensciencegrid.org:80'}
-    for var in variables:      
-      self.assertTrue(options.has_key(var), 
-                      "Attribute %s missing" % var)
-      self.assertEqual(options[var].value, 
-                       variables[var], 
-                       "Wrong value obtained for %s, got %s but " \
-                       "expected %s" % (var, options[var].value, variables[var]))
+    def testParsingProductionDefault(self):
+        """
+        Make sure gratia picks up the itb defaults
+        """
 
-  def testParsingMissingITBDefault(self):
-    """
-    Make sure gratia picks up the itb defaults when the gratia
-    section is missing 
-    """
-    
-    # need to be on a CE to get CE defaults
-    if not gratia.requirements_are_installed():
-      return
-    config_file = get_test_config("gratia/itb_default2.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
+        # need to be on a CE to get CE defaults
+        if not gratia.requirements_are_installed():
+            return
 
-    settings = gratia.GratiaConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
+        config_file = get_test_config("gratia/prod_default.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.read(config_file)
 
-    options = settings.options
-    variables = {'probes' : 'jobmanager:gratia-osg-itb.opensciencegrid.org:80'}
-    for var in variables:      
-      self.assertTrue(options.has_key(var), 
-                      "Attribute %s missing" % var)
-      self.assertEqual(options[var].value, 
-                       variables[var], 
-                       "Wrong value obtained for %s, got %s but " \
-                       "expected %s" % (var, options[var].value, variables[var]))
+        settings = gratia.GratiaConfiguration(logger=global_logger)
+        try:
+            settings.parseConfiguration(configuration)
+        except Exception, e:
+            self.fail("Received exception while parsing configuration: %s" % e)
 
-    config_file = get_test_config("gratia/itb_default3.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
+        options = settings.options
+        variables = {'probes': 'jobmanager:gratia-osg-prod.opensciencegrid.org:80'}
+        for var in variables:
+            self.assertTrue(options.has_key(var),
+                            "Attribute %s missing" % var)
+            self.assertEqual(options[var].value,
+                             variables[var],
+                             "Wrong value obtained for %s, got %s but " \
+                             "expected %s" % (var, options[var].value, variables[var]))
 
-    settings = gratia.GratiaConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
+    def testParsingMissingITBDefault(self):
+        """
+        Make sure gratia picks up the itb defaults when the gratia
+        section is missing
+        """
 
-    options = settings.options
-    variables = {'probes' : 'jobmanager:gratia-osg-itb.opensciencegrid.org:80'}
-    for var in variables:      
-      self.assertTrue(options.has_key(var), 
-                      "Attribute %s missing" % var)
-      self.assertEqual(options[var].value, 
-                       variables[var], 
-                       "Wrong value obtained for %s, got %s but " \
-                       "expected %s" % (var, options[var].value, variables[var]))
-    
-  def testParsingMissingProductionDefault(self):
-    """
-    Make sure gratia picks up the production defaults when the gratia 
-    section is missing 
-    """
-    
-    # need to be on a CE to get CE defaults
-    if not gratia.requirements_are_installed():
-      return
-    config_file = get_test_config("gratia/prod_default2.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
+        # need to be on a CE to get CE defaults
+        if not gratia.requirements_are_installed():
+            return
+        config_file = get_test_config("gratia/itb_default2.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.read(config_file)
 
-    settings = gratia.GratiaConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
+        settings = gratia.GratiaConfiguration(logger=global_logger)
+        try:
+            settings.parseConfiguration(configuration)
+        except Exception, e:
+            self.fail("Received exception while parsing configuration: %s" % e)
 
-    options = settings.options
-    variables = {'probes' : 'jobmanager:gratia-osg-prod.opensciencegrid.org:80'}
-    for var in variables:      
-      self.assertTrue(options.has_key(var), 
-                      "Attribute %s missing" % var)
-      self.assertEqual(options[var].value, 
-                       variables[var], 
-                       "Wrong value obtained for %s, got %s but " \
-                       "expected %s" % (var, options[var].value, variables[var]))
+        options = settings.options
+        variables = {'probes': 'jobmanager:gratia-osg-itb.opensciencegrid.org:80'}
+        for var in variables:
+            self.assertTrue(options.has_key(var),
+                            "Attribute %s missing" % var)
+            self.assertEqual(options[var].value,
+                             variables[var],
+                             "Wrong value obtained for %s, got %s but " \
+                             "expected %s" % (var, options[var].value, variables[var]))
 
-  def testParsingDisabled(self):
-    """
-    Test gratia parsing with negative values
-    """
-    
-    config_file = get_test_config("gratia/disabled.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
+        config_file = get_test_config("gratia/itb_default3.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.read(config_file)
 
-    settings = gratia.GratiaConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
+        settings = gratia.GratiaConfiguration(logger=global_logger)
+        try:
+            settings.parseConfiguration(configuration)
+        except Exception, e:
+            self.fail("Received exception while parsing configuration: %s" % e)
 
-    self.assertEqual(len(settings.options['probes'].value), 
-                     0, 
-                     "Disabled configuration should have no attributes")
+        options = settings.options
+        variables = {'probes': 'jobmanager:gratia-osg-itb.opensciencegrid.org:80'}
+        for var in variables:
+            self.assertTrue(options.has_key(var),
+                            "Attribute %s missing" % var)
+            self.assertEqual(options[var].value,
+                             variables[var],
+                             "Wrong value obtained for %s, got %s but " \
+                             "expected %s" % (var, options[var].value, variables[var]))
 
-  def testParsingIgnored(self):
-    """
-    Test gratia parsing when section is ignored
-    """
-    
-    config_file = get_test_config("gratia/ignored.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
+    def testParsingMissingProductionDefault(self):
+        """
+        Make sure gratia picks up the production defaults when the gratia
+        section is missing
+        """
 
-    settings = gratia.GratiaConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
+        # need to be on a CE to get CE defaults
+        if not gratia.requirements_are_installed():
+            return
+        config_file = get_test_config("gratia/prod_default2.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.read(config_file)
 
-    self.assertEqual(len(settings.options['probes'].value), 
-                     0, 
-                     "Disabled configuration should have no attributes")
+        settings = gratia.GratiaConfiguration(logger=global_logger)
+        try:
+            settings.parseConfiguration(configuration)
+        except Exception, e:
+            self.fail("Received exception while parsing configuration: %s" % e)
 
-  def testInvalidProbes1(self):
-    """
-    Test the checkAttributes function to see if it catches invalid
-    probes
-    """
-        
-    config_file = get_test_config("gratia/invalid_probe1.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
+        options = settings.options
+        variables = {'probes': 'jobmanager:gratia-osg-prod.opensciencegrid.org:80'}
+        for var in variables:
+            self.assertTrue(options.has_key(var),
+                            "Attribute %s missing" % var)
+            self.assertEqual(options[var].value,
+                             variables[var],
+                             "Wrong value obtained for %s, got %s but " \
+                             "expected %s" % (var, options[var].value, variables[var]))
 
-    settings = gratia.GratiaConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
-    attributes = settings.getAttributes()
-    self.assertFalse(settings.checkAttributes(attributes), 
-                     "Did not notice invalid probe specification")
+    def testParsingDisabled(self):
+        """
+        Test gratia parsing with negative values
+        """
 
-  def testInvalidProbes2(self):
-    """
-    Test the checkAttributes function to see if it catches invalid
-    probes
-    """
-        
-    config_file = get_test_config("gratia/invalid_probe2.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
+        config_file = get_test_config("gratia/disabled.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.read(config_file)
 
-    settings = gratia.GratiaConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
-    attributes = settings.getAttributes()
-    self.assertFalse(settings.checkAttributes(attributes), 
-                     "Did not notice invalid probe specification")
+        settings = gratia.GratiaConfiguration(logger=global_logger)
+        try:
+            settings.parseConfiguration(configuration)
+        except Exception, e:
+            self.fail("Received exception while parsing configuration: %s" % e)
 
-  def testValidSettings(self):
-    """
-    Test the checkAttributes function to see if it oks good attributes
-    """
-        
-    config_file = get_test_config("gratia/check_ok.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
+        self.assertEqual(len(settings.options['probes'].value),
+                         0,
+                         "Disabled configuration should have no attributes")
 
-    settings = gratia.GratiaConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
-    attributes = settings.getAttributes()
-    # new checks require an installed and working copy of HTCondor
-    # disable for now
-    #self.assertTrue(settings.checkAttributes(attributes),
-    #                "Correct settings incorrectly flagged as invalid")
-    
-  def testValidSettings2(self):
-    """
-    Test the checkAttributes function to see if it oks a disabled section
-    """
-        
-    config_file = get_test_config("gratia/disabled.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
+    def testParsingIgnored(self):
+        """
+        Test gratia parsing when section is ignored
+        """
 
-    settings = gratia.GratiaConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
-    attributes = settings.getAttributes()
-    self.assertTrue(settings.checkAttributes(attributes), 
-                    "Disabled section incorrectly flagged as invalid")
-    
-  def testValidITBDefaults(self):
-    """
-    Test the ITB defaults and make sure that they are valid
-    """
-    config_file = get_test_config("gratia/itb_default.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
+        config_file = get_test_config("gratia/ignored.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.read(config_file)
 
-    settings = gratia.GratiaConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except OSError:
-        # Need to rewrite or remove this test due to new checks with condor
-        pass
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
-    attributes = settings.getAttributes()
-    # new checks require an installed and working copy of HTCondor
-    # disable for now
-    #self.assertTrue(settings.checkAttributes(attributes),
-    #                "ITB defaults flagged as invalid")
+        settings = gratia.GratiaConfiguration(logger=global_logger)
+        try:
+            settings.parseConfiguration(configuration)
+        except Exception, e:
+            self.fail("Received exception while parsing configuration: %s" % e)
 
-  def testValidProductionDefaults(self):
-    """
-    Test the production defaults and make sure that they are valid
-    """
-    config_file = get_test_config("gratia/prod_default.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
+        self.assertEqual(len(settings.options['probes'].value),
+                         0,
+                         "Disabled configuration should have no attributes")
 
-    settings = gratia.GratiaConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
-    attributes = settings.getAttributes()
-    # new checks require an installed and working copy of HTCondor
-    # disable for now
-    #self.assertTrue(settings.checkAttributes(attributes),
-    #                "Production defaults flagged as invalid")
-    
-  def testMissingITBDefaults(self):
-    """
-    Test the ITB defaults and make sure that they are valid when the
-    gratia section is missing
-    """
-    config_file = get_test_config("gratia/itb_default2.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
+    def testInvalidProbes1(self):
+        """
+        Test the checkAttributes function to see if it catches invalid
+        probes
+        """
 
-    settings = gratia.GratiaConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
-    attributes = settings.getAttributes()
-    self.assertTrue(settings.checkAttributes(attributes), 
-                    "ITB defaults flagged as invalid")
+        config_file = get_test_config("gratia/invalid_probe1.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.read(config_file)
 
-  def testMissingProductionDefaults(self):
-    """
-    Test the production defaults and make sure that they are valid when the 
-    gratia section is missing
-    """
-    config_file = get_test_config("gratia/prod_default2.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
+        settings = gratia.GratiaConfiguration(logger=global_logger)
+        try:
+            settings.parseConfiguration(configuration)
+        except Exception, e:
+            self.fail("Received exception while parsing configuration: %s" % e)
 
-    settings = gratia.GratiaConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
- 
-    attributes = settings.getAttributes()
-    self.assertTrue(settings.checkAttributes(attributes), 
-                    "Production defaults flagged as invalid")
+        attributes = settings.getAttributes()
+        self.assertFalse(settings.checkAttributes(attributes),
+                         "Did not notice invalid probe specification")
 
-  def testServiceList(self):
-    """
-    Test to make sure right services get returned
-    """
-    
-    config_file = get_test_config("gratia/check_ok.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
+    def testInvalidProbes2(self):
+        """
+        Test the checkAttributes function to see if it catches invalid
+        probes
+        """
 
-    settings = gratia.GratiaConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
-    services = settings.enabledServices()
-    expected_services = set(['gratia-probes-cron'])
-    self.assertEqual(services, expected_services,
-                     "List of enabled services incorrect, " +
-                     "got %s but expected %s" % (services, expected_services))
-    
-    
-    config_file = get_test_config("gratia/disabled.ini")
-    configuration = ConfigParser.SafeConfigParser()
-    configuration.read(config_file)
+        config_file = get_test_config("gratia/invalid_probe2.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.read(config_file)
 
-    settings = gratia.GratiaConfiguration(logger=global_logger)
-    try:
-      settings.parseConfiguration(configuration)
-    except Exception, e:
-      self.fail("Received exception while parsing configuration: %s" % e)
-    services = settings.enabledServices()
-    expected_services = set()
-    self.assertEqual(services, expected_services,
-                     "List of enabled services incorrect, " +
-                     "got %s but expected %s" % (services, expected_services))
-          
-          
+        settings = gratia.GratiaConfiguration(logger=global_logger)
+        try:
+            settings.parseConfiguration(configuration)
+        except Exception, e:
+            self.fail("Received exception while parsing configuration: %s" % e)
+
+        attributes = settings.getAttributes()
+        self.assertFalse(settings.checkAttributes(attributes),
+                         "Did not notice invalid probe specification")
+
+    def testValidSettings(self):
+        """
+        Test the checkAttributes function to see if it oks good attributes
+        """
+
+        config_file = get_test_config("gratia/check_ok.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.read(config_file)
+
+        settings = gratia.GratiaConfiguration(logger=global_logger)
+        try:
+            settings.parseConfiguration(configuration)
+        except Exception, e:
+            self.fail("Received exception while parsing configuration: %s" % e)
+
+        attributes = settings.getAttributes()
+        # new checks require an installed and working copy of HTCondor
+        # disable for now
+        # self.assertTrue(settings.checkAttributes(attributes),
+        #                "Correct settings incorrectly flagged as invalid")
+
+    def testValidSettings2(self):
+        """
+        Test the checkAttributes function to see if it oks a disabled section
+        """
+
+        config_file = get_test_config("gratia/disabled.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.read(config_file)
+
+        settings = gratia.GratiaConfiguration(logger=global_logger)
+        try:
+            settings.parseConfiguration(configuration)
+        except Exception, e:
+            self.fail("Received exception while parsing configuration: %s" % e)
+
+        attributes = settings.getAttributes()
+        self.assertTrue(settings.checkAttributes(attributes),
+                        "Disabled section incorrectly flagged as invalid")
+
+    def testValidITBDefaults(self):
+        """
+        Test the ITB defaults and make sure that they are valid
+        """
+        config_file = get_test_config("gratia/itb_default.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.read(config_file)
+
+        settings = gratia.GratiaConfiguration(logger=global_logger)
+        try:
+            settings.parseConfiguration(configuration)
+        except OSError:
+            # Need to rewrite or remove this test due to new checks with condor
+            pass
+        except Exception, e:
+            self.fail("Received exception while parsing configuration: %s" % e)
+
+        attributes = settings.getAttributes()
+        # new checks require an installed and working copy of HTCondor
+        # disable for now
+        # self.assertTrue(settings.checkAttributes(attributes),
+        #                "ITB defaults flagged as invalid")
+
+    def testValidProductionDefaults(self):
+        """
+        Test the production defaults and make sure that they are valid
+        """
+        config_file = get_test_config("gratia/prod_default.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.read(config_file)
+
+        settings = gratia.GratiaConfiguration(logger=global_logger)
+        try:
+            settings.parseConfiguration(configuration)
+        except Exception, e:
+            self.fail("Received exception while parsing configuration: %s" % e)
+
+        attributes = settings.getAttributes()
+        # new checks require an installed and working copy of HTCondor
+        # disable for now
+        # self.assertTrue(settings.checkAttributes(attributes),
+        #                "Production defaults flagged as invalid")
+
+    def testMissingITBDefaults(self):
+        """
+        Test the ITB defaults and make sure that they are valid when the
+        gratia section is missing
+        """
+        config_file = get_test_config("gratia/itb_default2.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.read(config_file)
+
+        settings = gratia.GratiaConfiguration(logger=global_logger)
+        try:
+            settings.parseConfiguration(configuration)
+        except Exception, e:
+            self.fail("Received exception while parsing configuration: %s" % e)
+
+        attributes = settings.getAttributes()
+        self.assertTrue(settings.checkAttributes(attributes),
+                        "ITB defaults flagged as invalid")
+
+    def testMissingProductionDefaults(self):
+        """
+        Test the production defaults and make sure that they are valid when the
+        gratia section is missing
+        """
+        config_file = get_test_config("gratia/prod_default2.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.read(config_file)
+
+        settings = gratia.GratiaConfiguration(logger=global_logger)
+        try:
+            settings.parseConfiguration(configuration)
+        except Exception, e:
+            self.fail("Received exception while parsing configuration: %s" % e)
+
+        attributes = settings.getAttributes()
+        self.assertTrue(settings.checkAttributes(attributes),
+                        "Production defaults flagged as invalid")
+
+    def testServiceList(self):
+        """
+        Test to make sure right services get returned
+        """
+
+        config_file = get_test_config("gratia/check_ok.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.read(config_file)
+
+        settings = gratia.GratiaConfiguration(logger=global_logger)
+        try:
+            settings.parseConfiguration(configuration)
+        except Exception, e:
+            self.fail("Received exception while parsing configuration: %s" % e)
+        services = settings.enabledServices()
+        expected_services = set(['gratia-probes-cron'])
+        self.assertEqual(services, expected_services,
+                         "List of enabled services incorrect, " +
+                         "got %s but expected %s" % (services, expected_services))
+
+        config_file = get_test_config("gratia/disabled.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.read(config_file)
+
+        settings = gratia.GratiaConfiguration(logger=global_logger)
+        try:
+            settings.parseConfiguration(configuration)
+        except Exception, e:
+            self.fail("Received exception while parsing configuration: %s" % e)
+        services = settings.enabledServices()
+        expected_services = set()
+        self.assertEqual(services, expected_services,
+                         "List of enabled services incorrect, " +
+                         "got %s but expected %s" % (services, expected_services))
+
+
 if __name__ == '__main__':
-  console = logging.StreamHandler()
-  console.setLevel(logging.ERROR)
-  global_logger.addHandler(console)
-  unittest.main()
+    console = logging.StreamHandler()
+    console.setLevel(logging.ERROR)
+    global_logger.addHandler(console)
+    unittest.main()
