@@ -215,8 +215,7 @@ class TestStorage(unittest.TestCase):
     # StorageConfiguration is not enabled on non-ce installs
     if not utilities.ce_installed():
       return
-    mandatory = ['se_available',
-                 'app_dir']
+    mandatory = ['se_available']
     for option in mandatory:
       config_file = get_test_config("storage/storage1.ini")
       configuration = ConfigParser.SafeConfigParser()
