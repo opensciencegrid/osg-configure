@@ -19,7 +19,6 @@ class CondorConfiguration(JobManagerConfiguration):
   
   CONDOR_CONFIG_FILE = '/etc/grid-services/available/jobmanager-condor'
   GRAM_CONFIG_FILE = '/etc/globus/globus-condor.conf'
-  HTCONDOR_CE_CONFIG_FILE = '/etc/condor-ce/config.d/50-osg-configure.conf'
   DEFAULT_LOCAL_CONFIG_DIR = '/etc/condor/config.d'
 
   def __init__(self, *args, **kwargs):
@@ -199,14 +198,15 @@ class CondorConfiguration(JobManagerConfiguration):
 
     if self.htcondor_gateway_enabled:
       if not self.setupHTCondorCEConfig():
-        self.log('Error writing to ' + CondorConfiguration.HTCONDOR_CE_CONFIG_FILE,
+        self.log('Error writing to ' + JobManagerConfiguration.HTCONDOR_CE_CONFIG_FILE,
                  level=logging.ERROR)
         return False
       self.write_binpaths_to_blah_config('condor', self.condor_bin_location)
-      if not self.reconfigService('condor-ce', 'condor_ce_reconfig'):
+      self.write_htcondor_ce_sentinel()
+      if not self.reconfig_service('condor-ce', 'condor_ce_reconfig'):
         self.log('Error reloading condor-ce config', level=logging.WARNING)
 
-    if not self.reconfigService('condor', 'condor_reconfig'):
+    if not self.reconfig_service('condor', 'condor_reconfig'):
       self.log('Error reloading condor config', level=logging.WARNING)
 
     self.warnOnNonDefaultLocalConfigDir()
@@ -291,12 +291,12 @@ class CondorConfiguration(JobManagerConfiguration):
         condor_ce_config[condor_ce_config_key] = condor_config_value
 
     if condor_ce_config:
-      buf = utilities.read_file(CondorConfiguration.HTCONDOR_CE_CONFIG_FILE,
+      buf = utilities.read_file(JobManagerConfiguration.HTCONDOR_CE_CONFIG_FILE,
                                 default="# This file is managed by osg-configure\n")
       for key, value in condor_ce_config.items():
         buf = utilities.add_or_replace_setting(buf, key, value, quote_value=False)
 
-      if not utilities.atomic_write(CondorConfiguration.HTCONDOR_CE_CONFIG_FILE, buf):
+      if not utilities.atomic_write(JobManagerConfiguration.HTCONDOR_CE_CONFIG_FILE, buf):
         return False
 
     return True
@@ -320,19 +320,6 @@ class CondorConfiguration(JobManagerConfiguration):
         return '[%s]:%s' % (hoststr_no_brackets, port)
       else:
         return hoststr
-
-  def reconfigService(self, service, reconfig_cmd):
-    """If condor is running, run condor_reconfig to make it reload its configuration"""
-    if os.system('/sbin/service %s status >/dev/null 2>&1' % service) != 0:
-      self.log("%s is not running -- skipping reconfigure" % service, level=logging.INFO)
-      return True
-
-    self.log("Reconfiguring %s using %s" % (service, reconfig_cmd), level=logging.INFO)
-    if os.system(reconfig_cmd + ' >/dev/null') == 0:
-      self.log("Reconfigure successful", level=logging.INFO)
-      return True
-
-    return False
 
   def warnOnNonDefaultLocalConfigDir(self):
     """Warn the user if the default condor local config dir

@@ -225,6 +225,9 @@ class LSFConfiguration(JobManagerConfiguration):
     if self.htcondor_gateway_enabled:
       self.write_binpaths_to_blah_config('lsf', self.lsf_bin_location)
       self.write_blah_disable_wn_proxy_renewal_to_blah_config()
+      self.write_htcondor_ce_sentinel()
+      if not self.reconfig_service('condor-ce', 'condor_ce_reconfig'):
+        self.log('Error reloading condor-ce config', level=logging.WARNING)
       if self.options['lsf_conf'].value:
         self.write_lsf_confpath_to_blah_config()
 

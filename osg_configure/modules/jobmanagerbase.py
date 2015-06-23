@@ -15,6 +15,7 @@ __all__ = ['JobManagerConfiguration']
 
 class JobManagerConfiguration(BaseConfiguration):
   """Base class for inheritance by jobmanager configuration classes"""
+  HTCONDOR_CE_CONFIG_FILE = '/etc/condor-ce/config.d/50-osg-configure.conf'
   MISSING_JOBMANAGER_CONF_MSG = ("Unable to load the jobmanager configuration at %s: %s.\n"
                                  "Ensure the Globus jobmanagers for all enabled batch systems are installed.")
 
@@ -269,3 +270,22 @@ class JobManagerConfiguration(BaseConfiguration):
       contents = utilities.add_or_replace_setting(contents, "blah_disable_wn_proxy_renewal", "yes", quote_value=False)
       utilities.atomic_write(self.BLAH_CONFIG, contents)
 
+  def write_htcondor_ce_sentinel(self):
+    if self.htcondor_gateway_enabled:
+      contents = utilities.read_file(self.HTCONDOR_CE_CONFIG_FILE,
+                                     default="# This file is managed by osg-configure\n")
+      contents = utilities.add_or_replace_setting(contents, "OSG_CONFIGURED", "true", quote_value=False)
+      utilities.atomic_write(self.HTCONDOR_CE_CONFIG_FILE, contents)
+
+  def reconfig_service(self, service, reconfig_cmd):
+    """If condor is running, run condor_reconfig to make it reload its configuration"""
+    if os.system('/sbin/service %s status >/dev/null 2>&1' % service) != 0:
+      self.log("%s is not running -- skipping reconfigure" % service, level=logging.INFO)
+      return True
+
+    self.log("Reconfiguring %s using %s" % (service, reconfig_cmd), level=logging.INFO)
+    if os.system(reconfig_cmd + ' >/dev/null') == 0:
+      self.log("Reconfigure successful", level=logging.INFO)
+      return True
+
+    return False

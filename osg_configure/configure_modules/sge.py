@@ -265,6 +265,9 @@ class SGEConfiguration(JobManagerConfiguration):
     if self.htcondor_gateway_enabled:
       self.write_binpaths_to_blah_config('sge', self.options['sge_bin_location'].value)
       self.write_blah_disable_wn_proxy_renewal_to_blah_config()
+      self.write_htcondor_ce_sentinel()
+      if not self.reconfig_service('condor-ce', 'condor_ce_reconfig'):
+        self.log('Error reloading condor-ce config', level=logging.WARNING)
 
     self.log('SGEConfiguration.configure started')    
     return True
