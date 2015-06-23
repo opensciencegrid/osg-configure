@@ -44,10 +44,10 @@ class TestNetwork(unittest.TestCase):
 
         settings = network.NetworkConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
-        self.assertTrue(settings.checkAttributes({}),
+        self.assertTrue(settings.check_attributes({}),
                         "Flagged blank file as invalid")
 
         config_file = get_test_config("network/check_ok1.ini")
@@ -56,7 +56,7 @@ class TestNetwork(unittest.TestCase):
 
         settings = network.NetworkConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
@@ -72,7 +72,7 @@ class TestNetwork(unittest.TestCase):
                              variables[var],
                              "Wrong value obtained for %s, got %s but " \
                              "expected %s" % (var, options[var].value, variables[var]))
-        self.assertTrue(settings.checkAttributes({}),
+        self.assertTrue(settings.check_attributes({}),
                         "Flagged blank file as invalid")
 
         config_file = get_test_config("network/check_ok2.ini")
@@ -81,7 +81,7 @@ class TestNetwork(unittest.TestCase):
 
         settings = network.NetworkConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
@@ -97,7 +97,7 @@ class TestNetwork(unittest.TestCase):
                              variables[var],
                              "Wrong value obtained for %s, got %s but " \
                              "expected %s" % (var, options[var].value, variables[var]))
-        self.assertTrue(settings.checkAttributes({}),
+        self.assertTrue(settings.check_attributes({}),
                         "Flagged blank file as invalid")
 
         config_file = get_test_config("network/check_ok3.ini")
@@ -106,7 +106,7 @@ class TestNetwork(unittest.TestCase):
 
         settings = network.NetworkConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
@@ -122,7 +122,7 @@ class TestNetwork(unittest.TestCase):
                              variables[var],
                              "Wrong value obtained for %s, got %s but " \
                              "expected %s" % (var, options[var].value, variables[var]))
-        self.assertTrue(settings.checkAttributes({}),
+        self.assertTrue(settings.check_attributes({}),
                         "Flagged blank file as invalid")
 
     def testMissingRange(self):
@@ -136,11 +136,11 @@ class TestNetwork(unittest.TestCase):
 
         settings = network.NetworkConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        self.assertFalse(settings.checkAttributes({}),
+        self.assertFalse(settings.check_attributes({}),
                          "In %s, missing source range " % config_file +
                          "should have been flagged")
 
@@ -150,11 +150,11 @@ class TestNetwork(unittest.TestCase):
 
         settings = network.NetworkConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        self.assertFalse(settings.checkAttributes({}),
+        self.assertFalse(settings.check_attributes({}),
                          "In %s, missing source port range " % config_file +
                          "should have been flagged")
 
@@ -169,11 +169,11 @@ class TestNetwork(unittest.TestCase):
 
         settings = network.NetworkConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        self.assertFalse(settings.checkAttributes({}),
+        self.assertFalse(settings.check_attributes({}),
                          "In %s, invalid source range " % config_file +
                          "should have been flagged")
 
@@ -183,11 +183,11 @@ class TestNetwork(unittest.TestCase):
 
         settings = network.NetworkConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        self.assertFalse(settings.checkAttributes({}),
+        self.assertFalse(settings.check_attributes({}),
                          "In %s, invalid source range " % config_file +
                          "should have been flagged")
 
@@ -197,11 +197,11 @@ class TestNetwork(unittest.TestCase):
 
         settings = network.NetworkConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        self.assertFalse(settings.checkAttributes({}),
+        self.assertFalse(settings.check_attributes({}),
                          "In %s, invalid source range " % config_file +
                          "should have been flagged")
 
@@ -216,11 +216,11 @@ class TestNetwork(unittest.TestCase):
 
         settings = network.NetworkConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        self.assertFalse(settings.checkAttributes({}),
+        self.assertFalse(settings.check_attributes({}),
                          "In %s, invalid port range " % config_file +
                          "should have been flagged")
 
@@ -230,11 +230,11 @@ class TestNetwork(unittest.TestCase):
 
         settings = network.NetworkConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        self.assertFalse(settings.checkAttributes({}),
+        self.assertFalse(settings.check_attributes({}),
                          "In %s, invalid port range " % config_file +
                          "should have been flagged")
 
@@ -244,11 +244,11 @@ class TestNetwork(unittest.TestCase):
 
         settings = network.NetworkConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        self.assertFalse(settings.checkAttributes({}),
+        self.assertFalse(settings.check_attributes({}),
                          "In %s, invalid port range " % config_file +
                          "should have been flagged")
 

@@ -32,23 +32,23 @@ class InstallLocations(BaseConfiguration):
                                               required=configfile.Option.OPTIONAL,
                                               mapping='OSG_GRIDFTP_LOG')}
         self.config_section = 'Install Locations'
-        self.__self_configured = False
+        self._self_configured = False
         self.log('InstallLocations.configure completed')
 
-    def parseConfiguration(self, configuration):
+    def parse_configuration(self, configuration):
         """Try to get configuration information from ConfigParser or SafeConfigParser object given
         by configuration and write recognized settings to attributes dict
         """
-        self.log('InstallLocations.parseConfiguration started')
+        self.log('InstallLocations.parse_configuration started')
 
-        self.checkConfig(configuration)
+        self.check_config(configuration)
 
         if not configuration.has_section(self.config_section):
             self.log('Install Locations section not found in config file')
             self.log('Automatically configuring')
-            self.__auto_configure()
-            self.log('InstallLocations.parseConfiguration completed')
-            self.__self_configured = True
+            self._auto_configure()
+            self.log('InstallLocations.parse_configuration completed')
+            self._self_configured = True
             self.enabled = True
             return
         else:
@@ -59,16 +59,16 @@ class InstallLocations(BaseConfiguration):
                      level=logging.WARNING)
 
         self.enabled = True
-        self.getOptions(configuration)
-        self.log('InstallLocations.parseConfiguration completed')
+        self.get_options(configuration)
+        self.log('InstallLocations.parse_configuration completed')
 
     # pylint: disable-msg=W0613
-    def checkAttributes(self, attributes):
+    def check_attributes(self, attributes):
         """Check attributes currently stored and make sure that they are consistent"""
-        self.log('InstallLocations.checkAttributes started')
+        self.log('InstallLocations.check_attributes started')
         attributes_ok = True
 
-        if self.__self_configured:
+        if self._self_configured:
             return True
 
         # make sure locations exist
@@ -84,7 +84,7 @@ class InstallLocations(BaseConfiguration):
                          section=self.config_section,
                          level=logging.ERROR)
 
-        self.log('InstallLocations.checkAttributes completed')
+        self.log('InstallLocations.check_attributes completed')
         return attributes_ok
 
     def configure(self, attributes):
@@ -98,20 +98,20 @@ class InstallLocations(BaseConfiguration):
         self.log("InstallLocations.configure completed")
         return status
 
-    def moduleName(self):
+    def module_name(self):
         """Return a string with the name of the module"""
         return "InstallLocations"
 
-    def separatelyConfigurable(self):
+    def separately_configurable(self):
         """Return a boolean that indicates whether this module can be configured separately"""
         return True
 
-    def __auto_configure(self):
+    def _auto_configure(self):
         """
         Configure settings for Install Locations based on defaults
         """
-        self.log("InstallLocations.__auto_configure started")
+        self.log("InstallLocations._auto_configure started")
         for option in self.options.values():
             self.log("Setting value for %s" % option.name)
             option.value = option.default_value
-        self.log("InstallLocations.__auto_configure completed")
+        self.log("InstallLocations._auto_configure completed")

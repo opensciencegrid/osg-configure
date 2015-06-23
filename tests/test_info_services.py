@@ -49,7 +49,7 @@ class TestInfoServices(unittest.TestCase):
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
@@ -81,7 +81,7 @@ class TestInfoServices(unittest.TestCase):
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
@@ -115,7 +115,7 @@ class TestInfoServices(unittest.TestCase):
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
@@ -150,7 +150,7 @@ class TestInfoServices(unittest.TestCase):
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
@@ -185,7 +185,7 @@ class TestInfoServices(unittest.TestCase):
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
@@ -216,7 +216,7 @@ class TestInfoServices(unittest.TestCase):
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
@@ -236,7 +236,7 @@ class TestInfoServices(unittest.TestCase):
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
@@ -256,7 +256,7 @@ class TestInfoServices(unittest.TestCase):
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
@@ -269,7 +269,7 @@ class TestInfoServices(unittest.TestCase):
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
@@ -278,7 +278,7 @@ class TestInfoServices(unittest.TestCase):
 
     def testInvalidRess1(self):
         """
-        Test the checkAttributes function to see if it catches invalid
+        Test the check_attributes function to see if it catches invalid
         ress servers
         """
 
@@ -288,12 +288,12 @@ class TestInfoServices(unittest.TestCase):
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
         self.assertRaises(exceptions.SettingError,
-                          settings.parseConfiguration,
+                          settings.parse_configuration,
                           configuration=configuration)
 
     def testInvalidRess2(self):
         """
-        Test the checkAttributes function to see if it catches invalid
+        Test the check_attributes function to see if it catches invalid
         ress servers
         """
 
@@ -303,17 +303,17 @@ class TestInfoServices(unittest.TestCase):
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Did not notice invalid ress server")
 
     def testInvalidRess3(self):
         """
-        Test the checkAttributes function to see if it catches invalid
+        Test the check_attributes function to see if it catches invalid
         ress servers
         """
 
@@ -323,17 +323,17 @@ class TestInfoServices(unittest.TestCase):
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Did not notice invalid ress server")
 
     def testInvalidBDII1(self):
         """
-        Test the checkAttributes function to see if it catches invalid
+        Test the check_attributes function to see if it catches invalid
         bdii servers
         """
 
@@ -343,12 +343,12 @@ class TestInfoServices(unittest.TestCase):
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
         self.assertRaises(exceptions.SettingError,
-                          settings.parseConfiguration,
+                          settings.parse_configuration,
                           configuration=configuration)
 
     def testInvalidBDII2(self):
         """
-        Test the checkAttributes function to see if it catches invalid
+        Test the check_attributes function to see if it catches invalid
         bdii servers
         """
 
@@ -358,17 +358,17 @@ class TestInfoServices(unittest.TestCase):
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Did not notice invalid bdii server")
 
     def testInvalidBDII3(self):
         """
-        Test the checkAttributes function to see if it catches invalid
+        Test the check_attributes function to see if it catches invalid
         bdii servers
         """
 
@@ -378,17 +378,17 @@ class TestInfoServices(unittest.TestCase):
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Did not notice invalid bdii server")
 
     def testValidSettings(self):
         """
-        Test the checkAttributes function to see if it oks good attributes
+        Test the check_attributes function to see if it oks good attributes
         """
 
         config_file = get_test_config("infoservices/check_ok.ini")
@@ -397,17 +397,17 @@ class TestInfoServices(unittest.TestCase):
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertTrue(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertTrue(settings.check_attributes(attributes),
                         "Correct settings incorrectly flagged as invalid")
 
     def testValidSettings2(self):
         """
-        Test the checkAttributes function to see if it oks a disabled section
+        Test the check_attributes function to see if it oks a disabled section
         """
 
         config_file = get_test_config("infoservices/disabled.ini")
@@ -416,17 +416,17 @@ class TestInfoServices(unittest.TestCase):
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertTrue(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertTrue(settings.check_attributes(attributes),
                         "Disabled section incorrectly flagged as invalid")
 
     def testValidITBDefaults(self):
         """
-        Test the checkAttributes function to see if it oks the itb defaults
+        Test the check_attributes function to see if it oks the itb defaults
         """
 
         # need to be on a CE to get CE defaults
@@ -439,17 +439,17 @@ class TestInfoServices(unittest.TestCase):
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertTrue(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertTrue(settings.check_attributes(attributes),
                         "ITB defaults incorrectly flagged as invalid")
 
     def testValidProductionDefaults(self):
         """
-        Test the checkAttributes function to see if it oks the production defaults
+        Test the check_attributes function to see if it oks the production defaults
         """
 
         # need to be on a CE to get CE defaults
@@ -461,17 +461,17 @@ class TestInfoServices(unittest.TestCase):
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertTrue(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertTrue(settings.check_attributes(attributes),
                         "production defaults incorrectly flagged as invalid")
 
     def testMissingCEITBDefaults(self):
         """
-        Test the checkAttributes function to see if it oks the itb defaults
+        Test the check_attributes function to see if it oks the itb defaults
         set when the infoservices section is missing
         """
 
@@ -481,17 +481,17 @@ class TestInfoServices(unittest.TestCase):
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertTrue(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertTrue(settings.check_attributes(attributes),
                         "ITB defaults incorrectly flagged as invalid")
 
     def testMissingProductionDefaults(self):
         """
-        Test the checkAttributes function to see if it oks the production defaults
+        Test the check_attributes function to see if it oks the production defaults
         set when the infoservices section is missing
         """
 
@@ -501,17 +501,17 @@ class TestInfoServices(unittest.TestCase):
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertTrue(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertTrue(settings.check_attributes(attributes),
                         "production defaults incorrectly flagged as invalid")
 
     def testMultipleRessServers(self):
         """
-        Test the checkAttributes function to see if it oks the production defaults
+        Test the check_attributes function to see if it oks the production defaults
         set when the infoservices section is missing
         """
 
@@ -521,7 +521,7 @@ class TestInfoServices(unittest.TestCase):
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
@@ -530,7 +530,7 @@ class TestInfoServices(unittest.TestCase):
 
     def testMultipleBDIIServers(self):
         """
-        Test the checkAttributes function to see if it oks the production defaults
+        Test the check_attributes function to see if it oks the production defaults
         set when the infoservices section is missing
         """
 
@@ -540,7 +540,7 @@ class TestInfoServices(unittest.TestCase):
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
@@ -558,10 +558,10 @@ class TestInfoServices(unittest.TestCase):
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
-        services = settings.enabledServices()
+        services = settings.enabled_services()
         expected_services = set()
         if settings.ois_required_rpms_installed:
             expected_services.add('osg-info-services')
@@ -577,7 +577,7 @@ class TestInfoServices(unittest.TestCase):
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 

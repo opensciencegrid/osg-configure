@@ -220,7 +220,7 @@ class Option(object):
         else:
             self.__dict__[name] = value
 
-    def isMappable(self):
+    def is_mappable(self):
         """
         Returns True if there is a mapping from option name to attribute
         in osg attributes file

@@ -59,20 +59,20 @@ class StorageConfiguration(BaseConfiguration):
         self.config_section = "Storage"
         self.log('StorageConfiguration.__init__ completed')
 
-    def parseConfiguration(self, configuration):
+    def parse_configuration(self, configuration):
         """
         Try to get configuration information from ConfigParser or SafeConfigParser
         object given by configuration and write recognized settings to attributes
         dict
         """
-        self.log('StorageConfiguration.parseConfiguration started')
+        self.log('StorageConfiguration.parse_configuration started')
 
-        self.checkConfig(configuration)
+        self.check_config(configuration)
 
         if not configuration.has_section(self.config_section):
             self.enabled = False
             self.log("%s section not in config file" % self.config_section)
-            self.log('StorageConfiguration.parseConfiguration completed')
+            self.log('StorageConfiguration.parse_configuration completed')
             return
         # This module is called Storage, but it's actually needed for a CE:
         # The main script's write_attributes() will fail if certain options,
@@ -80,27 +80,27 @@ class StorageConfiguration(BaseConfiguration):
         if not utilities.gateway_installed():
             self.enabled = False
             self.log("No job gateway installed, skipping CE specific module")
-            self.log('StorageConfiguration.parseConfiguration completed')
+            self.log('StorageConfiguration.parse_configuration completed')
             return
         else:
             self.enabled = True
 
-        self.getOptions(configuration)
-        self.log('StorageConfiguration.parseConfiguration completed')
+        self.get_options(configuration)
+        self.log('StorageConfiguration.parse_configuration completed')
 
     # pylint: disable-msg=W0613
-    def checkAttributes(self, attributes):
+    def check_attributes(self, attributes):
         """Check attributes currently stored and make sure that they are consistent"""
-        self.log('StorageConfiguration.checkAttributes started')
+        self.log('StorageConfiguration.check_attributes started')
         attributes_ok = True
 
         if not self.enabled:
             self.log('Not enabled, returning True')
-            self.log('StorageConfiguration.checkAttributes completed')
+            self.log('StorageConfiguration.check_attributes completed')
             return attributes_ok
 
         # make sure locations exist
-        if not self.__check_app_dir(self.options['app_dir'].value):
+        if not self._check_app_dir(self.options['app_dir'].value):
             self.log("The app_dir and app_dir/etc directories should exist and " +
                      "have permissions of 1777 or 777 on OSG installations.",
                      section=self.config_section,
@@ -117,7 +117,7 @@ class StorageConfiguration(BaseConfiguration):
                      section=self.config_section,
                      option='worker_node_temp',
                      level=logging.WARNING)
-        self.log('StorageConfiguration.checkAttributes completed')
+        self.log('StorageConfiguration.check_attributes completed')
         return attributes_ok
 
     def configure(self, attributes):
@@ -135,7 +135,7 @@ class StorageConfiguration(BaseConfiguration):
             self.log('StorageConfiguration.configure completed')
             return True
 
-        if self.__app_dir_in_oasis(self.options['app_dir'].value):
+        if self._app_dir_in_oasis(self.options['app_dir'].value):
             self.log('OSG_APP is in OASIS, exiting')
             self.log('StorageConfiguration.configure completed')
             return True
@@ -172,18 +172,18 @@ class StorageConfiguration(BaseConfiguration):
         self.log("StorageConfiguration.configure completed")
         return status
 
-    def moduleName(self):
+    def module_name(self):
         """Return a string with the name of the module"""
         return "Storage"
 
-    def separatelyConfigurable(self):
+    def separately_configurable(self):
         """Return a boolean that indicates whether this module can be configured separately"""
         return True
 
-    def __app_dir_in_oasis(self, app_dir):
+    def _app_dir_in_oasis(self, app_dir):
         return app_dir.startswith('/cvmfs/oasis.opensciencegrid.org')
 
-    def __check_app_dir(self, app_dir):
+    def _check_app_dir(self, app_dir):
         """"
         Checks to make sure that the OSG_APP directory exists and the VO directories have
         the proper permissions.  Returns True if everything is okay, False otherwise.
@@ -195,7 +195,7 @@ class StorageConfiguration(BaseConfiguration):
         If APP_DIR is explicitly UNSET, skip tests
         """
         try:
-            if self.__app_dir_in_oasis(app_dir):
+            if self._app_dir_in_oasis(app_dir):
                 self.log('OSG_APP is an OASIS repository, skipping tests',
                          level=logging.INFO)
                 return True

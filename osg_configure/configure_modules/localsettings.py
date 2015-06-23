@@ -16,13 +16,13 @@ class LocalSettings(BaseConfiguration):
         self.attributes = {}
         self.log('LocalSettings.__init__ completed')
 
-    def parseConfiguration(self, configuration):
+    def parse_configuration(self, configuration):
         """Try to get configuration information from ConfigParser or SafeConfigParser object given
         by configuration and write recognized settings to attributes dict
         """
-        self.log('LocalSettings.parseConfiguration started')
+        self.log('LocalSettings.parse_configuration started')
 
-        self.checkConfig(configuration)
+        self.check_config(configuration)
 
         # Parser preserves case so need to create a mapping between normalized sections
         # and actual names to find if this section is present
@@ -46,17 +46,17 @@ class LocalSettings(BaseConfiguration):
                 self.log("%s is a default, skipping" % (name))
                 continue
             self.attributes[name] = value
-        self.log('LocalSettings.parseConfiguration completed')
+        self.log('LocalSettings.parse_configuration completed')
 
-    def moduleName(self):
+    def module_name(self):
         """Return a string with the name of the module"""
         return "LocalSettings"
 
-    def separatelyConfigurable(self):
+    def separately_configurable(self):
         """Return a boolean that indicates whether this module can be configured separately"""
         return True
 
-    def getAttributes(self, converter=str):
+    def get_attributes(self, converter=str):
         """
         Need to override because this class doesn't use the self.options to store
         a dictionary with ConfigOption objects

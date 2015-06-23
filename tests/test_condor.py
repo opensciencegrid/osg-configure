@@ -45,11 +45,11 @@ class TestCondor(unittest.TestCase):
 
         settings = condor.CondorConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         options = {'OSG_JOB_MANAGER_HOME': '/opt/condor',
                    'OSG_CONDOR_LOCATION': '/opt/condor',
                    'OSG_CONDOR_CONFIG': '/etc/condor/condor_config',
@@ -75,11 +75,11 @@ class TestCondor(unittest.TestCase):
 
         settings = condor.CondorConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         self.assertEqual(len(attributes), 0,
                          "Disabled configuration should have no attributes")
 
@@ -94,11 +94,11 @@ class TestCondor(unittest.TestCase):
 
         settings = condor.CondorConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         self.assertTrue(len(attributes) == 0,
                         "Disabled configuration should have no attributes")
 
@@ -117,11 +117,11 @@ class TestCondor(unittest.TestCase):
         os.environ['CONDOR_CONFIG'] = '/my/condor/etc/condor_config'
         settings = condor.CondorConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         self.assertTrue(attributes.has_key('OSG_CONDOR_LOCATION'),
                         'Attribute OSG_CONDOR_LOCATION missing')
         self.assertEqual(attributes['OSG_CONDOR_LOCATION'], '/my/condor',
@@ -137,11 +137,11 @@ class TestCondor(unittest.TestCase):
         del os.environ['CONDOR_CONFIG']
         settings = condor.CondorConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         self.assertTrue(attributes.has_key('OSG_CONDOR_LOCATION'),
                         'Attribute OSG_CONDOR_LOCATION missing')
         self.assertEqual(attributes['OSG_CONDOR_LOCATION'], '/my/condor',
@@ -162,11 +162,11 @@ class TestCondor(unittest.TestCase):
         os.environ['CONDOR_LOCATION'] = '/my/condor1'
         settings = condor.CondorConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         self.assertTrue(attributes.has_key('OSG_CONDOR_LOCATION'),
                         'Attribute OSG_CONDOR_LOCATION missing')
         self.assertEqual(attributes['OSG_CONDOR_LOCATION'], '/opt/condor',
@@ -185,11 +185,11 @@ class TestCondor(unittest.TestCase):
         os.environ['CONDOR_LOCATION'] = '/my/condor1'
         settings = condor.CondorConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         self.assertTrue(attributes.has_key('OSG_CONDOR_LOCATION'),
                         'Attribute OSG_CONDOR_LOCATION missing')
         self.assertEqual(attributes['OSG_CONDOR_LOCATION'], '/usr/local/condor',
@@ -203,7 +203,7 @@ class TestCondor(unittest.TestCase):
 
     def testMissingCondorLocation(self):
         """
-        Test the checkAttributes function to see if it catches missing condor location
+        Test the check_attributes function to see if it catches missing condor location
         """
 
         config_file = get_test_config("condor/missing_location.ini")
@@ -212,17 +212,17 @@ class TestCondor(unittest.TestCase):
 
         settings = condor.CondorConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Did not notice missing condor location")
 
     def testMissingCondorConfig(self):
         """
-        Test the checkAttributes function to see if it catches missing
+        Test the check_attributes function to see if it catches missing
         condor config locations
         """
 
@@ -234,18 +234,18 @@ class TestCondor(unittest.TestCase):
 
             settings = condor.CondorConfiguration(logger=global_logger)
             try:
-                settings.parseConfiguration(configuration)
+                settings.parse_configuration(configuration)
             except Exception, e:
                 self.fail("Received exception while parsing configuration: %s" % e)
 
-            attributes = settings.getAttributes()
-            self.assertFalse(settings.checkAttributes(attributes),
+            attributes = settings.get_attributes()
+            self.assertFalse(settings.check_attributes(attributes),
                              "Did not notice missing condor config location: " +
                              attributes['OSG_CONDOR_CONFIG'])
 
     def testValidSettings(self):
         """
-        Test the checkAttributes function to see if it works on valid settings
+        Test the check_attributes function to see if it works on valid settings
         """
 
         config_file = get_test_config("condor/check_ok.ini")
@@ -254,17 +254,17 @@ class TestCondor(unittest.TestCase):
 
         settings = condor.CondorConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertTrue(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertTrue(settings.check_attributes(attributes),
                         "Correct settings incorrectly flagged as missing")
 
     def testValidSettings2(self):
         """
-        Test the checkAttributes function to see if it works on valid settings
+        Test the check_attributes function to see if it works on valid settings
         """
 
         config_file = get_test_config("condor/check_ok2.ini")
@@ -273,17 +273,17 @@ class TestCondor(unittest.TestCase):
 
         settings = condor.CondorConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertTrue(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertTrue(settings.check_attributes(attributes),
                         "Correct settings incorrectly flagged as missing")
 
     def testInvalidJobContact(self):
         """
-        Test the checkAttributes function to see if it catches invalid job contacts
+        Test the check_attributes function to see if it catches invalid job contacts
         """
 
         config_file = get_test_config("condor/invalid_job_contact.ini")
@@ -292,17 +292,17 @@ class TestCondor(unittest.TestCase):
 
         settings = condor.CondorConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Did not notice invalid host in jobcontact option")
 
     def testInvalidUtilityContact(self):
         """
-        Test the checkAttributes function to see if it catches invalid
+        Test the check_attributes function to see if it catches invalid
         utility contacts
         """
 
@@ -312,12 +312,12 @@ class TestCondor(unittest.TestCase):
 
         settings = condor.CondorConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Did not notice invalid host in utility_contact option")
 
     def testServiceList(self):
@@ -331,10 +331,10 @@ class TestCondor(unittest.TestCase):
 
         settings = condor.CondorConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
-        services = settings.enabledServices()
+        services = settings.enabled_services()
         expected_services = set(['condor-ce', 'globus-gridftp-server'])
         self.assertEqual(services, expected_services,
                          "List of enabled services incorrect, " +
@@ -346,10 +346,10 @@ class TestCondor(unittest.TestCase):
 
         settings = condor.CondorConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
-        services = settings.enabledServices()
+        services = settings.enabled_services()
         expected_services = set()
         self.assertEqual(services, expected_services,
                          "List of enabled services incorrect, " +

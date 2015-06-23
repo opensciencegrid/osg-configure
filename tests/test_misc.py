@@ -46,7 +46,7 @@ class TestMisc(unittest.TestCase):
 
         settings = misc.MiscConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
@@ -61,7 +61,7 @@ class TestMisc(unittest.TestCase):
                              variables[var],
                              "Wrong value obtained for %s, got %s but " \
                              "expected %s" % (var, options[var].value, variables[var]))
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         variables = {'OSG_GLEXEC_LOCATION': './configs/misc'}
         for var in variables:
             self.assertTrue(attributes.has_key(var),
@@ -82,7 +82,7 @@ class TestMisc(unittest.TestCase):
 
         settings = misc.MiscConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
@@ -97,7 +97,7 @@ class TestMisc(unittest.TestCase):
                              variables[var],
                              "Wrong value obtained for %s, got %s but " \
                              "expected %s" % (var, options[var].value, variables[var]))
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         variables = {'OSG_GLEXEC_LOCATION': './configs/misc'}
         for var in variables:
             self.assertTrue(attributes.has_key(var),
@@ -118,7 +118,7 @@ class TestMisc(unittest.TestCase):
 
         settings = misc.MiscConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
@@ -137,7 +137,7 @@ class TestMisc(unittest.TestCase):
 
         settings = misc.MiscConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
@@ -156,7 +156,7 @@ class TestMisc(unittest.TestCase):
 
         settings = misc.MiscConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
@@ -182,12 +182,12 @@ class TestMisc(unittest.TestCase):
             configuration.remove_option('Misc Services', option)
 
             settings = misc.MiscConfiguration(logger=global_logger)
-            settings.parseConfiguration(configuration)
-            self.assertTrue(not settings.checkAttributes({}))
+            settings.parse_configuration(configuration)
+            self.assertTrue(not settings.check_attributes({}))
 
     def testXacmlMissingGums(self):
         """
-        Test the checkAttributes function when xacml is specified but the
+        Test the check_attributes function when xacml is specified but the
         gums host isn't
         """
 
@@ -196,13 +196,13 @@ class TestMisc(unittest.TestCase):
         configuration.read(config_file)
 
         settings = misc.MiscConfiguration(logger=global_logger)
-        settings.parseConfiguration(configuration)
+        settings.parse_configuration(configuration)
         self.assertTrue(exceptions.ConfigureError,
-                        settings.checkAttributes({}))
+                        settings.check_attributes({}))
 
     def testXacmlBadGums(self):
         """
-        Test the checkAttributes function when xacml is specified but the
+        Test the check_attributes function when xacml is specified but the
         gums host isn't valid
         """
 
@@ -212,17 +212,17 @@ class TestMisc(unittest.TestCase):
 
         settings = misc.MiscConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Did not notice bad gums host")
 
     def testValidSettings(self):
         """
-        Test the checkAttributes function to see if it oks good attributes
+        Test the check_attributes function to see if it oks good attributes
         """
 
         config_file = get_test_config("misc/valid_settings.ini")
@@ -231,17 +231,17 @@ class TestMisc(unittest.TestCase):
 
         settings = misc.MiscConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertTrue(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertTrue(settings.check_attributes(attributes),
                         "Correct locations incorrectly flagged as missing")
 
     def testValidSettings2(self):
         """
-        Test the checkAttributes function to see if it oks good attributes
+        Test the check_attributes function to see if it oks good attributes
         """
 
         config_file = get_test_config("misc/valid_settings2.ini")
@@ -250,17 +250,17 @@ class TestMisc(unittest.TestCase):
 
         settings = misc.MiscConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertTrue(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertTrue(settings.check_attributes(attributes),
                         "Correct locations incorrectly flagged as invalid")
 
     def testInvalidSettings(self):
         """
-        Test the checkAttributes function to see if it flags bad attributes
+        Test the check_attributes function to see if it flags bad attributes
         """
 
         config_file = get_test_config("misc/invalid_settings1.ini")
@@ -269,12 +269,12 @@ class TestMisc(unittest.TestCase):
 
         settings = misc.MiscConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Bad config incorrectly flagged as okay")
 
     def testServiceList(self):
@@ -288,10 +288,10 @@ class TestMisc(unittest.TestCase):
 
         settings = misc.MiscConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
-        services = settings.enabledServices()
+        services = settings.enabled_services()
         if utilities.rpm_installed('fetch-crl'):
             expected_services = set(['fetch-crl-cron',
                                      'fetch-crl-boot',
@@ -313,10 +313,10 @@ class TestMisc(unittest.TestCase):
 
         settings = misc.MiscConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
-        services = settings.enabledServices()
+        services = settings.enabled_services()
         if utilities.rpm_installed('fetch-crl'):
             expected_services = set(['fetch-crl-cron',
                                      'fetch-crl-boot',

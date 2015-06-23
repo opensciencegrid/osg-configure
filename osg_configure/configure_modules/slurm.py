@@ -72,29 +72,29 @@ class SlurmConfiguration(JobManagerConfiguration):
                                               default_value=False)}
         self.config_section = "SLURM"
         self.slurm_bin_location = None
-        self.__set_default = True
+        self._set_default = True
         self.log('SlurmConfiguration.__init__ completed')
 
-    def parseConfiguration(self, configuration):
+    def parse_configuration(self, configuration):
         """Try to get configuration information from ConfigParser or SafeConfigParser object given
         by configuration and write recognized settings to attributes dict
         """
-        super(SlurmConfiguration, self).parseConfiguration(configuration)
+        super(SlurmConfiguration, self).parse_configuration(configuration)
 
-        self.log('SlurmConfiguration.parseConfiguration started')
+        self.log('SlurmConfiguration.parse_configuration started')
 
-        self.checkConfig(configuration)
+        self.check_config(configuration)
 
         if not configuration.has_section(self.config_section):
             self.log('SLURM section not found in config file')
-            self.log('SlurmConfiguration.parseConfiguration completed')
+            self.log('SlurmConfiguration.parse_configuration completed')
             return
 
-        if not self.setStatus(configuration):
-            self.log('SlurmConfiguration.parseConfiguration completed')
+        if not self.set_status(configuration):
+            self.log('SlurmConfiguration.parse_configuration completed')
             return True
 
-        self.getOptions(configuration, ignore_options=['enabled'])
+        self.get_options(configuration, ignore_options=['enabled'])
 
         # set OSG_JOB_MANAGER and OSG_JOB_MANAGER_HOME
         self.options['job_manager'] = configfile.Option(name='job_manager',
@@ -111,27 +111,27 @@ class SlurmConfiguration(JobManagerConfiguration):
         if (configuration.has_section('Managed Fork') and
                 configuration.has_option('Managed Fork', 'enabled') and
                 configuration.getboolean('Managed Fork', 'enabled')):
-            self.__set_default = False
+            self._set_default = False
 
         self.slurm_bin_location = os.path.join(self.options['slurm_location'].value, 'bin')
 
-        self.log('SlurmConfiguration.parseConfiguration completed')
+        self.log('SlurmConfiguration.parse_configuration completed')
 
     # pylint: disable-msg=W0613
-    def checkAttributes(self, attributes):
+    def check_attributes(self, attributes):
         """Check attributes currently stored and make sure that they are consistent"""
-        self.log('SlurmConfiguration.checkAttributes started')
+        self.log('SlurmConfiguration.check_attributes started')
 
         attributes_ok = True
 
         if not self.enabled:
             self.log('SLURM not enabled, returning True')
-            self.log('SlurmConfiguration.checkAttributes completed')
+            self.log('SlurmConfiguration.check_attributes completed')
             return attributes_ok
 
         if self.ignored:
             self.log('Ignored, returning True')
-            self.log('SlurmConfiguration.checkAttributes completed')
+            self.log('SlurmConfiguration.check_attributes completed')
             return attributes_ok
 
         # make sure locations exist
@@ -168,7 +168,7 @@ class SlurmConfiguration(JobManagerConfiguration):
                      section=self.config_section,
                      level=logging.ERROR)
 
-        self.log('SlurmConfiguration.checkAttributes completed')
+        self.log('SlurmConfiguration.check_attributes completed')
         return attributes_ok
 
     def configure(self, attributes):
@@ -213,12 +213,12 @@ class SlurmConfiguration(JobManagerConfiguration):
 
             # make sure the SEG is disabled
             self.disable_seg('pbs', SlurmConfiguration.SLURM_CONFIG_FILE)
-            if not self.setupGramConfig():
+            if not self.setup_gram_config():
                 self.log('Error writing to ' + SlurmConfiguration.GRAM_CONFIG_FILE,
                          level=logging.ERROR)
                 return False
 
-            if self.__set_default:
+            if self._set_default:
                 self.log('Configuring gatekeeper to use regular fork service')
                 self.set_default_jobmanager('fork')
 
@@ -232,15 +232,15 @@ class SlurmConfiguration(JobManagerConfiguration):
         self.log('SlurmConfiguration.configure completed')
         return True
 
-    def moduleName(self):
+    def module_name(self):
         """Return a string with the name of the module"""
         return "SLURM"
 
-    def separatelyConfigurable(self):
+    def separately_configurable(self):
         """Return a boolean that indicates whether this module can be configured separately"""
         return True
 
-    def setupGramConfig(self):
+    def setup_gram_config(self):
         """
         Populate the gram config file with correct values
 
@@ -257,37 +257,37 @@ class SlurmConfiguration(JobManagerConfiguration):
 
         return True
 
-    def enabledServices(self):
+    def enabled_services(self):
         """Return a list of  system services needed for module to work
         """
 
         if not self.enabled or self.ignored:
             return set()
 
-        return set(['globus-gridftp-server']).union(self.gatewayServices())
+        return set(['globus-gridftp-server']).union(self.gateway_services())
 
-    def getDBHost(self):
+    def get_db_host(self):
         """
         Return the hostname of the machine with the Slurm DB
         """
 
         return self.options['db_host'].value
 
-    def getDBPort(self):
+    def get_db_port(self):
         """
         Return the port for Slurm DB service
         """
 
         return self.options['db_port'].value
 
-    def getDBUser(self):
+    def get_db_user(self):
         """
         Return the user to use when accessing Slurm DB
         """
 
         return self.options['db_user'].value
 
-    def getDBPass(self):
+    def get_db_pass(self):
         """
         Return the location of the file containing the password
         to use when accessing Slurm DB
@@ -295,21 +295,21 @@ class SlurmConfiguration(JobManagerConfiguration):
 
         return self.options['db_pass'].value
 
-    def getDBName(self):
+    def get_db_name(self):
         """
         Return the name of the data slurm is using for accounting info
         """
 
         return self.options['db_name'].value
 
-    def getSlurmCluster(self):
+    def get_slurm_cluster(self):
         """
         Return the name of the data slurm is using for accounting info
         """
 
         return self.options['slurm_cluster'].value
 
-    def getLocation(self):
+    def get_location(self):
         """
         Return the location where slurm is installed
         """

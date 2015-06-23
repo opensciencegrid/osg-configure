@@ -53,11 +53,11 @@ class LegacyConfiguration(BaseConfiguration):
         self.log('LegacyConfiguration.__init__ completed')
 
     # pylint: disable-msg=W0613
-    def checkAttributes(self, attributes):
+    def check_attributes(self, attributes):
         """Check attributes currently stored and make sure that they are consistent"""
-        self.log('LegacyConfiguration.checkAttributes started')
+        self.log('LegacyConfiguration.check_attributes started')
         attributes_ok = True
-        self.log('LegacyConfiguration.checkAttributes completed')
+        self.log('LegacyConfiguration.check_attributes completed')
         return attributes_ok
 
     def configure(self, attributes):
@@ -84,10 +84,10 @@ class LegacyConfiguration(BaseConfiguration):
         self.log('LegacyConfiguration.configure completed')
         return True
 
-    def moduleName(self):
+    def module_name(self):
         """Return a string with the name of the module"""
         return "Legacy"
 
-    def separatelyConfigurable(self):
+    def separately_configurable(self):
         """Return a boolean that indicates whether this module can be configured separately"""
         return False

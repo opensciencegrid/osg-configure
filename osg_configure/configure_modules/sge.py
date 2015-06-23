@@ -73,30 +73,30 @@ class SGEConfiguration(JobManagerConfiguration):
                                               required=configfile.Option.OPTIONAL,
                                               opt_type=bool,
                                               default_value=False)}
-        self.__set_default = True
+        self._set_default = True
         self.config_section = "SGE"
         self.log('SGEConfiguration.__init__ completed')
 
-    def parseConfiguration(self, configuration):
+    def parse_configuration(self, configuration):
         """Try to get configuration information from ConfigParser or SafeConfigParser object given
         by configuration and write recognized settings to attributes dict
         """
-        super(SGEConfiguration, self).parseConfiguration(configuration)
+        super(SGEConfiguration, self).parse_configuration(configuration)
 
-        self.log('SGEConfiguration.parseConfiguration started')
+        self.log('SGEConfiguration.parse_configuration started')
 
-        self.checkConfig(configuration)
+        self.check_config(configuration)
 
         if not configuration.has_section(self.config_section):
             self.log('SGE section not found in config file')
-            self.log('SGEConfiguration.parseConfiguration completed')
+            self.log('SGEConfiguration.parse_configuration completed')
             return
 
-        if not self.setStatus(configuration):
-            self.log('SGEConfiguration.parseConfiguration completed')
+        if not self.set_status(configuration):
+            self.log('SGEConfiguration.parse_configuration completed')
             return True
 
-        self.getOptions(configuration, ignore_options=['enabled'])
+        self.get_options(configuration, ignore_options=['enabled'])
 
         # fill in values for sge_location and home
         self.options['job_manager'] = configfile.Option(name='job_manager',
@@ -125,23 +125,23 @@ class SGEConfiguration(JobManagerConfiguration):
         if (configuration.has_section('Managed Fork') and
                 configuration.has_option('Managed Fork', 'enabled') and
                 configuration.getboolean('Managed Fork', 'enabled')):
-            self.__set_default = False
+            self._set_default = False
 
-        self.log('SGEConfiguration.parseConfiguration completed')
+        self.log('SGEConfiguration.parse_configuration completed')
 
     # pylint: disable-msg=W0613
-    def checkAttributes(self, attributes):
+    def check_attributes(self, attributes):
         """Check attributes currently stored and make sure that they are consistent"""
-        self.log('SGEConfiguration.checkAttributes started')
+        self.log('SGEConfiguration.check_attributes started')
         attributes_ok = True
         if not self.enabled:
             self.log('SGE not enabled, returning True')
-            self.log('SGEConfiguration.checkAttributes completed')
+            self.log('SGEConfiguration.check_attributes completed')
             return attributes_ok
 
         if self.ignored:
             self.log('Ignored, returning True')
-            self.log('SGEConfiguration.checkAttributes completed')
+            self.log('SGEConfiguration.check_attributes completed')
             return attributes_ok
 
         # make sure locations exist
@@ -211,7 +211,7 @@ class SGEConfiguration(JobManagerConfiguration):
                      option=key,
                      level=logging.ERROR)
 
-        self.log('SGEConfiguration.checkAttributes completed')
+        self.log('SGEConfiguration.check_attributes completed')
         return attributes_ok
 
     def configure(self, attributes):
@@ -253,12 +253,12 @@ class SGEConfiguration(JobManagerConfiguration):
             else:
                 self.disable_seg('sge', SGEConfiguration.SGE_CONFIG_FILE)
 
-            if not self.setupGramConfig():
+            if not self.setup_gram_config():
                 self.log('Error writing to ' + SGEConfiguration.GRAM_CONFIG_FILE,
                          level=logging.ERROR)
                 return False
 
-            if self.__set_default:
+            if self._set_default:
                 self.log('Configuring gatekeeper to use regular fork service')
                 self.set_default_jobmanager('fork')
 
@@ -272,15 +272,15 @@ class SGEConfiguration(JobManagerConfiguration):
         self.log('SGEConfiguration.configure started')
         return True
 
-    def moduleName(self):
+    def module_name(self):
         """Return a string with the name of the module"""
         return "SGE"
 
-    def separatelyConfigurable(self):
+    def separately_configurable(self):
         """Return a boolean that indicates whether this module can be configured separately"""
         return True
 
-    def setupGramConfig(self):
+    def setup_gram_config(self):
         """
         Populate the gram config file with correct values
 
@@ -314,20 +314,20 @@ class SGEConfiguration(JobManagerConfiguration):
             return False
         return True
 
-    def enabledServices(self):
+    def enabled_services(self):
         """Return a list of  system services needed for module to work
         """
         if not self.enabled or self.ignored:
             return set()
 
         services = set(['globus-gridftp-server'])
-        services.update(self.gatewayServices())
+        services.update(self.gateway_services())
         if self.options['seg_enabled'].value:
             services.add('globus-scheduler-event-generator')
             services.add('globus-gatekeeper')
         return services
 
-    def getAccountingFile(self):
+    def get_accounting_file(self):
         """
         Return the location of the SGE Accounting file
         """

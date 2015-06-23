@@ -46,7 +46,7 @@ class TestGratia(unittest.TestCase):
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
@@ -76,7 +76,7 @@ class TestGratia(unittest.TestCase):
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
@@ -105,7 +105,7 @@ class TestGratia(unittest.TestCase):
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
@@ -134,7 +134,7 @@ class TestGratia(unittest.TestCase):
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
@@ -154,7 +154,7 @@ class TestGratia(unittest.TestCase):
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
@@ -183,7 +183,7 @@ class TestGratia(unittest.TestCase):
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
@@ -208,7 +208,7 @@ class TestGratia(unittest.TestCase):
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
@@ -227,7 +227,7 @@ class TestGratia(unittest.TestCase):
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
@@ -237,7 +237,7 @@ class TestGratia(unittest.TestCase):
 
     def testInvalidProbes1(self):
         """
-        Test the checkAttributes function to see if it catches invalid
+        Test the check_attributes function to see if it catches invalid
         probes
         """
 
@@ -247,17 +247,17 @@ class TestGratia(unittest.TestCase):
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Did not notice invalid probe specification")
 
     def testInvalidProbes2(self):
         """
-        Test the checkAttributes function to see if it catches invalid
+        Test the check_attributes function to see if it catches invalid
         probes
         """
 
@@ -267,17 +267,17 @@ class TestGratia(unittest.TestCase):
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Did not notice invalid probe specification")
 
     def testValidSettings(self):
         """
-        Test the checkAttributes function to see if it oks good attributes
+        Test the check_attributes function to see if it oks good attributes
         """
 
         config_file = get_test_config("gratia/check_ok.ini")
@@ -286,19 +286,19 @@ class TestGratia(unittest.TestCase):
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         # new checks require an installed and working copy of HTCondor
         # disable for now
-        # self.assertTrue(settings.checkAttributes(attributes),
+        # self.assertTrue(settings.check_attributes(attributes),
         #                "Correct settings incorrectly flagged as invalid")
 
     def testValidSettings2(self):
         """
-        Test the checkAttributes function to see if it oks a disabled section
+        Test the check_attributes function to see if it oks a disabled section
         """
 
         config_file = get_test_config("gratia/disabled.ini")
@@ -307,12 +307,12 @@ class TestGratia(unittest.TestCase):
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertTrue(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertTrue(settings.check_attributes(attributes),
                         "Disabled section incorrectly flagged as invalid")
 
     def testValidITBDefaults(self):
@@ -325,17 +325,17 @@ class TestGratia(unittest.TestCase):
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except OSError:
             # Need to rewrite or remove this test due to new checks with condor
             pass
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         # new checks require an installed and working copy of HTCondor
         # disable for now
-        # self.assertTrue(settings.checkAttributes(attributes),
+        # self.assertTrue(settings.check_attributes(attributes),
         #                "ITB defaults flagged as invalid")
 
     def testValidProductionDefaults(self):
@@ -348,14 +348,14 @@ class TestGratia(unittest.TestCase):
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         # new checks require an installed and working copy of HTCondor
         # disable for now
-        # self.assertTrue(settings.checkAttributes(attributes),
+        # self.assertTrue(settings.check_attributes(attributes),
         #                "Production defaults flagged as invalid")
 
     def testMissingITBDefaults(self):
@@ -369,12 +369,12 @@ class TestGratia(unittest.TestCase):
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertTrue(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertTrue(settings.check_attributes(attributes),
                         "ITB defaults flagged as invalid")
 
     def testMissingProductionDefaults(self):
@@ -388,12 +388,12 @@ class TestGratia(unittest.TestCase):
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertTrue(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertTrue(settings.check_attributes(attributes),
                         "Production defaults flagged as invalid")
 
     def testServiceList(self):
@@ -407,10 +407,10 @@ class TestGratia(unittest.TestCase):
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
-        services = settings.enabledServices()
+        services = settings.enabled_services()
         expected_services = set(['gratia-probes-cron'])
         self.assertEqual(services, expected_services,
                          "List of enabled services incorrect, " +
@@ -422,10 +422,10 @@ class TestGratia(unittest.TestCase):
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
-        services = settings.enabledServices()
+        services = settings.enabled_services()
         expected_services = set()
         self.assertEqual(services, expected_services,
                          "List of enabled services incorrect, " +

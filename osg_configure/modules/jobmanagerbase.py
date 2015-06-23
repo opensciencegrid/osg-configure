@@ -28,17 +28,17 @@ class JobManagerConfiguration(BaseConfiguration):
         self.gram_gateway_enabled = False
         self.htcondor_gateway_enabled = True
 
-    def parseConfiguration(self, configuration):
-        super(JobManagerConfiguration, self).parseConfiguration(configuration)
-        self.log('JobManagerConfiguration.parseConfiguration started')
+    def parse_configuration(self, configuration):
+        super(JobManagerConfiguration, self).parse_configuration(configuration)
+        self.log('JobManagerConfiguration.parse_configuration started')
         if configuration.has_section('Gateway'):
             if configuration.has_option('Gateway', 'htcondor_gateway_enabled'):
                 self.htcondor_gateway_enabled = configuration.getboolean('Gateway', 'htcondor_gateway_enabled')
             if configuration.has_option('Gateway', 'gram_gateway_enabled'):
                 self.gram_gateway_enabled = configuration.getboolean('Gateway', 'gram_gateway_enabled')
-        self.log('JobManagerConfiguration.parseConfiguration completed')
+        self.log('JobManagerConfiguration.parse_configuration completed')
 
-    def gatewayServices(self):
+    def gateway_services(self):
         services = set([])
         if self.htcondor_gateway_enabled:
             services.add('condor-ce')

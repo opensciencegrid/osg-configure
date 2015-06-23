@@ -26,7 +26,7 @@ class BaseConfiguration(object):
         self.options = {}
         self.config_section = ""
 
-    def setStatus(self, configuration):
+    def set_status(self, configuration):
         """
         Check the enable option and then set the appropriate attributes based on that.
 
@@ -54,7 +54,7 @@ class BaseConfiguration(object):
             raise exceptions.SettingError("Can't get value for enable option "
                                           "in %s section" % self.config_section)
 
-    def parseConfiguration(self, configuration):
+    def parse_configuration(self, configuration):
         """Try to get configuration information from ConfigParser or SafeConfigParser object given
         by configuration and write recognized settings to attributes dict
         """
@@ -62,7 +62,7 @@ class BaseConfiguration(object):
 
     # pylint: disable-msg=W0613
     # pylint: disable-msg=R0201
-    def checkAttributes(self, attributes):
+    def check_attributes(self, attributes):
         """Check attributes currently stored and make sure that they are consistent"""
         attributes_ok = True
         return attributes_ok
@@ -72,11 +72,11 @@ class BaseConfiguration(object):
         """Configure installation using attributes"""
         return True
 
-    def moduleName(self):
+    def module_name(self):
         """Return a string with the name of the module"""
         return "BaseConfiguration"
 
-    def separatelyConfigurable(self):
+    def separately_configurable(self):
         """Return a boolean that indicates whether this module can be configured separately"""
         return False
 
@@ -109,7 +109,7 @@ class BaseConfiguration(object):
         message += mesg
         self.logger.log(log_level, message, exc_info=exception)
 
-    def checkConfig(self, configuration):
+    def check_config(self, configuration):
         """
         Make sure config argument is of the correct type
         """
@@ -123,7 +123,7 @@ class BaseConfiguration(object):
             raise TypeError('Invalid type for configuration, must be a ' +
                             'ConfigParser or SafeConfigParser object')
 
-    def getOptions(self, configuration, **kwargs):
+    def get_options(self, configuration, **kwargs):
         """
         Populate self.options based on contents of ConfigParser object,
         warns if unknown options are found
@@ -136,7 +136,7 @@ class BaseConfiguration(object):
                          when checking for unknown options
         """
 
-        self.checkConfig(configuration)
+        self.check_config(configuration)
         for option in self.options.values():
             self.log("Getting value for %s" % option.name)
             try:
@@ -164,7 +164,7 @@ class BaseConfiguration(object):
                      section=self.config_section,
                      level=logging.WARNING)
 
-    def getAttributes(self, converter=str):
+    def get_attributes(self, converter=str):
         """
         Get attributes for the osg attributes file using the dict in self.options
 
@@ -173,28 +173,28 @@ class BaseConfiguration(object):
         Returns a dictionary of ATTRIBUTE => value mappings
         """
 
-        self.log("%s.getAttributes started" % self.__class__)
+        self.log("%s.get_attributes started" % self.__class__)
         if not self.enabled:
             self.log("Not enabled, returning {}")
-            self.log("%s.getAttributes completed" % self.__class__)
+            self.log("%s.get_attributes completed" % self.__class__)
             return {}
 
         if self.options == {} or self.options is None:
             self.log("self.options empty or None, returning {}")
-            self.log("%s.getAttributes completed" % self.__class__)
+            self.log("%s.get_attributes completed" % self.__class__)
             return {}
 
-        self.log("%s.getAttributes completed" % self.__class__)
-        return dict(zip([item.mapping for item in self.options.values() if item.isMappable()],
-                        [converter(item.value) for item in self.options.values() if item.isMappable()]))
+        self.log("%s.get_attributes completed" % self.__class__)
+        return dict(zip([item.mapping for item in self.options.values() if item.is_mappable()],
+                        [converter(item.value) for item in self.options.values() if item.is_mappable()]))
 
-    def enabledServices(self):
+    def enabled_services(self):
         """Return a list of  system services needed for module to work
         """
         return set()
 
     @staticmethod
-    def sectionDisabled(configuration, section):
+    def section_disabled(configuration, section):
         """
         Check the enable option for a specified section
 

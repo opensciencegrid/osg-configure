@@ -45,11 +45,11 @@ class TestLocalSettings(unittest.TestCase):
 
         settings = localsettings.LocalSettings(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         self.assertTrue(attributes.has_key('test1'),
                         'Attribute test1 missing')
         self.assertEqual(attributes['test1'], 'Value1',

@@ -38,28 +38,28 @@ class NetworkConfiguration(BaseConfiguration):
         self.config_section = 'Network'
         self.log('NetworkConfiguration.configure completed')
 
-    def parseConfiguration(self, configuration):
+    def parse_configuration(self, configuration):
         """Try to get configuration information from ConfigParser or SafeConfigParser object given
         by configuration and write recognized settings to attributes dict
         """
-        self.log('NetworkConfiguration.parseConfiguration started')
+        self.log('NetworkConfiguration.parse_configuration started')
 
-        self.checkConfig(configuration)
+        self.check_config(configuration)
 
         if not configuration.has_section(self.config_section):
             self.log('Network section not found in config file')
-            self.log('NetworkConfiguration.parseConfiguration completed')
+            self.log('NetworkConfiguration.parse_configuration completed')
             self.enabled = False
             return
 
         self.enabled = True
-        self.getOptions(configuration)
-        self.log('NetworkConfiguration.parseConfiguration completed')
+        self.get_options(configuration)
+        self.log('NetworkConfiguration.parse_configuration completed')
 
     # pylint: disable-msg=W0613
-    def checkAttributes(self, attributes):
+    def check_attributes(self, attributes):
         """Check attributes currently stored and make sure that they are consistent"""
-        self.log('NetworkConfiguration.checkAttributes started')
+        self.log('NetworkConfiguration.check_attributes started')
         attributes_ok = True
 
         for name in ['source_state_file', 'port_state_file']:
@@ -103,7 +103,7 @@ class NetworkConfiguration(BaseConfiguration):
                      level=logging.ERROR)
             attributes_ok = False
 
-        self.log('NetworkConfiguration.checkAttributes completed')
+        self.log('NetworkConfiguration.check_attributes completed')
         return attributes_ok
 
     def configure(self, attributes):
@@ -160,10 +160,10 @@ class NetworkConfiguration(BaseConfiguration):
         self.log("NetworkConfiguration.configure completed")
         return status
 
-    def moduleName(self):
+    def module_name(self):
         """Return a string with the name of the module"""
         return "NetworkConfiguration"
 
-    def separatelyConfigurable(self):
+    def separately_configurable(self):
         """Return a boolean that indicates whether this module can be configured separately"""
         return True

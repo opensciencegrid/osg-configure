@@ -57,38 +57,38 @@ class MiscConfiguration(BaseConfiguration):
                                               required=configfile.Option.OPTIONAL,
                                               opt_type=bool,
                                               default_value=False)}
-        self.__enabled = False
+        self._enabled = False
         self.config_section = "Misc Services"
         self.log('MiscConfiguration.__init__ completed')
 
-    def parseConfiguration(self, configuration):
+    def parse_configuration(self, configuration):
         """
         Try to get configuration information from ConfigParser or SafeConfigParser
         object given by configuration and write recognized settings to options dict
         """
-        self.log('MiscConfiguration.parseConfiguration started')
+        self.log('MiscConfiguration.parse_configuration started')
 
-        self.checkConfig(configuration)
+        self.check_config(configuration)
 
         if not configuration.has_section(self.config_section):
             self.enabled = False
             self.log("%s section not in config files" % self.config_section)
-            self.log('MiscConfiguration.parseConfiguration completed')
+            self.log('MiscConfiguration.parse_configuration completed')
             return
 
         self.enabled = True
-        self.getOptions(configuration)
-        self.log('MiscConfiguration.parseConfiguration completed')
+        self.get_options(configuration)
+        self.log('MiscConfiguration.parse_configuration completed')
 
     # pylint: disable-msg=W0613
-    def checkAttributes(self, attributes):
+    def check_attributes(self, attributes):
         """Check attributes currently stored and make sure that they are consistent"""
-        self.log('MiscConfiguration.checkAttributes started')
+        self.log('MiscConfiguration.check_attributes started')
         attributes_ok = True
 
         if not self.enabled:
             self.log('Not enabled, returning True')
-            self.log('MiscConfiguration.checkAttributes completed')
+            self.log('MiscConfiguration.check_attributes completed')
             return True
 
         if (self.options['authorization_method'].value not in \
@@ -114,7 +114,7 @@ class MiscConfiguration(BaseConfiguration):
                          level=logging.ERROR)
                 attributes_ok = False
 
-        self.log('MiscConfiguration.checkAttributes completed')
+        self.log('MiscConfiguration.check_attributes completed')
         return attributes_ok
 
     def configure(self, attributes):
@@ -134,11 +134,11 @@ class MiscConfiguration(BaseConfiguration):
         using_gums = False
         if self.options['authorization_method'].value == 'xacml':
             using_gums = True
-            self.__enable_xacml()
+            self._enable_xacml()
         elif self.options['authorization_method'].value == 'gridmap':
-            self.__disable_callout()
+            self._disable_callout()
         elif self.options['authorization_method'].value == 'local-gridmap':
-            self.__disable_callout()
+            self._disable_callout()
         else:
             self.log("Unknown authorization method: %s" % \
                      self.options['authorization_method'].value,
@@ -172,20 +172,20 @@ class MiscConfiguration(BaseConfiguration):
 
 
         # Call configure_vdt_cleanup (enabling or disabling as necessary)
-        self.__configure_cleanup()
+        self._configure_cleanup()
 
         self.log('MiscConfiguration.configure completed')
         return True
 
-    def moduleName(self):
+    def module_name(self):
         """Return a string with the name of the module"""
         return "Misc"
 
-    def separatelyConfigurable(self):
+    def separately_configurable(self):
         """Return a boolean that indicates whether this module can be configured separately"""
         return True
 
-    def __enable_xacml(self):
+    def _enable_xacml(self):
         """
         Enable authorization services using xacml protocol
         """
@@ -217,9 +217,9 @@ class MiscConfiguration(BaseConfiguration):
             gums_properties = authz_re.sub(replacement, gums_properties)
         utilities.atomic_write(GUMS_CLIENT_LOCATION, gums_properties)
 
-        self.__update_lcmaps_file()
+        self._update_lcmaps_file()
 
-    def __update_lcmaps_file(self):
+    def _update_lcmaps_file(self):
         """
         Update lcmaps file and give appropriate messages if lcmaps.db.rpmnew exists
         """
@@ -256,7 +256,7 @@ configuration:
         lcmaps_db = endpoint_re.sub(replacement, lcmaps_db)
         utilities.atomic_write(rpmnew_file, lcmaps_db)
 
-    def __disable_callout(self):
+    def _disable_callout(self):
         """
         Enable authorization using gridmap files
         """
@@ -268,7 +268,7 @@ configuration:
             raise exceptions.ConfigureError("Error while writing to " +
                                             GSI_AUTHZ_LOCATION)
 
-    def __configure_cleanup(self):
+    def _configure_cleanup(self):
         """
         Configure osg-cleanup
         """
@@ -302,7 +302,7 @@ configuration:
 
         return True
 
-    def enabledServices(self):
+    def enabled_services(self):
         """Return a list of  system services needed for module to work
         """
 

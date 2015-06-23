@@ -45,11 +45,11 @@ class TestLSF(unittest.TestCase):
 
         settings = lsf.LSFConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         options = {'OSG_JOB_MANAGER_HOME': '/opt/lsf',
                    'OSG_LSF_LOCATION': '/opt/lsf',
                    'OSG_JOB_CONTACT': 'my.domain.com/jobmanager-lsf',
@@ -74,11 +74,11 @@ class TestLSF(unittest.TestCase):
 
         settings = lsf.LSFConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         self.assertEqual(len(attributes),
                          0,
                          "Disabled configuration should have no attributes")
@@ -94,18 +94,18 @@ class TestLSF(unittest.TestCase):
 
         settings = lsf.LSFConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         self.assertEqual(len(attributes),
                          0,
                          "Ignored configuration should have no attributes")
 
     def testMissingLSFLocation(self):
         """
-        Test the checkAttributes function to see if it catches missing LSF location
+        Test the check_attributes function to see if it catches missing LSF location
         """
         config_file = get_test_config("lsf/missing_location.ini")
         configuration = ConfigParser.SafeConfigParser()
@@ -113,17 +113,17 @@ class TestLSF(unittest.TestCase):
 
         settings = lsf.LSFConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Did not notice missing LSF location")
 
     def testMissingLSFProfile(self):
         """
-        Test the checkAttributes function to see if it catches missing LSF profile
+        Test the check_attributes function to see if it catches missing LSF profile
         """
         config_file = get_test_config("lsf/missing_profile.ini")
         configuration = ConfigParser.SafeConfigParser()
@@ -131,12 +131,12 @@ class TestLSF(unittest.TestCase):
 
         settings = lsf.LSFConfiguration(logger=global_logger)
         self.assertRaises(exceptions.SettingError,
-                          settings.parseConfiguration,
+                          settings.parse_configuration,
                           configuration)
 
     def testValidSettings(self):
         """
-        Test the checkAttributes function to see if it works on valid settings
+        Test the check_attributes function to see if it works on valid settings
         """
         config_file = get_test_config("lsf/check_ok.ini")
         configuration = ConfigParser.SafeConfigParser()
@@ -144,17 +144,17 @@ class TestLSF(unittest.TestCase):
 
         settings = lsf.LSFConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertTrue(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertTrue(settings.check_attributes(attributes),
                         "Correct settings incorrectly flagged as invalid")
 
     def testValidSettings2(self):
         """
-        Test the checkAttributes function to see if it works on valid settings
+        Test the check_attributes function to see if it works on valid settings
         """
         config_file = get_test_config("lsf/check_ok2.ini")
         configuration = ConfigParser.SafeConfigParser()
@@ -162,17 +162,17 @@ class TestLSF(unittest.TestCase):
 
         settings = lsf.LSFConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertTrue(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertTrue(settings.check_attributes(attributes),
                         "Correct settings incorrectly flagged as invalid")
 
     def testInvalidJobContact(self):
         """
-        Test the checkAttributes function to see if it catches invalid job contacts
+        Test the check_attributes function to see if it catches invalid job contacts
         """
         config_file = get_test_config("lsf/invalid_job_contact.ini")
         configuration = ConfigParser.SafeConfigParser()
@@ -180,18 +180,18 @@ class TestLSF(unittest.TestCase):
 
         settings = lsf.LSFConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             print e
             self.fail("Received exception while parsing configuration")
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Did not notice invalid host in jobcontact option")
 
     def testInvalidUtilityContact(self):
         """
-        Test the checkAttributes function to see if it catches invalid
+        Test the check_attributes function to see if it catches invalid
         utility contacts
         """
         config_file = get_test_config("lsf/invalid_utility_contact.ini")
@@ -200,12 +200,12 @@ class TestLSF(unittest.TestCase):
 
         settings = lsf.LSFConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Did not notice invalid host in utility_contact option")
 
     def testServiceList(self):
@@ -219,10 +219,10 @@ class TestLSF(unittest.TestCase):
 
         settings = lsf.LSFConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
-        services = settings.enabledServices()
+        services = settings.enabled_services()
         expected_services = set(['condor-ce', 'globus-gridftp-server'])
         self.assertEqual(services, expected_services,
                          "List of enabled services incorrect, " +
@@ -234,10 +234,10 @@ class TestLSF(unittest.TestCase):
 
         settings = lsf.LSFConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
-        services = settings.enabledServices()
+        services = settings.enabled_services()
         expected_services = set()
         self.assertEqual(services, expected_services,
                          "List of enabled services incorrect, " +

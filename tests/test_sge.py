@@ -45,11 +45,11 @@ class TestSGE(unittest.TestCase):
 
         settings = sge.SGEConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         options = {'OSG_JOB_MANAGER_HOME': './test_files',
                    'OSG_SGE_LOCATION': './test_files',
                    'OSG_SGE_ROOT': './test_files',
@@ -76,11 +76,11 @@ class TestSGE(unittest.TestCase):
 
         settings = sge.SGEConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         self.assertEqual(len(attributes), 0,
                          "Disabled configuration should have no attributes")
 
@@ -95,11 +95,11 @@ class TestSGE(unittest.TestCase):
 
         settings = sge.SGEConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         self.assertEqual(len(attributes), 0,
                          "Ignored configuration should have no attributes")
 
@@ -121,12 +121,12 @@ class TestSGE(unittest.TestCase):
 
             settings = sge.SGEConfiguration(logger=global_logger)
             self.assertRaises(exceptions.SettingError,
-                              settings.parseConfiguration,
+                              settings.parse_configuration,
                               configuration)
 
     def testMissingSGERoot(self):
         """
-        Test the checkAttributes function to see if it catches missing SGE location
+        Test the check_attributes function to see if it catches missing SGE location
         """
 
         config_file = get_test_config("sge/missing_root.ini")
@@ -135,17 +135,17 @@ class TestSGE(unittest.TestCase):
 
         settings = sge.SGEConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Did not notice missing SGE root")
 
     def testMissingSGECell(self):
         """
-        Test the checkAttributes function to see if it catches missing SGE cell
+        Test the check_attributes function to see if it catches missing SGE cell
         """
 
         config_file = get_test_config("sge/missing_cell.ini")
@@ -154,17 +154,17 @@ class TestSGE(unittest.TestCase):
 
         settings = sge.SGEConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Did not notice missing SGE cell")
 
     def testMissingSGEConfig(self):
         """
-        Test the checkAttributes function to see if it catches missing SGE config
+        Test the check_attributes function to see if it catches missing SGE config
         """
 
         config_file = get_test_config("sge/missing_config.ini")
@@ -173,17 +173,17 @@ class TestSGE(unittest.TestCase):
 
         settings = sge.SGEConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Did not notice missing SGE config")
 
     def testValidSettings(self):
         """
-        Test the checkAttributes function to see if it works on valid settings
+        Test the check_attributes function to see if it works on valid settings
         """
 
         config_file = get_test_config("sge/check_ok.ini")
@@ -194,17 +194,17 @@ class TestSGE(unittest.TestCase):
 
         settings = sge.SGEConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertTrue(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertTrue(settings.check_attributes(attributes),
                         "Correct settings incorrectly flagged as invalid")
 
     def testValidSettings2(self):
         """
-        Test the checkAttributes function to see if it works on valid settings
+        Test the check_attributes function to see if it works on valid settings
         """
 
         config_file = get_test_config("sge/check_ok2.ini")
@@ -215,17 +215,17 @@ class TestSGE(unittest.TestCase):
 
         settings = sge.SGEConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertTrue(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertTrue(settings.check_attributes(attributes),
                         "Correct settings incorrectly flagged as invalid")
 
     def testLogDir(self):
         """
-        Test the checkAttributes function to see if it works on valid settings
+        Test the check_attributes function to see if it works on valid settings
         """
 
         config_file = get_test_config("sge/sge_log_dir.ini")
@@ -236,7 +236,7 @@ class TestSGE(unittest.TestCase):
 
         settings = sge.SGEConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
@@ -247,13 +247,13 @@ class TestSGE(unittest.TestCase):
                          '/etc/hosts',
                          err_msg)
 
-        attributes = settings.getAttributes()
-        self.assertTrue(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertTrue(settings.check_attributes(attributes),
                         "Correct settings incorrectly flagged as invalid")
 
     def testLogFile(self):
         """
-        Test the checkAttributes function to see if it works on valid settings
+        Test the check_attributes function to see if it works on valid settings
         using log_directory or log_path
         """
 
@@ -265,7 +265,7 @@ class TestSGE(unittest.TestCase):
 
         settings = sge.SGEConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
@@ -277,13 +277,13 @@ class TestSGE(unittest.TestCase):
                          '/etc/hosts',
                          err_msg)
 
-        attributes = settings.getAttributes()
-        self.assertTrue(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertTrue(settings.check_attributes(attributes),
                         "Correct settings incorrectly flagged as invalid")
 
     def testInvalidJobContact(self):
         """
-        Test the checkAttributes function to see if it catches invalid job contacts
+        Test the check_attributes function to see if it catches invalid job contacts
         """
 
         config_file = get_test_config("sge/invalid_job_contact.ini")
@@ -292,18 +292,18 @@ class TestSGE(unittest.TestCase):
 
         settings = sge.SGEConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             print e
             self.fail("Received exception while parsing configuration")
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Did not notice invalid host in jobcontact option")
 
     def testInvalidUtilityContact(self):
         """
-        Test the checkAttributes function to see if it catches invalid
+        Test the check_attributes function to see if it catches invalid
         utility contacts
         """
 
@@ -313,12 +313,12 @@ class TestSGE(unittest.TestCase):
 
         settings = sge.SGEConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Did not notice invalid host in utility_contact option")
 
     def testServiceList(self):
@@ -332,10 +332,10 @@ class TestSGE(unittest.TestCase):
 
         settings = sge.SGEConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
-        services = settings.enabledServices()
+        services = settings.enabled_services()
         expected_services = set(['condor-ce',
                                  'globus-gridftp-server'])
         self.assertEqual(services, expected_services,
@@ -348,10 +348,10 @@ class TestSGE(unittest.TestCase):
 
         settings = sge.SGEConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
-        services = settings.enabledServices()
+        services = settings.enabled_services()
         expected_services = set(['condor-ce',
                                  'globus-gatekeeper',
                                  'globus-gridftp-server',
@@ -366,10 +366,10 @@ class TestSGE(unittest.TestCase):
 
         settings = sge.SGEConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
-        services = settings.enabledServices()
+        services = settings.enabled_services()
         expected_services = set()
         self.assertEqual(services, expected_services,
                          "List of enabled services incorrect, " +
@@ -381,10 +381,10 @@ class TestSGE(unittest.TestCase):
 
         settings = sge.SGEConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
-        services = settings.enabledServices()
+        services = settings.enabled_services()
         expected_services = set()
         self.assertEqual(services, expected_services,
                          "List of enabled services incorrect, " +

@@ -55,31 +55,31 @@ class LSFConfiguration(JobManagerConfiguration):
                                                             default_value=False)}
         self.config_section = 'LSF'
         self.lsf_bin_location = None
-        self.__set_default = True
+        self._set_default = True
 
         self.log('LSFConfiguration.__init__ completed')
 
-    def parseConfiguration(self, configuration):
+    def parse_configuration(self, configuration):
         """Try to get configuration information from ConfigParser or SafeConfigParser object given
         by configuration and write recognized settings to attributes dict
         """
-        super(LSFConfiguration, self).parseConfiguration(configuration)
+        super(LSFConfiguration, self).parse_configuration(configuration)
 
-        self.log('LSFConfiguration.parseConfiguration started')
+        self.log('LSFConfiguration.parse_configuration started')
 
-        self.checkConfig(configuration)
+        self.check_config(configuration)
 
         if not configuration.has_section(self.config_section):
             self.enabled = False
             self.log('LSF section not found in config file')
-            self.log('LSFConfiguration.parseConfiguration completed')
+            self.log('LSFConfiguration.parse_configuration completed')
             return
 
-        if not self.setStatus(configuration):
-            self.log('LSFConfiguration.parseConfiguration completed')
+        if not self.set_status(configuration):
+            self.log('LSFConfiguration.parse_configuration completed')
             return True
 
-        self.getOptions(configuration, ignore_options=['enabled'])
+        self.get_options(configuration, ignore_options=['enabled'])
 
         # set OSG_JOB_MANAGER_HOME
         # set OSG_JOB_MANAGER and OSG_JOB_MANAGER_HOME
@@ -93,27 +93,27 @@ class LSFConfiguration(JobManagerConfiguration):
         if (configuration.has_section('Managed Fork') and
                 configuration.has_option('Managed Fork', 'enabled') and
                 configuration.getboolean('Managed Fork', 'enabled')):
-            self.__set_default = False
+            self._set_default = False
 
         self.lsf_bin_location = os.path.join(self.options['lsf_location'].value, 'bin')
 
-        self.log('LSFConfiguration.parseConfiguration completed')
+        self.log('LSFConfiguration.parse_configuration completed')
 
     # pylint: disable-msg=W0613
-    def checkAttributes(self, attributes):
+    def check_attributes(self, attributes):
         """Check attributes currently stored and make sure that they are consistent"""
-        self.log('LSFConfiguration.checkAttributes started')
+        self.log('LSFConfiguration.check_attributes started')
 
         attributes_ok = True
 
         if not self.enabled:
             self.log('LSF not enabled, returning True')
-            self.log('LSFConfiguration.checkAttributes completed')
+            self.log('LSFConfiguration.check_attributes completed')
             return attributes_ok
 
         if self.ignored:
             self.log('Ignored, returning True')
-            self.log('LSFConfiguration.checkAttributes completed')
+            self.log('LSFConfiguration.check_attributes completed')
             return attributes_ok
 
 
@@ -167,7 +167,7 @@ class LSFConfiguration(JobManagerConfiguration):
                      section=self.config_section,
                      level=logging.ERROR)
 
-        self.log('LSFConfiguration.checkAttributes completed')
+        self.log('LSFConfiguration.check_attributes completed')
         return attributes_ok
 
     def configure(self, attributes):
@@ -211,12 +211,12 @@ class LSFConfiguration(JobManagerConfiguration):
                          level=logging.ERROR)
             self.enable_seg('lsf', LSFConfiguration.LSF_CONFIG_FILE)
 
-            if not self.setupGramConfig():
+            if not self.setup_gram_config():
                 self.log('Error writing to ' + LSFConfiguration.GRAM_CONFIG_FILE,
                          level=logging.ERROR)
                 return False
 
-            if self.__set_default:
+            if self._set_default:
                 self.log('Configuring gatekeeper to use regular fork service')
                 self.set_default_jobmanager('fork')
 
@@ -232,11 +232,11 @@ class LSFConfiguration(JobManagerConfiguration):
         self.log('LSFConfiguration.configure completed')
         return True
 
-    def moduleName(self):
+    def module_name(self):
         """Return a string with the name of the module"""
         return "LSF"
 
-    def separatelyConfigurable(self):
+    def separately_configurable(self):
         """Return a boolean that indicates whether this module can be configured separately"""
         return True
 
@@ -247,7 +247,7 @@ class LSFConfiguration(JobManagerConfiguration):
                                                         quote_value=False)
             utilities.atomic_write(self.BLAH_CONFIG, contents)
 
-    def setupGramConfig(self):
+    def setup_gram_config(self):
         """
         Populate the gram config file with correct values
 
@@ -278,7 +278,7 @@ class LSFConfiguration(JobManagerConfiguration):
             return False
         return True
 
-    def enabledServices(self):
+    def enabled_services(self):
         """Return a list of  system services needed for module to work
         """
 
@@ -286,7 +286,7 @@ class LSFConfiguration(JobManagerConfiguration):
             return set()
 
         services = set(['globus-gridftp-server'])
-        services.update(self.gatewayServices())
+        services.update(self.gateway_services())
         if self.options['seg_enabled'].value:
             services.add('globus-scheduler-event-generator')
             services.add('globus-gatekeeper')

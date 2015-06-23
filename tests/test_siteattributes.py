@@ -45,11 +45,11 @@ class TestSiteAttributes(unittest.TestCase):
 
         settings = siteattributes.SiteAttributes(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         variables = {'OSG_GROUP': 'OSG-ITB',
                      'OSG_HOSTNAME': 'example.com',
                      'OSG_SITE_NAME': 'MY_SITE',
@@ -80,11 +80,11 @@ class TestSiteAttributes(unittest.TestCase):
 
         settings = siteattributes.SiteAttributes(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         variables = {'OSG_GROUP': 'OSG',
                      'OSG_HOSTNAME': 'example.com',
                      'OSG_SITE_NAME': 'MY_SITE',
@@ -115,11 +115,11 @@ class TestSiteAttributes(unittest.TestCase):
 
         settings = siteattributes.SiteAttributes(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         variables = {'OSG_GROUP': 'OSG',
                      'OSG_HOSTNAME': 'example.com',
                      'OSG_SITE_NAME': 'MY_SITE',
@@ -152,7 +152,7 @@ class TestSiteAttributes(unittest.TestCase):
 
         settings = siteattributes.SiteAttributes(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
@@ -172,12 +172,12 @@ class TestSiteAttributes(unittest.TestCase):
 
             settings = siteattributes.SiteAttributes(logger=global_logger)
             self.assertRaises(exceptions.SettingError,
-                              settings.parseConfiguration,
+                              settings.parse_configuration,
                               configuration)
 
     def testInvalidLatitude(self):
         """
-        Test the checkAttributes with invalid latitude values
+        Test the check_attributes with invalid latitude values
         """
 
         config_file = get_test_config("siteattributes/" \
@@ -187,12 +187,12 @@ class TestSiteAttributes(unittest.TestCase):
 
         settings = siteattributes.SiteAttributes(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Invalid latitude ignored")
 
         config_file = get_test_config("siteattributes/" \
@@ -201,17 +201,17 @@ class TestSiteAttributes(unittest.TestCase):
         configuration.read(config_file)
         settings = siteattributes.SiteAttributes(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Invalid latitude ignored")
 
     def testInvalidLongitude(self):
         """
-        Test the checkAttributes with invalid longitude values
+        Test the check_attributes with invalid longitude values
         """
 
         config_file = get_test_config("siteattributes/" \
@@ -221,12 +221,12 @@ class TestSiteAttributes(unittest.TestCase):
 
         settings = siteattributes.SiteAttributes(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Invalid latitude ignored")
 
         config_file = get_test_config("siteattributes/" \
@@ -235,17 +235,17 @@ class TestSiteAttributes(unittest.TestCase):
         configuration.read(config_file)
         settings = siteattributes.SiteAttributes(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Invalid latitude ignored")
 
     def testInvalidHostname(self):
         """
-        Test the checkAttributes with invalid hostname
+        Test the check_attributes with invalid hostname
         """
 
         config_file = get_test_config("siteattributes/" \
@@ -255,17 +255,17 @@ class TestSiteAttributes(unittest.TestCase):
 
         settings = siteattributes.SiteAttributes(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Invalid hostname ignored")
 
     def testInvalidEmail(self):
         """
-        Test the checkAttributes with invalid email
+        Test the check_attributes with invalid email
         """
 
         config_file = get_test_config("siteattributes/" \
@@ -275,17 +275,17 @@ class TestSiteAttributes(unittest.TestCase):
 
         settings = siteattributes.SiteAttributes(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Invalid email ignored")
 
     def testInvalidSponsor1(self):
         """
-        Test the checkAttributes where the sponsor percentages
+        Test the check_attributes where the sponsor percentages
         add up to more than 100
         """
 
@@ -296,17 +296,17 @@ class TestSiteAttributes(unittest.TestCase):
 
         settings = siteattributes.SiteAttributes(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Invalid email ignored")
 
     def testInvalidSponsor2(self):
         """
-        Test the checkAttributes where the sponsor percentages
+        Test the check_attributes where the sponsor percentages
         add up to less than 100
         """
 
@@ -317,17 +317,17 @@ class TestSiteAttributes(unittest.TestCase):
 
         settings = siteattributes.SiteAttributes(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Invalid email ignored")
 
     def testInvalidSponsor3(self):
         """
-        Test the checkAttributes where the sponsor isn't on list
+        Test the check_attributes where the sponsor isn't on list
         of allow VOs
         """
 
@@ -338,17 +338,17 @@ class TestSiteAttributes(unittest.TestCase):
 
         settings = siteattributes.SiteAttributes(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Invalid email ignored")
 
     def testValidSettings(self):
         """
-        Test the checkAttributes function to see if it oks good attributes
+        Test the check_attributes function to see if it oks good attributes
         """
 
         config_file = get_test_config("siteattributes/valid_settings.ini")
@@ -357,17 +357,17 @@ class TestSiteAttributes(unittest.TestCase):
 
         settings = siteattributes.SiteAttributes(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertTrue(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertTrue(settings.check_attributes(attributes),
                         "Correct locations incorrectly flagged as missing")
 
     def testValidSettings2(self):
         """
-        Test the checkAttributes function to see if it oks good attributes
+        Test the check_attributes function to see if it oks good attributes
         """
 
         config_file = get_test_config("siteattributes/siteattributes3.ini")
@@ -376,12 +376,12 @@ class TestSiteAttributes(unittest.TestCase):
 
         settings = siteattributes.SiteAttributes(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertTrue(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertTrue(settings.check_attributes(attributes),
                         "Correct locations incorrectly flagged as missing")
 
 

@@ -65,30 +65,30 @@ class ManagedForkConfiguration(JobManagerConfiguration):
         self.config_section = "Managed Fork"
         self.log('ManagedForkConfiguration.__init__ completed')
 
-    def parseConfiguration(self, configuration):
+    def parse_configuration(self, configuration):
         """Try to get configuration information from ConfigParser or SafeConfigParser object given
         by configuration and write recognized settings to attributes dict
         """
-        super(ManagedForkConfiguration, self).parseConfiguration(configuration)
+        super(ManagedForkConfiguration, self).parse_configuration(configuration)
 
-        self.log('ManagedForkConfiguration.parseConfiguration started')
+        self.log('ManagedForkConfiguration.parse_configuration started')
 
-        self.checkConfig(configuration)
+        self.check_config(configuration)
 
         if not configuration.has_section(self.config_section):
             self.enabled = False
             self.section_present = False
             self.log("%s section not in config file" % self.config_section)
-            self.log('ManagedFork.parseConfiguration completed')
+            self.log('ManagedFork.parse_configuration completed')
             return
 
         self.section_present = True
-        if not self.setStatus(configuration):
+        if not self.set_status(configuration):
             self.options['enabled'].value = False
-            self.log('ManagedFork.parseConfiguration completed')
+            self.log('ManagedFork.parse_configuration completed')
             return True
 
-        self.getOptions(configuration)
+        self.get_options(configuration)
 
         if configuration.has_option(self.config_section, 'condor_config'):
             self.log("This setting is not used and will be ignored",
@@ -100,25 +100,25 @@ class ManagedForkConfiguration(JobManagerConfiguration):
                      section=self.config_section,
                      option='condor_location',
                      level=logging.WARNING)
-        self.log('ManagedForkConfiguration.parseConfiguration completed')
+        self.log('ManagedForkConfiguration.parse_configuration completed')
 
     # pylint: disable-msg=W0613
-    def checkAttributes(self, attributes):
+    def check_attributes(self, attributes):
         """Check attributes currently stored and make sure that they are consistent"""
-        self.log('ManagedForkConfiguration.checkAttributes started')
+        self.log('ManagedForkConfiguration.check_attributes started')
         attributes_ok = True
 
         if not self.enabled:
             self.log('Not enabled, returning True')
-            self.log('ManagedForkConfiguration.checkAttributes completed')
+            self.log('ManagedForkConfiguration.check_attributes completed')
             return attributes_ok
 
         if self.ignored:
             self.log('Ignored, returning True')
-            self.log('ManagedForkConfiguration.checkAttributes completed')
+            self.log('ManagedForkConfiguration.check_attributes completed')
             return attributes_ok
 
-        self.log('ManagedForkConfiguration.checkAttributes completed')
+        self.log('ManagedForkConfiguration.check_attributes completed')
         return attributes_ok
 
     # pylint: disable-msg=W0613
@@ -185,15 +185,15 @@ class ManagedForkConfiguration(JobManagerConfiguration):
         self.log('ManagedForkConfiguration.configure completed')
         return True
 
-    def moduleName(self):
+    def module_name(self):
         """Return a string with the name of the module"""
         return "ManagedFork"
 
-    def separatelyConfigurable(self):
+    def separately_configurable(self):
         """Return a boolean that indicates whether this module can be configured separately"""
         return False
 
-    def getAttributes(self, converter=str):
+    def get_attributes(self, converter=str):
         """
         Get attributes for the osg attributes file using the dict in self.options
 
@@ -203,18 +203,18 @@ class ManagedForkConfiguration(JobManagerConfiguration):
         to be mapped to Y/N
         """
 
-        self.log("%s.getAttributes started" % self.__class__)
-        attributes = BaseConfiguration.getAttributes(self, converter=convert_values)
+        self.log("%s.get_attributes started" % self.__class__)
+        attributes = BaseConfiguration.get_attributes(self, converter=convert_values)
         if attributes == {}:
             attributes['OSG_MANAGEDFORK'] = 'N'
-        self.log("%s.getAttributes completed" % self.__class__)
+        self.log("%s.get_attributes completed" % self.__class__)
         return attributes
 
-    def enabledServices(self):
+    def enabled_services(self):
         """Return a list of  system services needed for module to work
         """
 
         if not self.enabled or self.ignored:
             return set()
 
-        return set(['condor']).union(self.gatewayServices())
+        return set(['condor']).union(self.gateway_services())

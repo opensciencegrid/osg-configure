@@ -125,17 +125,17 @@ class RsvConfiguration(BaseConfiguration):
                                               opt_type=bool,
                                               default_value=False)}
 
-        self.__rsv_user = "rsv"
-        self.__ce_hosts = []
-        self.__gram_ce_hosts = []
-        self.__htcondor_ce_hosts = []
-        self.__gridftp_hosts = []
-        self.__gums_hosts = []
-        self.__srm_hosts = []
-        self.__gratia_probes_2d = []
-        self.__gratia_metric_map = {}
-        self.__enable_rsv_downloads = False
-        self.__meta = ConfigParser.RawConfigParser()
+        self._rsv_user = "rsv"
+        self._ce_hosts = []
+        self._gram_ce_hosts = []
+        self._htcondor_ce_hosts = []
+        self._gridftp_hosts = []
+        self._gums_hosts = []
+        self._srm_hosts = []
+        self._gratia_probes_2d = []
+        self._gratia_metric_map = {}
+        self._enable_rsv_downloads = False
+        self._meta = ConfigParser.RawConfigParser()
         if PREFERRED_CE_TYPE == GRAM_CE_TYPE:
             self.gram_gateway_enabled = True
             self.htcondor_gateway_enabled = False
@@ -156,20 +156,20 @@ class RsvConfiguration(BaseConfiguration):
         self.gid = None
         self.log('RsvConfiguration.__init__ completed')
 
-    def parseConfiguration(self, configuration):
+    def parse_configuration(self, configuration):
         """
         Try to get configuration information from ConfigParser or
         SafeConfigParser object given by configuration and write recognized settings
         to attributes dict
         """
-        self.log('RsvConfiguration.parseConfiguration started')
+        self.log('RsvConfiguration.parse_configuration started')
 
-        self.checkConfig(configuration)
+        self.check_config(configuration)
 
         if not configuration.has_section(self.config_section):
             self.enabled = False
             self.log("%s section not in config file" % self.config_section)
-            self.log('RsvConfiguration.parseConfiguration completed')
+            self.log('RsvConfiguration.parse_configuration completed')
             return True
 
         if not utilities.rpm_installed('rsv-core'):
@@ -182,12 +182,12 @@ class RsvConfiguration(BaseConfiguration):
                          level=logging.WARNING)
             return True
 
-        if not self.setStatus(configuration):
-            self.log('RsvConfiguration.parseConfiguration completed')
+        if not self.set_status(configuration):
+            self.log('RsvConfiguration.parse_configuration completed')
             return True
 
-        self.getOptions(configuration, ignore_options=['enabled'])
-        (self.uid, self.gid) = pwd.getpwnam(self.__rsv_user)[2:4]
+        self.get_options(configuration, ignore_options=['enabled'])
+        (self.uid, self.gid) = pwd.getpwnam(self._rsv_user)[2:4]
 
         # If we're on a CE, get the grid group if possible
         if configuration.has_section('Site Information'):
@@ -201,26 +201,26 @@ class RsvConfiguration(BaseConfiguration):
 
 
         # Parse lists
-        self.__ce_hosts = split_list_exclude_blank(self.options['ce_hosts'].value)
-        self.__gram_ce_hosts = split_list_exclude_blank(self.options['gram_ce_hosts'].value)
-        self.__htcondor_ce_hosts = split_list_exclude_blank(self.options['htcondor_ce_hosts'].value)
-        self.__gums_hosts = split_list_exclude_blank(self.options['gums_hosts'].value)
-        self.__srm_hosts = split_list_exclude_blank(self.options['srm_hosts'].value)
+        self._ce_hosts = split_list_exclude_blank(self.options['ce_hosts'].value)
+        self._gram_ce_hosts = split_list_exclude_blank(self.options['gram_ce_hosts'].value)
+        self._htcondor_ce_hosts = split_list_exclude_blank(self.options['htcondor_ce_hosts'].value)
+        self._gums_hosts = split_list_exclude_blank(self.options['gums_hosts'].value)
+        self._srm_hosts = split_list_exclude_blank(self.options['srm_hosts'].value)
 
         # If the gridftp hosts are not defined then they default to the CE hosts
         if self.options['gridftp_hosts'].value == '':
             # check to see if the setting is in the config file
             if configuration.has_option(self.config_section, 'gridftp_hosts'):
                 # present and set to default so we don't want gridftp tests
-                self.__gridftp_hosts = []
+                self._gridftp_hosts = []
             else:
                 # option is commented out, use ce_hosts setting
-                self.__gridftp_hosts = self.__ce_hosts
+                self._gridftp_hosts = self._ce_hosts
         else:
-            self.__gridftp_hosts = split_list(self.options['gridftp_hosts'].value)
+            self._gridftp_hosts = split_list(self.options['gridftp_hosts'].value)
 
         if self.options['gratia_probes'].value != '':
-            self.__gratia_probes_2d = self.split_2d_list(self.options['gratia_probes'].value)
+            self._gratia_probes_2d = self.split_2d_list(self.options['gratia_probes'].value)
 
         # Check the options for which gateways are enabled
         # How we run remote probes depends on this
@@ -235,51 +235,51 @@ class RsvConfiguration(BaseConfiguration):
                 self.copy_host_cert_for_service_cert = configuration.getboolean('Misc Services',
                                                                                 'copy_host_cert_for_service_certs')
 
-        self.log('RsvConfiguration.parseConfiguration completed')
+        self.log('RsvConfiguration.parse_configuration completed')
 
     # pylint: disable-msg=W0613
-    def checkAttributes(self, attributes):
+    def check_attributes(self, attributes):
         """
         Check attributes currently stored and make sure that they are consistent
         """
 
-        self.log('RsvConfiguration.checkAttributes started')
+        self.log('RsvConfiguration.check_attributes started')
         attributes_ok = True
 
         if not self.enabled:
             self.log('Not enabled, returning True')
-            self.log('RsvConfiguration.checkAttributes completed')
+            self.log('RsvConfiguration.check_attributes completed')
             return attributes_ok
 
         if self.ignored:
             self.log('Ignored, returning True')
-            self.log('RsvConfiguration.checkAttributes completed')
+            self.log('RsvConfiguration.check_attributes completed')
             return attributes_ok
 
         # Slurp in all the meta files which will tell us what type of metrics
         # we have and if they are enabled by default.
         self.load_rsv_meta_files()
 
-        attributes_ok &= self.__check_auth_settings()
+        attributes_ok &= self._check_auth_settings()
 
         # check hosts
-        attributes_ok &= self.__validate_host_list(self.__ce_hosts, "ce_hosts")
-        attributes_ok &= self.__validate_host_list(self.__gums_hosts, "gums_hosts")
-        attributes_ok &= self.__validate_host_list(self.__srm_hosts, "srm_hosts")
+        attributes_ok &= self._validate_host_list(self._ce_hosts, "ce_hosts")
+        attributes_ok &= self._validate_host_list(self._gums_hosts, "gums_hosts")
+        attributes_ok &= self._validate_host_list(self._srm_hosts, "srm_hosts")
         if self.htcondor_gateway_enabled:
-            attributes_ok &= self.__validate_host_list(self.__htcondor_ce_hosts, "htcondor_ce_hosts")
+            attributes_ok &= self._validate_host_list(self._htcondor_ce_hosts, "htcondor_ce_hosts")
         if self.gram_gateway_enabled:
-            attributes_ok &= self.__validate_host_list(self.__gram_ce_hosts, "gram_ce_hosts")
+            attributes_ok &= self._validate_host_list(self._gram_ce_hosts, "gram_ce_hosts")
 
-        attributes_ok &= self.__check_gridftp_settings()
-        attributes_ok &= self.__check_srm_settings()
+        attributes_ok &= self._check_gridftp_settings()
+        attributes_ok &= self._check_srm_settings()
         # check Gratia list
-        attributes_ok &= self.__check_gratia_settings()
+        attributes_ok &= self._check_gratia_settings()
 
         # Make sure that the condor_location is valid if it is supplied
-        attributes_ok &= self.__check_condor_location()
+        attributes_ok &= self._check_condor_location()
 
-        self.log('RsvConfiguration.checkAttributes completed')
+        self.log('RsvConfiguration.check_attributes completed')
         return attributes_ok
 
     def configure(self, attributes):
@@ -299,45 +299,45 @@ class RsvConfiguration(BaseConfiguration):
 
         try:
             # Reset always?
-            self.__reset_configuration()
-            self.__create_cert_key_if_needed()
+            self._reset_configuration()
+            self._create_cert_key_if_needed()
             # Put proxy information into rsv.conf
-            self.__configure_cert_info()
+            self._configure_cert_info()
             # Enable consumers
-            self.__configure_consumers()
+            self._configure_consumers()
             # Enable metrics
-            self.__configure_ce_metrics()
-            self.__configure_gums_metrics()
-            self.__configure_gridftp_metrics()
-            self.__configure_gratia_metrics()
-            self.__configure_local_metrics()
-            self.__configure_srm_metrics()
-            self.__configure_condor_cron_ids()
-            self.__configure_default_ce_type()
-            self.__configure_ce_types()
+            self._configure_ce_metrics()
+            self._configure_gums_metrics()
+            self._configure_gridftp_metrics()
+            self._configure_gratia_metrics()
+            self._configure_local_metrics()
+            self._configure_srm_metrics()
+            self._configure_condor_cron_ids()
+            self._configure_default_ce_type()
+            self._configure_ce_types()
             # Setup Apache?  I think this is done in the RPM
 
             # Fix the Gratia ProbeConfig file to point at the appropriate collector
-            self.__set_gratia_collector(self.options['gratia_collector'].value)
+            self._set_gratia_collector(self.options['gratia_collector'].value)
 
-            self.__configure_condor_location()
+            self._configure_condor_location()
         except ConfigFailed:
             return False
 
         self.log('RsvConfiguration.configure completed')
         return True
 
-    def moduleName(self):
+    def module_name(self):
         """Return a string with the name of the module"""
         return "RSV"
 
-    def separatelyConfigurable(self):
+    def separately_configurable(self):
         """Return a boolean that indicates whether this module can be configured separately"""
         return True
 
-    def __check_gridftp_settings(self):
+    def _check_gridftp_settings(self):
         """ Check gridftp settings and make sure they are valid """
-        status_check = self.__validate_host_list(self.__gridftp_hosts, "gridftp_hosts")
+        status_check = self._validate_host_list(self._gridftp_hosts, "gridftp_hosts")
 
         if utilities.blank(self.options['gridftp_dir'].value):
             self.log("Invalid gridftp_dir given: %s" %
@@ -349,7 +349,7 @@ class RsvConfiguration(BaseConfiguration):
 
         return status_check
 
-    def __check_auth_settings(self):
+    def _check_auth_settings(self):
         """ Check authorization/certificate settings and make sure that they are valid """
 
         check_value = True
@@ -438,7 +438,7 @@ class RsvConfiguration(BaseConfiguration):
 
         return check_value
 
-    def __reset_configuration(self):
+    def _reset_configuration(self):
         """ Reset all metrics and consumers to disabled """
 
         self.log("Resetting all metrics and consumers to disabled")
@@ -462,7 +462,7 @@ class RsvConfiguration(BaseConfiguration):
 
             shutil.rmtree(path)
 
-    def __create_cert_key_if_needed(self):
+    def _create_cert_key_if_needed(self):
         if not self.copy_host_cert_for_service_cert:
             # User explicitly told us not to make a copy
             return
@@ -476,7 +476,7 @@ class RsvConfiguration(BaseConfiguration):
             # creation unsuccessful
             raise ConfigFailed("Could not create service cert (%s) and key (%s)" % (service_cert, service_key))
 
-    def __get_metrics_by_type(self, metric_type, enabled=True):
+    def _get_metrics_by_type(self, metric_type, enabled=True):
         """
         Examine meta info and return the metrics that are enabled by default
         for the defined type
@@ -484,22 +484,22 @@ class RsvConfiguration(BaseConfiguration):
 
         metrics = []
 
-        for metric in self.__meta.sections():
+        for metric in self._meta.sections():
             if re.search(" env$", metric):
                 continue
 
-            if self.__meta.has_option(metric, "service-type"):
-                if self.__meta.get(metric, "service-type") == metric_type:
+            if self._meta.has_option(metric, "service-type"):
+                if self._meta.get(metric, "service-type") == metric_type:
                     if not enabled:
                         metrics.append(metric)
                     else:
-                        if self.__meta.has_option(metric, "enable-by-default"):
-                            if self.__meta.get(metric, "enable-by-default") == "true":
+                        if self._meta.has_option(metric, "enable-by-default"):
+                            if self._meta.get(metric, "enable-by-default") == "true":
                                 metrics.append(metric)
 
         return metrics
 
-    def __enable_metrics(self, host, metrics, args=None):
+    def _enable_metrics(self, host, metrics, args=None):
         """Given a host and array of metrics, enable them via rsv-control
 
         :param host: FQDN of host to enable metrics for
@@ -527,7 +527,7 @@ class RsvConfiguration(BaseConfiguration):
                      level=logging.ERROR)
             raise ConfigFailed
 
-    def __configure_ce_metrics(self):
+    def _configure_ce_metrics(self):
         """Enable CE metrics.
         This consists of OSG-GRAM-CE metrics for gram_ce_hosts, OSG-HTCondor-CE
         metrics for htcondor_ce_hosts and OSG-CE metrics for ce_hosts (which should
@@ -545,42 +545,42 @@ class RsvConfiguration(BaseConfiguration):
                 self.log("No %s defined.  Not configuring %s metrics" % (hosts_var_name, label))
                 return
 
-            metrics = self.__get_metrics_by_type(metric_type)
+            metrics = self._get_metrics_by_type(metric_type)
 
             for host in hosts:
                 self.log("Enabling %s metrics for host '%s'" % (label, host))
-                self.__enable_metrics(host, metrics)
+                self._enable_metrics(host, metrics)
 
         _set_metrics_for_hosts(label='CE', metric_type='OSG-CE', hosts_var_name='ce_hosts',
-                               hosts=self.__ce_hosts, enabled=True)
+                               hosts=self._ce_hosts, enabled=True)
         _set_metrics_for_hosts(label='GRAM CE', metric_type='OSG-GRAM-CE', hosts_var_name='gram_ce_hosts',
-                               hosts=self.__gram_ce_hosts, enabled=self.gram_gateway_enabled)
+                               hosts=self._gram_ce_hosts, enabled=self.gram_gateway_enabled)
         _set_metrics_for_hosts(label='HTCondor-CE', metric_type='OSG-HTCondor-CE',
-                               hosts_var_name='htcondor_ce_hosts', hosts=self.__htcondor_ce_hosts,
+                               hosts_var_name='htcondor_ce_hosts', hosts=self._htcondor_ce_hosts,
                                enabled=self.htcondor_gateway_enabled)
 
-    def __configure_gridftp_metrics(self):
+    def _configure_gridftp_metrics(self):
         """ Enable GridFTP metrics for each GridFTP host declared    """
 
-        if not self.__gridftp_hosts:
+        if not self._gridftp_hosts:
             self.log("No gridftp_hosts defined.  Not configuring GridFTP metrics")
             return
 
         gridftp_dirs = split_list(self.options['gridftp_dir'].value)
-        if len(self.__gridftp_hosts) != len(gridftp_dirs) and len(gridftp_dirs) != 1:
+        if len(self._gridftp_hosts) != len(gridftp_dirs) and len(gridftp_dirs) != 1:
             self.log("RSV.gridftp_dir is set incorrectly.  When enabling GridFTP " +
                      "metrics you must specify either exactly 1 entry, or the same " +
                      "number of entries in the gridftp_dir variable as you have in " +
                      "the gridftp_hosts section.  There are %i host entries " \
-                     "and %i gridftp_dir entries." % (len(self.__gridftp_hosts),
+                     "and %i gridftp_dir entries." % (len(self._gridftp_hosts),
                                                       len(gridftp_dirs)),
                      level=logging.ERROR)
             raise exceptions.ConfigureError("Failed to configure RSV")
 
-        gridftp_metrics = self.__get_metrics_by_type("GridFTP")
+        gridftp_metrics = self._get_metrics_by_type("GridFTP")
 
         count = 0
-        for gridftp_host in self.__gridftp_hosts:
+        for gridftp_host in self._gridftp_hosts:
             self.log("Enabling GridFTP metrics for host '%s'" % gridftp_host)
 
             if len(gridftp_dirs) == 1:
@@ -590,53 +590,53 @@ class RsvConfiguration(BaseConfiguration):
 
             args = ["--arg", "destination-dir=%s" % directories]
 
-            self.__enable_metrics(gridftp_host, gridftp_metrics, args)
+            self._enable_metrics(gridftp_host, gridftp_metrics, args)
 
             count += 1
 
-    def __configure_gums_metrics(self):
+    def _configure_gums_metrics(self):
         """ Enable GUMS metrics for each GUMS host declared """
 
-        if not self.__gums_hosts:
+        if not self._gums_hosts:
             self.log("No gums_hosts defined.  Not configuring GUMS metrics")
             return
 
-        gums_metrics = self.__get_metrics_by_type("OSG-GUMS")
+        gums_metrics = self._get_metrics_by_type("OSG-GUMS")
 
         if not gums_metrics:
             self.log("No current GUMS metrics.  No configuration to do at this time.")
             return
 
-        for gums_host in self.__gums_hosts:
+        for gums_host in self._gums_hosts:
             self.log("Enabling GUMS metrics for host '%s'" % gums_host)
-            self.__enable_metrics(gums_host, gums_metrics)
+            self._enable_metrics(gums_host, gums_metrics)
 
-    def __configure_local_metrics(self):
+    def _configure_local_metrics(self):
         """ Enable appropriate local metrics """
 
         if not self.options['enable_local_probes'].value:
             self.log("Local probes disabled.")
             return
 
-        local_metrics = self.__get_metrics_by_type("OSG-Local-Monitor")
+        local_metrics = self._get_metrics_by_type("OSG-Local-Monitor")
 
         self.log("Enabling local metrics for host '%s'" % utilities.get_hostname())
-        self.__enable_metrics(utilities.get_hostname(), local_metrics)
+        self._enable_metrics(utilities.get_hostname(), local_metrics)
 
-    def __configure_srm_metrics(self):
+    def _configure_srm_metrics(self):
         """ Enable SRM metric """
 
-        if not self.__srm_hosts:
+        if not self._srm_hosts:
             self.log("No srm_hosts defined.  Not configuring SRM metrics")
             return
 
         # Do some checking on the values.  perhaps this should be in the validate section?
         srm_dirs = split_list(self.options['srm_dir'].value)
-        if len(self.__srm_hosts) != len(srm_dirs):
+        if len(self._srm_hosts) != len(srm_dirs):
             self.log("When enabling SRM metrics you must specify the same number " +
                      "of entries in the srm_dir variable as you have in the " +
                      "srm_hosts section.  There are %i host entries and %i " \
-                     "srm_dir entries." % (len(self.__srm_hosts), len(srm_dirs)),
+                     "srm_dir entries." % (len(self._srm_hosts), len(srm_dirs)),
                      level=logging.ERROR)
             raise exceptions.ConfigureError("Failed to configure RSV")
 
@@ -644,52 +644,52 @@ class RsvConfiguration(BaseConfiguration):
         if not utilities.blank(self.options['srm_webservice_path'].value):
             srm_ws_paths = split_list(self.options['srm_webservice_path'].value)
 
-            if len(self.__srm_hosts) != len(srm_ws_paths):
+            if len(self._srm_hosts) != len(srm_ws_paths):
                 self.log("If you set srm_webservice_path when enabling SRM metrics " +
                          "you must specify the same number of entries in the " +
                          "srm_webservice_path variable as you have in the srm_hosts " +
                          "section.  There are %i host entries and %i " \
-                         "srm_webservice_path entries." % (len(self.__srm_hosts),
+                         "srm_webservice_path entries." % (len(self._srm_hosts),
                                                            len(srm_ws_paths)),
                          level=logging.ERROR)
                 raise exceptions.ConfigureError("Failed to configure RSV")
 
         # Now time to do the actual configuration
-        srm_metrics = self.__get_metrics_by_type("OSG-SRM")
+        srm_metrics = self._get_metrics_by_type("OSG-SRM")
         count = 0
-        for srm_host in self.__srm_hosts:
+        for srm_host in self._srm_hosts:
             self.log("Enabling SRM metrics for host '%s'" % srm_host)
 
             args = ["--arg", "srm-destination-dir=%s" % srm_dirs[count]]
             if srm_ws_paths:
                 args += ["--arg", "srm-webservice-path=%s" % srm_ws_paths[count]]
 
-            self.__enable_metrics(srm_host, srm_metrics, args)
+            self._enable_metrics(srm_host, srm_metrics, args)
 
             count += 1
 
-    def __map_gratia_metric(self, gratia_type):
+    def _map_gratia_metric(self, gratia_type):
         """
         Map gratia type to rsv metric
         """
         # The first time through we will populate the map.  It will be cached as a
         # data member in this class so that we don't have to do this each time
-        if not self.__gratia_metric_map:
-            ce_metrics = self.__get_metrics_by_type("OSG-CE", enabled=False)
+        if not self._gratia_metric_map:
+            ce_metrics = self._get_metrics_by_type("OSG-CE", enabled=False)
             for metric in ce_metrics:
                 match = re.search("\.gratia\.(\S+)$", metric)
                 if match:
-                    self.__gratia_metric_map[match.group(1)] = metric
+                    self._gratia_metric_map[match.group(1)] = metric
                     self.log("Gratia map -> %s = %s" % (match.group(1), metric))
 
         # Now that we have the mapping, simply return the appropriate type.
         # This is the only code that should execute every time after the data structure is loaded.
-        if gratia_type in self.__gratia_metric_map:
-            return self.__gratia_metric_map[gratia_type]
+        if gratia_type in self._gratia_metric_map:
+            return self._gratia_metric_map[gratia_type]
         else:
             return None
 
-    def __check_gratia_settings(self):
+    def _check_gratia_settings(self):
         """ Check to see if gratia settings are valid """
 
         tmp_2d = []
@@ -697,10 +697,10 @@ class RsvConfiguration(BaseConfiguration):
         # While checking the Gratia settings we will translate them to a list of
         # the actual probes to enable.
         status_check = True
-        for item_list in self.__gratia_probes_2d:
+        for item_list in self._gratia_probes_2d:
             tmp = []
             for metric_type in item_list:
-                metric = self.__map_gratia_metric(metric_type)
+                metric = self._map_gratia_metric(metric_type)
                 if metric:
                     tmp.append(metric)
                 else:
@@ -711,25 +711,25 @@ class RsvConfiguration(BaseConfiguration):
 
             tmp_2d.append(tmp)
 
-        self.__gratia_probes_2d = tmp_2d
+        self._gratia_probes_2d = tmp_2d
 
         return status_check
 
-    def __configure_gratia_metrics(self):
+    def _configure_gratia_metrics(self):
         """
         Enable Gratia metrics
         """
 
-        if not self.__gratia_probes_2d:
+        if not self._gratia_probes_2d:
             self.log("Skipping Gratia metric configuration because gratia_probes_2d is empty")
             return
 
-        if not self.__ce_hosts:
+        if not self._ce_hosts:
             self.log("Skipping Gratia metric configuration because ce_hosts is empty")
             return
 
-        num_ces = len(self.__ce_hosts)
-        num_gratia = len(self.__gratia_probes_2d)
+        num_ces = len(self._ce_hosts)
+        num_gratia = len(self._gratia_probes_2d)
         if num_ces != num_gratia and num_gratia != 1:
             self.log("The number of CE hosts does not match the number of " +
                      "Gratia host definitions",
@@ -744,20 +744,20 @@ class RsvConfiguration(BaseConfiguration):
             raise ConfigFailed
 
         i = 0
-        for ce in self.__ce_hosts:
+        for ce in self._ce_hosts:
             gratia = None
 
             # There will either be a Gratia definition for each host, or else a single Gratia
             # definition which we will use across all hosts.
             if num_gratia == 1:
-                gratia = self.__gratia_probes_2d[0]
+                gratia = self._gratia_probes_2d[0]
             else:
-                gratia = self.__gratia_probes_2d[i]
+                gratia = self._gratia_probes_2d[i]
                 i += 1
 
-            self.__enable_metrics(ce, gratia)
+            self._enable_metrics(ce, gratia)
 
-    def __check_condor_location(self):
+    def _check_condor_location(self):
         """ Make sure that a supplied Condor location is valid """
 
         if not self.options['condor_location'].value:
@@ -774,7 +774,7 @@ class RsvConfiguration(BaseConfiguration):
             return False
         return True
 
-    def __configure_condor_location(self):
+    def _configure_condor_location(self):
         """ Put the Condor location into the necessary places """
 
         # Note: make sure that we write empty files if condor_location is not set
@@ -807,7 +807,7 @@ class RsvConfiguration(BaseConfiguration):
             self.log("Error trying to write to file (%s): %s" % (conf_file, err))
             raise ConfigFailed
 
-    def __validate_host_list(self, hosts, setting):
+    def _validate_host_list(self, hosts, setting):
         """ Validate a list of hosts """
         ret = True
         for host in hosts:
@@ -831,7 +831,7 @@ class RsvConfiguration(BaseConfiguration):
 
         return ret
 
-    def __read_rsv_conf(self):
+    def _read_rsv_conf(self):
         """Return a ConfigParser with the contents of the rsv.conf file"""
         config = ConfigParser.RawConfigParser()
         config.optionxform = str  # rsv.conf is case-sensitive
@@ -844,7 +844,7 @@ class RsvConfiguration(BaseConfiguration):
 
         return config
 
-    def __write_rsv_conf(self, config):
+    def _write_rsv_conf(self, config):
         """Write the contents of a ConfigParser back to the rsv.conf file"""
         config_fp = open(self.rsv_conf, 'w')
         try:
@@ -852,10 +852,10 @@ class RsvConfiguration(BaseConfiguration):
         finally:
             config_fp.close()
 
-    def __configure_cert_info(self):
+    def _configure_cert_info(self):
         """ Configure certificate information """
 
-        config = self.__read_rsv_conf()
+        config = self._read_rsv_conf()
 
         # Set the appropriate options in the rsv.conf file
         if self.use_service_cert:
@@ -875,16 +875,16 @@ class RsvConfiguration(BaseConfiguration):
         else:
             config.remove_option('rsv', 'legacy-proxy')
 
-        self.__write_rsv_conf(config)
+        self._write_rsv_conf(config)
 
-    def __configure_default_ce_type(self):
+    def _configure_default_ce_type(self):
         """Set the ce-type in rsv.conf.
         This controls whether Condor-G submits to a GRAM-Gatekeeper or an
         HTCondor-CE when running remote probes. The setting may be overridden in
-        probe-specific configs (set by __configure_ce_types for example).
+        probe-specific configs (set by _configure_ce_types for example).
 
         """
-        config = self.__read_rsv_conf()
+        config = self._read_rsv_conf()
 
         if self.gram_gateway_enabled and self.htcondor_gateway_enabled:
             config.set('rsv', 'ce-type', PREFERRED_CE_TYPE)
@@ -893,24 +893,24 @@ class RsvConfiguration(BaseConfiguration):
         elif self.htcondor_gateway_enabled:
             config.set('rsv', 'ce-type', HTCONDOR_CE_TYPE)
 
-        self.__write_rsv_conf(config)
+        self._write_rsv_conf(config)
 
-    def __configure_ce_types(self):
+    def _configure_ce_types(self):
         """Write config files that set the ce-type for GRAM-CE hosts and HTCondor-CE hosts.
 
         :raise ConfigFailed: if writing any config file failed.
 
         """
         if self.gram_gateway_enabled:
-            for host in self.__gram_ce_hosts:
-                if PREFERRED_CE_TYPE == GRAM_CE_TYPE or host not in self.__htcondor_ce_hosts:
-                    self.__configure_ce_type_for_host(host, GRAM_CE_TYPE)
+            for host in self._gram_ce_hosts:
+                if PREFERRED_CE_TYPE == GRAM_CE_TYPE or host not in self._htcondor_ce_hosts:
+                    self._configure_ce_type_for_host(host, GRAM_CE_TYPE)
         if self.htcondor_gateway_enabled:
-            for host in self.__htcondor_ce_hosts:
-                if PREFERRED_CE_TYPE == HTCONDOR_CE_TYPE or host not in self.__gram_ce_hosts:
-                    self.__configure_ce_type_for_host(host, HTCONDOR_CE_TYPE)
+            for host in self._htcondor_ce_hosts:
+                if PREFERRED_CE_TYPE == HTCONDOR_CE_TYPE or host not in self._gram_ce_hosts:
+                    self._configure_ce_type_for_host(host, HTCONDOR_CE_TYPE)
 
-    def __configure_ce_type_for_host(self, hostname, ce_type):
+    def _configure_ce_type_for_host(self, hostname, ce_type):
         """Write config file that sets the ce-type for all probes on a host.
         Specifically, a directory is created (if missing) under the metrics config
         dir for that host, and an allmetrics.conf file is placed into it.
@@ -952,7 +952,7 @@ class RsvConfiguration(BaseConfiguration):
         finally:
             config_fp.close()
 
-    def __configure_consumers(self):
+    def _configure_consumers(self):
         """ Enable the appropriate consumers """
 
         # The current logic is:
@@ -969,7 +969,7 @@ class RsvConfiguration(BaseConfiguration):
 
         if self.options['enable_nagios'].value:
             consumers.append("nagios-consumer")
-            self.__configure_nagios_files()
+            self._configure_nagios_files()
 
         if self.options['enable_zabbix'].value:
             if not utilities.rpm_installed('rsv-consumers-zabbix'):
@@ -978,7 +978,7 @@ class RsvConfiguration(BaseConfiguration):
                          level=logging.WARNING)
             else:
                 consumers.append("zabbix-consumer")
-                self.__configure_zabbix_files()
+                self._configure_zabbix_files()
 
         consumer_list = " ".join(consumers)
         self.log("Enabling consumers: %s " % consumer_list)
@@ -986,7 +986,7 @@ class RsvConfiguration(BaseConfiguration):
         if not utilities.run_script([self.rsv_control, "-v0", "--enable"] + consumers):
             raise ConfigFailed
 
-    def __configure_nagios_files(self):
+    def _configure_nagios_files(self):
         """ Store the nagios configuration """
 
         # The Nagios conf file contains a password so set it to mode 0400 owned by rsv
@@ -1015,7 +1015,7 @@ class RsvConfiguration(BaseConfiguration):
         config.write(config_fp)
         config_fp.close()
 
-    def __configure_zabbix_files(self):
+    def _configure_zabbix_files(self):
         """ Store the zabbix configuration """
 
         rsv_zabbix_file = os.path.join(self.rsv_conf_dir, 'rsv-zabbix.conf')
@@ -1053,7 +1053,7 @@ class RsvConfiguration(BaseConfiguration):
 
         for filename in files:
             if re.search('\.meta$', filename):
-                self.__meta.read(os.path.join(self.rsv_meta_dir, filename))
+                self._meta.read(os.path.join(self.rsv_meta_dir, filename))
 
     def split_2d_list(self, item_list):
         """
@@ -1110,7 +1110,7 @@ class RsvConfiguration(BaseConfiguration):
         # We shouldn't reach here, but just in case...
         return array
 
-    def __set_gratia_collector(self, collector):
+    def _set_gratia_collector(self, collector):
         """ Put the appropriate collector URL into the ProbeConfig file """
 
         if not self.options['enable_gratia'].value:
@@ -1167,13 +1167,13 @@ class RsvConfiguration(BaseConfiguration):
                      level=logging.ERROR)
             raise exceptions.ConfigureError("Error configuring gratia")
 
-    def __check_srm_settings(self):
+    def _check_srm_settings(self):
         """
         Check srm settings to make sure settings are consistent and properly
         set
         """
-        if (self.__srm_hosts == [] or
-                    self.__srm_hosts is None or
+        if (self._srm_hosts == [] or
+                    self._srm_hosts is None or
                 utilities.blank(self.options['srm_hosts'].value)):
             return True
 
@@ -1187,11 +1187,11 @@ class RsvConfiguration(BaseConfiguration):
             all_ok = False
 
         srm_dirs = split_list(self.options['srm_dir'].value)
-        if len(self.__srm_hosts) != len(srm_dirs):
+        if len(self._srm_hosts) != len(srm_dirs):
             self.log("When enabling SRM metrics you must specify the same number " +
                      "of entries in the srm_dir variable as you have in the " +
                      "srm_hosts section.  There are %i host entries and %i " \
-                     "srm_dir entries." % (len(self.__srm_hosts), len(srm_dirs)),
+                     "srm_dir entries." % (len(self._srm_hosts), len(srm_dirs)),
                      level=logging.ERROR)
             all_ok = False
 
@@ -1206,19 +1206,19 @@ class RsvConfiguration(BaseConfiguration):
 
         if not utilities.blank(self.options['srm_webservice_path'].value):
             srm_ws_paths = split_list(self.options['srm_webservice_path'].value)
-            if len(self.__srm_hosts) != len(srm_ws_paths):
+            if len(self._srm_hosts) != len(srm_ws_paths):
                 self.log("If you set srm_webservice_path when enabling SRM metrics " +
                          "you must specify the same number of entries in the " +
                          "srm_webservice_path variable as you have in the srm_hosts " +
                          "section.  There are %i host entries and %i " \
-                         "srm_webservice_path entries." % (len(self.__srm_hosts),
+                         "srm_webservice_path entries." % (len(self._srm_hosts),
                                                            len(srm_ws_paths)),
                          level=logging.ERROR)
                 all_ok = False
 
         return all_ok
 
-    def enabledServices(self):
+    def enabled_services(self):
         """Return a list of  system services needed for module to work
         """
 
@@ -1227,7 +1227,7 @@ class RsvConfiguration(BaseConfiguration):
 
         return set(['rsv', 'condor-cron'])
 
-    def __configure_condor_cron_ids(self):
+    def _configure_condor_cron_ids(self):
         """Ensure UID/GID of cndrcron user is valid and is in the condor-cron configs
         :raise ConfigFailed: if modifying condor-cron configs failed
 

@@ -37,7 +37,7 @@ class TestGateway(unittest.TestCase):
 
         settings = gateway.GatewayConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 

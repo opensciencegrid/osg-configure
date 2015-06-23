@@ -46,11 +46,11 @@ class TestSquid(unittest.TestCase):
 
         settings = squid.SquidConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         variables = {'OSG_SQUID_LOCATION': "test.com:3128",
                      'OSG_SQUID_POLICY': 'LRU',
                      'OSG_SQUID_CACHE_SIZE': '2048',
@@ -74,11 +74,11 @@ class TestSquid(unittest.TestCase):
 
         settings = squid.SquidConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         variables = {'OSG_SQUID_LOCATION': 'example.com:3128',
                      'OSG_SQUID_POLICY': 'LRU',
                      'OSG_SQUID_CACHE_SIZE': '2048',
@@ -102,11 +102,11 @@ class TestSquid(unittest.TestCase):
 
         settings = squid.SquidConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         self.assertEqual(len(attributes), 0,
                          "Disabled configuration should have 0 attributes")
 
@@ -126,11 +126,11 @@ class TestSquid(unittest.TestCase):
 
         settings = squid.SquidConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         self.assertEqual(len(attributes), 4,
                          "Ignored configuration should have 4 attributes")
 
@@ -160,12 +160,12 @@ class TestSquid(unittest.TestCase):
 
             settings = squid.SquidConfiguration(logger=global_logger)
             self.assertRaises(exceptions.SettingError,
-                              settings.parseConfiguration,
+                              settings.parse_configuration,
                               configuration)
 
     def testBadMemory(self):
         """
-        Test the checkAttributes function when memory size is not an integer
+        Test the check_attributes function when memory size is not an integer
         """
 
         if not ce_installed():
@@ -176,12 +176,12 @@ class TestSquid(unittest.TestCase):
 
         settings = squid.SquidConfiguration(logger=global_logger)
         self.assertRaises(exceptions.SettingError,
-                          settings.parseConfiguration,
+                          settings.parse_configuration,
                           configuration)
 
     def testBadCache(self):
         """
-        Test the checkAttributes function when cache size is not an integer
+        Test the check_attributes function when cache size is not an integer
         """
 
         if not ce_installed():
@@ -192,12 +192,12 @@ class TestSquid(unittest.TestCase):
 
         settings = squid.SquidConfiguration(logger=global_logger)
         self.assertRaises(exceptions.SettingError,
-                          settings.parseConfiguration,
+                          settings.parse_configuration,
                           configuration)
 
     def testBadHost(self):
         """
-        Test the checkAttributes function when the squid proxy hostname is
+        Test the check_attributes function when the squid proxy hostname is
         not valie
         """
 
@@ -209,12 +209,12 @@ class TestSquid(unittest.TestCase):
 
         settings = squid.SquidConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Did not notice invalid host")
 
         config_file = get_test_config("squid/squid_bad_host2.ini")
@@ -223,17 +223,17 @@ class TestSquid(unittest.TestCase):
 
         settings = squid.SquidConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration")
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Did not notice invalid host")
 
     def testBadPort(self):
         """
-        Test the checkAttributes function when port for the squid proxy is
+        Test the check_attributes function when port for the squid proxy is
         not an integer
         """
 
@@ -245,17 +245,17 @@ class TestSquid(unittest.TestCase):
 
         settings = squid.SquidConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Did not notice invalid port number")
 
     def testValidSettings(self):
         """
-        Test the checkAttributes function to see if it oks good attributes
+        Test the check_attributes function to see if it oks good attributes
         """
 
         if not ce_installed():
@@ -266,17 +266,17 @@ class TestSquid(unittest.TestCase):
 
         settings = squid.SquidConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertTrue(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertTrue(settings.check_attributes(attributes),
                         "Correct locations incorrectly flagged as missing")
 
     def testDisabled(self):
         """
-        Test the checkAttributes function to see if it indicates that a disabled
+        Test the check_attributes function to see if it indicates that a disabled
         section has an error
         """
 
@@ -286,17 +286,17 @@ class TestSquid(unittest.TestCase):
 
         settings = squid.SquidConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertTrue(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertTrue(settings.check_attributes(attributes),
                         "Disabled squid flagged as good")
 
     def testBlankLocation(self):
         """
-        Test the checkAttributes function to see if it raises an error when
+        Test the check_attributes function to see if it raises an error when
         location is left blank
         """
 
@@ -308,17 +308,17 @@ class TestSquid(unittest.TestCase):
 
         settings = squid.SquidConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertTrue(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertTrue(settings.check_attributes(attributes),
                         "Blank location flagged as bad")
 
     def testLocationUnavailable(self):
         """
-        Test the checkAttributes function to see if it oks a section
+        Test the check_attributes function to see if it oks a section
         where location is set to UNAVAILABLE
         """
 
@@ -328,12 +328,12 @@ class TestSquid(unittest.TestCase):
 
         settings = squid.SquidConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertTrue(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertTrue(settings.check_attributes(attributes),
                         "location set to UNAVAIALBLE flagged as bad")
 
 

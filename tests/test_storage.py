@@ -51,11 +51,11 @@ class TestStorage(unittest.TestCase):
 
         settings = storage.StorageConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         variables = {'OSG_STORAGE_ELEMENT': 'True',
                      'OSG_DEFAULT_SE': 'test.domain.org',
                      'OSG_GRID': '/tmp',
@@ -75,10 +75,10 @@ class TestStorage(unittest.TestCase):
             # handle cases where this is not run under osg test framework
             os.mkdir('/tmp/etc')
             os.chmod('/tmp/etc', 0777)
-            self.assertTrue(settings.checkAttributes(attributes))
+            self.assertTrue(settings.check_attributes(attributes))
             os.rmdir('/tmp/etc')
         else:
-            self.assertTrue(settings.checkAttributes(attributes))
+            self.assertTrue(settings.check_attributes(attributes))
 
     def testParsing2(self):
         """
@@ -94,11 +94,11 @@ class TestStorage(unittest.TestCase):
 
         settings = storage.StorageConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         variables = {'OSG_STORAGE_ELEMENT': 'False',
                      'OSG_DEFAULT_SE': 'test.domain.org',
                      'OSG_GRID': '/usr',
@@ -118,10 +118,10 @@ class TestStorage(unittest.TestCase):
             # handle cases where this is not run under osg test framework
             os.mkdir('/tmp/etc')
             os.chmod('/tmp/etc', 0777)
-            self.assertTrue(settings.checkAttributes(attributes))
+            self.assertTrue(settings.check_attributes(attributes))
             os.rmdir('/tmp/etc')
         else:
-            self.assertTrue(settings.checkAttributes(attributes))
+            self.assertTrue(settings.check_attributes(attributes))
 
     def testParsing3(self):
         """
@@ -137,11 +137,11 @@ class TestStorage(unittest.TestCase):
 
         settings = storage.StorageConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         variables = {'OSG_STORAGE_ELEMENT': 'False',
                      'OSG_DEFAULT_SE': 'test.domain.org',
                      'OSG_GRID': '/etc',
@@ -160,10 +160,10 @@ class TestStorage(unittest.TestCase):
             # handle cases where this is not run under osg test framework
             os.mkdir('/tmp/etc')
             os.chmod('/tmp/etc', 0777)
-            self.assertTrue(settings.checkAttributes(attributes))
+            self.assertTrue(settings.check_attributes(attributes))
             os.rmdir('/tmp/etc')
         else:
-            self.assertTrue(settings.checkAttributes(attributes))
+            self.assertTrue(settings.check_attributes(attributes))
 
     def testOASISConfig(self):
         """
@@ -179,11 +179,11 @@ class TestStorage(unittest.TestCase):
 
         settings = storage.StorageConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         variables = {'OSG_STORAGE_ELEMENT': 'False',
                      'OSG_DEFAULT_SE': 'test.domain.org',
                      'OSG_GRID': '/etc',
@@ -198,11 +198,11 @@ class TestStorage(unittest.TestCase):
                              variables[var],
                              "Wrong value obtained for %s, got %s but " \
                              "expected %s" % (var, attributes[var], variables[var]))
-            self.assertTrue(settings.checkAttributes(attributes))
+            self.assertTrue(settings.check_attributes(attributes))
 
     def testMissingAttribute(self):
         """
-        Test the checkAttributes function
+        Test the check_attributes function
         """
 
 
@@ -218,7 +218,7 @@ class TestStorage(unittest.TestCase):
 
             settings = storage.StorageConfiguration(logger=global_logger)
             self.assertRaises(exceptions.SettingError,
-                              settings.parseConfiguration,
+                              settings.parse_configuration,
                               configuration)
 
 

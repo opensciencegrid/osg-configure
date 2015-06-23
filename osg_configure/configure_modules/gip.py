@@ -85,17 +85,17 @@ class GipConfiguration(BaseConfiguration):
 
     _check_entry = staticmethod(subcluster.check_entry)
 
-    def parseConfiguration(self, configuration):
+    def parse_configuration(self, configuration):
         """
         Try to get configuration information from ConfigParser or SafeConfigParser
         object given by configuration and write recognized settings to attributes
         dict
         """
-        self.log('GipConfiguration.parseConfiguration started')
+        self.log('GipConfiguration.parse_configuration started')
 
         if not utilities.rpm_installed('gip'):
             self.log('GIP not installed, disabling GIP')
-            self.log('GipConfiguration.parseConfiguration completed')
+            self.log('GipConfiguration.parse_configuration completed')
             self.enabled = False
             return
         else:
@@ -104,21 +104,21 @@ class GipConfiguration(BaseConfiguration):
         # TODO Do we want to force the user to have a GIP section? Uncomment the following if not.
         # if not configuration.has_section(self.config_section):
         #   self.log("%s section not in config file" % self.config_section)
-        #   self.log('GipConfiguration.parseConfiguration completed')
+        #   self.log('GipConfiguration.parse_configuration completed')
         #   self.enabled = False
         #   return
 
-        self.checkConfig(configuration)
+        self.check_config(configuration)
 
-        self._parseConfiguration(configuration)
+        self._parse_configuration(configuration)
 
-        self.log('GipConfiguration.parseConfiguration completed')
+        self.log('GipConfiguration.parse_configuration completed')
 
     check_subclusters = staticmethod(subcluster.check_config)
 
-    def _parseConfiguration(self, configuration):
+    def _parse_configuration(self, configuration):
         """
-        The meat of parseConfiguration, runs after we've checked that GIP is
+        The meat of parse_configuration, runs after we've checked that GIP is
         enabled and we have the right RPMs installed.
         """
         # The following is to set the user that gip files need to belong to
@@ -164,7 +164,7 @@ class GipConfiguration(BaseConfiguration):
             if not section.lower().startswith('se'):
                 continue
             has_se = True
-            self.checkSE(configuration, section)
+            self.check_se(configuration, section)
         if not has_se and not has_classic_se:
             try:
                 self._check_entry(configuration, "GIP", "se_name", REQUIRED, STRING)
@@ -185,13 +185,13 @@ class GipConfiguration(BaseConfiguration):
                 raise exceptions.SettingError(err_msg)
             self.gip_user = username
 
-    checkSC = staticmethod(subcluster.check_section)
+    check_sc = staticmethod(subcluster.check_section)
 
-    def checkSE(self, config, section):
+    def check_se(self, config, section):
         """
         Check attributes currently stored and make sure that they are consistent
         """
-        self.log('GipConfiguration.checkSE started')
+        self.log('GipConfiguration.check_se started')
         attributes_ok = True
 
         enabled = True
@@ -261,7 +261,7 @@ class GipConfiguration(BaseConfiguration):
                         else:
                             msg += "  There are no allowed VOs detected; contact the experts!"
                         raise exceptions.SettingError(msg)
-        self.log('GipConfiguration.checkSE completed')
+        self.log('GipConfiguration.check_se completed')
         return attributes_ok
 
     # pylint: disable-msg=W0613
@@ -333,13 +333,13 @@ class GipConfiguration(BaseConfiguration):
 
         self.log('GipConfiguration.configure completed')
 
-    def moduleName(self):
+    def module_name(self):
         """
         Return a string with the name of the module
         """
         return "GIP"
 
-    def separatelyConfigurable(self):
+    def separately_configurable(self):
         """
         Return a boolean that indicates whether this module can be configured
         separately

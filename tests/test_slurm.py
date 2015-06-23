@@ -44,11 +44,11 @@ class TestSlurm(unittest.TestCase):
 
         settings = slurm.SlurmConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         options = {'OSG_JOB_MANAGER_HOME': '/opt/slurm',
                    'OSG_PBS_LOCATION': '/opt/slurm',
                    'OSG_JOB_CONTACT': 'my.domain.com/jobmanager-pbs',
@@ -73,11 +73,11 @@ class TestSlurm(unittest.TestCase):
 
         settings = slurm.SlurmConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         self.assertEqual(len(attributes), 0,
                          "Disabled configuration should have no attributes")
 
@@ -92,17 +92,17 @@ class TestSlurm(unittest.TestCase):
 
         settings = slurm.SlurmConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         self.assertEqual(len(attributes), 0,
                          "Ignored configuration should have no attributes")
 
     def testMissingPBSLocation(self):
         """
-        Test the checkAttributes function to see if it catches missing pbs location
+        Test the check_attributes function to see if it catches missing pbs location
         """
         config_file = get_test_config("slurm/missing_location.ini")
         configuration = ConfigParser.SafeConfigParser()
@@ -110,17 +110,17 @@ class TestSlurm(unittest.TestCase):
 
         settings = slurm.SlurmConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Did not notice missing pbs location")
 
     def testValidSettings(self):
         """
-        Test the checkAttributes function to see if it works on valid settings
+        Test the check_attributes function to see if it works on valid settings
         """
         config_file = get_test_config("slurm/check_ok.ini")
         configuration = ConfigParser.SafeConfigParser()
@@ -128,17 +128,17 @@ class TestSlurm(unittest.TestCase):
 
         settings = slurm.SlurmConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertTrue(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertTrue(settings.check_attributes(attributes),
                         "Correct settings incorrectly flagged as invalid")
 
     def testValidSettings2(self):
         """
-        Test the checkAttributes function to see if it works on valid settings
+        Test the check_attributes function to see if it works on valid settings
         """
         config_file = get_test_config("slurm/check_ok2.ini")
         configuration = ConfigParser.SafeConfigParser()
@@ -146,17 +146,17 @@ class TestSlurm(unittest.TestCase):
 
         settings = slurm.SlurmConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertTrue(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertTrue(settings.check_attributes(attributes),
                         "Correct settings incorrectly flagged as invalid")
 
     def testInvalidDBPass(self):
         """
-        Test the checkAttributes function to see if it catches invalid job contacts
+        Test the check_attributes function to see if it catches invalid job contacts
         """
         config_file = get_test_config("slurm/invalid_job_contact.ini")
         configuration = ConfigParser.SafeConfigParser()
@@ -164,18 +164,18 @@ class TestSlurm(unittest.TestCase):
 
         settings = slurm.SlurmConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             print e
             self.fail("Received exception while parsing configuration")
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Did not notice invalid host in jobcontact option")
 
     def testInvalidUtilityContact(self):
         """
-        Test the checkAttributes function to see if it catches invalid
+        Test the check_attributes function to see if it catches invalid
         utility contacts
         """
         config_file = get_test_config("slurm/invalid_utility_contact.ini")
@@ -184,17 +184,17 @@ class TestSlurm(unittest.TestCase):
 
         settings = slurm.SlurmConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Did not notice invalid host in utility_contact option")
 
     def testInvalidUtilityContact(self):
         """
-        Test the checkAttributes function to see if it catches invalid
+        Test the check_attributes function to see if it catches invalid
         utility contacts
         """
         config_file = get_test_config("slurm/invalid_utility_contact.ini")
@@ -203,12 +203,12 @@ class TestSlurm(unittest.TestCase):
 
         settings = slurm.SlurmConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Did not notice invalid host in utility_contact option")
 
     def testServiceList(self):
@@ -222,10 +222,10 @@ class TestSlurm(unittest.TestCase):
 
         settings = slurm.SlurmConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
-        services = settings.enabledServices()
+        services = settings.enabled_services()
         expected_services = set(['condor-ce',
                                  'globus-gridftp-server'])
         self.assertEqual(services, expected_services,
@@ -238,10 +238,10 @@ class TestSlurm(unittest.TestCase):
 
         settings = slurm.SlurmConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
-        services = settings.enabledServices()
+        services = settings.enabled_services()
         expected_services = set(['condor-ce',
                                  'globus-gridftp-server'])
         self.assertEqual(services, expected_services,
@@ -254,10 +254,10 @@ class TestSlurm(unittest.TestCase):
 
         settings = slurm.SlurmConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
-        services = settings.enabledServices()
+        services = settings.enabled_services()
         expected_services = set()
         self.assertEqual(services, expected_services,
                          "List of enabled services incorrect, " +
@@ -269,10 +269,10 @@ class TestSlurm(unittest.TestCase):
 
         settings = slurm.SlurmConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
-        services = settings.enabledServices()
+        services = settings.enabled_services()
         expected_services = set()
         self.assertEqual(services, expected_services,
                          "List of enabled services incorrect, " +

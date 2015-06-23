@@ -65,41 +65,41 @@ in your config.ini file."""
         self.enabled_probe_settings = {}
 
         # defaults for itb and production use
-        self.__itb_defaults = {'probes':
+        self._itb_defaults = {'probes':
                                    'jobmanager:gratia-osg-itb.opensciencegrid.org:80'}
-        self.__production_defaults = {'probes':
+        self._production_defaults = {'probes':
                                           'jobmanager:gratia-osg-prod.opensciencegrid.org:80'}
 
-        self.__job_managers = ['pbs', 'sge', 'lsf', 'condor', 'slurm']
-        self.__probe_config = {}
+        self._job_managers = ['pbs', 'sge', 'lsf', 'condor', 'slurm']
+        self._probe_config = {}
         self.grid_group = 'OSG'
 
         self.log("GratiaConfiguration.__init__ completed")
 
-    def parseConfiguration(self, configuration):
+    def parse_configuration(self, configuration):
         """
         Try to get configuration information from ConfigParser or SafeConfigParser
         object given by configuration and write recognized settings to attributes
         dict
         """
 
-        self.log('GratiaConfiguration.parseConfiguration started')
+        self.log('GratiaConfiguration.parse_configuration started')
 
-        self.checkConfig(configuration)
+        self.check_config(configuration)
 
         if (not configuration.has_section(self.config_section) and requirements_are_installed()):
             self.log('CE probes installed but no Gratia section, auto-configuring gratia')
-            self.__auto_configure(configuration)
-            self.log('GratiaConfiguration.parseConfiguration completed')
+            self._auto_configure(configuration)
+            self.log('GratiaConfiguration.parse_configuration completed')
             return True
         elif not configuration.has_section(self.config_section):
             self.enabled = False
             self.log("%s section not in config file" % self.config_section)
-            self.log('Gratia.parseConfiguration completed')
+            self.log('Gratia.parse_configuration completed')
             return
 
-        if not self.setStatus(configuration):
-            self.log('GratiaConfiguration.parseConfiguration completed')
+        if not self.set_status(configuration):
+            self.log('GratiaConfiguration.parse_configuration completed')
             return True
 
         # set the appropriate defaults if we're on a CE
@@ -109,21 +109,21 @@ in your config.ini file."""
 
             if self.grid_group == 'OSG':
                 self.options['probes'].default_value = \
-                    self.__production_defaults['probes']
+                    self._production_defaults['probes']
             elif self.grid_group == 'OSG-ITB':
                 self.options['probes'].default_value = \
-                    self.__itb_defaults['probes']
+                    self._itb_defaults['probes']
 
             # grab configuration information for various jobmanagers
-            probes = self.getInstalledProbes()
+            probes = self.get_installed_probes()
             for probe in probes:
                 if probe == 'condor':
-                    self.__probe_config['condor'] = {'condor_location':
-                                                         CondorConfiguration.getCondorLocation(configuration),
+                    self._probe_config['condor'] = {'condor_location':
+                                                         CondorConfiguration.get_condor_location(configuration),
                                                      'condor_config':
-                                                         CondorConfiguration.getCondorConfig(configuration)}
+                                                         CondorConfiguration.get_condor_config(configuration)}
                 elif probe == 'pbs':
-                    if BaseConfiguration.sectionDisabled(configuration, 'PBS'):
+                    if BaseConfiguration.section_disabled(configuration, 'PBS'):
                         # if the PBS jobmanager is disabled, the CE is probably using LSF
                         # in any case, setting up the pbs gratia probe is not useful
                         continue
@@ -131,58 +131,58 @@ in your config.ini file."""
                                                    required=configfile.Option.OPTIONAL,
                                                    default_value='')
                     configfile.get_option(configuration, 'PBS', log_option)
-                    self.__probe_config['pbs'] = {'log_directory': log_option.value}
+                    self._probe_config['pbs'] = {'log_directory': log_option.value}
 
                     accounting_log_option = configfile.Option(name='accounting_log_directory',
                                                               required=configfile.Option.OPTIONAL,
                                                               default_value='')
                     configfile.get_option(configuration, 'PBS', accounting_log_option)
-                    self.__probe_config['pbs'] = {'accounting_log_directory': accounting_log_option.value}
+                    self._probe_config['pbs'] = {'accounting_log_directory': accounting_log_option.value}
                 elif probe == 'lsf':
-                    if BaseConfiguration.sectionDisabled(configuration, 'LSF'):
+                    if BaseConfiguration.section_disabled(configuration, 'LSF'):
                         # if the LSF jobmanager is disabled, the CE is probably using PBS
                         # in any case, setting up the pbs gratia probe is not useful
                         continue
                     lsf_location = configfile.Option(name='lsf_location',
                                                      default_value='/usr/bin')
                     configfile.get_option(configuration, 'LSF', lsf_location)
-                    self.__probe_config['lsf'] = {'lsf_location': lsf_location.value}
+                    self._probe_config['lsf'] = {'lsf_location': lsf_location.value}
 
                     log_option = configfile.Option(name='log_directory',
                                                    required=configfile.Option.OPTIONAL,
                                                    default_value='')
                     configfile.get_option(configuration, 'LSF', log_option)
-                    self.__probe_config['lsf']['log_directory'] = log_option.value
+                    self._probe_config['lsf']['log_directory'] = log_option.value
                 elif probe == 'sge':
-                    if BaseConfiguration.sectionDisabled(configuration, 'SGE'):
+                    if BaseConfiguration.section_disabled(configuration, 'SGE'):
                         # if section is disabled then the following code won't work
-                        # since the parseConfiguration will short circuit, so
+                        # since the parse_configuration will short circuit, so
                         # give a warning and then move on
                         self.log("Skipping SGE gratia probe configuration since SGE is disabled",
                                  level=logging.WARNING)
                         continue
                     sge_config = SGEConfiguration(logger=self.logger)
-                    sge_config.parseConfiguration(configuration)
-                    self.__probe_config['sge'] = {'sge_accounting_file': sge_config.getAccountingFile()}
+                    sge_config.parse_configuration(configuration)
+                    self._probe_config['sge'] = {'sge_accounting_file': sge_config.get_accounting_file()}
                 elif probe == 'slurm':
-                    if BaseConfiguration.sectionDisabled(configuration, 'SLURM'):
+                    if BaseConfiguration.section_disabled(configuration, 'SLURM'):
                         # if section is disabled then the following code won't work
-                        # since the parseConfiguration will short circuit, so
+                        # since the parse_configuration will short circuit, so
                         # give a warning and then move on
                         self.log("Skipping Slurm gratia probe configuration since Slurm is disabled",
                                  level=logging.WARNING)
                         continue
                     slurm_config = SlurmConfiguration(logger=self.logger)
-                    slurm_config.parseConfiguration(configuration)
-                    self.__probe_config['slurm'] = {'db_host': slurm_config.getDBHost(),
-                                                    'db_port': slurm_config.getDBPort(),
-                                                    'db_user': slurm_config.getDBUser(),
-                                                    'db_pass': slurm_config.getDBPass(),
-                                                    'db_name': slurm_config.getDBName(),
-                                                    'cluster': slurm_config.getSlurmCluster(),
-                                                    'location': slurm_config.getLocation()}
+                    slurm_config.parse_configuration(configuration)
+                    self._probe_config['slurm'] = {'db_host': slurm_config.get_db_host(),
+                                                    'db_port': slurm_config.get_db_port(),
+                                                    'db_user': slurm_config.get_db_user(),
+                                                    'db_pass': slurm_config.get_db_pass(),
+                                                    'db_name': slurm_config.get_db_name(),
+                                                    'cluster': slurm_config.get_slurm_cluster(),
+                                                    'location': slurm_config.get_location()}
 
-        self.getOptions(configuration,
+        self.get_options(configuration,
                         ignore_options=['itb-jobmanager-gratia',
                                         'itb-gridftp-gratia',
                                         'osg-jobmanager-gratia',
@@ -190,11 +190,11 @@ in your config.ini file."""
                                         'enabled'])
 
         if utilities.blank(self.options['probes'].value):
-            self.log('GratiaConfiguration.parseConfiguration completed')
+            self.log('GratiaConfiguration.parse_configuration completed')
             return
 
-        self.__parse_probes(self.options['probes'].value)
-        self.log('GratiaConfiguration.parseConfiguration completed')
+        self._parse_probes(self.options['probes'].value)
+        self.log('GratiaConfiguration.parse_configuration completed')
 
     def configure(self, attributes):
         """Configure installation using attributes"""
@@ -232,10 +232,10 @@ in your config.ini file."""
             return False
 
         hostname = attributes['OSG_HOSTNAME']
-        probe_list = self.getInstalledProbes()
+        probe_list = self.get_installed_probes()
         for probe in probe_list:
-            if probe in self.__job_managers:
-                if probe not in self.__probe_config:
+            if probe in self._job_managers:
+                if probe not in self._probe_config:
                     # Probe is installed but we don't have configuration for it
                     # might be due to pbs-lsf probe sharing or relevant job
                     # manager is not shared
@@ -251,28 +251,28 @@ in your config.ini file."""
                 else:
                     continue
 
-            self.__makeSubscription(probe,
+            self._make_subscription(probe,
                                     probe_list[probe],
                                     probe_host,
                                     self.options['resource'].value,
                                     hostname)
             if probe == 'condor':
-                self.__configureCondorProbe()
+                self._configure_condor_probe()
             elif probe == 'pbs':
-                self.__configurePBSProbe()
+                self._configure_pbs_probe()
             elif probe == 'lsf':
-                self.__configureLSFProbe()
+                self._configure_lsf_probe()
             elif probe == 'sge':
-                self.__configureSGEProbe()
+                self._configure_sge_probe()
             elif probe == 'slurm':
-                self.__configureSLURMProbe()
+                self._configure_slurm_probe()
 
         self.log("GratiaConfiguration.configure completed")
         return True
 
     # pylint: disable-msg=R0201
     @staticmethod
-    def getInstalledProbes():
+    def get_installed_probes():
         """
         Check for probes that have been installed and return a list of these probes installed
         """
@@ -296,30 +296,30 @@ in your config.ini file."""
         return probes
 
     # pylint: disable-msg=W0613
-    def checkAttributes(self, attributes):
+    def check_attributes(self, attributes):
         """Check configuration  and make sure things are setup correctly"""
-        self.log("GratiaConfiguration.checkAttributes started")
+        self.log("GratiaConfiguration.check_attributes started")
 
         if self.ignored:
             self.log("%s section ignored" % self.config_section)
-            self.log("GratiaConfiguration.checkAttributes completed")
+            self.log("GratiaConfiguration.check_attributes completed")
             return True
 
         if not self.enabled:
             self.log("Not enabled")
-            self.log("GratiaConfiguration.checkAttributes completed")
+            self.log("GratiaConfiguration.check_attributes completed")
             return True
-        status = self.__check_servers()
-        status &= self.__verify_gratia_dirs()
-        self.log("GratiaConfiguration.checkAttributes completed")
+        status = self._check_servers()
+        status &= self._verify_gratia_dirs()
+        self.log("GratiaConfiguration.check_attributes completed")
         return status
 
-    def __subscriptionPresent(self, probe_file, probe_host):
+    def _subscription_present(self, probe_file, probe_host):
         """
         Check probe file to see if subscription to the host is present
         """
 
-        self.log("GratiaConfiguration.__subscriptionPresent started")
+        self.log("GratiaConfiguration._subscription_present started")
         elements = utilities.get_elements('ProbeConfiguration', probe_file)
         for element in elements:
             try:
@@ -331,20 +331,20 @@ in your config.ini file."""
             except Exception, e:
                 self.log("Exception checking element, %s" % e)
 
-        self.log("GratiaConfiguration.__subscriptionPresent completed")
+        self.log("GratiaConfiguration._subscription_present completed")
         return False
 
-    def __makeSubscription(self, probe, probe_file, probe_host, site, hostname):
+    def _make_subscription(self, probe, probe_file, probe_host, site, hostname):
         """
         Check to see if a given probe has the correct subscription and if not
         make it.
         """
 
-        self.log("GratiaConfiguration.__makeSubscription started")
+        self.log("GratiaConfiguration._make_subscription started")
 
-        if self.__subscriptionPresent(probe_file, probe_host):
+        if self._subscription_present(probe_file, probe_host):
             self.log("Subscription found %s probe, returning" % probe)
-            self.log("GratiaConfiguration.__makeSubscription completed")
+            self.log("GratiaConfiguration._make_subscription completed")
             return True
 
         if probe == 'gridftp':
@@ -385,18 +385,18 @@ in your config.ini file."""
                      level=logging.ERROR)
             raise exceptions.ConfigureError("Error configuring gratia")
 
-        self.log("GratiaConfiguration.__makeSubscription completed")
+        self.log("GratiaConfiguration._make_subscription completed")
         return True
 
-    def moduleName(self):
+    def module_name(self):
         """Return a string with the name of the module"""
         return "Gratia"
 
-    def separatelyConfigurable(self):
+    def separately_configurable(self):
         """Return a boolean that indicates whether this module can be configured separately"""
         return False
 
-    def __check_servers(self):
+    def _check_servers(self):
         """
         Returns True or False depending whether the server_list is a valid list
         of servers.
@@ -427,7 +427,7 @@ in your config.ini file."""
                              level=logging.ERROR)
         return valid
 
-    def __parse_probes(self, probes):
+    def _parse_probes(self, probes):
         """
         Parse a list of probes and set the list of enabled probes for this
         configuration
@@ -443,7 +443,7 @@ in your config.ini file."""
             else:
                 self.enabled_probe_settings[probe_name] = ':'.join(tmp[1:])
 
-    def __auto_configure(self, configuration):
+    def _auto_configure(self, configuration):
         """
         Configure gratia for a ce which does not have the gratia section
         """
@@ -470,40 +470,40 @@ in your config.ini file."""
             raise exceptions.SettingError('In Site Information, group needs to be set')
 
         if group == 'OSG':
-            probes = self.__production_defaults['probes']
+            probes = self._production_defaults['probes']
         elif group == 'OSG-ITB':
-            probes = self.__itb_defaults['probes']
+            probes = self._itb_defaults['probes']
         else:
             raise exceptions.SettingError('In Site Information, group must be '
                                           'OSG or OSG-ITB')
 
         self.options['probes'].value = probes
-        self.__parse_probes(probes)
+        self._parse_probes(probes)
 
         return True
 
-    def __configureCondorProbe(self):
+    def _configure_condor_probe(self):
         """
         Do condor probe specific configuration
         """
 
         config_location = GRATIA_CONFIG_FILES['condor']
         buf = file(config_location).read()
-        settings = self.__probe_config['condor']
-        buf = self.replaceSetting(buf, 'CondorLocation', settings['condor_location'])
-        buf = self.replaceSetting(buf, 'CondorConfig', settings['condor_config'])
+        settings = self._probe_config['condor']
+        buf = self.replace_setting(buf, 'CondorLocation', settings['condor_location'])
+        buf = self.replace_setting(buf, 'CondorConfig', settings['condor_config'])
         if not utilities.atomic_write(config_location, buf):
             return False
         return True
 
-    def __configurePBSProbe(self):
+    def _configure_pbs_probe(self):
         """
         Do pbs probe specific configuration
         """
-        if (self.__probe_config['pbs']['accounting_log_directory'] is None or
-                    self.__probe_config['pbs']['accounting_log_directory'] == ''):
+        if (self._probe_config['pbs']['accounting_log_directory'] is None or
+                    self._probe_config['pbs']['accounting_log_directory'] == ''):
             return True
-        accounting_dir = self.__probe_config['pbs']['accounting_log_directory']
+        accounting_dir = self._probe_config['pbs']['accounting_log_directory']
         if not validation.valid_directory(accounting_dir):
             self.log("PBS accounting log not present, PBS gratia probe not configured",
                      level=logging.ERROR,
@@ -513,24 +513,24 @@ in your config.ini file."""
 
         config_location = GRATIA_CONFIG_FILES['pbs']
         buf = file(config_location).read()
-        buf = self.replaceSetting(buf, 'pbsAcctLogDir', accounting_dir, xml_file=False)
-        buf = self.replaceSetting(buf, 'lrmsType', 'pbs', xml_file=False)
+        buf = self.replace_setting(buf, 'pbsAcctLogDir', accounting_dir, xml_file=False)
+        buf = self.replace_setting(buf, 'lrmsType', 'pbs', xml_file=False)
         if not utilities.atomic_write(config_location, buf):
             return False
         return True
 
-    def __configureLSFProbe(self):
+    def _configure_lsf_probe(self):
         """
         Do lsf probe specific configuration
         """
-        if (self.__probe_config['lsf']['log_directory'] is None or
-                    self.__probe_config['lsf']['log_directory'] == ''):
+        if (self._probe_config['lsf']['log_directory'] is None or
+                    self._probe_config['lsf']['log_directory'] == ''):
             self.log("LSF accounting log directory not given, LSF gratia probe not configured",
                      level=logging.ERROR,
                      option='log_directory',
                      section='LSF')
             return True
-        log_directory = self.__probe_config['lsf']['log_directory']
+        log_directory = self._probe_config['lsf']['log_directory']
         if not validation.valid_directory(log_directory):
             self.log("LSF accounting log not present, LSF gratia probe not configured",
                      level=logging.ERROR,
@@ -539,43 +539,43 @@ in your config.ini file."""
             return True
         config_location = GRATIA_CONFIG_FILES['lsf']
         buf = file(config_location).read()
-        buf = self.replaceSetting(buf, 'lsfAcctLogDir', log_directory, xml_file=False)
+        buf = self.replace_setting(buf, 'lsfAcctLogDir', log_directory, xml_file=False)
 
         # setup lsfBinDir
-        if (self.__probe_config['lsf']['lsf_location'] is None or
-                    self.__probe_config['lsf']['lsf_location'] == ''):
+        if (self._probe_config['lsf']['lsf_location'] is None or
+                    self._probe_config['lsf']['lsf_location'] == ''):
             self.log("LSF location not given, lsf gratia probe not configured",
                      level=logging.ERROR,
                      option='lsf_location',
                      section='LSF')
             return True
-        lsf_bin_dir = os.path.join(self.__probe_config['lsf']['lsf_location'], 'bin')
-        buf = self.replaceSetting(buf, 'lsfBinDir', lsf_bin_dir, xml_file=False)
-        buf = self.replaceSetting(buf, 'lrmsType', 'lsf', xml_file=False)
+        lsf_bin_dir = os.path.join(self._probe_config['lsf']['lsf_location'], 'bin')
+        buf = self.replace_setting(buf, 'lsfBinDir', lsf_bin_dir, xml_file=False)
+        buf = self.replace_setting(buf, 'lrmsType', 'lsf', xml_file=False)
         if not utilities.atomic_write(config_location, buf):
             return False
         return True
 
-    def __configureSGEProbe(self):
+    def _configure_sge_probe(self):
         """
         Do SGE probe specific configuration
         """
-        accounting_path = self.__probe_config['sge']['sge_accounting_file']
+        accounting_path = self._probe_config['sge']['sge_accounting_file']
         config_location = GRATIA_CONFIG_FILES['sge']
         buf = file(config_location).read()
-        buf = self.replaceSetting(buf, 'SGEAccountingFile', accounting_path)
+        buf = self.replace_setting(buf, 'SGEAccountingFile', accounting_path)
         if not utilities.atomic_write(config_location, buf):
             return False
         return True
 
-    def __configureSLURMProbe(self):
+    def _configure_slurm_probe(self):
         """
         Do SLURM probe specific configuration
         """
         config_location = GRATIA_CONFIG_FILES['slurm']
         buf = file(config_location).read()
 
-        settings = self.__probe_config['slurm']
+        settings = self._probe_config['slurm']
         if not validation.valid_file(settings['db_pass']):
             self.log("Slurm DB password file not present",
                      level=logging.ERROR,
@@ -583,29 +583,29 @@ in your config.ini file."""
                      section='SLURM')
             return True
 
-        buf = self.replaceSetting(buf, 'SlurmDbHost', settings['db_host'])
-        buf = self.replaceSetting(buf, 'SlurmDbPort', settings['db_port'])
-        buf = self.replaceSetting(buf, 'SlurmDbUser', settings['db_user'])
-        buf = self.replaceSetting(buf, 'SlurmDbPasswordFile', settings['db_pass'])
-        buf = self.replaceSetting(buf, 'SlurmDbName', settings['db_name'])
-        buf = self.replaceSetting(buf, 'SlurmCluster', settings['cluster'])
-        buf = self.replaceSetting(buf, 'SlurmLocation', settings['location'])
+        buf = self.replace_setting(buf, 'SlurmDbHost', settings['db_host'])
+        buf = self.replace_setting(buf, 'SlurmDbPort', settings['db_port'])
+        buf = self.replace_setting(buf, 'SlurmDbUser', settings['db_user'])
+        buf = self.replace_setting(buf, 'SlurmDbPasswordFile', settings['db_pass'])
+        buf = self.replace_setting(buf, 'SlurmDbName', settings['db_name'])
+        buf = self.replace_setting(buf, 'SlurmCluster', settings['cluster'])
+        buf = self.replace_setting(buf, 'SlurmLocation', settings['location'])
 
         if not utilities.atomic_write(config_location, buf):
             return False
         return True
 
-    def __verify_gratia_dirs(self):
+    def _verify_gratia_dirs(self):
         """
         Verify that the condor per_job_history directory and the DataFolder
         directory are the same and warn if admin if the two don't match
         """
 
         valid = True
-        if 'condor' not in self.__probe_config:
+        if 'condor' not in self._probe_config:
             # Don't need this for non-condor probes
             return valid
-        condor_config_val_bin = os.path.join(self.__probe_config['condor']['condor_location'],
+        condor_config_val_bin = os.path.join(self._probe_config['condor']['condor_location'],
                                              "bin",
                                              "condor_config_val")
         if not os.path.exists(condor_config_val_bin):
@@ -625,7 +625,7 @@ in your config.ini file."""
             data_folder = data_folder.strip('" \t')
             # PER_JOB_HISTORY_DIR comes from the schedd, so if condor's not
             # running, we can't get a value (SOFTWARE-1564)
-            history_dir = self.__get_history_dir(condor_config_val_bin)
+            history_dir = self._get_history_dir(condor_config_val_bin)
             if not history_dir:
                 self.log("Could not verify DataFolder correctness: unable to get PER_JOB_HISTORY_DIR. "
                          "This may be caused by the condor schedd not running, or by PER_JOB_HISTORY_DIR "
@@ -664,7 +664,7 @@ in your config.ini file."""
 
         return valid
 
-    def __get_history_dir(self, condor_config_val_bin):
+    def _get_history_dir(self, condor_config_val_bin):
         cmd = [condor_config_val_bin, '-schedd', 'PER_JOB_HISTORY_DIR']
         try:
             process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -684,7 +684,7 @@ in your config.ini file."""
         return history_dir
 
     @staticmethod
-    def replaceSetting(buf, setting, value, xml_file=True):
+    def replace_setting(buf, setting, value, xml_file=True):
         """
           Replace the first instance of the option within a string, adding
           the option if it's not present
@@ -705,7 +705,7 @@ in your config.ini file."""
                 new_buf += "%s = \"%s\"\n" % (setting, value)
         return new_buf
 
-    def enabledServices(self):
+    def enabled_services(self):
         """Return a list of  system services needed for module to work
         """
 

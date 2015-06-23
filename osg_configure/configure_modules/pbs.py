@@ -57,29 +57,29 @@ class PBSConfiguration(JobManagerConfiguration):
                                               default_value=False)}
         self.config_section = "PBS"
         self.pbs_bin_location = None
-        self.__set_default = True
+        self._set_default = True
         self.log('PBSConfiguration.__init__ completed')
 
-    def parseConfiguration(self, configuration):
+    def parse_configuration(self, configuration):
         """Try to get configuration information from ConfigParser or SafeConfigParser object given
         by configuration and write recognized settings to attributes dict
         """
-        super(PBSConfiguration, self).parseConfiguration(configuration)
+        super(PBSConfiguration, self).parse_configuration(configuration)
 
-        self.log('PBSConfiguration.parseConfiguration started')
+        self.log('PBSConfiguration.parse_configuration started')
 
-        self.checkConfig(configuration)
+        self.check_config(configuration)
 
         if not configuration.has_section(self.config_section):
             self.log('PBS section not found in config file')
-            self.log('PBSConfiguration.parseConfiguration completed')
+            self.log('PBSConfiguration.parse_configuration completed')
             return
 
-        if not self.setStatus(configuration):
-            self.log('PBSConfiguration.parseConfiguration completed')
+        if not self.set_status(configuration):
+            self.log('PBSConfiguration.parse_configuration completed')
             return True
 
-        self.getOptions(configuration, ignore_options=['enabled'])
+        self.get_options(configuration, ignore_options=['enabled'])
 
         # set OSG_JOB_MANAGER and OSG_JOB_MANAGER_HOME
         self.options['job_manager'] = configfile.Option(name='job_manager',
@@ -96,27 +96,27 @@ class PBSConfiguration(JobManagerConfiguration):
         if (configuration.has_section('Managed Fork') and
                 configuration.has_option('Managed Fork', 'enabled') and
                 configuration.getboolean('Managed Fork', 'enabled')):
-            self.__set_default = False
+            self._set_default = False
 
         self.pbs_bin_location = os.path.join(self.options['pbs_location'].value, 'bin')
 
-        self.log('PBSConfiguration.parseConfiguration completed')
+        self.log('PBSConfiguration.parse_configuration completed')
 
     # pylint: disable-msg=W0613
-    def checkAttributes(self, attributes):
+    def check_attributes(self, attributes):
         """Check attributes currently stored and make sure that they are consistent"""
-        self.log('PBSConfiguration.checkAttributes started')
+        self.log('PBSConfiguration.check_attributes started')
 
         attributes_ok = True
 
         if not self.enabled:
             self.log('PBS not enabled, returning True')
-            self.log('PBSConfiguration.checkAttributes completed')
+            self.log('PBSConfiguration.check_attributes completed')
             return attributes_ok
 
         if self.ignored:
             self.log('Ignored, returning True')
-            self.log('PBSConfiguration.checkAttributes completed')
+            self.log('PBSConfiguration.check_attributes completed')
             return attributes_ok
 
         # make sure locations exist
@@ -153,7 +153,7 @@ class PBSConfiguration(JobManagerConfiguration):
                      section=self.config_section,
                      level=logging.ERROR)
 
-        self.log('PBSConfiguration.checkAttributes completed')
+        self.log('PBSConfiguration.check_attributes completed')
         return attributes_ok
 
     def configure(self, attributes):
@@ -195,12 +195,12 @@ class PBSConfiguration(JobManagerConfiguration):
             else:
                 self.disable_seg('pbs', PBSConfiguration.PBS_CONFIG_FILE)
 
-            if not self.setupGramConfig():
+            if not self.setup_gram_config():
                 self.log('Error writing to ' + PBSConfiguration.GRAM_CONFIG_FILE,
                          level=logging.ERROR)
                 return False
 
-            if self.__set_default:
+            if self._set_default:
                 self.log('Configuring gatekeeper to use regular fork service')
                 self.set_default_jobmanager('fork')
 
@@ -214,15 +214,15 @@ class PBSConfiguration(JobManagerConfiguration):
         self.log('PBSConfiguration.configure completed')
         return True
 
-    def moduleName(self):
+    def module_name(self):
         """Return a string with the name of the module"""
         return "PBS"
 
-    def separatelyConfigurable(self):
+    def separately_configurable(self):
         """Return a boolean that indicates whether this module can be configured separately"""
         return True
 
-    def setupGramConfig(self):
+    def setup_gram_config(self):
         """
         Populate the gram config file with correct values
 
@@ -255,7 +255,7 @@ class PBSConfiguration(JobManagerConfiguration):
 
         return True
 
-    def enabledServices(self):
+    def enabled_services(self):
         """Return a list of  system services needed for module to work
         """
 
@@ -263,7 +263,7 @@ class PBSConfiguration(JobManagerConfiguration):
             return set()
 
         services = set(['globus-gridftp-server'])
-        services.update(self.gatewayServices())
+        services.update(self.gateway_services())
         if self.options['seg_enabled'].value:
             services.add('globus-scheduler-event-generator')
             services.add('globus-gatekeeper')

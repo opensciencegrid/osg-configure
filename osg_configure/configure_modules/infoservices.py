@@ -52,11 +52,11 @@ class InfoServicesConfiguration(BaseConfiguration):
                         'ce_collectors': configfile.Option(name='ce_collectors',
                                                            default_value='',
                                                            required=configfile.Option.OPTIONAL)}
-        self.__itb_defaults = {
+        self._itb_defaults = {
             'ress_servers': 'https://osg-ress-4.fnal.gov:8443/ig/services/CEInfoCollector[OLD_CLASSAD]',
             'bdii_servers': 'http://is1.grid.iu.edu:14001[RAW],http://is2.grid.iu.edu:14001[RAW]',
             'ce_collectors': 'collector-itb.opensciencegrid.org:%d' % HTCONDOR_CE_COLLECTOR_PORT}
-        self.__production_defaults = {
+        self._production_defaults = {
             'ress_servers': 'https://osg-ress-1.fnal.gov:8443/ig/services/CEInfoCollector[OLD_CLASSAD]',
             'bdii_servers': 'http://is1.grid.iu.edu:14001[RAW],http://is2.grid.iu.edu:14001[RAW]',
             'ce_collectors': 'collector1.opensciencegrid.org:%d,collector2.opensciencegrid.org:%d' % (
@@ -79,59 +79,59 @@ class InfoServicesConfiguration(BaseConfiguration):
 
         self.log("InfoServicesConfiguration.__init__ completed")
 
-    def __set_default_servers(self, configuration):
+    def _set_default_servers(self, configuration):
         group = utilities.config_safe_get(configuration, 'Site Information', 'group')
         for key in ['ress_servers', 'bdii_servers', 'ce_collectors']:
             if group == 'OSG-ITB':
-                self.options[key].default_value = self.__itb_defaults[key]
+                self.options[key].default_value = self._itb_defaults[key]
             else:
-                self.options[key].default_value = self.__production_defaults[key]
+                self.options[key].default_value = self._production_defaults[key]
 
-    def __parse_ce_collectors(self, val):
+    def _parse_ce_collectors(self, val):
         if val == 'PRODUCTION':
-            return self.__production_defaults['ce_collectors'].split(',')
+            return self._production_defaults['ce_collectors'].split(',')
         elif val == 'ITB':
-            return self.__itb_defaults['ce_collectors'].split(',')
+            return self._itb_defaults['ce_collectors'].split(',')
         else:
             return val.split(',')
 
-    def parseConfiguration(self, configuration):
+    def parse_configuration(self, configuration):
         """
         Try to get configuration information from ConfigParser or SafeConfigParser object given
         by configuration and write recognized settings to attributes dict
         """
 
-        self.log('InfoServicesConfiguration.parseConfiguration started')
+        self.log('InfoServicesConfiguration.parse_configuration started')
 
-        self.checkConfig(configuration)
+        self.check_config(configuration)
 
         if not configuration.has_section(self.config_section) and self.ois_required_rpms_installed:
             self.log('Section missing and on a CE, autoconfiguring')
-            self.__auto_configure(configuration)
-            self.log('InfoServicesConfiguration.parseConfiguration completed')
+            self._auto_configure(configuration)
+            self.log('InfoServicesConfiguration.parse_configuration completed')
             return True
         elif not configuration.has_section(self.config_section):
             self.enabled = False
             self.log("%s section not in config file" % self.config_section)
-            self.log('InfoServicesConfiguration.parseConfiguration completed')
+            self.log('InfoServicesConfiguration.parse_configuration completed')
             return
 
-        if not self.setStatus(configuration):
-            self.log('InfoServicesConfiguration.parseConfiguration completed')
+        if not self.set_status(configuration):
+            self.log('InfoServicesConfiguration.parse_configuration completed')
             return True
 
-        self.__set_default_servers(configuration)
+        self._set_default_servers(configuration)
 
-        self.getOptions(configuration,
+        self.get_options(configuration,
                         ignore_options=['itb-ress-servers',
                                         'itb-bdii-servers',
                                         'osg-ress-servers',
                                         'osg-bdii-servers',
                                         'enabled'])
 
-        self.ress_servers = self.__parse_servers(self.options['ress_servers'].value)
-        self.bdii_servers = self.__parse_servers(self.options['bdii_servers'].value)
-        self.ce_collectors = self.__parse_ce_collectors(self.options['ce_collectors'].value)
+        self.ress_servers = self._parse_servers(self.options['ress_servers'].value)
+        self.bdii_servers = self._parse_servers(self.options['bdii_servers'].value)
+        self.ce_collectors = self._parse_ce_collectors(self.options['ce_collectors'].value)
 
         def csg(section, option):
             return utilities.config_safe_get(configuration, section, option, None)
@@ -157,7 +157,7 @@ class InfoServicesConfiguration(BaseConfiguration):
                          "\nIf not, you may need to add the directory containing the Python bindings to PYTHONPATH."
                          "\nHTCondor version must be at least 8.2.0.", level=logging.WARNING)
 
-        self.log('InfoServicesConfiguration.parseConfiguration completed')
+        self.log('InfoServicesConfiguration.parse_configuration completed')
 
     # pylint: disable-msg=W0613
     def configure(self, attributes):
@@ -181,49 +181,49 @@ class InfoServicesConfiguration(BaseConfiguration):
                 return False
 
         if self.ce_collector_required_rpms_installed and self.htcondor_gateway_enabled and classad is not None:
-            self.__configure_ce_collector()
+            self._configure_ce_collector()
 
         self.log("InfoServicesConfiguration.configure completed")
         return True
 
-    def checkAttributes(self, attributes):
+    def check_attributes(self, attributes):
         """Check configuration and make sure things are setup correctly"""
-        self.log("InfoServicesConfiguration.checkAttributes started")
+        self.log("InfoServicesConfiguration.check_attributes started")
 
         if not self.enabled:
             self.log("Not enabled")
-            self.log("InfoServicesConfiguration.checkAttributes completed")
+            self.log("InfoServicesConfiguration.check_attributes completed")
             return True
 
         if self.ignored:
             self.log('Ignored, returning True')
-            self.log("InfoServicesConfiguration.checkAttributes completed")
+            self.log("InfoServicesConfiguration.check_attributes completed")
             return True
 
         valid = True
         self.log("Checking BDII subscriptions")
         for subscription in self.bdii_servers:
-            valid &= self.__checkSubscription(subscription,
+            valid &= self._check_subscription(subscription,
                                               self.bdii_servers[subscription])
 
         self.log("Checking ReSS subscriptions")
         for subscription in self.ress_servers:
-            valid &= self.__checkSubscription(subscription,
+            valid &= self._check_subscription(subscription,
                                               self.ress_servers[subscription])
 
-        self.log("InfoServicesConfiguration.checkAttributes completed")
+        self.log("InfoServicesConfiguration.check_attributes completed")
         return valid
 
-    def moduleName(self):
+    def module_name(self):
         """Return a string with the name of the module"""
         return "Infoservices"
 
-    def separatelyConfigurable(self):
+    def separately_configurable(self):
         """Return a boolean that indicates whether this module can be
         configured separately"""
         return False
 
-    def __checkSubscription(self, subscription, dialect):
+    def _check_subscription(self, subscription, dialect):
         """
         Check a subscription and dialect to make sure it's valid, return True if
         that's the case, otherwise false.
@@ -256,7 +256,7 @@ class InfoServicesConfiguration(BaseConfiguration):
         return valid
 
     @classmethod
-    def __parse_servers(cls, servers):
+    def _parse_servers(cls, servers):
         """
         Take a list of servers and parse it into a list of
         (server, subscription_type) tuples
@@ -275,7 +275,7 @@ class InfoServicesConfiguration(BaseConfiguration):
             server_list[match.group(1).strip()] = match.group(2)
         return server_list
 
-    def __auto_configure(self, configuration):
+    def _auto_configure(self, configuration):
         """
         Method to configure cemon without any cemon section on a CE
         """
@@ -288,11 +288,11 @@ class InfoServicesConfiguration(BaseConfiguration):
                      level=logging.ERROR)
             raise exceptions.SettingError('In Site Information, group needs to be set')
         if group == 'OSG':
-            ress_servers = self.__production_defaults['ress_servers']
-            bdii_servers = self.__production_defaults['bdii_servers']
+            ress_servers = self._production_defaults['ress_servers']
+            bdii_servers = self._production_defaults['bdii_servers']
         elif group == 'OSG-ITB':
-            ress_servers = self.__itb_defaults['ress_servers']
-            bdii_servers = self.__itb_defaults['bdii_servers']
+            ress_servers = self._itb_defaults['ress_servers']
+            bdii_servers = self._itb_defaults['bdii_servers']
         else:
             self.log('Group must be OSG or OSG-ITB',
                      level=logging.ERROR)
@@ -300,10 +300,10 @@ class InfoServicesConfiguration(BaseConfiguration):
 
         self.options['ress_servers'].value = ress_servers
         self.options['bdii_servers'].value = bdii_servers
-        self.ress_servers = self.__parse_servers(ress_servers)
-        self.bdii_servers = self.__parse_servers(bdii_servers)
+        self.ress_servers = self._parse_servers(ress_servers)
+        self.bdii_servers = self._parse_servers(bdii_servers)
 
-    def enabledServices(self):
+    def enabled_services(self):
         """
         Return a list of  system services needed for module to work
         """
@@ -314,17 +314,17 @@ class InfoServicesConfiguration(BaseConfiguration):
             services.add('condor-ce')
         return services
 
-    def __configure_ce_collector(self):
+    def _configure_ce_collector(self):
         for filename, description, writer_func in [
-            (CE_COLLECTOR_ATTRIBUTES_FILE, "attributes file", self.__write_ce_collector_attributes_file),
-            (CE_COLLECTOR_CONFIG_FILE, "CE collector config file", self.__write_ce_collector_file)
+            (CE_COLLECTOR_ATTRIBUTES_FILE, "attributes file", self._write_ce_collector_attributes_file),
+            (CE_COLLECTOR_CONFIG_FILE, "CE collector config file", self._write_ce_collector_file)
         ]:
             if not writer_func(filename):
                 self.log("Writing %s %r failed" % (description, filename),
                          level=logging.ERROR)
                 return False
 
-        resourcecatalog_location = self.__resourcecatalog_location()
+        resourcecatalog_location = self._resourcecatalog_location()
         if not resourcecatalog_location:
             # shouldn't happen -- we just wrote this
             self.log("Verifying OSG_ResourceCatalog failed!", level=logging.ERROR)
@@ -334,7 +334,7 @@ class InfoServicesConfiguration(BaseConfiguration):
                 self.log("Generated OSG_ResourceCatalog is overridden by %s" % resourcecatalog_location,
                          level=logging.WARNING)
 
-    def __write_ce_collector_attributes_file(self, attributes_file):
+    def _write_ce_collector_attributes_file(self, attributes_file):
         """Write config file that contains the osg attributes for the
         CE-Collector to advertise
 
@@ -362,7 +362,7 @@ class InfoServicesConfiguration(BaseConfiguration):
 
         return utilities.atomic_write(attributes_file, attributes_file_contents)
 
-    def __write_ce_collector_file(self, info_services_file):
+    def _write_ce_collector_file(self, info_services_file):
         """Write CE-Collector configuration file which specifies which
         host(s) to forward ads to
 
@@ -380,7 +380,7 @@ CONDOR_VIEW_HOST = %s
 
         return utilities.atomic_write(info_services_file, info_services_file_contents)
 
-    def __resourcecatalog_location(self):
+    def _resourcecatalog_location(self):
         """Returns the name of the condor-ce config file where OSG_ResourceCatalog
         is actually defined (from condor_ce_config_val), or None if not defined
 

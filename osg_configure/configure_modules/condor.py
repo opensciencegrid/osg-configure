@@ -45,32 +45,32 @@ class CondorConfiguration(JobManagerConfiguration):
                                               required=configfile.Option.OPTIONAL,
                                               opt_type=bool,
                                               default_value=False)}
-        self.__set_default = True
+        self._set_default = True
         self.condor_bin_location = None
         self.log('CondorConfiguration.__init__ completed')
 
-    def parseConfiguration(self, configuration):
+    def parse_configuration(self, configuration):
         """
         Try to get configuration information from ConfigParser or SafeConfigParser object given
         by configuration and write recognized settings to attributes dict
         """
-        super(CondorConfiguration, self).parseConfiguration(configuration)
+        super(CondorConfiguration, self).parse_configuration(configuration)
 
-        self.log('CondorConfiguration.parseConfiguration started')
+        self.log('CondorConfiguration.parse_configuration started')
 
-        self.checkConfig(configuration)
+        self.check_config(configuration)
 
         if not configuration.has_section(self.config_section):
             self.enabled = False
             self.log("%s section not in config file" % self.config_section)
-            self.log('CondorConfiguration.parseConfiguration completed')
+            self.log('CondorConfiguration.parse_configuration completed')
             return
 
-        if not self.setStatus(configuration):
-            self.log('CondorConfiguration.parseConfiguration completed')
+        if not self.set_status(configuration):
+            self.log('CondorConfiguration.parse_configuration completed')
             return True
 
-        self.getOptions(configuration, ignore_options=['enabled'])
+        self.get_options(configuration, ignore_options=['enabled'])
 
         # set OSG_JOB_MANAGER and OSG_JOB_MANAGER_HOME
         self.options['job_manager'] = configfile.Option(name='job_manager',
@@ -83,23 +83,23 @@ class CondorConfiguration(JobManagerConfiguration):
         if (configuration.has_section('Managed Fork') and
                 configuration.has_option('Managed Fork', 'enabled') and
                 configuration.getboolean('Managed Fork', 'enabled')):
-            self.__set_default = False
+            self._set_default = False
 
         self.condor_bin_location = os.path.join(self.options['condor_location'].value, 'bin')
 
-        self.log('CondorConfiguration.parseConfiguration completed')
+        self.log('CondorConfiguration.parse_configuration completed')
 
     # pylint: disable-msg=W0613
-    def checkAttributes(self, attributes):
+    def check_attributes(self, attributes):
         """Check attributes currently stored and make sure that they are consistent"""
-        self.log('CondorConfiguration.checkAttributes started')
+        self.log('CondorConfiguration.check_attributes started')
 
         if not self.enabled:
-            self.log('CondorConfiguration.checkAttributes completed returning True')
+            self.log('CondorConfiguration.check_attributes completed returning True')
             return True
 
         if self.ignored:
-            self.log('CondorConfiguration.checkAttributes completed returning True')
+            self.log('CondorConfiguration.check_attributes completed returning True')
             return True
 
         attributes_ok = True
@@ -148,7 +148,7 @@ class CondorConfiguration(JobManagerConfiguration):
                      section=self.config_section,
                      level=logging.ERROR)
 
-        self.log('CondorConfiguration.checkAttributes completed returning %s' \
+        self.log('CondorConfiguration.check_attributes completed returning %s' \
                  % attributes_ok)
         return attributes_ok
 
@@ -186,16 +186,16 @@ class CondorConfiguration(JobManagerConfiguration):
                     self.log('CondorConfiguration.configure completed')
                     return False
 
-            if not self.setupGramConfig():
+            if not self.setup_gram_config():
                 self.log('Error writing to ' + CondorConfiguration.GRAM_CONFIG_FILE,
                          level=logging.ERROR)
                 return False
-            if self.__set_default:
+            if self._set_default:
                 self.log('Configuring gatekeeper to use regular fork service')
                 self.set_default_jobmanager('fork')
 
         if self.htcondor_gateway_enabled:
-            if not self.setupHTCondorCEConfig():
+            if not self.setup_htcondor_ce_config():
                 self.log('Error writing to ' + JobManagerConfiguration.HTCONDOR_CE_CONFIG_FILE,
                          level=logging.ERROR)
                 return False
@@ -207,20 +207,20 @@ class CondorConfiguration(JobManagerConfiguration):
         if not self.reconfig_service('condor', 'condor_reconfig'):
             self.log('Error reloading condor config', level=logging.WARNING)
 
-        self.warnOnNonDefaultLocalConfigDir()
+        self.warn_on_non_default_local_config_dir()
 
         self.log('CondorConfiguration.configure completed')
         return True
 
-    def moduleName(self):
+    def module_name(self):
         """Return a string with the name of the module"""
         return "Condor"
 
-    def separatelyConfigurable(self):
+    def separately_configurable(self):
         """Return a boolean that indicates whether this module can be configured separately"""
         return True
 
-    def setupGramConfig(self):
+    def setup_gram_config(self):
         """
         Populate the gram config file with correct values
 
@@ -240,7 +240,7 @@ class CondorConfiguration(JobManagerConfiguration):
 
         return True
 
-    def setupHTCondorCEConfig(self):
+    def setup_htcondor_ce_config(self):
         """
         Populate the config file that tells htcondor-ce where the condor
         pool is and where the spool directory is.
@@ -284,7 +284,7 @@ class CondorConfiguration(JobManagerConfiguration):
             if condor_ce_config_key == 'JOB_ROUTER_SCHEDD2_POOL':
                 condor_collector_port = (utilities.get_condor_config_val('COLLECTOR_PORT', quiet_undefined=True)
                                          or '9618')
-                condor_config_value = self._addPortIfNecessary(condor_config_value, condor_collector_port)
+                condor_config_value = self._add_port_if_necessary(condor_config_value, condor_collector_port)
 
             if not condor_ce_config_value or condor_ce_config_value != condor_config_value:
                 condor_ce_config[condor_ce_config_key] = condor_config_value
@@ -301,7 +301,7 @@ class CondorConfiguration(JobManagerConfiguration):
         return True
 
     @staticmethod
-    def _addPortIfNecessary(hoststr, port):
+    def _add_port_if_necessary(hoststr, port):
         assert port
         colon_count = hoststr.count(':')
         if colon_count == 0:
@@ -320,7 +320,7 @@ class CondorConfiguration(JobManagerConfiguration):
             else:
                 return hoststr
 
-    def warnOnNonDefaultLocalConfigDir(self):
+    def warn_on_non_default_local_config_dir(self):
         """Warn the user if the default condor local config dir
         (/etc/condor/config.d) is not searched by their Condor install,
         i.e. is not in the LOCAL_CONFIG_DIR variable.  (Note that despite
@@ -348,7 +348,7 @@ class CondorConfiguration(JobManagerConfiguration):
             return
 
     @staticmethod
-    def getCondorLocation(configuration):
+    def get_condor_location(configuration):
         """
         Get the condor location based on the information in a configParser
         object (configuration argument) and environment variables if possible
@@ -360,7 +360,7 @@ class CondorConfiguration(JobManagerConfiguration):
         return location.value
 
     @staticmethod
-    def getCondorConfig(configuration):
+    def get_condor_config(configuration):
         """
         Get the condor config location based on the information in a configParser
         object (configuration argument) and environment variables if possible
@@ -372,10 +372,10 @@ class CondorConfiguration(JobManagerConfiguration):
         configfile.get_option(configuration, 'Condor', location)
         return location.value
 
-    def enabledServices(self):
+    def enabled_services(self):
         """Return a list of system services needed for module to work
         """
         if not self.enabled or self.ignored:
             return set()
 
-        return set(['globus-gridftp-server']).union(self.gatewayServices())
+        return set(['globus-gridftp-server']).union(self.gateway_services())

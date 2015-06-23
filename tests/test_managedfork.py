@@ -44,11 +44,11 @@ class TestManagedFork(unittest.TestCase):
 
         settings = managedfork.ManagedForkConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         self.assertTrue(attributes.has_key('OSG_MANAGEDFORK'),
                         'Attribute OSG_MANAGEDFORK missing')
         self.assertEqual(attributes['OSG_MANAGEDFORK'],
@@ -66,11 +66,11 @@ class TestManagedFork(unittest.TestCase):
 
         settings = managedfork.ManagedForkConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         self.assertTrue(attributes.has_key('OSG_MANAGEDFORK'),
                         'Attribute OSG_MANAGEDFORK missing')
         self.assertEqual(attributes['OSG_MANAGEDFORK'],
@@ -88,11 +88,11 @@ class TestManagedFork(unittest.TestCase):
 
         settings = managedfork.ManagedForkConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         self.assertTrue(attributes.has_key('OSG_MANAGEDFORK'),
                         'Attribute OSG_MANAGEDFORK missing')
         self.assertEqual(attributes['OSG_MANAGEDFORK'],
@@ -101,7 +101,7 @@ class TestManagedFork(unittest.TestCase):
 
     def testValidSettings(self):
         """
-        Test the checkAttributes function to see if it oks good attributes
+        Test the check_attributes function to see if it oks good attributes
         """
 
         config_file = get_test_config("managedfork/check_ok.ini")
@@ -110,17 +110,17 @@ class TestManagedFork(unittest.TestCase):
 
         settings = managedfork.ManagedForkConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertTrue(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertTrue(settings.check_attributes(attributes),
                         "Correct locations incorrectly flagged as missing")
 
     def testAcceptLimitedTrue(self):
         """
-        Test the checkAttributes function to see if it oks good attributes
+        Test the check_attributes function to see if it oks good attributes
         """
 
         config_file = get_test_config("managedfork/check_accept_limited_true.ini")
@@ -129,17 +129,17 @@ class TestManagedFork(unittest.TestCase):
 
         settings = managedfork.ManagedForkConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertTrue(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertTrue(settings.check_attributes(attributes),
                         "Correct locations incorrectly flagged as missing")
 
     def testAcceptLimitedFalse(self):
         """
-        Test the checkAttributes function to see if it oks good attributes
+        Test the check_attributes function to see if it oks good attributes
         """
 
         config_file = get_test_config("managedfork/check_accept_limited_false.ini")
@@ -148,12 +148,12 @@ class TestManagedFork(unittest.TestCase):
 
         settings = managedfork.ManagedForkConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        attributes = settings.getAttributes()
-        self.assertTrue(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertTrue(settings.check_attributes(attributes),
                         "Correct locations incorrectly flagged as missing")
 
     def testServiceList(self):
@@ -167,10 +167,10 @@ class TestManagedFork(unittest.TestCase):
 
         settings = managedfork.ManagedForkConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
-        services = settings.enabledServices()
+        services = settings.enabled_services()
         expected_services = set(['condor-ce', 'condor'])
         self.assertEqual(services, expected_services,
                          "List of enabled services incorrect, " +
@@ -182,10 +182,10 @@ class TestManagedFork(unittest.TestCase):
 
         settings = managedfork.ManagedForkConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
-        services = settings.enabledServices()
+        services = settings.enabled_services()
         expected_services = set()
         self.assertEqual(services, expected_services,
                          "List of enabled services incorrect, " +
@@ -197,10 +197,10 @@ class TestManagedFork(unittest.TestCase):
 
         settings = managedfork.ManagedForkConfiguration(logger=global_logger)
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
-        services = settings.enabledServices()
+        services = settings.enabled_services()
         expected_services = set()
         self.assertEqual(services, expected_services,
                          "List of enabled services incorrect, " +

@@ -78,32 +78,32 @@ class SiteAttributes(BaseConfiguration):
         self.enabled = True
         self.log('SiteAttributes.__init__ completed')
 
-    def parseConfiguration(self, configuration):
+    def parse_configuration(self, configuration):
         """Try to get configuration information from ConfigParser or SafeConfigParser object given
         by configuration and write recognized settings to attributes dict
         """
-        self.log('SiteAttributes.parseConfiguration started')
+        self.log('SiteAttributes.parse_configuration started')
 
-        self.checkConfig(configuration)
+        self.check_config(configuration)
 
         if not configuration.has_section(self.config_section):
             self.enabled = False
             self.log("%s section not in config file" % self.config_section)
-            self.log('SiteAttributes.parseConfiguration completed')
+            self.log('SiteAttributes.parse_configuration completed')
             return
 
-        self.getOptions(configuration, ignore_options=self.IGNORE_OPTIONS)
-        self.log('SiteAttributes.parseConfiguration completed')
+        self.get_options(configuration, ignore_options=self.IGNORE_OPTIONS)
+        self.log('SiteAttributes.parse_configuration completed')
 
     # pylint: disable-msg=W0613
-    def checkAttributes(self, attributes):
+    def check_attributes(self, attributes):
         """Check attributes currently stored and make sure that they are consistent"""
-        self.log('SiteAttributes.checkAttributes started')
+        self.log('SiteAttributes.check_attributes started')
         attributes_ok = True
 
         if not self.enabled:
             self.log('Not enabled, returning True')
-            self.log('SiteAttributes.checkAttributes completed')
+            self.log('SiteAttributes.check_attributes completed')
             return attributes_ok
 
 
@@ -270,18 +270,18 @@ class SiteAttributes(BaseConfiguration):
                      option='sponsor',
                      level=logging.ERROR)
             attributes_ok = False
-        self.log('SiteAttributes.checkAttributes completed')
+        self.log('SiteAttributes.check_attributes completed')
         return attributes_ok
 
-    def moduleName(self):
+    def module_name(self):
         """Return a string with the name of the module"""
         return "SiteInformation"
 
-    def separatelyConfigurable(self):
+    def separately_configurable(self):
         """Return a boolean that indicates whether this module can be configured separately"""
         return True
 
-    def getAttributes(self, converter=str):
+    def get_attributes(self, converter=str):
         """
         Get attributes for the osg attributes file using the dict in self.options
 
@@ -290,11 +290,11 @@ class SiteAttributes(BaseConfiguration):
         Need to override parent class method since two options may map to OSG_SITE_NAME
         """
 
-        self.log("%s.getAttributes started" % self.__class__)
+        self.log("%s.get_attributes started" % self.__class__)
 
-        attributes = BaseConfiguration.getAttributes(self)
+        attributes = BaseConfiguration.get_attributes(self)
         if attributes == {}:
-            self.log("%s.getAttributes completed" % self.__class__)
+            self.log("%s.get_attributes completed" % self.__class__)
             return attributes
 
         if ('OSG_SITE_NAME' in attributes and
@@ -302,5 +302,5 @@ class SiteAttributes(BaseConfiguration):
                 not utilities.blank(self.options['resource'].value)):
             attributes['OSG_SITE_NAME'] = self.options['resource'].value
 
-        self.log("%s.getAttributes completed" % self.__class__)
+        self.log("%s.get_attributes completed" % self.__class__)
         return attributes

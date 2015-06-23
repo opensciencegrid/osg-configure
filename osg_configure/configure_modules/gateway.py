@@ -39,39 +39,39 @@ class GatewayConfiguration(BaseConfiguration):
         self.enabled = True  # XXX This needs to be True for mappings to work
         self.log('GatewayConfiguration.__init__ completed')
 
-    def parseConfiguration(self, configuration):
+    def parse_configuration(self, configuration):
         """
         Try to get configuration information from ConfigParser or
         SafeConfigParser object given by configuration and write recognized settings
         to attributes dict
         """
-        self.log('GatewayConfiguration.parseConfiguration started')
+        self.log('GatewayConfiguration.parse_configuration started')
         if not configuration.has_section(self.config_section):
             self.enabled = False
             self.log("%s section not in config file" % self.config_section)
-            self.log('GatewayConfiguration.parseConfiguration completed')
+            self.log('GatewayConfiguration.parse_configuration completed')
             return
 
-        self.getOptions(configuration)
+        self.get_options(configuration)
 
         self.gram_gateway_enabled = self.options['gram_gateway_enabled'].value
         self.htcondor_gateway_enabled = self.options['htcondor_gateway_enabled'].value
 
-        self.log('GatewayConfiguration.parseConfiguration completed')
+        self.log('GatewayConfiguration.parse_configuration completed')
 
-    # Not overriding enabledServices -- only job manager modules need the gateways enabled
-    # def enabledServices(self):
+    # Not overriding enabled_services -- only job manager modules need the gateways enabled
+    # def enabled_services(self):
 
-    # Not overriding checkAttributes -- all attributes are independent.
-    # def checkAttributes(self, attributes):
+    # Not overriding check_attributes -- all attributes are independent.
+    # def check_attributes(self, attributes):
 
     # Not overriding configure -- all configuration in other modules
     # def configure(self, attributes):
 
-    def moduleName(self):
+    def module_name(self):
         """A string with the name of the module"""
         return self.config_section
 
-    def separatelyConfigurable(self):
+    def separately_configurable(self):
         """A boolean that indicates whether this module can be configured separately"""
         return False

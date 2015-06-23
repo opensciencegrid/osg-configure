@@ -181,10 +181,10 @@ def configure_system(modules, logger, configure_module=None, force=False):
             if module.__class__.__name__ == 'LocalSettings':
                 # Need to preserve case for variables being set in the environment
                 local_config = configfile.read_config_files(case_sensitive=True)
-                module.parseConfiguration(local_config)
+                module.parse_configuration(local_config)
                 continue
             else:
-                module.parseConfiguration(config)
+                module.parse_configuration(config)
         except exceptions.SettingError, exception:
             error_exit("Error in %s while parsing configuration" % \
                        (module.__class__.__name__),
@@ -197,9 +197,9 @@ def configure_system(modules, logger, configure_module=None, force=False):
     attribute_to_option_map = {}
     for module in modules:
         if module.__class__.__name__ == 'LocalSettings':
-            local_attributes.update(module.getAttributes())
+            local_attributes.update(module.get_attributes())
 
-        attributes.update(module.getAttributes())
+        attributes.update(module.get_attributes())
 
         section = module.config_section
         for opt in module.options.values():
@@ -216,13 +216,13 @@ def configure_system(modules, logger, configure_module=None, force=False):
 
     if configure_module is not None:
         # check whether the module we want to configure is present
-        if configure_module.lower() not in [x.moduleName().lower() for x in modules]:
+        if configure_module.lower() not in [x.module_name().lower() for x in modules]:
             error_exit("%s specified but that module is not present" % configure_module)
 
     for module in modules:
         logger.debug("Configuring %s" % (module.__class__.__name__))
         if configure_module is not None:
-            if module.moduleName().lower() != configure_module.lower():
+            if module.module_name().lower() != configure_module.lower():
                 logger.debug("Skipping %s configuration" % (module.__class__.__name__))
                 continue
         try:
@@ -362,7 +362,7 @@ def list_enabled_services(modules, logger):
 
     for module in modules:
         try:
-            module.parseConfiguration(config)
+            module.parse_configuration(config)
         except exceptions.SettingError, exception:
             error_exit("Error in %s while parsing configuration" % \
                        (module.__class__.__name__),
@@ -373,7 +373,7 @@ def list_enabled_services(modules, logger):
     sys.stdout.write("System services associated with current configuration:\n")
     services = set()
     for module in modules:
-        services |= module.enabledServices()
+        services |= module.enabled_services()
     for service in services:
         sys.stdout.write(service + "\n")
 
@@ -401,10 +401,10 @@ def verify_system(modules, logger):
         try:
             if module.__class__.__name__ == 'LocalSettings':
                 local_config = configfile.read_config_files(case_sensitive=True)
-                module.parseConfiguration(local_config)
+                module.parse_configuration(local_config)
                 continue
             else:
-                module.parseConfiguration(config)
+                module.parse_configuration(config)
         except exceptions.SettingError, exception:
             error_exit("Error in %s while parsing configuration" % (module.__class__.__name__),
                        exception)
@@ -415,8 +415,8 @@ def verify_system(modules, logger):
     local_attributes = {}
     for module in modules:
         if module.__class__.__name__ == 'LocalSettings':
-            local_attributes.update(module.getAttributes())
-        attributes.update(module.getAttributes())
+            local_attributes.update(module.get_attributes())
+        attributes.update(module.get_attributes())
 
     if not check_configuration(modules, attributes, logger):
         error_exit("Invalid attributes found, exiting")
@@ -436,8 +436,8 @@ def list_modules(modules, logger):
 
     sys.stdout.write("%s%s\n" % ("Module name".ljust(30), "Can configure separately?".ljust(40)))
     for module in modules:
-        name = module.moduleName()
-        if module.separatelyConfigurable():
+        name = module.module_name()
+        if module.separately_configurable():
             configurable = "Yes"
         else:
             configurable = "No"
@@ -467,7 +467,7 @@ def check_configuration(modules, attributes, logger):
 
     status = True
     for module in modules:
-        status &= module.checkAttributes(attributes)
+        status &= module.check_attributes(attributes)
     return status
 
 

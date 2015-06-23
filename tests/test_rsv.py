@@ -49,7 +49,7 @@ class TestRSV(unittest.TestCase):
         settings = rsv.RsvConfiguration(logger=global_logger)
         settings.rsv_meta_dir = RSV_META_DIR
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
@@ -158,7 +158,7 @@ class TestRSV(unittest.TestCase):
         if not utilities.rpm_installed('rsv-core'):
             return
         settings = self.load_settings_from_files("rsv/ignored.ini")
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         self.assertEqual(len(attributes), 0,
                          "Ignored configuration should have no attributes")
 
@@ -171,7 +171,7 @@ class TestRSV(unittest.TestCase):
         if not utilities.rpm_installed('rsv-core'):
             return
         settings = self.load_settings_from_files("rsv/disabled.ini")
-        attributes = settings.getAttributes()
+        attributes = settings.get_attributes()
         self.assertEqual(len(attributes), 0,
                          "Disabled configuration should have no attributes")
 
@@ -190,7 +190,7 @@ class TestRSV(unittest.TestCase):
         settings = rsv.RsvConfiguration(logger=global_logger)
         settings.rsv_meta_dir = RSV_META_DIR
         try:
-            settings.parseConfiguration(configuration)
+            settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
@@ -205,12 +205,12 @@ class TestRSV(unittest.TestCase):
             settings = rsv.RsvConfiguration(logger=global_logger)
             settings.rsv_meta_dir = RSV_META_DIR
             self.assertRaises(exceptions.SettingError,
-                              settings.parseConfiguration,
+                              settings.parse_configuration,
                               configuration)
 
     def testInvalidKey(self):
         """
-        Test the checkAttributes with invalid key file
+        Test the check_attributes with invalid key file
         """
 
 
@@ -218,52 +218,52 @@ class TestRSV(unittest.TestCase):
         if not utilities.rpm_installed('rsv-core'):
             return
         settings = self.load_settings_from_files("rsv/invalid_key.ini")
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Invalid rsv key file ignored")
 
     def testMissingKey(self):
         """
-        Test the checkAttributes with a missing rsv key file
+        Test the check_attributes with a missing rsv key file
         """
 
         # need to have rsv installed to get rsv tests working
         if not utilities.rpm_installed('rsv-core'):
             return
         settings = self.load_settings_from_files("rsv/missing_key.ini")
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Missing rsv key file ignored")
 
     def testInvalidCert(self):
         """
-        Test the checkAttributes with invalid cert file
+        Test the check_attributes with invalid cert file
         """
 
         # need to have rsv installed to get rsv tests working
         if not utilities.rpm_installed('rsv-core'):
             return
         settings = self.load_settings_from_files("rsv/invalid_cert.ini")
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Invalid rsv cert file ignored")
 
     def testMissingCert(self):
         """
-        Test the checkAttributes with a missing rsv cert file
+        Test the check_attributes with a missing rsv cert file
         """
 
         # need to have rsv installed to get rsv tests working
         if not utilities.rpm_installed('rsv-core'):
             return
         settings = self.load_settings_from_files("rsv/missing_cert.ini")
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Missing rsv cert file ignored")
 
     def testInvalidProxy(self):
         """
-        Test the checkAttributes with invalid proxy file
+        Test the check_attributes with invalid proxy file
         """
 
 
@@ -271,116 +271,116 @@ class TestRSV(unittest.TestCase):
         if not utilities.rpm_installed('rsv-core'):
             return
         settings = self.load_settings_from_files("rsv/invalid_proxy.ini")
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Invalid rsv proxy file ignored")
 
     def testMissingProxy(self):
         """
-        Test the checkAttributes with a missing proxy cert file
+        Test the check_attributes with a missing proxy cert file
         """
 
         # need to have rsv installed to get rsv tests working
         if not utilities.rpm_installed('rsv-core'):
             return
         settings = self.load_settings_from_files("rsv/missing_proxy.ini")
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Missing rsv proxy file ignored")
 
     def testInvalidGratiaProbes(self):
         """
-        Test the checkAttributes with invalid gratia probes
+        Test the check_attributes with invalid gratia probes
         """
 
         # need to have rsv installed to get rsv tests working
         if not utilities.rpm_installed('rsv-core'):
             return
         settings = self.load_settings_from_files("rsv/invalid_gratia1.ini")
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Invalid gratia probe ignored")
 
         settings = self.load_settings_from_files("rsv/invalid_gratia2.ini")
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Invalid gratia probe list ignored")
 
     def testInvalidCEHost(self):
         """
-        Test the checkAttributes with invalid ce host
+        Test the check_attributes with invalid ce host
         """
 
         # need to have rsv installed to get rsv tests working
         if not utilities.rpm_installed('rsv-core'):
             return
         settings = self.load_settings_from_files("rsv/invalid_ce_host.ini")
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Invalid ce  ignored")
 
     def testInvalidGumsHost(self):
         """
-        Test the checkAttributes with invalid gums host
+        Test the check_attributes with invalid gums host
         """
 
         # need to have rsv installed to get rsv tests working
         if not utilities.rpm_installed('rsv-core'):
             return
         settings = self.load_settings_from_files("rsv/invalid_gums_host.ini")
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Invalid gums host ignored")
 
     def testInvalidGridftpHost(self):
         """
-        Test the checkAttributes with invalid gridftp host
+        Test the check_attributes with invalid gridftp host
         """
 
         # need to have rsv installed to get rsv tests working
         if not utilities.rpm_installed('rsv-core'):
             return
         settings = self.load_settings_from_files("rsv/invalid_gridftp_host.ini")
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Invalid gridftp ignored")
 
     def testInvalidSRMHost(self):
         """
-        Test the checkAttributes with invalid srm host
+        Test the check_attributes with invalid srm host
         """
 
         # need to have rsv installed to get rsv tests working
         if not utilities.rpm_installed('rsv-core'):
             return
         settings = self.load_settings_from_files("rsv/invalid_srm_host.ini")
-        attributes = settings.getAttributes()
-        self.assertFalse(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
                          "Invalid srm ignored")
 
     def testValidSettings1(self):
         """
-        Test the checkAttributes function to see if it works on valid settings
+        Test the check_attributes function to see if it works on valid settings
         """
 
         # need to have rsv installed to get rsv tests working
         if not utilities.rpm_installed('rsv-core'):
             return
         settings = self.load_settings_from_files("rsv/rsv1.ini")
-        attributes = settings.getAttributes()
-        self.assertTrue(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertTrue(settings.check_attributes(attributes),
                         "Correct configuration incorrectly flagged as incorrect")
 
     def testValidSettings2(self):
         """
-        Test the checkAttributes function to see if it works on valid settings
+        Test the check_attributes function to see if it works on valid settings
         """
         # need to have rsv installed to get rsv tests working
         if not utilities.rpm_installed('rsv-core'):
             return
         settings = self.load_settings_from_files("rsv/rsv2.ini")
-        attributes = settings.getAttributes()
-        self.assertTrue(settings.checkAttributes(attributes),
+        attributes = settings.get_attributes()
+        self.assertTrue(settings.check_attributes(attributes),
                         "Correct configuration incorrectly flagged as incorrect")
 
     def testServiceList(self):
@@ -391,21 +391,21 @@ class TestRSV(unittest.TestCase):
         if not utilities.rpm_installed('rsv-core'):
             return
         settings = self.load_settings_from_files("rsv/rsv1.ini")
-        services = settings.enabledServices()
+        services = settings.enabled_services()
         expected_services = set(['rsv', 'condor-cron'])
         self.assertEqual(services, expected_services,
                          "List of enabled services incorrect, " +
                          "got %s but expected %s" % (services, expected_services))
 
         settings = self.load_settings_from_files("rsv/disabled.ini")
-        services = settings.enabledServices()
+        services = settings.enabled_services()
         expected_services = set()
         self.assertEqual(services, expected_services,
                          "List of enabled services incorrect, " +
                          "got %s but expected %s" % (services, expected_services))
 
         settings = self.load_settings_from_files("rsv/ignored.ini")
-        services = settings.enabledServices()
+        services = settings.enabled_services()
         expected_services = set()
         self.assertEqual(services, expected_services,
                          "List of enabled services incorrect, " +

@@ -40,26 +40,26 @@ class SquidConfiguration(BaseConfiguration):
         self.config_section = 'Squid'
         self.log('SquidConfiguration.__init__ completed')
 
-    def parseConfiguration(self, configuration):
+    def parse_configuration(self, configuration):
         """Try to get configuration information from ConfigParser or SafeConfigParser object given
         by configuration and write recognized settings to attributes dict
         """
-        self.log('SquidConfiguration.parseConfiguration started')
+        self.log('SquidConfiguration.parse_configuration started')
 
-        self.checkConfig(configuration)
+        self.check_config(configuration)
 
         if not configuration.has_section(self.config_section):
             self.enabled = False
             self.log("%s section not in config file" % self.config_section)
-            self.log('SquidConfiguration.parseConfiguration completed')
+            self.log('SquidConfiguration.parse_configuration completed')
             return
 
-        if not self.setStatus(configuration):
-            self.log('SquidConfiguration.parseConfiguration completed')
+        if not self.set_status(configuration):
+            self.log('SquidConfiguration.parse_configuration completed')
             if not self.ignored and not self.enabled:
                 return True
 
-        self.getOptions(configuration, ignore_options=['enabled'])
+        self.get_options(configuration, ignore_options=['enabled'])
 
         if not (utilities.blank(self.options['location'].value) or
                         self.options['location'].value == 'None'):
@@ -68,12 +68,12 @@ class SquidConfiguration(BaseConfiguration):
 
         if configuration.get(self.config_section, 'location').upper() == 'UNAVAILABLE':
             self.options['location'].value = 'UNAVAILABLE'
-        self.log('SquidConfiguration.parseConfiguration completed')
+        self.log('SquidConfiguration.parse_configuration completed')
 
     # pylint: disable-msg=W0613
-    def checkAttributes(self, attributes):
+    def check_attributes(self, attributes):
         """Check attributes currently stored and make sure that they are consistent"""
-        self.log('SquidConfiguration.checkAttributes started')
+        self.log('SquidConfiguration.check_attributes started')
         attributes_ok = True
         if not (utilities.gateway_installed() and utilities.rpm_installed('frontier-squid')):
             return attributes_ok
@@ -84,12 +84,12 @@ class SquidConfiguration(BaseConfiguration):
                      "not present",
                      level=logging.WARNING)
             self.log('squid not enabled')
-            self.log('SquidConfiguration.checkAttributes completed')
+            self.log('SquidConfiguration.check_attributes completed')
             return attributes_ok
 
         if self.ignored:
             self.log('Ignored, returning True')
-            self.log('SquidConfiguration.checkAttributes completed')
+            self.log('SquidConfiguration.check_attributes completed')
             return attributes_ok
 
         if (self.options['location'].value == 'None'):
@@ -135,7 +135,7 @@ class SquidConfiguration(BaseConfiguration):
                      exception=True)
             attributes_ok = False
 
-        self.log('SquidConfiguration.checkAttributes completed')
+        self.log('SquidConfiguration.check_attributes completed')
         return attributes_ok
 
     # pylint: disable-msg=W0613
@@ -156,15 +156,15 @@ class SquidConfiguration(BaseConfiguration):
         self.log('SquidConfiguration.configure completed')
         return True
 
-    def moduleName(self):
+    def module_name(self):
         """Return a string with the name of the module"""
         return "Squid"
 
-    def separatelyConfigurable(self):
+    def separately_configurable(self):
         """Return a boolean that indicates whether this module can be configured separately"""
         return True
 
-    def getAttributes(self, converter=str):
+    def get_attributes(self, converter=str):
         """
         Get attributes for the osg attributes file using the dict in self.options
 
@@ -173,22 +173,22 @@ class SquidConfiguration(BaseConfiguration):
         Need to override parent class method since two options may map to OSG_SITE_NAME
         """
 
-        self.log("%s.getAttributes started" % self.__class__)
+        self.log("%s.get_attributes started" % self.__class__)
 
-        attributes = BaseConfiguration.getAttributes(self)
+        attributes = BaseConfiguration.get_attributes(self)
         if self.ignored:
-            self.log("%s.getAttributes completed" % self.__class__)
-            return dict(zip([item.mapping for item in self.options.values() if item.isMappable()],
-                            [str(item.value) for item in self.options.values() if item.isMappable()]))
+            self.log("%s.get_attributes completed" % self.__class__)
+            return dict(zip([item.mapping for item in self.options.values() if item.is_mappable()],
+                            [str(item.value) for item in self.options.values() if item.is_mappable()]))
         elif not self.enabled:
-            self.log("%s.getAttributes completed" % self.__class__)
+            self.log("%s.get_attributes completed" % self.__class__)
             return attributes
         elif self.options['location'].value in ('None', 'UNAVAILABLE'):
             del attributes['OSG_SQUID_LOCATION']
             self.log("Blank location or location set to UNAVAILABLE, " +
                      "not setting environment variable")
-            self.log("%s.getAttributes completed" % self.__class__)
+            self.log("%s.get_attributes completed" % self.__class__)
             return attributes
 
-        self.log("%s.getAttributes completed" % self.__class__)
+        self.log("%s.get_attributes completed" % self.__class__)
         return attributes
