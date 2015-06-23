@@ -113,6 +113,16 @@ class RsvConfiguration(BaseConfiguration):
                       configfile.Option(name = 'nagios_send_nsca',
                                         required = configfile.Option.OPTIONAL,
                                         opt_type = bool,
+                                        default_value = False),
+                    'enable_zabbix' :
+                      configfile.Option(name = 'enable_zabbix',
+                                        required = configfile.Option.OPTIONAL,
+                                        opt_type = bool,
+                                        default_value = False),
+                    'zabbix_use_sender' :
+                      configfile.Option(name = 'zabbix_use_sender',
+                                        required = configfile.Option.OPTIONAL,
+                                        opt_type = bool,
                                         default_value = False)}
 
     self.__rsv_user = "rsv"
@@ -970,6 +980,7 @@ class RsvConfiguration(BaseConfiguration):
     #  - we ALWAYS want the html-consumer if we are told to install consumers
     #  - we want the gratia-consumer if enable_gratia is True
     #  - we want the nagios-consumer if enable_nagios is True
+    #  - we want the zabbix-consumer if enable_zabbix is True and rsv-consumers-zabbix is installed
 
     consumers = ["html-consumer"]
 
@@ -980,6 +991,15 @@ class RsvConfiguration(BaseConfiguration):
     if self.options['enable_nagios'].value:
       consumers.append("nagios-consumer")
       self.__configure_nagios_files()
+
+    if self.options['enable_zabbix'].value:
+      if not utilities.rpm_installed('rsv-consumers-zabbix'):
+        self.log('Your configuration has enabled the Zabbix consumer '
+                 'but rsv-consumers-zabbix is not installed. Zabbix consumer configuration will be ignored.',
+                 level = logging.WARNING)
+      else:
+        consumers.append("zabbix-consumer")
+        self.__configure_zabbix_files()
 
     consumer_list = " ".join(consumers)
     self.log("Enabling consumers: %s " % consumer_list)
@@ -1014,6 +1034,33 @@ class RsvConfiguration(BaseConfiguration):
     config.set("nagios-consumer", "args", args)
     
     config_fp = open(nagios_conf_file, 'w')
+    config.write(config_fp)
+    config_fp.close()
+
+
+  def __configure_zabbix_files(self):
+    """ Store the zabbix configuration """
+
+    rsv_zabbix_file = os.path.join(self.rsv_conf_dir, 'rsv-zabbix.conf')
+
+    # Add the configuration file
+    zabbix_conf_file = os.path.join(self.rsv_conf_dir, 'consumers/zabbix-consumer.conf')
+    config = ConfigParser.RawConfigParser()
+    config.optionxform = str
+
+    if os.path.exists(zabbix_conf_file):
+      config.read(zabbix_conf_file)
+
+    if not config.has_section('zabbix-consumer'):
+      config.add_section('zabbix-consumer')
+
+    args = "--conf-file %s" % rsv_zabbix_file
+    if self.options['zabbix_use_sender'].value:
+      args += " --zabbix-sender"
+
+    config.set("zabbix-consumer", "args", args)
+
+    config_fp = open(zabbix_conf_file, 'w')
     config.write(config_fp)
     config_fp.close()
 
