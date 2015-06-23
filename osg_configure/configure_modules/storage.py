@@ -36,6 +36,8 @@ class StorageConfiguration(BaseConfiguration):
                                         mapping = 'OSG_GRID'),
                     'app_dir' : 
                       configfile.Option(name = 'app_dir',
+                                        default_value = 'UNAVAILABLE',
+                                        required = configfile.Option.OPTIONAL,
                                         mapping = 'OSG_APP'),
                     'data_dir' : 
                       configfile.Option(name = 'data_dir',
@@ -128,8 +130,13 @@ class StorageConfiguration(BaseConfiguration):
       self.log("StorageConfiguration.configure completed")
       return True
       
-    if self.options['app_dir'].value == 'UNSET':
-      self.log('OSG_APP unset, exiting')
+    if self.options['app_dir'].value in ('UNSET', 'UNAVAILABLE'):
+      self.log('OSG_APP unset or unavailable, exiting')
+      self.log('StorageConfiguration.configure completed')
+      return True
+
+    if self.__app_dir_in_oasis(self.options['app_dir'].value):
+      self.log('OSG_APP is in OASIS, exiting')
       self.log('StorageConfiguration.configure completed')
       return True
 
@@ -172,7 +179,10 @@ class StorageConfiguration(BaseConfiguration):
   def separatelyConfigurable(self):
     """Return a boolean that indicates whether this module can be configured separately"""
     return True
-  
+
+  def __app_dir_in_oasis(self, app_dir):
+    return app_dir.startswith('/cvmfs/oasis.opensciencegrid.org')
+
   def __check_app_dir(self, app_dir):
     """"
     Checks to make sure that the OSG_APP directory exists and the VO directories have 
@@ -185,7 +195,7 @@ class StorageConfiguration(BaseConfiguration):
     If APP_DIR is explicitly UNSET, skip tests
     """
     try:
-      if app_dir.startswith('/cvmfs/oasis.opensciencegrid.org'):
+      if self.__app_dir_in_oasis(app_dir):
         self.log('OSG_APP is an OASIS repository, skipping tests', 
                  level=logging.INFO)
         return True
@@ -196,6 +206,13 @@ class StorageConfiguration(BaseConfiguration):
                  level=logging.INFO)
         return True
       
+      if app_dir == 'UNAVAILABLE':
+        self.log('OSG_APP ("app_dir" in the [Storage]) section is not configured.'
+                 ' If it is not available, explicitly set it to UNSET.'
+                 ' Otherwise, point it to the directory VO software can be obtained from.'
+                 , level=logging.WARNING)
+        return True
+
       if not validation.valid_location(app_dir) or not os.path.isdir(app_dir):
         self.log("Directory not present: %s" % app_dir,
                  section = self.config_section,
