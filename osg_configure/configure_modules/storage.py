@@ -63,14 +63,14 @@ class StorageConfiguration(BaseConfiguration):
     object given by configuration and write recognized settings to attributes 
     dict
     """
-    self.log('StorageConfiguration.parseAttributes started')    
+    self.log('StorageConfiguration.parseConfiguration started')
 
     self.checkConfig(configuration)
 
     if not configuration.has_section(self.config_section):
       self.enabled = False
       self.log("%s section not in config file" % self.config_section)
-      self.log('StorageConfiguration.parseAttributes completed')    
+      self.log('StorageConfiguration.parseConfiguration completed')
       return
     # This module is called Storage, but it's actually needed for a CE:
     # The main script's write_attributes() will fail if certain options,
@@ -78,13 +78,13 @@ class StorageConfiguration(BaseConfiguration):
     if not utilities.gateway_installed():
       self.enabled = False
       self.log("No job gateway installed, skipping CE specific module")
-      self.log('StorageConfiguration.parseAttributes completed')    
+      self.log('StorageConfiguration.parseConfiguration completed')
       return
     else:
       self.enabled = True
       
     self.getOptions(configuration)
-    self.log('StorageConfiguration.parseAttributes completed')    
+    self.log('StorageConfiguration.parseConfiguration completed')
 
 # pylint: disable-msg=W0613
   def checkAttributes(self, attributes):
