@@ -2,7 +2,7 @@
 """
 
 from osg_configure.modules import configfile
-from osg_configure.modules.configurationbase import BaseConfiguration
+from osg_configure.modules.baseconfiguration import BaseConfiguration
 
 __all__ = ['GatewayConfiguration']
 

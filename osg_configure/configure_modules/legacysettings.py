@@ -1,6 +1,6 @@
 """ Module to handle legacy attributes """
 
-from osg_configure.modules.configurationbase import BaseConfiguration
+from osg_configure.modules.baseconfiguration import BaseConfiguration
 from osg_configure.modules import configfile
 
 __all__ = ['LegacyConfiguration']

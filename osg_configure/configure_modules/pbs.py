@@ -7,7 +7,7 @@ import logging
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile
 from osg_configure.modules import validation
-from osg_configure.modules.jobmanagerbase import JobManagerConfiguration
+from osg_configure.modules.jobmanagerconfiguration import JobManagerConfiguration
 
 __all__ = ['PBSConfiguration']
 

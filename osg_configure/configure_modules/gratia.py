@@ -10,7 +10,7 @@ from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
 from osg_configure.modules import validation
 from osg_configure.modules import configfile
-from osg_configure.modules.configurationbase import BaseConfiguration
+from osg_configure.modules.baseconfiguration import BaseConfiguration
 from osg_configure.configure_modules.condor import CondorConfiguration
 from osg_configure.configure_modules.sge import SGEConfiguration
 from osg_configure.configure_modules.slurm import SlurmConfiguration

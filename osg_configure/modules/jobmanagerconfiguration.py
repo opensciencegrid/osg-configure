@@ -4,7 +4,7 @@ import re
 import os
 import logging
 
-from osg_configure.modules.configurationbase import BaseConfiguration
+from osg_configure.modules.baseconfiguration import BaseConfiguration
 from osg_configure.modules import utilities
 from osg_configure.modules import validation
 
