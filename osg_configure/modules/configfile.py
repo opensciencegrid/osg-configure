@@ -211,7 +211,7 @@ class Option(object):
         Check type when setting value and enforce requirements for self.value if
         self.opt_type is specified
         """
-        if name == 'value' and self.opt_type is not None:
+        if name == 'value' and value is not None and self.opt_type is not None:
             if type(value) == self.opt_type:
                 self.__dict__[name] = value
             else:

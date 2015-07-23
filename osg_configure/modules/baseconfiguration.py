@@ -184,9 +184,17 @@ class BaseConfiguration(object):
             self.log("%s.get_attributes completed" % self.__class__)
             return {}
 
+        mappings = {}
+        for item in self.options.values():
+            if not item.is_mappable():
+                continue
+            if item.value is None:
+                mappings[item.mapping] = None
+            else:
+                mappings[item.mapping] = converter(item.value)
+
         self.log("%s.get_attributes completed" % self.__class__)
-        return dict(zip([item.mapping for item in self.options.values() if item.is_mappable()],
-                        [converter(item.value) for item in self.options.values() if item.is_mappable()]))
+        return mappings
 
     def enabled_services(self):
         """Return a list of  system services needed for module to work

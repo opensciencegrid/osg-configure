@@ -73,6 +73,9 @@ def _compose_attribute_file(attributes):
     keys.sort()
     for key in keys:
         value = attributes[key]
+        if value is None:
+            variable_string += "# " + key + " is undefined\n"
+            continue
         # Special case for SOFTWARE-1567 (let user explicitly unset OSG_APP)
         if key == 'OSG_APP' and (value == 'UNSET' or (islist(value) and 'UNSET' in value)):
             variable_string += 'unset OSG_APP\n'
@@ -87,8 +90,8 @@ def _compose_attribute_file(attributes):
                 export_string += "export %s\n" % key.split('[')[0]
                 array_vars[real_key] = ""
         else:
-            # Special case for SOFTWARE-1567
-            if not (key == 'OSG_APP' and value == 'UNSET'):
+            # 'OSG_APP' is a special case for SOFTWARE-1567
+            if value is not None and not (key == 'OSG_APP' and value == 'UNSET'):
                 export_string += "export %s\n" % key
 
     file_contents = """\
@@ -150,8 +153,8 @@ def blank(value):
 
     return (temp_val.upper().startswith('UNAVAILABLE') or
             temp_val.upper() == 'DEFAULT' or
-            temp_val == "" or
-            temp_val is None)
+            temp_val == "None" or
+            temp_val == "")
 
 
 def get_vos(user_vo_file):

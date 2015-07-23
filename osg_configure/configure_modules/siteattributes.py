@@ -292,7 +292,7 @@ class SiteAttributes(BaseConfiguration):
 
         self.log("%s.get_attributes started" % self.__class__)
 
-        attributes = BaseConfiguration.get_attributes(self)
+        attributes = BaseConfiguration.get_attributes(self, converter)
         if attributes == {}:
             self.log("%s.get_attributes completed" % self.__class__)
             return attributes
