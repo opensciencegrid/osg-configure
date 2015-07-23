@@ -24,7 +24,7 @@ __all__ = ['valid_domain',
 
 def valid_domain(host, resolve=False):
     """Check to see if the string passed in is a valid domain"""
-    if len(host) == 0:
+    if not host:
         return False
     match = re.match(r'^[a-zA-Z0-9\-]+(?:\.[a-zA-Z0-9\-]+)+$',
                      host)
@@ -44,7 +44,7 @@ def valid_domain(host, resolve=False):
 
 def valid_email(address):
     """Check an email address and make sure that it fits the correct format"""
-    if len(address) == 0:
+    if not address:
         return False
     match = re.match(r'(?:[a-zA-Z\-_+0-9.]+)@([a-zA-Z0-9_\-]+(?:\.[a-zA-Z0-9_\-]+)+)',
                      address)
@@ -55,7 +55,7 @@ def valid_email(address):
 
 def valid_location(location):
     """Returns True if location points to an existing directory or file"""
-    if os.path.exists(location):
+    if location and os.path.exists(location):
         return os.path.isdir(location) or os.path.isfile(location)
 
     return False
@@ -63,7 +63,7 @@ def valid_location(location):
 
 def valid_file(location):
     """Returns True if location points to an existing file"""
-    if os.path.exists(location):
+    if location and os.path.exists(location):
         return os.path.isfile(location)
 
     return False
@@ -71,7 +71,7 @@ def valid_file(location):
 
 def valid_directory(location):
     """Returns True if location points to an existing file"""
-    if os.path.exists(location):
+    if location and os.path.exists(location):
         return os.path.isdir(location)
 
     return False
@@ -82,7 +82,7 @@ def valid_user(username):
     Returns True if the username given is a valid username on the system
     """
     try:
-        if pwd.getpwnam(username):
+        if username and pwd.getpwnam(username):
             return True
     except KeyError:
         # getpwnam returns a key error if entry isn't present
@@ -223,9 +223,9 @@ def valid_ini_file(filename):
         return False
 
     sections = configuration.sections()
-    try:
-        for section in sections:
-            for option in configuration.options(section):
+    for section in sections:
+        for option in configuration.options(section):
+            try:
                 value = configuration.get(section, option)
                 if "\n" in value:
                     # pylint: disable-msg=E1103
@@ -234,9 +234,9 @@ def valid_ini_file(filename):
                     sys.stderr.write("The following line starts with a space: %s\n" % error_line)
                     sys.stderr.write("Please removing the leading space\n")
                     return False
-    except ValueError:
-        sys.stderr.write("syntax error in section %s with option %s\n" % (section, option))
-        return False
+            except ValueError:
+                sys.stderr.write("syntax error in section %s with option %s\n" % (section, option))
+                return False
 
     return True
 
@@ -297,7 +297,7 @@ def valid_contact(contact, jobmanager):
     returns True or False
     """
 
-    if len(contact.split('/')) != 2:
+    if not contact or len(contact.split('/')) != 2:
         return False
     (host_part, jobmanager_part) = contact.split('/')
 
@@ -315,5 +315,3 @@ def valid_contact(contact, jobmanager):
             return False
     else:
         return valid_domain(host_part)
-
-    return True
