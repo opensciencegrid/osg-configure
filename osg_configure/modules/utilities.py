@@ -215,7 +215,7 @@ def create_map_file(using_gums=False):
     Check and create a mapfile if needed
     """
 
-    map_file = '/var/lib/osg/osg-user-vo-map'
+    map_file = '/var/lib/osg/user-vo-map'
     try:
         if validation.valid_user_vo_file(map_file):
             return True
