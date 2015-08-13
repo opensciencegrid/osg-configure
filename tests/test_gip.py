@@ -430,7 +430,7 @@ class TestGip(unittest.TestCase):
         gip_config = gip.GipConfiguration(logger=global_logger)
         self.assertRaises(exceptions.SettingError, gip_config.check_sc, config_parser, "Subcluster No Name")
 
-    def test_user_check(self):
+    def test_user_check_invalid_user(self):
         """
         Check to make sure gip class will distinguish between valid and
         invalid users
@@ -438,10 +438,15 @@ class TestGip(unittest.TestCase):
         config_parser = ConfigParser.SafeConfigParser()
         config_file = get_test_config("gip/invalid_user.ini")
         config_parser.read(config_file)
+        config_parser.set('Install Locations',
+                          'user_vo_map',
+                          get_test_config(SAMPLE_VO_MAP_LOCATION))
         gip_config = gip.GipConfiguration(logger=global_logger)
         self.assertRaises(exceptions.SettingError,
                           gip_config._parse_configuration,
                           config_parser)
+
+    def test_user_check_valid_user(self):
         config_parser = ConfigParser.SafeConfigParser()
         config_file = get_test_config("gip/valid_user.ini")
         config_parser.read(config_file)
