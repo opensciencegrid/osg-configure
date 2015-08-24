@@ -326,7 +326,8 @@ def create_user_vo_file(using_gums=False):
         return False
     return True
 
-def ensure_valid_user_vo_file(using_gums, logger=logging):
+
+def ensure_valid_user_vo_file(using_gums, logger=utilities.NullLogger):
     if not validation.valid_user_vo_file(USER_VO_MAP_LOCATION):
         logger.info("Trying to create user-vo-map file")
         result = create_user_vo_file(using_gums)

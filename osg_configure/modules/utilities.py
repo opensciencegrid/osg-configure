@@ -12,6 +12,7 @@ import subprocess
 import platform
 import ConfigParser
 import errno
+import logging
 
 import rpm
 
@@ -38,7 +39,9 @@ __all__ = ['get_elements',
            'config_safe_getboolean',
            'classad_quote',
            'add_or_replace_setting',
-           'split_host_port']
+           'NullLogger',
+           'split_host_port',
+]
 
 CONFIG_DIRECTORY = "/etc/osg"
 
@@ -681,3 +684,24 @@ def split_host_port(host_port):
             if host[-1] == ']':
                 host = host[:-1]
             return host, None
+
+
+class NullLogger(logging.Logger):
+    """A dummy Logger where the logging functions ignore all parameters
+    passed to it.  They are static methods so you don't need to instantiate
+    it.  Useful as a default value for functions which take a logger as an
+    argument.
+
+    """
+    @staticmethod
+    def info(*args, **kwargs): pass
+    @staticmethod
+    def warning(*args, **kwargs): pass
+    @staticmethod
+    def error(*args, **kwargs): pass
+    @staticmethod
+    def critical(*args, **kwargs): pass
+    @staticmethod
+    def debug(*args, **kwargs): pass
+    @staticmethod
+    def log(*args, **kwargs): pass

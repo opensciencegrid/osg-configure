@@ -165,7 +165,7 @@ def check_config(config):
     return has_sc
 
 
-def resource_catalog_from_config(config, logger=logging, default_allowed_vos=None):
+def resource_catalog_from_config(config, logger=utilities.NullLogger, default_allowed_vos=None):
     """
     Create a ResourceCatalog from the subcluster entries in a config
     :type config: ConfigParser.ConfigParser
