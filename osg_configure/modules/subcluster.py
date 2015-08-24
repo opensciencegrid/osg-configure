@@ -165,7 +165,7 @@ def check_config(config):
     return has_sc
 
 
-def resource_catalog_from_config(config, logger=None):
+def resource_catalog_from_config(config, logger=logging, default_allowed_vos=None):
     """
     Create a ResourceCatalog from the subcluster entries in a config
     :type config: ConfigParser.ConfigParser
@@ -189,7 +189,8 @@ def resource_catalog_from_config(config, logger=None):
             rcentry.name = config.get(section, 'name')
             rcentry.cpus = config.getint(section, 'cores_per_node')
             rcentry.memory = config.getint(section, 'ram_mb')
-            rcentry.allowed_vos = utilities.config_safe_get(config, section, 'allowed_vos')
+            rcentry.allowed_vos = utilities.config_safe_get(config, section, 'allowed_vos',
+                                                            default=default_allowed_vos)
             max_wall_time = utilities.config_safe_get(config, section, 'max_wall_time')
             if not max_wall_time:
                 rcentry.max_wall_time = 1440
@@ -206,10 +207,9 @@ def resource_catalog_from_config(config, logger=None):
             rc.add_rcentry(rcentry)
     # end for section in config.sections()
 
-    if logger:
-        if subclusters_without_max_wall_time:
-            logger.warning("No max_wall_time specified for some subclusters; defaulting to 1440."
-                           "\nAdd 'max_wall_time=1440' to the following subcluster(s) to clear this warning:"
-                           "\n%s" % ", ".join(subclusters_without_max_wall_time))
+    if subclusters_without_max_wall_time:
+        logger.warning("No max_wall_time specified for some subclusters; defaulting to 1440."
+                       "\nAdd 'max_wall_time=1440' to the following subcluster(s) to clear this warning:"
+                       "\n%s" % ", ".join(subclusters_without_max_wall_time))
 
     return rc

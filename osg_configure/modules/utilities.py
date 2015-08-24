@@ -646,14 +646,14 @@ def split_host_port(host_port):
     """Return a tuple containing (host, port) of a string possibly
     containing both.  If there is no port in host_port, the port
     will be None.
-    
+
     Supports the following:
     - hostnames
     - ipv4 addresses
     - ipv6 addresses
     with or without ports.  There is no validation of either the
     host or port.
-    
+
     """
     colon_count = host_port.count(':')
     if colon_count == 0:

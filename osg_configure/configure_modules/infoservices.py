@@ -2,6 +2,7 @@
  for OSG info services subscriptions"""
 
 import re
+import ConfigParser
 import subprocess
 import urlparse
 import logging
@@ -12,6 +13,7 @@ from osg_configure.modules import configfile
 from osg_configure.modules import validation
 from osg_configure.modules.baseconfiguration import BaseConfiguration
 from osg_configure.modules import subcluster
+from osg_configure.configure_modules import misc
 
 __all__ = ['InfoServicesConfiguration']
 
@@ -76,6 +78,8 @@ class InfoServicesConfiguration(BaseConfiguration):
         self.enabled_batch_systems = []
         self.htcondor_gateway_enabled = None
         self.resource_catalog = None
+        self.authorization_method = None
+        self.subcluster_sections = None
 
         self.log("InfoServicesConfiguration.__init__ completed")
 
@@ -147,15 +151,15 @@ class InfoServicesConfiguration(BaseConfiguration):
 
         self.copy_host_cert_for_service_cert = csgbool('Misc Services', 'copy_host_cert_for_service_certs')
         self.htcondor_gateway_enabled = csgbool('Gateway', 'htcondor_gateway_enabled')
-        if self.htcondor_gateway_enabled and self.ce_collector_required_rpms_installed:
-            if classad is not None:
-                self.resource_catalog = subcluster.resource_catalog_from_config(configuration, logger=self.logger)
-            else:
-                self.log("Cannot configure HTCondor CE info services: unable to import HTCondor Python bindings."
-                         "\nEnsure the 'classad' Python module is installed and accessible to Python scripts."
-                         "\nIf using HTCondor from RPMs, install the 'condor-python' RPM."
-                         "\nIf not, you may need to add the directory containing the Python bindings to PYTHONPATH."
-                         "\nHTCondor version must be at least 8.2.0.", level=logging.WARNING)
+
+        self.authorization_method = csgbool('Misc Services', 'authorization_method')
+        self.subcluster_sections = ConfigParser.SafeConfigParser()
+
+        for section in configuration.sections():
+            if section.lower().startswith('subcluster'):
+                self.subcluster_sections.add_section(section)
+                for key, value in configuration.items(section):
+                    self.subcluster_sections.set(section, key, value)
 
         self.log('InfoServicesConfiguration.parse_configuration completed')
 
@@ -180,8 +184,25 @@ class InfoServicesConfiguration(BaseConfiguration):
                 self.log("Could not create service cert/key", level=logging.ERROR)
                 return False
 
-        if self.ce_collector_required_rpms_installed and self.htcondor_gateway_enabled and classad is not None:
-            self._configure_ce_collector()
+        if self.ce_collector_required_rpms_installed and self.htcondor_gateway_enabled:
+            if classad is None:
+                self.log("Cannot configure HTCondor CE info services: unable to import HTCondor Python bindings."
+                         "\nEnsure the 'classad' Python module is installed and accessible to Python scripts."
+                         "\nIf using HTCondor from RPMs, install the 'condor-python' RPM."
+                         "\nIf not, you may need to add the directory containing the Python bindings to PYTHONPATH."
+                         "\nHTCondor version must be at least 8.2.0.", level=logging.WARNING)
+            else:
+                using_gums = self.authorization_method == 'xacml'
+                default_allowed_vos = None
+                try:
+                    misc.ensure_valid_user_vo_file(using_gums, logger=self.logger)
+                    default_allowed_vos = utilities.get_vos(misc.USER_VO_MAP_LOCATION)
+                except exceptions.ConfigureError, err:
+                    self.log("Could not determine allowed VOs: %s" % str(err), level=logging.WARNING)
+                self.resource_catalog = subcluster.resource_catalog_from_config(self.subcluster_sections,
+                                                                                logger=self.logger,
+                                                                                default_allowed_vos=default_allowed_vos)
+                self._configure_ce_collector()
 
         self.log("InfoServicesConfiguration.configure completed")
         return True
@@ -407,3 +428,4 @@ CONDOR_VIEW_HOST = %s
             return None
         else:
             return match.group(1)
+
