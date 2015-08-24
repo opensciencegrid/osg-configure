@@ -39,12 +39,12 @@ class TestValidation(unittest.TestCase):
         Check the valid_domain functionality
         """
         test_domain = "testing"
-        self.assertFalse(validation.valid_domain(test_domain),
-                         "testing marked as a valid domain address")
+        self.assertTrue(validation.valid_domain(test_domain),
+                        "testing marked as an invalid domain address")
 
         test_domain = "34c93F.39f@~#"
         self.assertFalse(validation.valid_domain(test_domain),
-                         "testing marked as a valid domain address")
+                         "34c93F.39f@~# marked as a valid domain address")
 
         test_domain = "t-ea.34.org"
         self.assertTrue(validation.valid_domain(test_domain),
@@ -227,13 +227,13 @@ class TestValidation(unittest.TestCase):
         contact strings and accepts correct ones
         """
 
-        jobmanagers = ['pbs', 'lsf', 'sge', 'condor']
-        domain = 'test.com'
-        port = 8888
+        jobmanagers = ['pbs', 'lsf', 'sge', 'condor', 'slurm']
+        domain_port = 'example.net:8888'
+        ipv4addr_port = '12.34.56.78:8888'
 
         for jobmanager in jobmanagers:
             for test_manager in jobmanagers:
-                contact = "%s:%s/jobmanager-%s" % (domain, port, test_manager)
+                contact = "%s/jobmanager-%s" % (domain_port, test_manager)
                 if test_manager == jobmanager:
                     self.assertTrue(validation.valid_contact(contact,
                                                              jobmanager),
@@ -242,17 +242,38 @@ class TestValidation(unittest.TestCase):
                     self.assertFalse(validation.valid_contact(contact,
                                                               jobmanager),
                                      "%s labeled as valid contact" % contact)
-        port = '234a'
+        contact = "%s/jobmanager-condor" % (ipv4addr_port)
+        self.assertTrue(validation.valid_contact(contact, 'condor'),
+                        "%s labeled as invalid contact" % contact)
+        domain_port = 'example.net:234a'
         for jobmanager in jobmanagers:
-            contact = "%s:%s/jobmanager-%s" % (domain, port, jobmanager)
+            contact = "%s/jobmanager-%s" % (domain_port, jobmanager)
             self.assertFalse(validation.valid_contact(contact, jobmanager),
                              "%s labeled as valid contact" % contact)
-        port = 8888
-        domain = 'fdf^34@!'
+        domain_port = 'fdf%34@!:8888'
         for jobmanager in jobmanagers:
-            contact = "%s:%s/jobmanager-%s" % (domain, port, jobmanager)
+            contact = "%s/jobmanager-%s" % (domain_port, jobmanager)
             self.assertFalse(validation.valid_contact(contact, jobmanager),
                              "%s labeled as valid contact" % contact)
+
+    def test_valid_contact_ipv6(self):
+        valid_hosts = [
+            '[1234:5678:9abc:def::01]:8888', # ipv6 addr with port
+            '1234:5678:9abc:def::01',        # ipv6 addr with no port
+            '[1234:5678:9abc:def::01]',      # ipv6 addr with brackets but no port
+        ]
+        invalid_hosts = [
+            'fghi::01',                      # invalid ipv6 addr (not hex)
+        ]
+        for testval in valid_hosts:
+            contact = testval + "/jobmanager"
+            self.assertTrue(validation.valid_contact(contact, ''),
+                            "%s labeled as invalid contact" % contact)
+        for testval in invalid_hosts:
+            contact = testval + "/jobmanager"
+            self.assertFalse(validation.valid_contact(contact, ''),
+                            "%s labeled as valid contact" % contact)
+
 
 
 if __name__ == '__main__':

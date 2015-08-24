@@ -23,23 +23,59 @@ __all__ = ['valid_domain',
 
 
 def valid_domain(host, resolve=False):
-    """Check to see if the string passed in is a valid domain"""
+    """Return True if the string passed in is a valid domain
+
+    If resolve=True, also check that it resolves (according to gethostbyname).
+
+    """
     if not host:
         return False
-    match = re.match(r'^[a-zA-Z0-9\-]+(?:\.[a-zA-Z0-9\-]+)+$',
-                     host)
-    if not match:
+    is_ipv4_address = False
+    try:
+        is_ipv4_address = bool(socket.inet_pton(socket.AF_INET, host))
+    except socket.error:
+        pass
+    is_ipv6_address = False
+    try:
+        is_ipv6_address = bool(socket.inet_pton(socket.AF_INET6, host))
+    except socket.error:
+        pass
+    is_hostname = valid_hostname(host)
+
+    if not (is_ipv4_address or is_ipv6_address or is_hostname):
         return False
-    elif match and not resolve:
+
+    if not resolve:
         return True
 
     try:
         socket.gethostbyname(host)
-    except socket.herror:
-        return False
-    except socket.gaierror:
+    except (socket.herror, socket.gaierror):
         return False
     return True
+
+
+def _all(iterable):
+    """Return True if all elements in iterable are true
+
+    Equivalent to the 'all' builtin in Python 2.5+
+    """
+    # from the Python documentation
+    for element in iterable:
+        if not element:
+            return False
+    return True
+
+
+def valid_hostname(hostname):
+    """Return if a hostname is valid according to the standard"""
+    # from https://stackoverflow.com/a/2532344
+    if len(hostname) > 255:
+        return False
+    if hostname[-1] == ".":
+        hostname = hostname[:-1] # strip exactly one dot from the right, if present
+    allowed = re.compile("(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
+    return _all(allowed.match(x) for x in hostname.split("."))
 
 
 def valid_email(address):
@@ -305,8 +341,16 @@ def valid_contact(contact, jobmanager):
         # invalid jobmanager
         return False
 
-    if ':' in host_part:
-        (host, port) = host_part.split(':')
+    colon_count = host_part.count(':')
+    if colon_count == 0:
+        # hostname or ipv4 address without port
+        try:
+            return valid_domain(host_part)
+        except ValueError:
+            return False
+    elif colon_count == 1:
+        # hostname or ipv4 address with port
+        host, port = host_part.split(':')
         try:
             # test to make sure port is an integer
             int(port)
@@ -314,4 +358,15 @@ def valid_contact(contact, jobmanager):
         except ValueError:
             return False
     else:
-        return valid_domain(host_part)
+        # ipv6 address, must be bracketed if it has a port at the end, i.e. [ADDR]:PORT
+        if ']:' in host_part:
+            host, port = host_part.split(']:')
+            host = host.lstrip('[')
+            try:
+                int(port)
+                return valid_domain(host)
+            except ValueError:
+                return False
+        else:
+            # no port; may still be bracketed
+            return valid_domain(host_part.lstrip('[').rstrip(']'))
