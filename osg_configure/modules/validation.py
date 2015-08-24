@@ -8,6 +8,8 @@ import ConfigParser
 import sys
 import cStringIO
 
+from osg_configure.modules import utilities
+
 __all__ = ['valid_domain',
            'valid_email',
            'valid_location',
@@ -341,32 +343,10 @@ def valid_contact(contact, jobmanager):
         # invalid jobmanager
         return False
 
-    colon_count = host_part.count(':')
-    if colon_count == 0:
-        # hostname or ipv4 address without port
+    host, port = utilities.split_host_port(host_part)
+    if port:
         try:
-            return valid_domain(host_part)
-        except ValueError:
-            return False
-    elif colon_count == 1:
-        # hostname or ipv4 address with port
-        host, port = host_part.split(':')
-        try:
-            # test to make sure port is an integer
             int(port)
-            return valid_domain(host)
-        except ValueError:
+        except (TypeError, ValueError):
             return False
-    else:
-        # ipv6 address, must be bracketed if it has a port at the end, i.e. [ADDR]:PORT
-        if ']:' in host_part:
-            host, port = host_part.split(']:')
-            host = host.lstrip('[')
-            try:
-                int(port)
-                return valid_domain(host)
-            except ValueError:
-                return False
-        else:
-            # no port; may still be bracketed
-            return valid_domain(host_part.lstrip('[').rstrip(']'))
+    return valid_domain(host)

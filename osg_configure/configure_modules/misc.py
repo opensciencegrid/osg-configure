@@ -2,6 +2,7 @@
 
 import re
 import logging
+import sys
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
@@ -150,7 +151,7 @@ class MiscConfiguration(BaseConfiguration):
 
         if not validation.valid_user_vo_file(USER_VO_MAP_LOCATION):
             self.log("Trying to create user-vo-map file")
-            result = utilities.create_map_file(using_gums)
+            result = create_map_file(using_gums)
             (temp, invalid_lines) = validation.valid_user_vo_file(USER_VO_MAP_LOCATION,
                                                                   True)
             result = result and temp
@@ -322,3 +323,27 @@ configuration:
         if self.options['enable_cleanup'].value:
             services.add('osg-cleanup-cron')
         return services
+
+
+def create_map_file(using_gums=False):
+    """
+    Check and create a mapfile if needed
+    """
+
+    map_file = '/var/lib/osg/user-vo-map'
+    try:
+        if validation.valid_user_vo_file(map_file):
+            return True
+        if using_gums:
+            gums_script = '/usr/bin/gums-host-cron'
+        else:
+            gums_script = '/usr/sbin/edg-mkgridmap'
+
+        sys.stdout.write("Running %s, this process may take some time " % gums_script +
+                         "to query vo and gums servers\n")
+        sys.stdout.flush()
+        if not utilities.run_script([gums_script]):
+            return False
+    except IOError:
+        return False
+    return True

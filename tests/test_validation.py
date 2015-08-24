@@ -263,7 +263,8 @@ class TestValidation(unittest.TestCase):
             '[1234:5678:9abc:def::01]',      # ipv6 addr with brackets but no port
         ]
         invalid_hosts = [
-            'fghi::01',                      # invalid ipv6 addr (not hex)
+            'fghi::01',                      # not hex
+            '[[::ff]]',                      # too many brackets
         ]
         for testval in valid_hosts:
             contact = testval + "/jobmanager"

@@ -9,11 +9,11 @@ import glob
 import stat
 import tempfile
 import subprocess
-import rpm
 import platform
 import ConfigParser
+import errno
 
-from osg_configure.modules import validation
+import rpm
 
 __all__ = ['get_elements',
            'write_attribute_file',
@@ -22,7 +22,6 @@ __all__ = ['get_elements',
            'blank',
            'get_vos',
            'service_enabled',
-           'create_map_file',
            'fetch_crl',
            'run_script',
            'get_condor_location',
@@ -38,7 +37,8 @@ __all__ = ['get_elements',
            'config_safe_get',
            'config_safe_getboolean',
            'classad_quote',
-           'add_or_replace_setting']
+           'add_or_replace_setting',
+           'split_host_port']
 
 CONFIG_DIRECTORY = "/etc/osg"
 
@@ -210,30 +210,6 @@ def service_enabled(service_name):
         return False
 
 
-def create_map_file(using_gums=False):
-    """
-    Check and create a mapfile if needed
-    """
-
-    map_file = '/var/lib/osg/user-vo-map'
-    try:
-        if validation.valid_user_vo_file(map_file):
-            return True
-        if using_gums:
-            gums_script = '/usr/bin/gums-host-cron'
-        else:
-            gums_script = '/usr/sbin/edg-mkgridmap'
-
-        sys.stdout.write("Running %s, this process may take some time " % gums_script +
-                         "to query vo and gums servers\n")
-        sys.stdout.flush()
-        if not run_script([gums_script]):
-            return False
-    except IOError:
-        return False
-    return True
-
-
 def fetch_crl():
     """
     Run fetch_crl script and return a boolean indicating whether it was successful
@@ -251,14 +227,6 @@ def fetch_crl():
             crl_path = os.path.join(crl_path, 'fetch-crl')
         elif rpm_installed('fetch-crl3'):
             crl_path = os.path.join(crl_path, 'fetch-crl3')
-        if not validation.valid_file(crl_path):
-            sys.stdout.write("Can't find fetch-crl script, skipping fetch-crl invocation\n")
-            sys.stdout.flush()
-            return True
-
-        sys.stdout.write("Running %s, this process may take " % crl_path +
-                         "some time to fetch all the crl updates\n")
-        sys.stdout.flush()
 
         # Some CRLs are often problematic; it's better to ignore some errors than to halt configuration. (SOFTWARE-1428)
         error_message_whitelist = [  # whitelist partially taken from osg-test
@@ -269,8 +237,19 @@ def fetch_crl():
                                      'CRL retrieval for',
                                      r'^\s*$',
                                      ]
-        fetch_crl_process = subprocess.Popen([crl_path, '-p', '10', '-T', '30'], stdout=subprocess.PIPE,
-                                             stderr=subprocess.STDOUT)
+        try:
+            fetch_crl_process = subprocess.Popen([crl_path, '-p', '10', '-T', '30'], stdout=subprocess.PIPE,
+                                                 stderr=subprocess.STDOUT)
+        except OSError, e:
+            if e.errno == errno.ENOENT:
+                sys.stdout.write("Can't find fetch-crl script, skipping fetch-crl invocation\n")
+                sys.stdout.flush()
+                return True
+            else:
+                raise
+        sys.stdout.write("Running %s, this process may take " % crl_path +
+                         "some time to fetch all the crl updates\n")
+        sys.stdout.flush()
         outerr = fetch_crl_process.communicate()[0]
         if fetch_crl_process.returncode != 0:
             sys.stdout.write("fetch-crl script had some errors:\n" + outerr + "\n")
@@ -298,10 +277,13 @@ def run_script(script):
     True if script runs successfully, False otherwise
     """
 
-    if not validation.valid_executable(script[0]):
-        return False
-
-    process = subprocess.Popen(script)
+    try:
+        process = subprocess.Popen(script)
+    except OSError, e:
+        if e.errno == errno.ENOENT:
+            return False
+        else:
+            raise
     process.communicate()
     if process.returncode != 0:
         return False
@@ -407,11 +389,14 @@ def atomic_write(filename=None, contents=None, **kwargs):
         (config_fd, temp_name) = tempfile.mkstemp(dir=os.path.dirname(filename))
         mode = kwargs.get('mode', None)
         if mode is None:
-            if validation.valid_file(filename):
+            try:
                 mode = stat.S_IMODE(os.stat(filename).st_mode)
-            else:
-                # give file 0644 permissions by default
-                mode = 420
+            except OSError, e:
+                if e.errno == errno.ENOENT:
+                    # file doesn't exist; give it 0644 permissions by default
+                    mode = int('0640', 8)
+                else:
+                    raise
         try:
             try:
                 os.write(config_fd, contents)
@@ -425,7 +410,7 @@ def atomic_write(filename=None, contents=None, **kwargs):
             raise
         os.rename(temp_name, filename)
         os.chmod(filename, mode)
-    except Exception:
+    except EnvironmentError:
         return False
     return True
 
@@ -655,3 +640,44 @@ def add_or_replace_setting(old_buf, variable, new_value, quote_value=True):
     if count == 0:
         new_buf += new_line + "\n"
     return new_buf
+
+
+def split_host_port(host_port):
+    """Return a tuple containing (host, port) of a string possibly
+    containing both.  If there is no port in host_port, the port
+    will be None.
+    
+    Supports the following:
+    - hostnames
+    - ipv4 addresses
+    - ipv6 addresses
+    with or without ports.  There is no validation of either the
+    host or port.
+    
+    """
+    colon_count = host_port.count(':')
+    if colon_count == 0:
+        # hostname or ipv4 address without port
+        try:
+            return host_port, None
+        except ValueError:
+            return False
+    elif colon_count == 1:
+        # hostname or ipv4 address with port
+        return host_port.split(':', 1)
+    elif colon_count >= 2:
+        # ipv6 address, must be bracketed if it has a port at the end, i.e. [ADDR]:PORT
+        if ']:' in host_port:
+            host, port = host_port.split(']:', 1)
+            if host[0] == '[':
+                # for valid addresses, should always be true
+                host = host[1:]
+            return host, port
+        else:
+            # no port; may still be bracketed
+            host = host_port
+            if host[0] == '[':
+                host = host[1:]
+            if host[-1] == ']':
+                host = host[:-1]
+            return host, None
