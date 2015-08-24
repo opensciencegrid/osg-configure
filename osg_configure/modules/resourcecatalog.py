@@ -3,73 +3,99 @@ import re
 import utilities
 
 
-class ResourceCatalog(object):
-    """Class for building an OSG_ResourceCatalog attribute in condor-ce configs for the ce-collector"""
+class RCEntry(object):
+    """Contains the data in a ResourceCatalog entry
+    :var name: name of the resource
+    :var cpus: number of cores per node
+    :var memory: megabytes of memory per node
+    :var allowed_vos: a list or string containing the names of all the VOs that are allowed to run on this resource.
+      Optional; if not specified, all VOs can run on this resource.
+    :type allowed_vos: str or list or None
+    :var max_wall_time: optional max run time of job on these nodes in minutes
+    :var queue: optional remote queue name
+    :var extra_requirements: optional string of extra requirements clauses (which are ANDed together)
+    :var extra_transforms; optional string of transform attributes (which are appended)
+    """
 
-    def __init__(self):
-        self.entries = {}
+    def __init__(self, **kwargs):
+        self.name = kwargs.get('name', None)
+        self.cpus = kwargs.get('cpus', None)
+        self.memory = kwargs.get('memory', None)
+        self.allowed_vos = kwargs.get('allowed_vos', None)
+        self.max_wall_time = kwargs.get('max_wall_time', None)
+        self.queue = kwargs.get('queue', None)
+        self.extra_requirements = kwargs.get('extra_requirements', None)
+        self.extra_transforms = kwargs.get('extra_transforms', None)
 
-    def add_entry(self, name, cpus, memory, allowed_vos=None, max_wall_time=None, queue=None, extra_requirements=None,
-                  extra_transforms=None):
-        """Composes an entry for a single resource and adds it to the list of entries in the ResourceCatalog
-        :param name: name of the resource
-        :type name: str
-        :param cpus: number of cores per node
-        :type cpus: int
-        :param memory: megabytes of memory per node
-        :type memory: int
-        :param allowed_vos: a list or string containing the names of all the VOs that are allowed to run on this resource.
-          Optional; if not specified, all VOs can run on this resource.
-        :type allowed_vos: str or list or None
-        :param max_wall_time: max run time of job on these nodes in minutes
-        :type max_wall_time: int or None
-        :param queue: remote queue name
-        :type queue: str or None
-        :param extra_requirements: optional string of extra requirements clauses (which are ANDed together)
-        :type extra_requirements: str or None
-        :param extra_transforms; optional string of transform attributes (which are appended)
-        :type extra_transforms: str or None
-        :raise ValueError: if cpus, memory or max_wall_time are out of range or extra_transforms is unparseable
+    def validate(self):
+        """Check that the values of the RCEntry fields match the requirements for a resource catalog entry.
+        Some fields must be specified; some fields must be convertable to
+        ints if specified; some fields must be in a certain range.
+
+        :raise ValueError, TypeError: in case validation fails
+        :return self:
+
         """
-        if not name:
-            raise ValueError("Required parameter 'name' must be specified")
-        # These statements can raise TypeError or ValueError but that's ok
-        cpus = int(cpus)
-        memory = int(memory)
-        if not cpus > 0:
-            raise ValueError("Parameter 'cpus' out of range at %r; must be > 0" % cpus)
-        if not memory > 0:
-            raise ValueError("Parameter 'memory' out of range at %r; must be > 0" % memory)
+        # Several of these can raise TypeError or ValueError but that's expected
+        if not self.name:
+            raise ValueError("'name' not specified")
+        if int(self.cpus) <= 0:
+            raise ValueError("'cpus' out of range at %s; must be > 0" % self.cpus)
+        if int(self.memory) <= 0:
+            raise ValueError("'memory' out of range at %s; must be > 0" % self.cpus)
 
-        attributes = {'Name': utilities.classad_quote(name),
-                      'CPUs': cpus,
-                      'Memory': memory}
+        if self.max_wall_time is not None:
+            if not int(self.max_wall_time) >= 0:
+                raise ValueError("'max_wall_time' out of range at %s; must be >= 0" % self.max_wall_time)
 
-        if max_wall_time is not None:
-            max_wall_time = int(max_wall_time)
-            if not max_wall_time >= 0:
-                raise ValueError("Parameter 'max_wall_time' out of range at %r; must be >= 0" % max_wall_time)
-            attributes['MaxWallTime'] = max_wall_time
+        if self.allowed_vos is not None:
+            if not isinstance(self.allowed_vos, (list, tuple, set, str, unicode)):
+                raise TypeError("'allowed_vos' is a %s; must be a string or a list/tuple/set")
+
+        return self
+
+    def normalize(self):
+        """Convert the vaules in the RCEntry fields to their most useful form.
+        For example, integers are parsed, and comma or space-separated strings
+        are split up into lists.
+        :return self:
+
+        """
+        self.cpus = int(self.cpus)
+        self.memory = int(self.memory)
+        if self.max_wall_time is not None:
+            self.max_wall_time = int(self.max_wall_time)
+        if self.allowed_vos is not None and isinstance(self.allowed_vos, str):
+            self.allowed_vos = re.split('[ ,]+', self.allowed_vos)
+
+        return self
+
+    def as_attributes(self):
+        """Return this entry as a list of classad attributes"""
+        attributes = {'Name': utilities.classad_quote(self.name),
+                      'CPUs': self.cpus,
+                      'Memory': self.memory}
+
+        if self.max_wall_time is not None:
+            attributes['MaxWallTime'] = self.max_wall_time
 
         requirements_clauses = ['TARGET.RequestCPUs <= CPUs', 'TARGET.RequestMemory <= Memory']
-        if extra_requirements:
-            requirements_clauses.append(extra_requirements)
+        if self.extra_requirements:
+            requirements_clauses.append(self.extra_requirements)
 
-        if allowed_vos:
-            if isinstance(allowed_vos, str):
-                allowed_vos = re.split('[ ,]+', allowed_vos)
-            allowed_vos = "{ " + ", ".join([utilities.classad_quote(vo) for vo in allowed_vos]) + " }"
+        if self.allowed_vos:
+            allowed_vos = "{ " + ", ".join([utilities.classad_quote(vo) for vo in self.allowed_vos]) + " }"
             attributes['AllowedVOs'] = allowed_vos
             requirements_clauses.append("member(TARGET.VO, AllowedVOs)")
 
         attributes['Requirements'] = ' && '.join(requirements_clauses)
 
         transform_classad = classad.parse('[set_xcount = RequestCPUs; set_MaxMemory = RequestMemory]')
-        if queue:
-            transform_classad['set_remote_queue'] = utilities.classad_quote(queue)
-        if extra_transforms:
+        if self.queue:
+            transform_classad['set_remote_queue'] = utilities.classad_quote(self.queue)
+        if self.extra_transforms:
             try:
-                extra_transforms_classad = classad.parse(self._munge_extra_transforms(extra_transforms))
+                extra_transforms_classad = classad.parse(self._munge_extra_transforms(self.extra_transforms))
             except SyntaxError, e:
                 raise ValueError("Unable to parse 'extra_transforms': %s" % e)
             transform_classad.update(extra_transforms_classad)
@@ -78,9 +104,7 @@ class ResourceCatalog(object):
             attributes['Transform'] += " %s = %s;" % (key, transform_classad[key])
         attributes['Transform'] += ' ]'
 
-        self.entries[name] = attributes
-
-        return self
+        return attributes
 
     @staticmethod
     def _munge_extra_transforms(extra_transforms):
@@ -88,6 +112,19 @@ class ResourceCatalog(object):
         so it can be parsed as a classad
         """
         return '[' + extra_transforms.lstrip('[ \t').rstrip('] \t') + ']'
+
+
+
+class ResourceCatalog(object):
+    """Class for building an OSG_ResourceCatalog attribute in condor-ce configs for the ce-collector"""
+
+    def __init__(self):
+        self.entries = {}
+
+    def add_rcentry(self, rcentry):
+        self.entries[rcentry.name] = rcentry.normalize().validate().as_attributes()
+
+        return self
 
     def compose_text(self):
         """Return the OSG_ResourceCatalog classad attribute made of all the entries in this object"""

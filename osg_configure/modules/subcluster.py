@@ -173,42 +173,37 @@ def resource_catalog_from_config(config, logger=None):
     :rtype: ResourceCatalog
     """
     assert isinstance(config, ConfigParser.ConfigParser)
-    from osg_configure.modules.resourcecatalog import ResourceCatalog
+    from osg_configure.modules import resourcecatalog
 
-    rc = ResourceCatalog()
+    rc = resourcecatalog.ResourceCatalog()
 
     subclusters_without_max_wall_time = []
     for section in config.sections():
         if section.lower().startswith('subcluster'):
             check_section(config, section)
 
+            rcentry = resourcecatalog.RCEntry()
+
             subcluster = section[len('subcluster'):].lstrip()
-            name = config.get(section, 'name')
-            cpus = config.getint(section, 'cores_per_node')
-            memory = config.getint(section, 'ram_mb')
-            allowed_vos = utilities.config_safe_get(config, section, 'allowed_vos')
+
+            rcentry.name = config.get(section, 'name')
+            rcentry.cpus = config.getint(section, 'cores_per_node')
+            rcentry.memory = config.getint(section, 'ram_mb')
+            rcentry.allowed_vos = utilities.config_safe_get(config, section, 'allowed_vos')
             max_wall_time = utilities.config_safe_get(config, section, 'max_wall_time')
             if not max_wall_time:
-                max_wall_time = 1440
+                rcentry.max_wall_time = 1440
                 subclusters_without_max_wall_time.append(subcluster)
             else:
-                max_wall_time = str(max_wall_time).strip()
-            queue = utilities.config_safe_get(config, section, 'queue')
+                rcentry.max_wall_time = max_wall_time.strip()
+            rcentry.queue = utilities.config_safe_get(config, section, 'queue')
 
             # The ability to specify extra requirements is disabled until admins demand it
+            # rcentry.extra_requirements = utilities.config_safe_get(config, section, 'extra_requirements')
+            rcentry.extra_requirements = None
+            rcentry.extra_transforms = utilities.config_safe_get(config, section, 'extra_transforms')
 
-            # extra_requirements = utilities.config_safe_get(config, section, 'extra_requirements')
-            extra_requirements = None
-            extra_transforms = utilities.config_safe_get(config, section, 'extra_transforms')
-
-            rc.add_entry(name=name,
-                         cpus=cpus,
-                         memory=memory,
-                         allowed_vos=allowed_vos,
-                         max_wall_time=max_wall_time,
-                         queue=queue,
-                         extra_requirements=extra_requirements,
-                         extra_transforms=extra_transforms)
+            rc.add_rcentry(rcentry)
     # end for section in config.sections()
 
     if logger:
