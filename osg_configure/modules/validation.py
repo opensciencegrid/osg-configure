@@ -74,6 +74,13 @@ def valid_hostname(hostname):
     # from https://stackoverflow.com/a/2532344
     if len(hostname) > 255:
         return False
+    try:
+        # technically, '80' is a valid hostname (and apparently it resolves
+        # too!) but it's usually a mistake so reject it
+        int(hostname)
+        return False
+    except ValueError:
+        pass
     if hostname[-1] == ".":
         hostname = hostname[:-1] # strip exactly one dot from the right, if present
     allowed = re.compile("(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
