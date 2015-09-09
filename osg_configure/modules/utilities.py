@@ -397,7 +397,7 @@ def atomic_write(filename=None, contents=None, **kwargs):
             except OSError, e:
                 if e.errno == errno.ENOENT:
                     # file doesn't exist; give it 0644 permissions by default
-                    mode = int('0640', 8)
+                    mode = 0644
                 else:
                     raise
         try:
