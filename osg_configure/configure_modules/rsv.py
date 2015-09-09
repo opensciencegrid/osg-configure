@@ -812,11 +812,7 @@ class RsvConfiguration(BaseConfiguration):
         ret = True
         for host in hosts:
             # Strip off the port
-            if ':' in host:
-                (hostname, port) = host.split(':')
-            else:
-                hostname = host
-                port = False
+            hostname, port = utilities.split_host_port(host)
             if not validation.valid_domain(hostname):
                 self.log("Invalid domain in [%s].%s: %s" % (self.config_section,
                                                             setting, host),
