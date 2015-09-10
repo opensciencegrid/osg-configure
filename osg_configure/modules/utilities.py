@@ -51,6 +51,7 @@ def get_elements(element=None, filename=None):
     if filename is None or element is None:
         return []
     import xml.dom.minidom
+    import xml.parsers.expat
 
     try:
         dom = xml.dom.minidom.parse(filename)
