@@ -141,8 +141,7 @@ def get_hostname():
     """Returns the hostname of the current system"""
     try:
         return socket.getfqdn()
-    # pylint: disable-msg=W0703
-    except Exception:
+    except socket.error:
         return None
 
 
@@ -185,7 +184,7 @@ def get_vos(user_vo_file):
                 vo_list.append(vo)
         except (KeyboardInterrupt, SystemExit):
             raise
-        except:
+        except (TypeError, AttributeError, IndexError):
             pass
     return vo_list
 
@@ -465,8 +464,7 @@ def rpm_installed(rpm_name):
             if trans_set.dbMatch('name', name).count() not in (1, 2):
                 return False
         return True
-    # pylint: disable-msg=W0703
-    except Exception:
+    except rpm.error:
         return False
 
 
