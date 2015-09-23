@@ -383,6 +383,20 @@ class TestRSV(unittest.TestCase):
         self.assertTrue(settings.check_attributes(attributes),
                         "Correct configuration incorrectly flagged as incorrect")
 
+    def testValidSettingsIPv6(self):
+        """
+        Test RSV config accepts IPv6 hostnames
+        """
+
+        # need to have rsv installed to get rsv tests working
+        if not utilities.rpm_installed('rsv-core'):
+            return
+        settings = self.load_settings_from_files("rsv/rsv_ipv6.ini")
+        attributes = settings.get_attributes()
+        self.assertTrue(settings.check_attributes(attributes),
+                        "Correct configuration incorrectly flagged as incorrect")
+
+
     def testServiceList(self):
         """
         Test to make sure right services get returned
