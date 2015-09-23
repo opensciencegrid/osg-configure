@@ -31,14 +31,14 @@ class RCEntry(object):
     """
 
     def __init__(self, **kwargs):
-        self.name = kwargs.get('name', None)
-        self.cpus = kwargs.get('cpus', None)
-        self.memory = kwargs.get('memory', None)
+        self.name = kwargs.get('name', '')
+        self.cpus = kwargs.get('cpus', 0)
+        self.memory = kwargs.get('memory', 0)
         self.allowed_vos = kwargs.get('allowed_vos', None)
         self.max_wall_time = kwargs.get('max_wall_time', None)
-        self.queue = kwargs.get('queue', None)
-        self.extra_requirements = kwargs.get('extra_requirements', None)
-        self.extra_transforms = kwargs.get('extra_transforms', None)
+        self.queue = kwargs.get('queue', '')
+        self.extra_requirements = kwargs.get('extra_requirements', '')
+        self.extra_transforms = kwargs.get('extra_transforms', '')
 
     def validate(self):
         """Check that the values of the RCEntry fields match the requirements for a resource catalog entry.
