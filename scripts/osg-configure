@@ -233,6 +233,13 @@ def configure_system(modules, logger, configure_module=None, force=False):
 
     if utilities.ce_installed():
         job_environment_attributes = list(DEFAULT_JOB_ENVIRONMENT_ATTRIBUTES)
+        gateway_module = condor_module = None
+        for module in modules:
+            if module.__class__.__name__ == 'GatewayConfiguration':
+                gateway_module = module
+            elif module.__class__.__name__ == 'CondorConfiguration':
+                condor_module = module
+
 
         if not configfile.jobmanager_enabled(config):
             logger.warning("CE install detected, but no batch systems are enabled in "
@@ -248,13 +255,6 @@ def configure_system(modules, logger, configure_module=None, force=False):
             except ValueError:
                 pass
         else:
-            gateway_module = condor_module = None
-            for module in modules:
-                if module.__class__.__name__ == 'GatewayConfiguration':
-                    gateway_module = module
-                elif module.__class__.__name__ == 'CondorConfiguration':
-                    condor_module = module
-
             if gateway_module and not gateway_module.gram_gateway_enabled:
                 try:
                     job_environment_attributes.remove('OSG_JOB_CONTACT')
@@ -271,6 +271,12 @@ def configure_system(modules, logger, configure_module=None, force=False):
                     pass
 
         write_attributes(attributes, local_attributes, job_environment_attributes, attribute_to_option_map)
+
+        if gateway_module and gateway_module.htcondor_gateway_enabled:
+            # Reconfigure htcondor-ce after writing the attributes files
+            # so the job route expressions get re-evaluated and the changes go into effect
+            if not utilities.reconfig_service('condor-ce', 'condor_ce_reconfig', logger):
+                logger.warning('Error reloading condor-ce config')
     else:
         logger.debug("Skipped writing job attributes (not a CE)")
 
