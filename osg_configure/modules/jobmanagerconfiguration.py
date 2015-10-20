@@ -275,6 +275,3 @@ class JobManagerConfiguration(BaseConfiguration):
                                            default="# This file is managed by osg-configure\n")
             contents = utilities.add_or_replace_setting(contents, "OSG_CONFIGURED", "true", quote_value=False)
             utilities.atomic_write(self.HTCONDOR_CE_CONFIG_FILE, contents)
-
-    def reconfig_service(self, service, reconfig_cmd):
-        return utilities.reconfig_service(service, reconfig_cmd, log=self.logger)

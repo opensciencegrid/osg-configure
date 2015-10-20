@@ -226,8 +226,6 @@ class SlurmConfiguration(JobManagerConfiguration):
             self.write_binpaths_to_blah_config('slurm', self.slurm_bin_location)
             self.write_blah_disable_wn_proxy_renewal_to_blah_config()
             self.write_htcondor_ce_sentinel()
-            if not self.reconfig_service('condor-ce', 'condor_ce_reconfig'):
-                self.log('Error reloading condor-ce config', level=logging.WARNING)
 
         self.log('SlurmConfiguration.configure completed')
         return True

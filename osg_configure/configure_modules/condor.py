@@ -201,10 +201,8 @@ class CondorConfiguration(JobManagerConfiguration):
                 return False
             self.write_binpaths_to_blah_config('condor', self.condor_bin_location)
             self.write_htcondor_ce_sentinel()
-            if not self.reconfig_service('condor-ce', 'condor_ce_reconfig'):
-                self.log('Error reloading condor-ce config', level=logging.WARNING)
 
-        if not self.reconfig_service('condor', 'condor_reconfig'):
+        if not utilities.reconfig_service('condor', 'condor_reconfig', log=self.logger):
             self.log('Error reloading condor config', level=logging.WARNING)
 
         self.warn_on_non_default_local_config_dir()
