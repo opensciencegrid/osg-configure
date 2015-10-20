@@ -685,6 +685,23 @@ def split_host_port(host_port):
             return host, None
 
 
+def reconfig_service(service, reconfig_cmd, log=None):
+    if log is None:
+        log = NullLogger
+    """If condor is running, run condor_reconfig to make it reload its configuration"""
+    if os.system('/sbin/service %s status >/dev/null 2>&1' % service) != 0:
+        log.info("%s is not running -- skipping reconfigure" % service)
+        return True
+
+    log.info("Reconfiguring %s using %s" % (service, reconfig_cmd))
+    if os.system(reconfig_cmd + ' >/dev/null') == 0:
+        log.info("Reconfigure successful")
+        return True
+
+    return False
+
+
+
 class NullLogger(logging.Logger):
     """A dummy Logger where the logging functions ignore all parameters
     passed to it.  They are static methods so you don't need to instantiate
