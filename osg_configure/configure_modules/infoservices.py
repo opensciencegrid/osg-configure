@@ -227,11 +227,6 @@ class InfoServicesConfiguration(BaseConfiguration):
             valid &= self._check_subscription(subscription,
                                               self.bdii_servers[subscription])
 
-        self.log("Checking ReSS subscriptions")
-        for subscription in self.ress_servers:
-            valid &= self._check_subscription(subscription,
-                                              self.ress_servers[subscription])
-
         self.log("InfoServicesConfiguration.check_attributes completed")
         return valid
 
