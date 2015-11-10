@@ -261,8 +261,7 @@ class InfoServicesConfiguration(BaseConfiguration):
             server = server.split(':')[0]
         if not validation.valid_domain(server, True):
             self.log("Host in subscription does not resolve: %s" % server,
-                     level=logging.ERROR)
-            valid = False
+                     level=logging.WARNING)
 
         # check to make sure dialect is correct
         if dialect not in ('CLASSAD', 'RAW', 'OLD_CLASSAD'):
