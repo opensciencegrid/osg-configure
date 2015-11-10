@@ -291,46 +291,6 @@ class TestInfoServices(unittest.TestCase):
                           settings.parse_configuration,
                           configuration=configuration)
 
-    def testInvalidRess2(self):
-        """
-        Test the check_attributes function to see if it catches invalid
-        ress servers
-        """
-
-        config_file = get_test_config("infoservices/invalid_ress2.ini")
-        configuration = ConfigParser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = infoservices.InfoServicesConfiguration(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception, e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        attributes = settings.get_attributes()
-        self.assertFalse(settings.check_attributes(attributes),
-                         "Did not notice invalid ress server")
-
-    def testInvalidRess3(self):
-        """
-        Test the check_attributes function to see if it catches invalid
-        ress servers
-        """
-
-        config_file = get_test_config("infoservices/invalid_ress3.ini")
-        configuration = ConfigParser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = infoservices.InfoServicesConfiguration(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception, e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        attributes = settings.get_attributes()
-        self.assertFalse(settings.check_attributes(attributes),
-                         "Did not notice invalid ress server")
-
     def testInvalidBDII1(self):
         """
         Test the check_attributes function to see if it catches invalid
@@ -353,26 +313,6 @@ class TestInfoServices(unittest.TestCase):
         """
 
         config_file = get_test_config("infoservices/invalid_bdii2.ini")
-        configuration = ConfigParser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = infoservices.InfoServicesConfiguration(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception, e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        attributes = settings.get_attributes()
-        self.assertFalse(settings.check_attributes(attributes),
-                         "Did not notice invalid bdii server")
-
-    def testInvalidBDII3(self):
-        """
-        Test the check_attributes function to see if it catches invalid
-        bdii servers
-        """
-
-        config_file = get_test_config("infoservices/invalid_bdii3.ini")
         configuration = ConfigParser.SafeConfigParser()
         configuration.read(config_file)
 
