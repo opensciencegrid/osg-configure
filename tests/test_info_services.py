@@ -54,8 +54,7 @@ class TestInfoServices(unittest.TestCase):
             self.fail("Received exception while parsing configuration: %s" % e)
 
         options = settings.options
-        variables = {'ress_servers': 'https://osg-ress-1.fnal.gov:8443/ig/services/CEInfoCollector[OLD_CLASSAD]',
-                     'bdii_servers': 'http://is1.grid.iu.edu:14001[RAW], http://is2.grid.iu.edu:14001[RAW]'}
+        variables = {'bdii_servers': 'http://is1.grid.iu.edu:14001[RAW], http://is2.grid.iu.edu:14001[RAW]'}
 
         for var in variables:
             self.assertTrue(options.has_key(var),
@@ -86,9 +85,7 @@ class TestInfoServices(unittest.TestCase):
             self.fail("Received exception while parsing configuration: %s" % e)
 
         options = settings.options
-        variables = {'ress_servers': 'https://osg-ress-4.fnal.gov:8443/ig/'
-                                     'services/CEInfoCollector[OLD_CLASSAD]',
-                     'bdii_servers': 'http://is1.grid.iu.edu:14001[RAW],'
+        variables = {'bdii_servers': 'http://is1.grid.iu.edu:14001[RAW],'
                                      'http://is2.grid.iu.edu:14001[RAW]'}
 
         for var in variables:
@@ -120,9 +117,7 @@ class TestInfoServices(unittest.TestCase):
             self.fail("Received exception while parsing configuration: %s" % e)
 
         options = settings.options
-        variables = {'ress_servers': 'https://osg-ress-1.fnal.gov:8443/ig/'
-                                     'services/CEInfoCollector[OLD_CLASSAD]',
-                     'bdii_servers': 'http://is1.grid.iu.edu:14001[RAW],'
+        variables = {'bdii_servers': 'http://is1.grid.iu.edu:14001[RAW],'
                                      'http://is2.grid.iu.edu:14001[RAW]'}
 
         for var in variables:
@@ -155,9 +150,7 @@ class TestInfoServices(unittest.TestCase):
             self.fail("Received exception while parsing configuration: %s" % e)
 
         options = settings.options
-        variables = {'ress_servers': 'https://osg-ress-4.fnal.gov:8443/ig/'
-                                     'services/CEInfoCollector[OLD_CLASSAD]',
-                     'bdii_servers': 'http://is1.grid.iu.edu:14001[RAW],'
+        variables = {'bdii_servers': 'http://is1.grid.iu.edu:14001[RAW],'
                                      'http://is2.grid.iu.edu:14001[RAW]'}
 
         for var in variables:
@@ -190,9 +183,7 @@ class TestInfoServices(unittest.TestCase):
             self.fail("Received exception while parsing configuration: %s" % e)
 
         options = settings.options
-        variables = {'ress_servers': 'https://osg-ress-1.fnal.gov:8443/ig/'
-                                     'services/CEInfoCollector[OLD_CLASSAD]',
-                     'bdii_servers': 'http://is1.grid.iu.edu:14001[RAW],'
+        variables = {'bdii_servers': 'http://is1.grid.iu.edu:14001[RAW],'
                                      'http://is2.grid.iu.edu:14001[RAW]'}
 
         for var in variables:
@@ -220,8 +211,6 @@ class TestInfoServices(unittest.TestCase):
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        self.assertEqual(settings.options['ress_servers'].value, '',
-                         "Disabled configuration should have no attributes")
         self.assertEqual(settings.options['bdii_servers'].value, '',
                          "Disabled configuration should have no attributes")
 
@@ -240,8 +229,6 @@ class TestInfoServices(unittest.TestCase):
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        self.assertEqual(settings.options['ress_servers'].value, '',
-                         "Disabled configuration should have no attributes")
         self.assertEqual(settings.options['bdii_servers'].value, '',
                          "Disabled configuration should have no attributes")
 
@@ -249,19 +236,6 @@ class TestInfoServices(unittest.TestCase):
         """
         Test infoservices parsing when ignoring just bdii or ress
         """
-
-        config_file = get_test_config("infoservices/ignore_ress.ini")
-        configuration = ConfigParser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = infoservices.InfoServicesConfiguration(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception, e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        self.assertEqual(settings.ress_servers, {},
-                         "Should not have ress subscriptions when being ignored")
 
         config_file = get_test_config("infoservices/ignore_bdii.ini")
         configuration = ConfigParser.SafeConfigParser()
@@ -275,21 +249,6 @@ class TestInfoServices(unittest.TestCase):
 
         self.assertEqual(settings.bdii_servers, {},
                          "Should not have BDII subscriptions when being ignored")
-
-    def testInvalidRess1(self):
-        """
-        Test the check_attributes function to see if it catches invalid
-        ress servers
-        """
-
-        config_file = get_test_config("infoservices/invalid_ress1.ini")
-        configuration = ConfigParser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = infoservices.InfoServicesConfiguration(logger=global_logger)
-        self.assertRaises(exceptions.SettingError,
-                          settings.parse_configuration,
-                          configuration=configuration)
 
     def testInvalidBDII1(self):
         """
@@ -448,25 +407,6 @@ class TestInfoServices(unittest.TestCase):
         attributes = settings.get_attributes()
         self.assertTrue(settings.check_attributes(attributes),
                         "production defaults incorrectly flagged as invalid")
-
-    def testMultipleRessServers(self):
-        """
-        Test the check_attributes function to see if it oks the production defaults
-        set when the infoservices section is missing
-        """
-
-        config_file = get_test_config("infoservices/multiple_ress.ini")
-        configuration = ConfigParser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = infoservices.InfoServicesConfiguration(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception, e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        self.assertTrue(len(settings.ress_servers) == 3,
-                        "Did not parse ress servers correctly")
 
     def testMultipleBDIIServers(self):
         """
