@@ -47,24 +47,19 @@ class InfoServicesConfiguration(BaseConfiguration):
         self.log("InfoServicesConfiguration.__init__ started")
         # file location for xml file with info services subscriptions
         self.config_section = 'Info Services'
-        self.options = {'ress_servers': configfile.Option(name='ress_servers',
-                                                          default_value=''),
-                        'bdii_servers': configfile.Option(name='bdii_servers',
+        self.options = {'bdii_servers': configfile.Option(name='bdii_servers',
                                                           default_value=''),
                         'ce_collectors': configfile.Option(name='ce_collectors',
                                                            default_value='',
                                                            required=configfile.Option.OPTIONAL)}
         self._itb_defaults = {
-            'ress_servers': 'https://osg-ress-4.fnal.gov:8443/ig/services/CEInfoCollector[OLD_CLASSAD]',
             'bdii_servers': 'http://is1.grid.iu.edu:14001[RAW],http://is2.grid.iu.edu:14001[RAW]',
             'ce_collectors': 'collector-itb.opensciencegrid.org:%d' % HTCONDOR_CE_COLLECTOR_PORT}
         self._production_defaults = {
-            'ress_servers': 'https://osg-ress-1.fnal.gov:8443/ig/services/CEInfoCollector[OLD_CLASSAD]',
             'bdii_servers': 'http://is1.grid.iu.edu:14001[RAW],http://is2.grid.iu.edu:14001[RAW]',
             'ce_collectors': 'collector1.opensciencegrid.org:%d,collector2.opensciencegrid.org:%d' % (
                 HTCONDOR_CE_COLLECTOR_PORT, HTCONDOR_CE_COLLECTOR_PORT)}
         self.bdii_servers = {}
-        self.ress_servers = {}
         self.copy_host_cert_for_service_cert = False
 
         self.ois_required_rpms_installed = utilities.gateway_installed() and utilities.rpm_installed(
@@ -85,7 +80,7 @@ class InfoServicesConfiguration(BaseConfiguration):
 
     def _set_default_servers(self, configuration):
         group = utilities.config_safe_get(configuration, 'Site Information', 'group')
-        for key in ['ress_servers', 'bdii_servers', 'ce_collectors']:
+        for key in ['bdii_servers', 'ce_collectors']:
             if group == 'OSG-ITB':
                 self.options[key].default_value = self._itb_defaults[key]
             else:
@@ -131,9 +126,9 @@ class InfoServicesConfiguration(BaseConfiguration):
                                         'itb-bdii-servers',
                                         'osg-ress-servers',
                                         'osg-bdii-servers',
+                                        'ress_servers',
                                         'enabled'])
 
-        self.ress_servers = self._parse_servers(self.options['ress_servers'].value)
         self.bdii_servers = self._parse_servers(self.options['bdii_servers'].value)
         self.ce_collectors = self._parse_ce_collectors(self.options['ce_collectors'].value)
 
@@ -292,7 +287,7 @@ class InfoServicesConfiguration(BaseConfiguration):
 
     def _auto_configure(self, configuration):
         """
-        Method to configure cemon without any cemon section on a CE
+        Method to configure info services without an info services section on a CE
         """
 
         self.enabled = True
@@ -303,19 +298,15 @@ class InfoServicesConfiguration(BaseConfiguration):
                      level=logging.ERROR)
             raise exceptions.SettingError('In Site Information, group needs to be set')
         if group == 'OSG':
-            ress_servers = self._production_defaults['ress_servers']
             bdii_servers = self._production_defaults['bdii_servers']
         elif group == 'OSG-ITB':
-            ress_servers = self._itb_defaults['ress_servers']
             bdii_servers = self._itb_defaults['bdii_servers']
         else:
             self.log('Group must be OSG or OSG-ITB',
                      level=logging.ERROR)
             raise exceptions.SettingError('In Site Information, group needs to be OSG or OSG-ITB')
 
-        self.options['ress_servers'].value = ress_servers
         self.options['bdii_servers'].value = bdii_servers
-        self.ress_servers = self._parse_servers(ress_servers)
         self.bdii_servers = self._parse_servers(bdii_servers)
 
     def enabled_services(self):
