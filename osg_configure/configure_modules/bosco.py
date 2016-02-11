@@ -105,15 +105,9 @@ class BoscoConfiguration(JobManagerConfiguration):
                      option='ssh_key',
                      section=self.config_section,
                      level=logging.ERROR)
-                     
-        def RepresentsInt(s):
-            try: 
-                int(s)
-                return True
-            except ValueError:
-                return False
         
-        if not RepresentsInt(self.options['max_jobs'].value):
+        
+        if not validation.valid_integer(self.options['max_jobs'].value):
             attributes_ok = False
             self.log("max_jobs is not an integer: %s" %
                      (self.options['max_jobs'].value),
@@ -123,7 +117,6 @@ class BoscoConfiguration(JobManagerConfiguration):
 
         self.log('BoscoConfiguration.check_attributes completed')
         return attributes_ok
-        
         
         
         def configure(self, attributes):
