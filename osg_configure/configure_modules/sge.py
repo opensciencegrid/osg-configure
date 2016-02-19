@@ -1,8 +1,8 @@
 """ Module to handle attributes related to the sge jobmanager configuration """
 
 import os
-import re
 import logging
+import subprocess
 
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile
@@ -17,6 +17,7 @@ class SGEConfiguration(JobManagerConfiguration):
 
     SGE_CONFIG_FILE = '/etc/grid-services/available/jobmanager-sge-seg'
     GRAM_CONFIG_FILE = '/etc/globus/globus-sge.conf'
+    BLAH_CONFIG = JobManagerConfiguration.BLAH_CONFIG
 
     def __init__(self, *args, **kwargs):
         # pylint: disable-msg=W0142
@@ -263,6 +264,7 @@ class SGEConfiguration(JobManagerConfiguration):
                 self.set_default_jobmanager('fork')
 
         if self.htcondor_gateway_enabled:
+            self.setup_blah_config()
             self.write_binpaths_to_blah_config('sge', self.options['sge_bin_location'].value)
             self.write_blah_disable_wn_proxy_renewal_to_blah_config()
             self.write_htcondor_ce_sentinel()
@@ -311,6 +313,21 @@ class SGEConfiguration(JobManagerConfiguration):
         if not utilities.atomic_write(SGEConfiguration.GRAM_CONFIG_FILE, buf):
             return False
         return True
+
+    def setup_blah_config(self):
+        """
+        Populate blah.config with correct values
+
+        Return True if successful, False otherwise
+        """
+        if os.path.exists(self.BLAH_CONFIG):
+            contents = utilities.read_file(self.BLAH_CONFIG)
+            contents = utilities.add_or_replace_setting(contents, "sge_rootpath", self.options['sge_root'].value,
+                                                        quote_value=True)
+            contents = utilities.add_or_replace_setting(contents, "sge_cellname", self.options['sge_cell'].value,
+                                                        quote_value=True)
+            return utilities.atomic_write(self.BLAH_CONFIG, contents)
+        return False
 
     def enabled_services(self):
         """Return a list of  system services needed for module to work
