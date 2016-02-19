@@ -15,7 +15,7 @@ from osg_configure.modules import validation
 
 ############################# Constant Definitions ############################
 
-VERSION = '1.2.5'
+VERSION = '1.2.6'
 CONFIGURE = 1
 VERIFY = 2
 LIST = 4
