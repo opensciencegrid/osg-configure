@@ -4,6 +4,8 @@ configuration
 """
 import os
 import logging
+import subprocess
+import pwd
 
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile
@@ -115,26 +117,85 @@ class BoscoConfiguration(JobManagerConfiguration):
                      section=self.config_section,
                      level=logging.ERROR)
 
+        # TODO: validate list of usernames
+        
         self.log('BoscoConfiguration.check_attributes completed')
         return attributes_ok
         
         
-        def configure(self, attributes):
-            """Configure installation using attributes"""
-            self.log('BoscoConfiguration.configure started')
-            
-            if not self.enabled:
-                self.log('Bosco not enabled, returning True')
-                self.log('BoscoConfiguration.configure completed')
-                return True
-
-            if self.ignored:
-                self.log("%s configuration ignored" % self.config_section,
-                         level=logging.WARNING)
-                self.log('BoscoConfiguration.configure completed')
-                return True
-            
-            # Do all the things here!
-            
+    def configure(self, attributes):
+        """Configure installation using attributes"""
+        self.log('BoscoConfiguration.configure started')
+        
+        if not self.enabled:
+            self.log('Bosco not enabled, returning True')
             self.log('BoscoConfiguration.configure completed')
             return True
+
+        if self.ignored:
+            self.log("%s configuration ignored" % self.config_section,
+                     level=logging.WARNING)
+            self.log('BoscoConfiguration.configure completed')
+            return True
+        
+        # Do all the things here!
+        
+        # For each user, install bosco.
+        for username in self.config['users'].value.split(","):
+            username = username.strip()
+            self._installBosco(username)
+        
+        # Step 3. Configure the routes so the default route will go to the Bosco
+        # installed remote cluster.
+        
+        
+        
+        self.log('BoscoConfiguration.configure completed')
+        return True
+        
+    def _installBosco(self, username):
+        """
+        Install Bosco on the remote cluster for a given username
+        """
+        
+        # First, get the uid of the username so we can seteuid
+        try:
+            user_info = pwd.getpwnam(username)
+        except KeyError, e:
+            self.log("Error finding username: %s on system." % username, level=logging.ERROR)
+            return False
+        
+        user_uid = user_info[2]
+        
+        # Save the current effective uid
+        cur_uid = os.geteuid()
+        try:
+            # Change to the user's euid
+            os.seteuid(user_uid)
+            
+            # Step 2. Run bosco cluster to install the remote cluster
+            install_cmd = "bosco_cluster -a %{endpoint} ${rms}" % { 
+                'endpoint': self.config['endpoint'].value,
+                'rms': self.config['batch'].value}
+                
+            self.log("Bosco command to execute: %s" % install_cmd)
+            process = subprocess.Popen(install_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+            (stdout, stderr) = process.communicate()
+            returncode = process.wait()
+            if returncode:
+                self.log("Bosco installation command failed with exit code %i" % returncode, level=logging.ERROR)
+                self.log("stdout:\n%s" % stdout, level=logging.ERROR)
+                self.log("stderr:\n%s" % stderr, level=logging.ERROR)
+            else:
+                self.log("Bosco installation successful", level=logging.DEBUG)
+                self.log("stdout:\n%s" % stdout, level=logging.DEBUG)
+                self.log("stderr:\n%s" % stderr, level=logging.DEBUG)
+
+        except Exception, e:
+            self.log("Error in bosco installation: %s" % str(e), level=logging.ERROR)
+            return False
+        
+        finally:
+            # Reset back to normal uid
+            os.seteuid(cur_uid)
+        
