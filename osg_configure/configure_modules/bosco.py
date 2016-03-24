@@ -31,6 +31,9 @@ class BoscoConfiguration(JobManagerConfiguration):
                         'batch':
                             configfile.Option(name='batch',
                                               requred=configfile.Option.MANDATORY),
+                        'users':
+                            configfile.Option(name='users',
+                                              requred=configfile.Option.MANDATORY),
                         'ssh_key':
                             configfile.Option(name='ssh_key',
                                               requred=configfile.Option.MANDATORY),
@@ -38,6 +41,7 @@ class BoscoConfiguration(JobManagerConfiguration):
                             configfile.Option(name='max_jobs',
                                               requred=configfile.Option.OPTIONAL,
                                               default_value=1000)}
+                                              
         
         self.config_section = "Bosco"
         log("BoscoConfiguration.__init__ completed")
@@ -116,6 +120,17 @@ class BoscoConfiguration(JobManagerConfiguration):
                      option='max_jobs',
                      section=self.config_section,
                      level=logging.ERROR)
+        
+        # Split the users, comma seperated
+        split_users = self.options['users'].value.split(',')
+        for user in split_users:
+            if not validation.valid_user(user.strip()):
+                attributes_ok = False
+                self.log("%s is not a valid user" %
+                         (user.strip()),
+                         option='users',
+                         section=self.config_section,
+                         level=logging.ERROR)
 
         # TODO: validate list of usernames
         
@@ -143,11 +158,13 @@ class BoscoConfiguration(JobManagerConfiguration):
         # For each user, install bosco.
         for username in self.config['users'].value.split(","):
             username = username.strip()
-            self._installBosco(username)
+            if not self._installBosco(username):
+                self.log('Installtion of Bosco failed', level=logging.ERROR)
+                return False
         
         # Step 3. Configure the routes so the default route will go to the Bosco
         # installed remote cluster.
-        
+        self._install_routes()
         
         
         self.log('BoscoConfiguration.configure completed')
@@ -174,7 +191,7 @@ class BoscoConfiguration(JobManagerConfiguration):
             os.seteuid(user_uid)
             
             # Step 2. Run bosco cluster to install the remote cluster
-            install_cmd = "bosco_cluster -a %{endpoint} ${rms}" % { 
+            install_cmd = "bosco_cluster -a %{endpoint} %{rms}" % { 
                 'endpoint': self.config['endpoint'].value,
                 'rms': self.config['batch'].value}
                 
@@ -198,4 +215,24 @@ class BoscoConfiguration(JobManagerConfiguration):
         finally:
             # Reset back to normal uid
             os.seteuid(cur_uid)
+        
+    _route_template = """
+JOB_ROUTER_ENTRIES = \
+   [ \
+     GridResource = "batch %{rms}s %{endpoint} --rgahp-key %{keylocation}s --rgahp-pass /dev/null"; \
+     TargetUniverse = 9; \
+     name = "Local_PBS"; \
+   ] 
+    """ 
+    def _install_routes(self):
+        # Install the routes in /etc/condor-ce/config.d/80-bosco-routes.conf 
+        routes_file = "/etc/condor-ce/config.d/80-bosco-routes.conf"
+        with open(routes_file, 'w') as routes_fd:
+            fd.write(_route_template % {'rms' = self.config['batch'].value, 
+                                        'endpoint': self.config['endpoint'].value, 
+                                        'keylocation': self.config['ssh_key'].value})
+        
+        
+        
+        
         
