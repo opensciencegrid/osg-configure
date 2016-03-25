@@ -163,7 +163,7 @@ def jobmanager_enabled(configuration):
     configuration -- ConfigParser object to check
     """
 
-    jobmanagers = ['PBS', 'Condor', 'SGE', 'LSF', 'SLURM']
+    jobmanagers = ['PBS', 'Condor', 'SGE', 'LSF', 'SLURM', 'BOSCO']
     for jobmanager in jobmanagers:
         if (configuration.has_section(jobmanager) and
                 configuration.has_option(jobmanager, 'enabled') and

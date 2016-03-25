@@ -40,7 +40,7 @@ DEFAULT_JOB_ENVIRONMENT_ATTRIBUTES = ['GLOBUS_LOCATION',
                                       'OSG_GLEXEC_LOCATION',
                                       'PATH']
 BATCH_SYSTEM_CONFIG_RPMS = ['osg-configure-condor', 'osg-configure-lsf', 'osg-configure-pbs', 'osg-configure-sge',
-                            'osg-configure-slurm']
+                            'osg-configure-slurm', 'osg-configure-bosco']
 
 
 ############################# Function Definitions ############################
