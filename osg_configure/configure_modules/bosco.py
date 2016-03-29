@@ -55,7 +55,7 @@ class BoscoConfiguration(JobManagerConfiguration):
         """
         super(BoscoConfiguration, self).parse_configuration(configuration)
 
-        self.log('SlurmConfiguration.parse_configuration started')
+        self.log('BoscoConfiguration.parse_configuration started')
 
         self.check_config(configuration)
 
@@ -97,13 +97,17 @@ class BoscoConfiguration(JobManagerConfiguration):
         #             section=self.config_section,
         #             level=logging.ERROR)
         
-        if self.options['batch'].value not in ['pbs', 'lsf', 'sge', 'condor']:
+        if self.options['batch'].value not in ['pbs', 'lsf', 'sge', 'condor', 'slurm']:
             attributes_ok = False
             self.log("Batch attribute is not valid: %s" % 
                      (self.options['batch'].value),
                      option='batch',
                      section=self.config_section,
                      level=logging.ERROR)
+        
+        # Change the  batch value to pbs if it slurm, for now
+        if self.options['batch'].value is 'slurm':
+            self.options['batch'].value = 'pbs'
         
         # TODO: check if the ssh_key has the correct permissions!
         if not validation.valid_file(self.options['ssh_key'].value):
