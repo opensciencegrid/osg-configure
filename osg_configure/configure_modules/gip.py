@@ -78,7 +78,8 @@ class GipConfiguration(BaseConfiguration):
                                  'condor',
                                  'sge',
                                  'slurm',
-                                 'forwarding']
+                                 'forwarding',
+                                 'bosco']
 
         self.gip_user = None
         self.log('GipConfiguration.__init__ completed')

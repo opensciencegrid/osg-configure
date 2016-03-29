@@ -21,7 +21,8 @@ __all__ = ['valid_domain',
            'valid_boolean',
            'valid_executable',
            'valid_ini_file',
-           'valid_contact']
+           'valid_contact',
+           'valid_integer']
 
 
 def valid_domain(host, resolve=False):
@@ -357,3 +358,16 @@ def valid_contact(contact, jobmanager):
         except (TypeError, ValueError):
             return False
     return valid_domain(host)
+
+# Quick function to check if configuration value is an integer
+def valid_integer(to_check):
+    """
+    Check if the value in to_check is actually an integer.  to_check can be a 
+    string or already an integer.
+    returns True or False
+    """
+    try: 
+        int(to_check)
+        return True
+    except ValueError:
+        return False
