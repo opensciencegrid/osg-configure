@@ -194,13 +194,27 @@ class BoscoConfiguration(JobManagerConfiguration):
         user_gid       = user_info.pw_gid
         
         # Copy the ssh key to the user's .ssh directory
-        ssh_key_loc = os.path.join(user_home, ".ssh", "id_rsa")
+        ssh_key_loc = os.path.join(user_home, ".ssh", "bosco_ssh_key")
         try:
             os.mkdir(os.path.join(user_home, ".ssh"))
         except:
             pass
         shutil.copy(self.options["ssh_key"].value, ssh_key_loc)
         os.chmod(ssh_key_loc, stat.S_IRUSR | stat.S_IWUSR)
+        
+        # Add a section to .ssh/config for this host
+        #  Split the entry point by the "@"
+        (username, host) = self.options["endpoint"].value.split('@')
+        host_config = """
+Host %(host)s
+    HostName %(host)s
+    User %(username)s
+    IdentityFile %(key_loc)s
+""" % {'host': host, 'username': user_name, 'key_loc': ssh_key_loc}
+        
+        config_path = os.path.join(user_home, ".ssh", "config")
+        with open(config_path, 'a') as f:
+            f.write(host_config)
         
         # Change the ownership of everything to the user
         # https://stackoverflow.com/questions/2853723/whats-the-python-way-for-recursively-setting-file-permissions
