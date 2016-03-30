@@ -205,17 +205,19 @@ class BoscoConfiguration(JobManagerConfiguration):
         user_gid       = user_info.pw_gid
         
         # Copy the ssh key to the user's .ssh directory
+        ssh_key = self.options["ssh_key"].value
         ssh_key_loc = os.path.join(user_home, ".ssh", "bosco_ssh_key")
         try:
             os.mkdir(os.path.join(user_home, ".ssh"))
         except OSError as err:
             if err.errno != errno.EEXIST:
                 raise
-        try:
-            shutil.copy(self.options["ssh_key"].value, ssh_key_loc)
-        except OSError as err:
-            self.log("Error copying SSH key to %s: %s" % (ssh_key_loc, err), level=logging.ERROR)
-            return False
+        if not os.path.samefile(ssh_key, ssh_key_loc):
+            try:
+                shutil.copy(ssh_key, ssh_key_loc)
+            except OSError as err:
+                self.log("Error copying SSH key to %s: %s" % (ssh_key_loc, err), level=logging.ERROR)
+                return False
 
         os.chmod(ssh_key_loc, stat.S_IRUSR | stat.S_IWUSR)
 
