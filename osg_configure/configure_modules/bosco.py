@@ -141,6 +141,15 @@ class BoscoConfiguration(JobManagerConfiguration):
                          level=logging.ERROR)
 
         # TODO: validate list of usernames
+
+        endpoint = self.options['endpoint'].value
+        if len(endpoint.split('@')) != 2:
+            attributes_ok = False
+            self.log("endpoint not in user@host format: %s" %
+                     endpoint,
+                     option='endpoint',
+                     section=self.config_section,
+                     level=logging.ERROR)
         
         self.log('BoscoConfiguration.check_attributes completed')
         return attributes_ok
