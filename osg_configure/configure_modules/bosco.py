@@ -2,6 +2,7 @@
 Module to handle attributes related to the bosco jobmanager 
 configuration
 """
+import errno
 import os
 import logging
 import subprocess
@@ -198,11 +199,17 @@ class BoscoConfiguration(JobManagerConfiguration):
         ssh_key_loc = os.path.join(user_home, ".ssh", "bosco_ssh_key")
         try:
             os.mkdir(os.path.join(user_home, ".ssh"))
-        except:
-            pass
-        shutil.copy(self.options["ssh_key"].value, ssh_key_loc)
+        except OSError as err:
+            if err.errno != errno.EEXIST:
+                raise
+        try:
+            shutil.copy(self.options["ssh_key"].value, ssh_key_loc)
+        except OSError as err:
+            self.log("Error copying SSH key to %s: %s" % (ssh_key_loc, err), level=logging.ERROR)
+            return False
+
         os.chmod(ssh_key_loc, stat.S_IRUSR | stat.S_IWUSR)
-        
+
         # Add a section to .ssh/config for this host
         config_path = os.path.join(user_home, ".ssh", "config")
         #  Split the entry point by the "@"
@@ -259,6 +266,7 @@ Host %(host)s
                 self.log("Bosco installation command failed with exit code %i" % returncode, level=logging.ERROR)
                 self.log("stdout:\n%s" % stdout, level=logging.ERROR)
                 self.log("stderr:\n%s" % stderr, level=logging.ERROR)
+                return False
             else:
                 self.log("Bosco installation successful", level=logging.DEBUG)
                 self.log("stdout:\n%s" % stdout, level=logging.DEBUG)
