@@ -8,6 +8,7 @@ import subprocess
 import pwd
 import shutil
 import stat
+import re
 
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile
@@ -203,6 +204,7 @@ class BoscoConfiguration(JobManagerConfiguration):
         os.chmod(ssh_key_loc, stat.S_IRUSR | stat.S_IWUSR)
         
         # Add a section to .ssh/config for this host
+        config_path = os.path.join(user_home, ".ssh", "config")
         #  Split the entry point by the "@"
         (username, host) = self.options["endpoint"].value.split('@')
         host_config = """
@@ -211,10 +213,12 @@ Host %(host)s
     User %(username)s
     IdentityFile %(key_loc)s
 """ % {'host': host, 'username': user_name, 'key_loc': ssh_key_loc}
-        
-        config_path = os.path.join(user_home, ".ssh", "config")
-        with open(config_path, 'a') as f:
-            f.write(host_config)
+
+        # Search the config for the above host
+        if not self._search_config(host, config_path):
+            
+            with open(config_path, 'a') as f:
+                f.write(host_config)
         
         # Change the ownership of everything to the user
         # https://stackoverflow.com/questions/2853723/whats-the-python-way-for-recursively-setting-file-permissions
@@ -283,6 +287,26 @@ JOB_ROUTER_ENTRIES = \\
                                         'endpoint': self.options['endpoint'].value, 
                                         'keylocation': self.options['ssh_key'].value})
         
+        
+    def _search_config(self, host, config_path):
+        """
+        Search the ssh config file for exactly this host
+        
+        Returns: true - if host section found
+                 false - if host section not found
+        """
+        
+        if not os.path.exists(config_path):
+            return False
+        
+        host_re = re.compile("^\s*Host\s+%s\s*$" % host)
+        
+        with open(config_path, 'r') as f:
+            for line in f:
+                if host_re.search(line):
+                    return True
+        
+        return False
         
         
         
