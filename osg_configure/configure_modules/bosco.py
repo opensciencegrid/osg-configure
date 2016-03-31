@@ -212,12 +212,12 @@ class BoscoConfiguration(JobManagerConfiguration):
         except OSError as err:
             if err.errno != errno.EEXIST:
                 raise
-        if not os.path.samefile(ssh_key, ssh_key_loc):
-            try:
+        try:
+            if not os.path.exists(ssh_key_loc) or not os.path.samefile(ssh_key, ssh_key_loc):
                 shutil.copy(ssh_key, ssh_key_loc)
-            except OSError as err:
-                self.log("Error copying SSH key to %s: %s" % (ssh_key_loc, err), level=logging.ERROR)
-                return False
+        except OSError as err:
+            self.log("Error copying SSH key to %s: %s" % (ssh_key_loc, err), level=logging.ERROR)
+            return False
 
         os.chmod(ssh_key_loc, stat.S_IRUSR | stat.S_IWUSR)
 
