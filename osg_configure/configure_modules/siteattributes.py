@@ -167,8 +167,7 @@ class SiteAttributes(BaseConfiguration):
                      level=logging.ERROR)
             attributes_ok = False
 
-        # make sure the email address has the correct format and that the domain portion is
-        # resolvable
+        # make sure the email address has the correct format
         if not validation.valid_email(self.options['email'].value):
             self.log("Invalid email address in site information: %s" %
                      self.options['email'].value,
@@ -176,23 +175,6 @@ class SiteAttributes(BaseConfiguration):
                      option='email',
                      level=logging.ERROR)
             attributes_ok = False
-        else:
-            match = re.match(r'(?:[a-zA-Z\-_+0-9.]+)@([a-zA-Z0-9_\-]+(?:\.[a-zA-Z0-9_\-]+)+)',
-                             self.options['email'].value)
-            try:
-                socket.gethostbyname(match.group(1))
-            except socket.herror:
-                self.log("Can't resolve domain in email: %s" % self.options['email'].value,
-                         section=self.config_section,
-                         option='email',
-                         level=logging.WARNING,
-                         exception=True)
-            except socket.gaierror:
-                self.log("Can't resolve domain in email: %s" % self.options['email'].value,
-                         section=self.config_section,
-                         option='email',
-                         level=logging.WARNING,
-                         exception=True)
 
         vo_list = self.options['sponsor'].value
         percentage = 0
