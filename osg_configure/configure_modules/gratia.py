@@ -22,11 +22,12 @@ GRATIA_CONFIG_FILES = {
     'sge': '/etc/gratia/sge/ProbeConfig',
     'lsf': '/etc/gratia/pbs-lsf/urCollector.conf',
     'pbs': '/etc/gratia/pbs-lsf/urCollector.conf',
-    'slurm': '/etc/gratia/slurm/ProbeConfig'
+    'slurm': '/etc/gratia/slurm/ProbeConfig',
+    'htcondor-ce': '/etc/gratia/htcondor-ce/ProbeConfig'
 }
 
 CE_PROBE_RPMS = ['gratia-probe-condor', 'gratia-probe-gram', 'gratia-probe-pbs-lsf', 'gratia-probe-sge',
-                 'gratia-probe-slurm']
+                 'gratia-probe-slurm', 'gratia-probe-htcondor-ce']
 
 
 def requirements_are_installed():
@@ -70,7 +71,7 @@ in your config.ini file."""
         self._production_defaults = {'probes':
                                           'jobmanager:gratia-osg-prod.opensciencegrid.org:80'}
 
-        self._job_managers = ['pbs', 'sge', 'lsf', 'condor', 'slurm']
+        self._job_managers = ['pbs', 'sge', 'lsf', 'condor', 'slurm', 'htcondor-ce']
         self._probe_config = {}
         self.grid_group = 'OSG'
 
@@ -181,6 +182,8 @@ in your config.ini file."""
                                                     'db_name': slurm_config.get_db_name(),
                                                     'cluster': slurm_config.get_slurm_cluster(),
                                                     'location': slurm_config.get_location()}
+                elif probe == 'htcondor-ce':
+                    self._probe_config['htcondor-ce'] = {}
 
         self.get_options(configuration,
                         ignore_options=['itb-jobmanager-gratia',
@@ -266,6 +269,8 @@ in your config.ini file."""
                 self._configure_sge_probe()
             elif probe == 'slurm':
                 self._configure_slurm_probe()
+            elif probe == 'htcondor-ce':
+                self._configure_htcondor_ce_probe()
 
         self.log("GratiaConfiguration.configure completed")
         return True
@@ -594,6 +599,20 @@ in your config.ini file."""
         if not utilities.atomic_write(config_location, buf):
             return False
         return True
+        
+    def _configure_htcondor_ce_probe(self):
+        """
+        Do HTCondor-CE probe specific configuration
+        Set to suppress grid local jobs (pre-routed jobs)
+        """
+        config_location = GRATIA_CONFIG_FILES['htcondor-ce']
+        buf = file(config_location).read()
+        buf = self.replace_setting(buf, 'SuppressGridLocalRecords', '1')
+        
+        if not utilities.atomic_write(config_location, buf):
+            return False
+        return True
+        
 
     def _verify_gratia_dirs(self):
         """
