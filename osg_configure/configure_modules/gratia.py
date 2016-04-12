@@ -22,11 +22,12 @@ GRATIA_CONFIG_FILES = {
     'sge': '/etc/gratia/sge/ProbeConfig',
     'lsf': '/etc/gratia/pbs-lsf/urCollector.conf',
     'pbs': '/etc/gratia/pbs-lsf/urCollector.conf',
-    'slurm': '/etc/gratia/slurm/ProbeConfig'
+    'slurm': '/etc/gratia/slurm/ProbeConfig',
+    'htcondor-ce', '/etc/gratia/htcondor-ce/ProbeConfig'
 }
 
 CE_PROBE_RPMS = ['gratia-probe-condor', 'gratia-probe-gram', 'gratia-probe-pbs-lsf', 'gratia-probe-sge',
-                 'gratia-probe-slurm']
+                 'gratia-probe-slurm', 'gratia-probe-htcondor-ce']
 
 
 def requirements_are_installed():
@@ -594,6 +595,20 @@ in your config.ini file."""
         if not utilities.atomic_write(config_location, buf):
             return False
         return True
+        
+    def _configure_htcondor_ce_probe(self):
+        """
+        Do HTCondor-CE probe specific configuration
+        Set to suppress grid local jobs (pre-routed jobs)
+        """
+        
+        buf = file(config_location).read()
+        buf = self.replace_setting(buf, 'SuppressGridLocalRecords', '1')
+        
+        if not utilities.atomic_write(config_location, buf):
+            return False
+        return True
+        
 
     def _verify_gratia_dirs(self):
         """
