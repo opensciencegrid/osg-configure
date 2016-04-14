@@ -49,6 +49,7 @@ class TestGip(unittest.TestCase):
             config_parser.read(config_file)
             gip_config = gip.GipConfiguration(logger=global_logger)
             gip_config._parse_configuration(config_parser)
+            gip_config._parse_configuration_ce(config_parser)
         except exceptions.SettingError:
             did_fail = True
         self.assertTrue(did_fail, msg="Did not properly detect a missing SC.")
@@ -143,6 +144,7 @@ class TestGip(unittest.TestCase):
             config_parser.read(config_file)
             gip_config = gip.GipConfiguration(logger=global_logger)
             gip_config._parse_configuration(config_parser)
+            gip_config._parse_configuration_ce(config_parser)
         except exceptions.SettingError:
             did_fail = True
         self.assertTrue(did_fail, msg="Did not detect enabled CHANGEME section.")
@@ -174,6 +176,7 @@ class TestGip(unittest.TestCase):
             config_parser.read(config_file)
             gip_config = gip.GipConfiguration(logger=global_logger)
             gip_config._parse_configuration(config_parser)
+            gip_config._parse_configuration_ce(config_parser)
         except exceptions.SettingError:
             did_fail = True
         self.assertTrue(did_fail, msg="Did not properly detect missing attrs.")
