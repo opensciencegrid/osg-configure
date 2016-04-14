@@ -200,6 +200,7 @@ class TestGip(unittest.TestCase):
         config_parser.read(config_file)
         gip_config = gip.GipConfiguration(logger=global_logger)
         gip_config._parse_configuration(config_parser)
+        gip_config._parse_configuration_ce(config_parser)
 
     def test_doherty(self):
         """
@@ -210,6 +211,7 @@ class TestGip(unittest.TestCase):
         config_parser.read(config_file)
         gip_config = gip.GipConfiguration(logger=global_logger)
         gip_config._parse_configuration(config_parser)
+        gip_config._parse_configuration_ce(config_parser)
 
     def test_local_settings(self):
         """
@@ -252,6 +254,7 @@ class TestGip(unittest.TestCase):
                           get_test_config(SAMPLE_VO_MAP_LOCATION))
         gip_config = gip.GipConfiguration(logger=global_logger)
         gip_config._parse_configuration(config_parser)
+        gip_config._parse_configuration_ce(config_parser)
 
     def test_allowed_jobmanagers(self):
         """
@@ -265,6 +268,7 @@ class TestGip(unittest.TestCase):
                           get_test_config(SAMPLE_VO_MAP_LOCATION))
         gip_config = gip.GipConfiguration(logger=global_logger)
         gip_config._parse_configuration(config_parser)
+        gip_config._parse_configuration_ce(config_parser)
 
         config_parser = ConfigParser.SafeConfigParser()
         config_file = get_test_config("gip/allowed_jobmanager2.ini")
@@ -274,6 +278,7 @@ class TestGip(unittest.TestCase):
                           get_test_config(SAMPLE_VO_MAP_LOCATION))
         gip_config = gip.GipConfiguration(logger=global_logger)
         gip_config._parse_configuration(config_parser)
+        gip_config._parse_configuration_ce(config_parser)
 
         config_parser = ConfigParser.SafeConfigParser()
         config_file = get_test_config("gip/allowed_jobmanager3.ini")
@@ -283,6 +288,7 @@ class TestGip(unittest.TestCase):
                           get_test_config(SAMPLE_VO_MAP_LOCATION))
         gip_config = gip.GipConfiguration(logger=global_logger)
         gip_config._parse_configuration(config_parser)
+        gip_config._parse_configuration_ce(config_parser)
 
         config_parser = ConfigParser.SafeConfigParser()
         config_file = get_test_config("gip/allowed_jobmanager4.ini")
@@ -292,6 +298,7 @@ class TestGip(unittest.TestCase):
                           get_test_config(SAMPLE_VO_MAP_LOCATION))
         gip_config = gip.GipConfiguration(logger=global_logger)
         gip_config._parse_configuration(config_parser)
+        gip_config._parse_configuration_ce(config_parser)
 
         config_parser = ConfigParser.SafeConfigParser()
         config_file = get_test_config("gip/allowed_jobmanager5.ini")
@@ -301,6 +308,7 @@ class TestGip(unittest.TestCase):
                           get_test_config(SAMPLE_VO_MAP_LOCATION))
         gip_config = gip.GipConfiguration(logger=global_logger)
         gip_config._parse_configuration(config_parser)
+        gip_config._parse_configuration_ce(config_parser)
 
         config_parser = ConfigParser.SafeConfigParser()
         config_file = get_test_config("gip/allowed_jobmanager6.ini")
@@ -310,6 +318,7 @@ class TestGip(unittest.TestCase):
                           get_test_config(SAMPLE_VO_MAP_LOCATION))
         gip_config = gip.GipConfiguration(logger=global_logger)
         gip_config._parse_configuration(config_parser)
+        gip_config._parse_configuration_ce(config_parser)
 
         config_parser = ConfigParser.SafeConfigParser()
         config_file = get_test_config("gip/invalid_jobmanager1.ini")
