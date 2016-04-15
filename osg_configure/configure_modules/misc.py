@@ -234,7 +234,7 @@ configuration:
         # Update GUMS endpoint (if using GUMS)
         #
         if gums:
-            endpoint_re = re.compile(r'^\s*"--endpoint\s+https://.*/gums/services.*"\s*$',
+            endpoint_re = re.compile(r'^\s*"--endpoint\s+https://.*/gums/services.*"\s*?$',
                                      re.MULTILINE)
             replacement = "             \"--endpoint https://%s:8443" % (gums_host)
             replacement += "/gums/services/GUMSXACMLAuthorizationServicePort\""
