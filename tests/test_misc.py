@@ -8,6 +8,8 @@ import sys
 import unittest
 import ConfigParser
 import logging
+import tempfile
+import subprocess
 
 # setup system library path
 pathname = os.path.realpath('../')
@@ -337,53 +339,83 @@ class TestMisc(unittest.TestCase):
         """
         Test to make sure lcmaps.db is properly modified for using GUMS
         """
-        lcmaps_pre = open(get_test_config('misc/lcmaps.db.fresh')).read()
-        expected_lcmaps_post = open(get_test_config('misc/lcmaps.db.gums')).read()
+        lcmaps_pre = open(get_test_config('misc/lcmaps.db.fresh')).read().strip()
+        expected_lcmaps_post = open(get_test_config('misc/lcmaps.db.gums')).read().strip()
 
         lcmaps_post = misc.MiscConfiguration._update_lcmaps_text(lcmaps_pre, True, "testnode.testdomain")
 
-        self.assertEqual(lcmaps_post, expected_lcmaps_post,
-                         "lcmaps.db incorrectly updated for GUMS")
+        diff = diff_strings(expected_lcmaps_post, lcmaps_post)
+
+        self.assertEqual(diff, '',
+                         "lcmaps.db incorrectly updated for GUMS (diff: \n%s\n)" % diff)
 
     def testLCMAPSFreshGridmap(self):
         """
         Test to make sure a fresh lcmaps.db is properly modified for using a
         grid-mapfile.
         """
-        lcmaps_pre = open(get_test_config('misc/lcmaps.db.fresh')).read()
-        expected_lcmaps_post = open(get_test_config('misc/lcmaps.db.gridmap1')).read()
+        lcmaps_pre = open(get_test_config('misc/lcmaps.db.fresh')).read().strip()
+        expected_lcmaps_post = open(get_test_config('misc/lcmaps.db.gridmap1')).read().strip()
 
         lcmaps_post = misc.MiscConfiguration._update_lcmaps_text(lcmaps_pre, False, "testnode.testdomain")
 
-        self.assertEqual(lcmaps_post, expected_lcmaps_post,
-                         "Fresh lcmaps.db incorrectly updated for grid-mapfile")
+        diff = diff_strings(expected_lcmaps_post, lcmaps_post)
+
+        self.assertEqual(diff, '',
+                         "Fresh lcmaps.db incorrectly updated for grid-mapfile (diff: \n%s\n)" % diff)
 
     def testLCMAPSModifiedGridmap(self):
         """
         Test to make sure a modified lcmaps.db is properly further modified
         for using a grid-mapfile.
         """
-        lcmaps_pre = open(get_test_config('misc/lcmaps.db.gums')).read()
-        expected_lcmaps_post = open(get_test_config('misc/lcmaps.db.gridmap2')).read()
+        lcmaps_pre = open(get_test_config('misc/lcmaps.db.gums')).read().strip()
+        expected_lcmaps_post = open(get_test_config('misc/lcmaps.db.gridmap2')).read().strip()
 
         lcmaps_post = misc.MiscConfiguration._update_lcmaps_text(lcmaps_pre, False, "localhost")
 
-        self.assertEqual(lcmaps_post, expected_lcmaps_post,
-                         "Modified lcmaps.db incorrectly updated for grid-mapfile")
+        diff = diff_strings(expected_lcmaps_post, lcmaps_post)
+
+        self.assertEqual(diff, '',
+                         "Modified lcmaps.db incorrectly updated for grid-mapfile (diff: \n%s\n)" % diff)
 
     def testLCMAPSModifiedGUMS(self):
         """
         Test to make sure a modified lcmaps.db is properly further modified
         for using GUMS.
         """
-        lcmaps_pre = open(get_test_config('misc/lcmaps.db.gridmap1')).read()
-        expected_lcmaps_post = open(get_test_config('misc/lcmaps.db.gums')).read()
+        lcmaps_pre = open(get_test_config('misc/lcmaps.db.gridmap1')).read().strip()
+        expected_lcmaps_post = open(get_test_config('misc/lcmaps.db.gums')).read().strip()
 
         lcmaps_post = misc.MiscConfiguration._update_lcmaps_text(lcmaps_pre, True, "testnode.testdomain")
 
-        self.assertEqual(lcmaps_post, expected_lcmaps_post,
-                         "Modified lcmaps.db incorrectly updated for GUMS")
+        diff = diff_strings(expected_lcmaps_post, lcmaps_post)
 
+        self.assertEqual(diff, '',
+                         "Modified lcmaps.db incorrectly updated for GUMS (diff: \n%s\n)" % diff)
+
+
+def diff_strings(string1, string2):
+    """
+    Use diff(1) to get human-readable differences between two multi-line
+    strings
+    """
+    tempfile1 = tempfile.NamedTemporaryFile()
+    tempfile2 = tempfile.NamedTemporaryFile()
+
+    tempfile1.write(string1.strip() + '\n')
+    tempfile1.flush()
+
+    tempfile2.write(string2.strip() + '\n')
+    tempfile2.flush()
+
+    diff_proc = subprocess.Popen(["diff", tempfile1.name, tempfile2.name], stdout=subprocess.PIPE)
+    diff_out, _ = diff_proc.communicate()
+
+    tempfile1.close()
+    tempfile2.close()
+
+    return diff_out.strip()
 
 if __name__ == '__main__':
     console = logging.StreamHandler()
