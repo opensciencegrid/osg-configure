@@ -333,6 +333,58 @@ class TestMisc(unittest.TestCase):
                          "got %s but expected %s" % (services, expected_services))
 
 
+    def testLCMAPSGums(self):
+        """
+        Test to make sure lcmaps.db is properly modified for using GUMS
+        """
+        lcmaps_pre = open(get_test_config('misc/lcmaps.db.fresh')).read()
+        expected_lcmaps_post = open(get_test_config('misc/lcmaps.db.gums')).read()
+
+        lcmaps_post = misc.MiscConfiguration._update_lcmaps_text(lcmaps_pre, True, "testnode.testdomain")
+
+        self.assertEqual(lcmaps_post, expected_lcmaps_post,
+                         "lcmaps.db incorrectly updated for GUMS")
+
+    def testLCMAPSFreshGridmap(self):
+        """
+        Test to make sure a fresh lcmaps.db is properly modified for using a
+        grid-mapfile.
+        """
+        lcmaps_pre = open(get_test_config('misc/lcmaps.db.fresh')).read()
+        expected_lcmaps_post = open(get_test_config('misc/lcmaps.db.gridmap1')).read()
+
+        lcmaps_post = misc.MiscConfiguration._update_lcmaps_text(lcmaps_pre, False, "testnode.testdomain")
+
+        self.assertEqual(lcmaps_post, expected_lcmaps_post,
+                         "Fresh lcmaps.db incorrectly updated for grid-mapfile")
+
+    def testLCMAPSModifiedGridmap(self):
+        """
+        Test to make sure a modified lcmaps.db is properly further modified
+        for using a grid-mapfile.
+        """
+        lcmaps_pre = open(get_test_config('misc/lcmaps.db.gums')).read()
+        expected_lcmaps_post = open(get_test_config('misc/lcmaps.db.gridmap2')).read()
+
+        lcmaps_post = misc.MiscConfiguration._update_lcmaps_text(lcmaps_pre, False, "localhost")
+
+        self.assertEqual(lcmaps_post, expected_lcmaps_post,
+                         "Modified lcmaps.db incorrectly updated for grid-mapfile")
+
+    def testLCMAPSModifiedGUMS(self):
+        """
+        Test to make sure a modified lcmaps.db is properly further modified
+        for using GUMS.
+        """
+        lcmaps_pre = open(get_test_config('misc/lcmaps.db.gridmap1')).read()
+        expected_lcmaps_post = open(get_test_config('misc/lcmaps.db.gums')).read()
+
+        lcmaps_post = misc.MiscConfiguration._update_lcmaps_text(lcmaps_pre, True, "testnode.testdomain")
+
+        self.assertEqual(lcmaps_post, expected_lcmaps_post,
+                         "Modified lcmaps.db incorrectly updated for GUMS")
+
+
 if __name__ == '__main__':
     console = logging.StreamHandler()
     console.setLevel(logging.ERROR)
