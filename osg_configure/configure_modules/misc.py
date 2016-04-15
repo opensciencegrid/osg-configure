@@ -138,8 +138,10 @@ class MiscConfiguration(BaseConfiguration):
             self._enable_xacml()
         elif self.options['authorization_method'].value == 'gridmap':
             self._disable_callout()
+            self._update_lcmaps_file(gums=False)
         elif self.options['authorization_method'].value == 'local-gridmap':
             self._disable_callout()
+            self._update_lcmaps_file(gums=False)
         else:
             self.log("Unknown authorization method: %s" % \
                      self.options['authorization_method'].value,
@@ -196,9 +198,9 @@ class MiscConfiguration(BaseConfiguration):
             gums_properties = authz_re.sub(replacement, gums_properties)
         utilities.atomic_write(GUMS_CLIENT_LOCATION, gums_properties)
 
-        self._update_lcmaps_file()
+        self._update_lcmaps_file(gums=True)
 
-    def _update_lcmaps_file(self):
+    def _update_lcmaps_file(self, gums=True):
         """
         Update lcmaps file and give appropriate messages if lcmaps.db.rpmnew exists
         """
@@ -221,11 +223,27 @@ configuration:
         for lcmaps_db_file in files_to_update:
             self.log("Updating " + lcmaps_db_file, level=logging.INFO)
             lcmaps_db = open(lcmaps_db_file).read()
-            endpoint_re = re.compile(r'^\s*"--endpoint\s+https://.*/gums/services.*"\s*$',
-                                     re.MULTILINE)
-            replacement = "             \"--endpoint https://%s:8443" % (self.options['gums_host'].value)
-            replacement += "/gums/services/GUMSXACMLAuthorizationServicePort\""
-            lcmaps_db = endpoint_re.sub(replacement, lcmaps_db)
+            # Look for lines like
+            # "gumsclient -> good | bad" and
+            # "gridmapfile -> good | bad"
+            # which may be commented out.
+            gumsclient_re = re.compile(r'^\s*[#]*\s*gumsclient\s*->\s*good\s*[|]\s*bad\s*$',
+                                       re.MULTILINE)
+            gridmapfile_re = re.compile(r'^\s*[#]*\s*gridmapfile\s*->\s*good\s*[|]\s*bad\s*$',
+                                        re.MULTILINE)
+            if gums:
+                endpoint_re = re.compile(r'^\s*"--endpoint\s+https://.*/gums/services.*"\s*$',
+                                         re.MULTILINE)
+                replacement = "             \"--endpoint https://%s:8443" % (self.options['gums_host'].value)
+                replacement += "/gums/services/GUMSXACMLAuthorizationServicePort\""
+                lcmaps_db = endpoint_re.sub(replacement, lcmaps_db)
+
+                lcmaps_db = gumsclient_re.sub("gumsclient -> good | bad", lcmaps_db)
+                lcmaps_db = gridmapfile_re.sub("#gridmapfile -> good | bad", lcmaps_db)
+            else:
+                lcmaps_db = gumsclient_re.sub("#gumsclient -> good | bad", lcmaps_db)
+                lcmaps_db = gridmapfile_re.sub("gridmapfile -> good | bad", lcmaps_db)
+
             utilities.atomic_write(lcmaps_db_file, lcmaps_db)
 
 
