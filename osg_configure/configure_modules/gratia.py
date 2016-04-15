@@ -414,11 +414,15 @@ in your config.ini file."""
                 sys.stdout.write(self.metric_probe_deprecation + "\n")
                 self.log(self.metric_probe_deprecation, level=logging.WARNING)
             server = self.enabled_probe_settings[probe].split(':')[0]
-            if not validation.valid_domain(server, True):
-                err_mesg = "The server specified for probe %s does not " % probe
-                err_mesg += "resolve: %s" % server
+            if not validation.valid_domain(server, False):
+                err_mesg = "The server specified for probe %s is not " % probe
+                err_mesg += "a valid domain: %s" % server
                 self.log(err_mesg, level=logging.ERROR)
                 valid = False
+            elif not validation.valid_domain(server, True):
+                err_mesg = "The server specified for probe %s does not " % probe
+                err_mesg += "resolve: %s" % server
+                self.log(err_mesg, level=logging.WARNING)
             if server != self.enabled_probe_settings[probe]:
                 port = self.enabled_probe_settings[probe].split(':')[1]
                 try:
