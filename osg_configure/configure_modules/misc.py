@@ -224,18 +224,26 @@ configuration:
             self.log("Updating " + lcmaps_db_file, level=logging.INFO)
             lcmaps_db = open(lcmaps_db_file).read()
 
-            if gums:
-                endpoint_re = re.compile(r'^\s*"--endpoint\s+https://.*/gums/services.*"\s*$',
-                                         re.MULTILINE)
-                replacement = "             \"--endpoint https://%s:8443" % (self.options['gums_host'].value)
-                replacement += "/gums/services/GUMSXACMLAuthorizationServicePort\""
-                lcmaps_db = endpoint_re.sub(replacement, lcmaps_db)
-
-            self._edit_lcmaps_db_authorize_only(lcmaps_db, gums)
+            lcmaps_db = self._update_lcmaps_text(lcmaps_db, gums, self.options['gums_host'].value)
 
             utilities.atomic_write(lcmaps_db_file, lcmaps_db)
 
-    def _edit_lcmaps_db_authorize_only(self, lcmaps_db, gums):
+    @staticmethod
+    def _update_lcmaps_text(lcmaps_db, gums, gums_host):
+        #
+        # Update GUMS endpoint (if using GUMS)
+        #
+        if gums:
+            endpoint_re = re.compile(r'^\s*"--endpoint\s+https://.*/gums/services.*"\s*$',
+                                     re.MULTILINE)
+            replacement = "             \"--endpoint https://%s:8443" % (gums_host)
+            replacement += "/gums/services/GUMSXACMLAuthorizationServicePort\""
+            lcmaps_db = endpoint_re.sub(replacement, lcmaps_db)
+
+        #
+        # Update "authorize_only" section
+        #
+
         # Split the string into three:
         # 1. Everything before the authorize_only section
         # 2. The authorize_only section
@@ -252,9 +260,9 @@ configuration:
         # "gumsclient -> good | bad" and
         # "gridmapfile -> good | bad"
         # which may be commented out.
-        gumsclient_re = re.compile(r'^\s*[#]*\s*gumsclient\s*->\s*good\s*[|]\s*bad\s*$',
+        gumsclient_re = re.compile(r'^\s*?[#]*?\s*?gumsclient\s*?->\s*?good\s*?[|]\s*?bad\s*?$',
                                    re.MULTILINE)
-        gridmapfile_re = re.compile(r'^\s*[#]*\s*gridmapfile\s*->\s*good\s*[|]\s*bad\s*$',
+        gridmapfile_re = re.compile(r'^\s*?[#]*?\s*?gridmapfile\s*?->\s*?good\s*?[|]\s*?bad\s*?$',
                                     re.MULTILINE)
 
         if gums:
