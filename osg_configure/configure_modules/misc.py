@@ -223,14 +223,7 @@ configuration:
         for lcmaps_db_file in files_to_update:
             self.log("Updating " + lcmaps_db_file, level=logging.INFO)
             lcmaps_db = open(lcmaps_db_file).read()
-            # Look for lines like
-            # "gumsclient -> good | bad" and
-            # "gridmapfile -> good | bad"
-            # which may be commented out.
-            gumsclient_re = re.compile(r'^\s*[#]*\s*gumsclient\s*->\s*good\s*[|]\s*bad\s*$',
-                                       re.MULTILINE)
-            gridmapfile_re = re.compile(r'^\s*[#]*\s*gridmapfile\s*->\s*good\s*[|]\s*bad\s*$',
-                                        re.MULTILINE)
+
             if gums:
                 endpoint_re = re.compile(r'^\s*"--endpoint\s+https://.*/gums/services.*"\s*$',
                                          re.MULTILINE)
@@ -238,14 +231,40 @@ configuration:
                 replacement += "/gums/services/GUMSXACMLAuthorizationServicePort\""
                 lcmaps_db = endpoint_re.sub(replacement, lcmaps_db)
 
-                lcmaps_db = gumsclient_re.sub("gumsclient -> good | bad", lcmaps_db)
-                lcmaps_db = gridmapfile_re.sub("#gridmapfile -> good | bad", lcmaps_db)
-            else:
-                lcmaps_db = gumsclient_re.sub("#gumsclient -> good | bad", lcmaps_db)
-                lcmaps_db = gridmapfile_re.sub("gridmapfile -> good | bad", lcmaps_db)
+            self._edit_lcmaps_db_authorize_only(lcmaps_db, gums)
 
             utilities.atomic_write(lcmaps_db_file, lcmaps_db)
 
+    def _edit_lcmaps_db_authorize_only(self, lcmaps_db, gums):
+        # Split the string into three:
+        # 1. Everything before the authorize_only section
+        # 2. The authorize_only section
+        # 3. Everything after the authorize_only section (if present)
+        #
+        # The authorize_only section ends at the end of the file (\Z) or when
+        # another section begins (^[a-zA-Z_]+:)
+        authorize_only_re = re.compile(r'\A(.+)(^authorize_only:.+?)(^[a-zA-Z_]+:.+|\Z)',
+                                       re.MULTILINE|re.DOTALL)
+        match = authorize_only_re.search(lcmaps_db)
+        pre_authorize_only, authorize_only, post_authorize_only = match.group(1, 2, 3)
+
+        # Look for lines like
+        # "gumsclient -> good | bad" and
+        # "gridmapfile -> good | bad"
+        # which may be commented out.
+        gumsclient_re = re.compile(r'^\s*[#]*\s*gumsclient\s*->\s*good\s*[|]\s*bad\s*$',
+                                   re.MULTILINE)
+        gridmapfile_re = re.compile(r'^\s*[#]*\s*gridmapfile\s*->\s*good\s*[|]\s*bad\s*$',
+                                    re.MULTILINE)
+
+        if gums:
+            authorize_only = gumsclient_re.sub("gumsclient -> good | bad", authorize_only)
+            authorize_only = gridmapfile_re.sub("#gridmapfile -> good | bad", authorize_only)
+        else:
+            authorize_only = gumsclient_re.sub("#gumsclient -> good | bad", authorize_only)
+            authorize_only = gridmapfile_re.sub("gridmapfile -> good | bad", authorize_only)
+
+        return pre_authorize_only + authorize_only + post_authorize_only
 
     def _disable_callout(self):
         """
