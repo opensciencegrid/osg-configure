@@ -16,6 +16,7 @@ GSI_AUTHZ_LOCATION = "/etc/grid-security/gsi-authz.conf"
 GUMS_CLIENT_LOCATION = "/etc/gums/gums-client.properties"
 LCMAPS_DB_LOCATION = "/etc/lcmaps.db"
 USER_VO_MAP_LOCATION = '/var/lib/osg/user-vo-map'
+HTCONDOR_CE_CONFIG_FILE = '/etc/condor-ce/config.d/50-osg-configure.conf'
 
 
 class MiscConfiguration(BaseConfiguration):
@@ -60,6 +61,7 @@ class MiscConfiguration(BaseConfiguration):
                                               default_value=False)}
         self._enabled = False
         self.config_section = "Misc Services"
+        self.htcondor_gateway_enabled = True
         self.log('MiscConfiguration.__init__ completed')
 
     def parse_configuration(self, configuration):
@@ -79,6 +81,10 @@ class MiscConfiguration(BaseConfiguration):
 
         self.enabled = True
         self.get_options(configuration)
+
+        self.htcondor_gateway_enabled = utilities.config_safe_getboolean(configuration, 'Gateway',
+                                                                         'htcondor_gateway_enabled', True)
+
         self.log('MiscConfiguration.parse_configuration completed')
 
     # pylint: disable-msg=W0613
@@ -150,6 +156,9 @@ class MiscConfiguration(BaseConfiguration):
                      level=logging.ERROR)
             raise exceptions.ConfigureError("Invalid authorization_method option " +
                                             "in Misc Services")
+
+        if self.htcondor_gateway_enabled:
+            self.write_gridmap_to_htcondor_ce_config()
 
         ensure_valid_user_vo_file(using_gums, logger=self.logger)
         # Call configure_vdt_cleanup (enabling or disabling as necessary)
@@ -340,6 +349,17 @@ configuration:
         if self.options['enable_cleanup'].value:
             services.add('osg-cleanup-cron')
         return services
+
+    def write_gridmap_to_htcondor_ce_config(self):
+        contents = utilities.read_file(HTCONDOR_CE_CONFIG_FILE,
+                                       default="# This file is managed by osg-configure\n")
+        if self.options['authorization_method'].value == 'xacml':
+            # Remove GRIDMAP setting
+            contents = re.sub(r'(?m)^\s*GRIDMAP\s*=.*?$[\n]?', "", contents)
+        else:
+            contents = utilities.add_or_replace_setting(contents, "GRIDMAP", "/etc/grid-security/grid-mapfile",
+                                                        quote_value=False)
+        utilities.atomic_write(HTCONDOR_CE_CONFIG_FILE, contents)
 
 
 def create_user_vo_file(using_gums=False):
