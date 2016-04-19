@@ -2,6 +2,9 @@
 
 OS_VERSION=$1
 
+# Clean the yum cache
+yum -y clean all
+
 ls -l /home
 
 # First, install all the needed packages.
