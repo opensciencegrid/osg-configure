@@ -1,0 +1,38 @@
+gumsclient = "lcmaps_gums_client.mod"
+             "-resourcetype ce"
+             "-actiontype execute-now"
+             "-capath /etc/grid-security/certificates"
+             "-cert   /etc/grid-security/hostcert.pem"
+             "-key    /etc/grid-security/hostkey.pem"
+             "--cert-owner root"
+             "--endpoint https://testnode.testdomain:8443/gums/services/GUMSXACMLAuthorizationServicePort"
+
+gridmapfile = "lcmaps_localaccount.mod"
+              "-gridmap /etc/grid-security/grid-mapfile"
+
+verifyproxy = "lcmaps_verify_proxy.mod"
+          "--allow-limited-proxy"
+          " -certdir /etc/grid-security/certificates"
+
+good        = "lcmaps_dummy_good.mod"
+bad         = "lcmaps_dummy_bad.mod"
+
+
+authorize_only:
+
+## Policy 1: GUMS (most common, default)
+#gumsclient -> good | bad
+
+## Policy 2: grid-mapfile
+gridmapfile -> good | bad
+
+
+glexec:
+
+## Policy 1: GUMS (most common)
+#verifyproxy -> gumsclient
+#gumsclient -> glexectracking
+
+## Policy 2: grid-mapfile
+#verifyproxy -> gridmapfile
+#gridmapfile -> glexectracking

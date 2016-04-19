@@ -138,8 +138,10 @@ class MiscConfiguration(BaseConfiguration):
             self._enable_xacml()
         elif self.options['authorization_method'].value == 'gridmap':
             self._disable_callout()
+            self._update_lcmaps_file(gums=False)
         elif self.options['authorization_method'].value == 'local-gridmap':
             self._disable_callout()
+            self._update_lcmaps_file(gums=False)
         else:
             self.log("Unknown authorization method: %s" % \
                      self.options['authorization_method'].value,
@@ -196,44 +198,81 @@ class MiscConfiguration(BaseConfiguration):
             gums_properties = authz_re.sub(replacement, gums_properties)
         utilities.atomic_write(GUMS_CLIENT_LOCATION, gums_properties)
 
-        self._update_lcmaps_file()
+        self._update_lcmaps_file(gums=True)
 
-    def _update_lcmaps_file(self):
+    def _update_lcmaps_file(self, gums=True):
         """
         Update lcmaps file and give appropriate messages if lcmaps.db.rpmnew exists
         """
-
-        self.log("Updating " + LCMAPS_DB_LOCATION, level=logging.INFO)
-        lcmaps_db = open(LCMAPS_DB_LOCATION).read()
-        endpoint_re = re.compile(r'^\s*"--endpoint\s+https://.*/gums/services.*"\s*$',
-                                 re.MULTILINE)
-        replacement = "             \"--endpoint https://%s:8443" % (self.options['gums_host'].value)
-        replacement += "/gums/services/GUMSXACMLAuthorizationServicePort\""
-        lcmaps_db = endpoint_re.sub(replacement, lcmaps_db)
-        utilities.atomic_write(LCMAPS_DB_LOCATION, lcmaps_db)
-
-        rpmnew_file = LCMAPS_DB_LOCATION + ".rpmnew"
         warning_message = """It appears that you've updated the lcmaps RPM and the
-configuration has changed. 
-If you have ever edited /etc/lcmaps.db by hand (most people don't), then you 
+configuration has changed.
+If you have ever edited /etc/lcmaps.db by hand (most people don't), then you
 should:
    1. Edit /etc/lcmaps.db.rpmnew to make your changes again
    2. mv /etc/lcmaps.db.rpmnew /etc/lcmaps.db
-If you haven't edited /etc/lcmaps.db by hand, then you can just use the new 
+If you haven't edited /etc/lcmaps.db by hand, then you can just use the new
 configuration:
    1. mv /etc/lcmaps.db.rpmnew /etc/lcmaps.db"""
+
+        files_to_update = [LCMAPS_DB_LOCATION]
+        rpmnew_file = LCMAPS_DB_LOCATION + ".rpmnew"
         if validation.valid_file(rpmnew_file):
             self.log(warning_message, level=logging.WARNING)
-        else:
-            return
+            files_to_update.append(rpmnew_file)
 
-        lcmaps_db = open(rpmnew_file).read()
-        endpoint_re = re.compile(r'^\s*"--endpoint\s+https://.*/gums/services.*"\s*$',
-                                 re.MULTILINE)
-        replacement = "             \"--endpoint https://%s:8443" % (self.options['gums_host'].value)
-        replacement += "/gums/services/GUMSXACMLAuthorizationServicePort\""
-        lcmaps_db = endpoint_re.sub(replacement, lcmaps_db)
-        utilities.atomic_write(rpmnew_file, lcmaps_db)
+        for lcmaps_db_file in files_to_update:
+            self.log("Updating " + lcmaps_db_file, level=logging.INFO)
+            lcmaps_db = open(lcmaps_db_file).read()
+
+            lcmaps_db = self._update_lcmaps_text(lcmaps_db, gums, self.options['gums_host'].value)
+
+            utilities.atomic_write(lcmaps_db_file, lcmaps_db)
+
+    @staticmethod
+    def _update_lcmaps_text(lcmaps_db, gums, gums_host):
+        #
+        # Update GUMS endpoint (if using GUMS)
+        #
+        if gums:
+            endpoint_re = re.compile(r'^\s*"--endpoint\s+https://.*/gums/services.*"\s*?$',
+                                     re.MULTILINE)
+            replacement = "             \"--endpoint https://%s:8443" % (gums_host)
+            replacement += "/gums/services/GUMSXACMLAuthorizationServicePort\""
+            lcmaps_db = endpoint_re.sub(replacement, lcmaps_db)
+
+        #
+        # Update "authorize_only" section
+        #
+
+        # Split the string into three:
+        # 1. Everything before the authorize_only section
+        # 2. The authorize_only section
+        # 3. Everything after the authorize_only section (if present)
+        #
+        # The authorize_only section ends at the end of the file (\Z) or when
+        # another section begins (^[a-zA-Z_]+:)
+        authorize_only_re = re.compile(r'\A(.+)(^authorize_only:.+?)(^[a-zA-Z_]+:.+|\Z)',
+                                       re.MULTILINE|re.DOTALL)
+        match = authorize_only_re.search(lcmaps_db)
+        pre_authorize_only, authorize_only, post_authorize_only = match.group(1, 2, 3)
+
+        # Look for lines like
+        # "gumsclient -> good | bad" and
+        # "gridmapfile -> good | bad"
+        # which may be commented out.
+        gumsclient_re = re.compile(r'^\s*?[#]*?\s*?gumsclient\s*?->\s*?good\s*?[|]\s*?bad\s*?$',
+                                   re.MULTILINE)
+        gridmapfile_re = re.compile(r'^\s*?[#]*?\s*?gridmapfile\s*?->\s*?good\s*?[|]\s*?bad\s*?$',
+                                    re.MULTILINE)
+
+        if gums:
+            authorize_only = gumsclient_re.sub("gumsclient -> good | bad", authorize_only)
+            authorize_only = gridmapfile_re.sub("#gridmapfile -> good | bad", authorize_only)
+        else:
+            authorize_only = gumsclient_re.sub("#gumsclient -> good | bad", authorize_only)
+            authorize_only = gridmapfile_re.sub("gridmapfile -> good | bad", authorize_only)
+
+        return pre_authorize_only + authorize_only + post_authorize_only
 
     def _disable_callout(self):
         """
