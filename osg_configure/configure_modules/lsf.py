@@ -242,7 +242,7 @@ class LSFConfiguration(JobManagerConfiguration):
         if os.path.exists(self.BLAH_CONFIG):
             contents = utilities.read_file(self.BLAH_CONFIG)
             contents = utilities.add_or_replace_setting(contents, 'lsf_confpath', self.options['lsf_conf'].value,
-                                                        quote_value=False)
+                                                        quote_value=True)
             utilities.atomic_write(self.BLAH_CONFIG, contents)
 
     def setup_gram_config(self):
