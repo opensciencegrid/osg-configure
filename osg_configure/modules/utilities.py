@@ -640,6 +640,8 @@ def add_or_replace_setting(old_buf, variable, new_value, quote_value=True):
     new_line = '%s=%s' % (variable, new_value)
     new_buf, count = re.subn(r'(?m)^\s*%s\s*=.*$' % re.escape(variable), new_line, old_buf, 1)
     if count == 0:
+        if not new_buf.endswith('\n'):
+            new_buf += "\n"
         new_buf += new_line + "\n"
     return new_buf
 
