@@ -154,7 +154,7 @@ def blank(value):
 
     temp_val = str(value)
 
-    return (temp_val.upper().startswith('UNAVAILABLE') or
+    return (temp_val.upper() == 'UNAVAILABLE' or
             temp_val.upper() == 'DEFAULT' or
             temp_val == "None" or
             temp_val == "")
