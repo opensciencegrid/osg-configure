@@ -235,26 +235,6 @@ class TestGratia(unittest.TestCase):
                          0,
                          "Disabled configuration should have no attributes")
 
-    def testInvalidProbes1(self):
-        """
-        Test the check_attributes function to see if it catches invalid
-        probes
-        """
-
-        config_file = get_test_config("gratia/invalid_probe1.ini")
-        configuration = ConfigParser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = gratia.GratiaConfiguration(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception, e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        attributes = settings.get_attributes()
-        self.assertFalse(settings.check_attributes(attributes),
-                         "Did not notice invalid probe specification")
-
     def testInvalidProbes2(self):
         """
         Test the check_attributes function to see if it catches invalid
