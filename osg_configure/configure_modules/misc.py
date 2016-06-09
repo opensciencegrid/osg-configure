@@ -258,8 +258,8 @@ configuration:
         # 3. Everything after the authorize_only section (if present)
         #
         # The authorize_only section ends at the end of the file (\Z) or when
-        # another section begins (^[a-zA-Z_]+:)
-        authorize_only_re = re.compile(r'\A(.+)(^authorize_only:.+?)(^[a-zA-Z_]+:.+|\Z)',
+        # another section begins (^[ \t]*[a-zA-Z_]+:)
+        authorize_only_re = re.compile(r'\A(.+)(^[ \t]*authorize_only:.+?)(^[ \t]*[a-zA-Z_]+:.+|\Z)',
                                        re.MULTILINE|re.DOTALL)
         match = authorize_only_re.search(lcmaps_db)
         pre_authorize_only, authorize_only, post_authorize_only = match.group(1, 2, 3)
