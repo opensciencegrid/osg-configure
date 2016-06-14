@@ -36,6 +36,11 @@ class MiscConfiguration(BaseConfiguration):
                         'authorization_method':
                             configfile.Option(name='authorization_method',
                                               default_value='xacml'),
+                        'edit_lcmaps_db':
+                            configfile.Option(name='edit_lcmaps_db',
+                                              required=configfile.Option.OPTIONAL,
+                                              opt_type=bool,
+                                              default_value=True),
                         'enable_cleanup':
                             configfile.Option(name='enable_cleanup',
                                               required=configfile.Option.OPTIONAL,
@@ -143,10 +148,8 @@ class MiscConfiguration(BaseConfiguration):
             self._enable_xacml()
         elif self.options['authorization_method'].value == 'gridmap':
             self._disable_callout()
-            self._update_lcmaps_file(gums=False)
         elif self.options['authorization_method'].value == 'local-gridmap':
             self._disable_callout()
-            self._update_lcmaps_file(gums=False)
         else:
             self.log("Unknown authorization method: %s" % \
                      self.options['authorization_method'].value,
@@ -155,6 +158,16 @@ class MiscConfiguration(BaseConfiguration):
                      level=logging.ERROR)
             raise exceptions.ConfigureError("Invalid authorization_method option " +
                                             "in Misc Services")
+
+        if self.options['edit_lcmaps_db'].value:
+            if validation.valid_file(LCMAPS_DB_LOCATION):
+                self._update_lcmaps_file(using_gums)
+            else:
+                self.log("Not updating lcmaps.db because it's not accessible",
+                         level=logging.DEBUG)
+        else:
+            self.log("Not updating lcmaps.db because edit_lcmaps_db is false",
+                     level=logging.DEBUG)
 
         if self.htcondor_gateway_enabled:
             self.write_gridmap_to_htcondor_ce_config()
@@ -206,8 +219,6 @@ class MiscConfiguration(BaseConfiguration):
             gums_properties = authz_re.sub(replacement, gums_properties)
         utilities.atomic_write(GUMS_CLIENT_LOCATION, gums_properties)
 
-        self._update_lcmaps_file(gums=True)
-
     def _update_lcmaps_file(self, gums=True):
         """
         Update lcmaps file and give appropriate messages if lcmaps.db.rpmnew exists
@@ -236,8 +247,7 @@ configuration:
 
             utilities.atomic_write(lcmaps_db_file, lcmaps_db)
 
-    @staticmethod
-    def _update_lcmaps_text(lcmaps_db, gums, gums_host):
+    def _update_lcmaps_text(self, lcmaps_db, gums, gums_host):
         #
         # Update GUMS endpoint (if using GUMS)
         #
@@ -251,10 +261,15 @@ configuration:
         #
         # Update "authorize_only" section
         #
+        addition_comment = ("\n"
+                            "## Added by osg-configure\n"
+                            "## Set 'edit_lcmaps_db=False' in the [%s] section of your OSG configs\n"
+                            "## to keep osg-configure from modifying this file\n" %
+                            self.config_section)
 
         # Split the string into three:
         # 1. Everything before the authorize_only section
-        # 2. The authorize_only section
+        # 2. The authorize_only section (including the header 'authorize_only:')
         # 3. Everything after the authorize_only section (if present)
         #
         # The authorize_only section ends at the end of the file (\Z) or when
@@ -262,6 +277,12 @@ configuration:
         authorize_only_re = re.compile(r'\A(.+)(^[ \t]*authorize_only:.+?)(^[ \t]*[a-zA-Z_]+:.+|\Z)',
                                        re.MULTILINE|re.DOTALL)
         match = authorize_only_re.search(lcmaps_db)
+
+        if not match:
+            self.log("No valid 'authorize_only' section in lcmaps.db; cannot update!",
+                     level=logging.ERROR)
+            raise exceptions.ConfigureError("No valid 'authorize_only' section in lcmaps.db")
+
         pre_authorize_only, authorize_only, post_authorize_only = match.group(1, 2, 3)
 
         # Look for lines like
@@ -274,11 +295,27 @@ configuration:
                                     re.MULTILINE)
 
         if gums:
-            authorize_only = gumsclient_re.sub("gumsclient -> good | bad", authorize_only)
+            # Comment out gridmapfile line
             authorize_only = gridmapfile_re.sub("#gridmapfile -> good | bad", authorize_only)
+
+            # If there's a gumsclient line, uncomment it. If not, add one to the end of the authorize_only section.
+            authorize_only, changed = gumsclient_re.subn("gumsclient -> good | bad", authorize_only, count=1)
+            if not changed:
+                authorize_only += addition_comment
+                authorize_only += "gumsclient -> good | bad\n"
+                self.log("Added 'gumsclient' authorization method to authorize_only section of %s" % LCMAPS_DB_LOCATION,
+                         level=logging.WARNING)
         else:
+            # Comment out gumsclient line
             authorize_only = gumsclient_re.sub("#gumsclient -> good | bad", authorize_only)
-            authorize_only = gridmapfile_re.sub("gridmapfile -> good | bad", authorize_only)
+
+            # If there's a gridmapfile line, uncomment it. If not, add one to the end of the authorize_only section.
+            authorize_only, changed = gridmapfile_re.subn("gridmapfile -> good | bad", authorize_only, count=1)
+            if not changed:
+                authorize_only += addition_comment
+                authorize_only += "gridmapfile -> good | bad\n"
+                self.log("Added 'gridmapfile' authorization method to authorize_only section of %s" % LCMAPS_DB_LOCATION,
+                         level=logging.WARNING)
 
         return pre_authorize_only + authorize_only + post_authorize_only
 

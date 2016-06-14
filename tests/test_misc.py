@@ -342,7 +342,8 @@ class TestMisc(unittest.TestCase):
         lcmaps_pre = open(get_test_config('misc/lcmaps.db.fresh')).read().strip()
         expected_lcmaps_post = open(get_test_config('misc/lcmaps.db.gums')).read().strip()
 
-        lcmaps_post = misc.MiscConfiguration._update_lcmaps_text(lcmaps_pre, True, "testnode.testdomain")
+        settings = misc.MiscConfiguration(logger=global_logger)
+        lcmaps_post = settings._update_lcmaps_text(lcmaps_pre, True, "testnode.testdomain")
 
         diff = diff_strings(expected_lcmaps_post, lcmaps_post)
 
@@ -357,7 +358,8 @@ class TestMisc(unittest.TestCase):
         lcmaps_pre = open(get_test_config('misc/lcmaps.db.fresh')).read().strip()
         expected_lcmaps_post = open(get_test_config('misc/lcmaps.db.gridmap1')).read().strip()
 
-        lcmaps_post = misc.MiscConfiguration._update_lcmaps_text(lcmaps_pre, False, "testnode.testdomain")
+        settings = misc.MiscConfiguration(logger=global_logger)
+        lcmaps_post = settings._update_lcmaps_text(lcmaps_pre, False, "testnode.testdomain")
 
         diff = diff_strings(expected_lcmaps_post, lcmaps_post)
 
@@ -372,7 +374,8 @@ class TestMisc(unittest.TestCase):
         lcmaps_pre = open(get_test_config('misc/lcmaps.db.gums')).read().strip()
         expected_lcmaps_post = open(get_test_config('misc/lcmaps.db.gridmap2')).read().strip()
 
-        lcmaps_post = misc.MiscConfiguration._update_lcmaps_text(lcmaps_pre, False, "localhost")
+        settings = misc.MiscConfiguration(logger=global_logger)
+        lcmaps_post = settings._update_lcmaps_text(lcmaps_pre, False, "localhost")
 
         diff = diff_strings(expected_lcmaps_post, lcmaps_post)
 
@@ -387,7 +390,8 @@ class TestMisc(unittest.TestCase):
         lcmaps_pre = open(get_test_config('misc/lcmaps.db.gridmap1')).read().strip()
         expected_lcmaps_post = open(get_test_config('misc/lcmaps.db.gums')).read().strip()
 
-        lcmaps_post = misc.MiscConfiguration._update_lcmaps_text(lcmaps_pre, True, "testnode.testdomain")
+        settings = misc.MiscConfiguration(logger=global_logger)
+        lcmaps_post = settings._update_lcmaps_text(lcmaps_pre, True, "testnode.testdomain")
 
         diff = diff_strings(expected_lcmaps_post, lcmaps_post)
 
