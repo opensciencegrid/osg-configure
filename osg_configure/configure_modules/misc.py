@@ -59,7 +59,6 @@ class MiscConfiguration(BaseConfiguration):
                                               required=configfile.Option.OPTIONAL,
                                               opt_type=bool,
                                               default_value=False)}
-        self._enabled = False
         self.config_section = "Misc Services"
         self.htcondor_gateway_enabled = True
         self.log('MiscConfiguration.__init__ completed')
