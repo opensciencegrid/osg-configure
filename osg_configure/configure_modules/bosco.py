@@ -176,7 +176,7 @@ class BoscoConfiguration(JobManagerConfiguration):
         for username in self.options['users'].value.split(","):
             username = username.strip()
             if not self._installBosco(username):
-                self.log('Installtion of Bosco failed', level=logging.ERROR)
+                self.log('Installation of Bosco failed', level=logging.ERROR)
                 return False
         
         # Step 3. Configure the routes so the default route will go to the Bosco
