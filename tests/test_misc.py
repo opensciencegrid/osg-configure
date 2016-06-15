@@ -398,6 +398,22 @@ class TestMisc(unittest.TestCase):
         self.assertEqual(diff, '',
                          "Modified lcmaps.db incorrectly updated for GUMS (diff: \n%s\n)" % diff)
 
+    def testLCMAPSMissingGridmap(self):
+        """
+        Test to make sure an lcmaps.db with a missing commented-out gridmapfile
+        line gets a gridmapfile line added.
+        """
+        lcmaps_pre = open(get_test_config('misc/lcmaps.db.missing.pre')).read().strip()
+        expected_lcmaps_post = open(get_test_config('misc/lcmaps.db.missing.post')).read().strip()
+
+        settings = misc.MiscConfiguration(logger=global_logger)
+        lcmaps_post = settings._update_lcmaps_text(lcmaps_pre, False, "localhost")
+
+        diff = diff_strings(expected_lcmaps_post, lcmaps_post)
+
+        self.assertEqual(diff, '',
+                         "lcmaps.db with missing gridmapfile line incorrectly updated (diff: \n%s\n)" % diff)
+
 
 def diff_strings(string1, string2):
     """
