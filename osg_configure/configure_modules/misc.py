@@ -113,8 +113,8 @@ class MiscConfiguration(BaseConfiguration):
                          level=logging.ERROR)
                 attributes_ok = False
 
-            if not validation.valid_domain(self.options['gums_host'].value):
-                self.log("Gums host not a valid domain name",
+            if not validation.valid_domain(self.options['gums_host'].value, resolve=True):
+                self.log("Gums host not a valid domain name or does not resolve",
                          section=self.config_section,
                          option='gums_host',
                          level=logging.ERROR)
