@@ -182,8 +182,10 @@ class BoscoConfiguration(JobManagerConfiguration):
         # Step 3. Configure the routes so the default route will go to the Bosco
         # installed remote cluster.
         self._install_routes()
-        
-        
+
+        if self.htcondor_gateway_enabled:
+            self.write_htcondor_ce_sentinel()
+
         self.log('BoscoConfiguration.configure completed')
         return True
         
