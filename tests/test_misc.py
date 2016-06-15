@@ -388,9 +388,19 @@ class TestMisc(unittest.TestCase):
         Test to make sure an lcmaps.db with a missing commented-out gridmapfile
         line gets a gridmapfile line added.
         """
-        self._test_lcmaps('misc/lcmaps.db.missing.pre', 'misc/lcmaps.db.missing.post',
+        self._test_lcmaps('misc/lcmaps.db.missing_gridmap.pre', 'misc/lcmaps.db.missing_gridmap.post',
                           "lcmaps.db with missing gridmapfile line incorrectly updated",
                           False, "localhost")
+
+    def testLCMAPSMissingGUMS(self):
+        """
+        Test to make sure an lcmaps.db with a missing commented-out gumsclient
+        line gets a gumsclient line added.
+        """
+
+        self._test_lcmaps('misc/lcmaps.db.missing_gums.pre', 'misc/lcmaps.db.missing_gums.post',
+                          "lcmaps.db with missing gumsclient line incorrectly updated",
+                          True, "localhost")
 
 
 def diff_strings(string1, string2):
