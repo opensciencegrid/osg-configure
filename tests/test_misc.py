@@ -335,64 +335,72 @@ class TestMisc(unittest.TestCase):
                          "got %s but expected %s" % (services, expected_services))
 
 
-    def testLCMAPSGums(self):
-        """
-        Test to make sure lcmaps.db is properly modified for using GUMS
-        """
-        lcmaps_pre = open(get_test_config('misc/lcmaps.db.fresh')).read().strip()
-        expected_lcmaps_post = open(get_test_config('misc/lcmaps.db.gums')).read().strip()
+    def _test_lcmaps(self, pre_file, post_file, errstring, *update_lcmaps_text_args):
+        lcmaps_pre = open(get_test_config(pre_file)).read().strip()
+        expected_lcmaps_post = open(get_test_config(post_file)).read().strip()
 
-        lcmaps_post = misc.MiscConfiguration._update_lcmaps_text(lcmaps_pre, True, "testnode.testdomain")
+        settings = misc.MiscConfiguration(logger=global_logger)
+        lcmaps_post = settings._update_lcmaps_text(lcmaps_pre, *update_lcmaps_text_args)
 
         diff = diff_strings(expected_lcmaps_post, lcmaps_post)
 
         self.assertEqual(diff, '',
-                         "lcmaps.db incorrectly updated for GUMS (diff: \n%s\n)" % diff)
+                         "%s (diff: \n%s\n)" % (errstring, diff))
+
+
+    def testLCMAPSGums(self):
+        """
+        Test to make sure lcmaps.db is properly modified for using GUMS
+        """
+        self._test_lcmaps('misc/lcmaps.db.fresh', 'misc/lcmaps.db.gums',
+                          'lcmaps.db incorrectly updated for GUMS',
+                          True, "testnode.testdomain")
 
     def testLCMAPSFreshGridmap(self):
         """
         Test to make sure a fresh lcmaps.db is properly modified for using a
         grid-mapfile.
         """
-        lcmaps_pre = open(get_test_config('misc/lcmaps.db.fresh')).read().strip()
-        expected_lcmaps_post = open(get_test_config('misc/lcmaps.db.gridmap1')).read().strip()
-
-        lcmaps_post = misc.MiscConfiguration._update_lcmaps_text(lcmaps_pre, False, "testnode.testdomain")
-
-        diff = diff_strings(expected_lcmaps_post, lcmaps_post)
-
-        self.assertEqual(diff, '',
-                         "Fresh lcmaps.db incorrectly updated for grid-mapfile (diff: \n%s\n)" % diff)
+        self._test_lcmaps('misc/lcmaps.db.fresh', 'misc/lcmaps.db.gridmap1',
+                          "Fresh lcmaps.db incorrectly updated for grid-mapfile",
+                          False, "testnode.testdomain")
 
     def testLCMAPSModifiedGridmap(self):
         """
         Test to make sure a modified lcmaps.db is properly further modified
         for using a grid-mapfile.
         """
-        lcmaps_pre = open(get_test_config('misc/lcmaps.db.gums')).read().strip()
-        expected_lcmaps_post = open(get_test_config('misc/lcmaps.db.gridmap2')).read().strip()
-
-        lcmaps_post = misc.MiscConfiguration._update_lcmaps_text(lcmaps_pre, False, "localhost")
-
-        diff = diff_strings(expected_lcmaps_post, lcmaps_post)
-
-        self.assertEqual(diff, '',
-                         "Modified lcmaps.db incorrectly updated for grid-mapfile (diff: \n%s\n)" % diff)
+        self._test_lcmaps('misc/lcmaps.db.gums', 'misc/lcmaps.db.gridmap2',
+                          "Modified lcmaps.db incorrectly updated for grid-mapfile",
+                          False, "localhost")
 
     def testLCMAPSModifiedGUMS(self):
         """
         Test to make sure a modified lcmaps.db is properly further modified
         for using GUMS.
         """
-        lcmaps_pre = open(get_test_config('misc/lcmaps.db.gridmap1')).read().strip()
-        expected_lcmaps_post = open(get_test_config('misc/lcmaps.db.gums')).read().strip()
+        self._test_lcmaps('misc/lcmaps.db.gridmap1', 'misc/lcmaps.db.gums',
+                          "Modified lcmaps.db incorrectly updated for GUMS",
+                          True, "testnode.testdomain")
 
-        lcmaps_post = misc.MiscConfiguration._update_lcmaps_text(lcmaps_pre, True, "testnode.testdomain")
+    def testLCMAPSMissingGridmap(self):
+        """
+        Test to make sure an lcmaps.db with a missing commented-out gridmapfile
+        line gets a gridmapfile line added.
+        """
+        self._test_lcmaps('misc/lcmaps.db.missing_gridmap.pre', 'misc/lcmaps.db.missing_gridmap.post',
+                          "lcmaps.db with missing gridmapfile line incorrectly updated",
+                          False, "localhost")
 
-        diff = diff_strings(expected_lcmaps_post, lcmaps_post)
+    def testLCMAPSMissingGUMS(self):
+        """
+        Test to make sure an lcmaps.db with a missing commented-out gumsclient
+        line gets a gumsclient line added.
+        """
 
-        self.assertEqual(diff, '',
-                         "Modified lcmaps.db incorrectly updated for GUMS (diff: \n%s\n)" % diff)
+        self._test_lcmaps('misc/lcmaps.db.missing_gums.pre', 'misc/lcmaps.db.missing_gums.post',
+                          "lcmaps.db with missing gumsclient line incorrectly updated",
+                          True, "localhost")
 
 
 def diff_strings(string1, string2):

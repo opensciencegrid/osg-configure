@@ -1,0 +1,36 @@
+gumsclient = "lcmaps_gums_client.mod"
+             "-resourcetype ce"
+             "-actiontype execute-now"
+             "-capath /etc/grid-security/certificates"
+             "-cert   /etc/grid-security/hostcert.pem"
+             "-key    /etc/grid-security/hostkey.pem"
+             "--cert-owner root"
+             "--endpoint https://localhost:8443/gums/services/GUMSXACMLAuthorizationServicePort"
+
+gridmapfile = "lcmaps_localaccount.mod"
+              "-gridmap /etc/grid-security/grid-mapfile"
+
+verifyproxy = "lcmaps_verify_proxy.mod"
+          "--allow-limited-proxy"
+          " -certdir /etc/grid-security/certificates"
+
+good        = "lcmaps_dummy_good.mod"
+bad         = "lcmaps_dummy_bad.mod"
+
+
+authorize_only:
+#gridmapfile -> good | bad
+
+## Added by osg-configure
+## Set 'edit_lcmaps_db=False' in the [Misc Services] section of your OSG configs
+## to keep osg-configure from modifying this file
+gumsclient -> good | bad
+glexec:
+
+## Policy 1: GUMS (most common)
+#verifyproxy -> gumsclient
+gumsclient -> glexectracking
+
+## Policy 2: grid-mapfile
+#verifyproxy -> gridmapfile
+#gridmapfile -> glexectracking
