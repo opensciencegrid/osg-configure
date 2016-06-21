@@ -181,7 +181,7 @@ class BoscoConfiguration(JobManagerConfiguration):
         
         # Step 3. Configure the routes so the default route will go to the Bosco
         # installed remote cluster.
-        self._install_routes()
+        self._write_route_config_vars()
 
         if self.htcondor_gateway_enabled:
             self.write_htcondor_ce_sentinel()
@@ -290,25 +290,22 @@ Host %(host)s
             return False
             
         return True
-        
-        
-    _route_template = """
-JOB_ROUTER_ENTRIES = \\
-   [ \\
-     GridResource = "batch %(rms)s %(endpoint)s"; \\
-     TargetUniverse = 9; \\
-     name = "Local_BOSCO"; \\
-   ] 
-    """ 
-    def _install_routes(self):
-        # Install the routes in /etc/condor-ce/config.d/80-bosco-routes.conf 
-        routes_file = "/etc/condor-ce/config.d/80-bosco-routes.conf"
-        with open(routes_file, 'w') as routes_fd:
-            routes_fd.write(self._route_template % {'rms': self.options['batch'].value, 
-                                        'endpoint': self.options['endpoint'].value, 
-                                        'keylocation': self.options['ssh_key'].value})
-        
-        
+
+    def _write_route_config_vars(self):
+        """
+        Write condor-ce config attributes for the bosco job route. Sets values for:
+        - BOSCO_RMS
+        - BOSCO_ENDPOINT
+
+        """
+        contents = utilities.read_file(self.HTCONDOR_CE_CONFIG_FILE,
+                                       default="# This file is managed by osg-configure\n")
+        contents = utilities.add_or_replace_setting(contents, "BOSCO_RMS", self.options['batch'].value,
+                                                    quote_value=False)
+        contents = utilities.add_or_replace_setting(contents, "BOSCO_ENDPOINT", self.options['endpoint'].value,
+                                                    quote_value=False)
+        utilities.atomic_write(self.HTCONDOR_CE_CONFIG_FILE, contents)
+
     def _search_config(self, host, config_path):
         """
         Search the ssh config file for exactly this host
