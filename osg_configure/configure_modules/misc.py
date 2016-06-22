@@ -261,20 +261,21 @@ configuration:
         #
         # Update "authorize_only" section
         #
-        addition_comment = ("\n"
+        addition_comment = ("\n\n"
                             "## Added by osg-configure\n"
                             "## Set 'edit_lcmaps_db=False' in the [%s] section of your OSG configs\n"
                             "## to keep osg-configure from modifying this file\n" %
                             self.config_section)
 
-        # Split the string into three:
+        # Split the string into four:
         # 1. Everything before the authorize_only section
-        # 2. The authorize_only section (including the header 'authorize_only:')
-        # 3. Everything after the authorize_only section (if present)
+        # 2. The header line to the authorize_only section
+        # 3. The body of the authorize_only section
+        # 4. Everything after the authorize_only section (if present)
         #
         # The authorize_only section ends at the end of the file (\Z) or when
         # another section begins (^[ \t]*[a-zA-Z_]+:)
-        authorize_only_re = re.compile(r'\A(.+)(^[ \t]*authorize_only:.+?)(^[ \t]*[a-zA-Z_]+:.+|\Z)',
+        authorize_only_re = re.compile(r'\A(.+)(^[ \t]*authorize_only:[^\n]*?$)(.+?)(^[ \t]*[a-zA-Z_]+:.+|\Z)',
                                        re.MULTILINE|re.DOTALL)
         match = authorize_only_re.search(lcmaps_db)
 
@@ -283,7 +284,7 @@ configuration:
                      level=logging.ERROR)
             raise exceptions.ConfigureError("No valid 'authorize_only' section in lcmaps.db")
 
-        pre_authorize_only, authorize_only, post_authorize_only = match.group(1, 2, 3)
+        pre_authorize_only, authorize_only_header, authorize_only, post_authorize_only = match.group(1, 2, 3, 4)
 
         # Look for lines like
         # "gumsclient -> good | bad" and
@@ -298,26 +299,24 @@ configuration:
             # Comment out gridmapfile line
             authorize_only = gridmapfile_re.sub("#gridmapfile -> good | bad", authorize_only)
 
-            # If there's a gumsclient line, uncomment it. If not, add one to the end of the authorize_only section.
+            # If there's a gumsclient line, uncomment it. If not, add one to the beginning of the authorize_only section.
             authorize_only, changed = gumsclient_re.subn("gumsclient -> good | bad", authorize_only, count=1)
             if not changed:
-                authorize_only += addition_comment
-                authorize_only += "gumsclient -> good | bad\n"
+                authorize_only = addition_comment + "gumsclient -> good | bad\n\n" + authorize_only
                 self.log("Added 'gumsclient' authorization method to authorize_only section of %s" % LCMAPS_DB_LOCATION,
                          level=logging.WARNING)
         else:
             # Comment out gumsclient line
             authorize_only = gumsclient_re.sub("#gumsclient -> good | bad", authorize_only)
 
-            # If there's a gridmapfile line, uncomment it. If not, add one to the end of the authorize_only section.
+            # If there's a gridmapfile line, uncomment it. If not, add one to the beginning of the authorize_only section.
             authorize_only, changed = gridmapfile_re.subn("gridmapfile -> good | bad", authorize_only, count=1)
             if not changed:
-                authorize_only += addition_comment
-                authorize_only += "gridmapfile -> good | bad\n"
+                authorize_only = addition_comment + "gridmapfile -> good | bad\n\n" + authorize_only
                 self.log("Added 'gridmapfile' authorization method to authorize_only section of %s" % LCMAPS_DB_LOCATION,
                          level=logging.WARNING)
 
-        return pre_authorize_only + authorize_only + post_authorize_only
+        return pre_authorize_only + authorize_only_header + authorize_only + post_authorize_only
 
     def _disable_callout(self):
         """

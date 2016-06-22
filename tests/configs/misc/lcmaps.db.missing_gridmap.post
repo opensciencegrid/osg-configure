@@ -19,12 +19,13 @@ bad         = "lcmaps_dummy_bad.mod"
 
 
 authorize_only:
-#gumsclient -> good | bad
 
 ## Added by osg-configure
 ## Set 'edit_lcmaps_db=False' in the [Misc Services] section of your OSG configs
 ## to keep osg-configure from modifying this file
 gridmapfile -> good | bad
+
+#gumsclient -> good | bad
 glexec:
 
 ## Policy 1: GUMS (most common)
