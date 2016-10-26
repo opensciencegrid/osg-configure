@@ -179,32 +179,39 @@ def resource_catalog_from_config(config, logger=utilities.NullLogger, default_al
 
     subclusters_without_max_wall_time = []
     for section in config.sections():
+        prefix = None
         if section.lower().startswith('subcluster'):
-            check_section(config, section)
+            prefix = 'subcluster'
+        elif section.lower().startswith('resource entry'):
+            prefix = 'resource entry'
+        else:
+            continue
 
-            rcentry = resourcecatalog.RCEntry()
+        check_section(config, section)
 
-            subcluster = section[len('subcluster'):].lstrip()
+        rcentry = resourcecatalog.RCEntry()
 
-            rcentry.name = config.get(section, 'name')
-            rcentry.cpus = config.getint(section, 'cores_per_node')
-            rcentry.memory = config.getint(section, 'ram_mb')
-            rcentry.allowed_vos = utilities.config_safe_get(config, section, 'allowed_vos',
-                                                            default=default_allowed_vos)
-            max_wall_time = utilities.config_safe_get(config, section, 'max_wall_time')
-            if not max_wall_time:
-                rcentry.max_wall_time = 1440
-                subclusters_without_max_wall_time.append(subcluster)
-            else:
-                rcentry.max_wall_time = max_wall_time.strip()
-            rcentry.queue = utilities.config_safe_get(config, section, 'queue')
+        subcluster = section[len(prefix):].lstrip()
 
-            # The ability to specify extra requirements is disabled until admins demand it
-            # rcentry.extra_requirements = utilities.config_safe_get(config, section, 'extra_requirements')
-            rcentry.extra_requirements = None
-            rcentry.extra_transforms = utilities.config_safe_get(config, section, 'extra_transforms')
+        rcentry.name = config.get(section, 'name')
+        rcentry.cpus = config.getint(section, 'cores_per_node')
+        rcentry.memory = config.getint(section, 'ram_mb')
+        rcentry.allowed_vos = utilities.config_safe_get(config, section, 'allowed_vos',
+                                                        default=default_allowed_vos)
+        max_wall_time = utilities.config_safe_get(config, section, 'max_wall_time')
+        if not max_wall_time:
+            rcentry.max_wall_time = 1440
+            subclusters_without_max_wall_time.append(subcluster)
+        else:
+            rcentry.max_wall_time = max_wall_time.strip()
+        rcentry.queue = utilities.config_safe_get(config, section, 'queue')
 
-            rc.add_rcentry(rcentry)
+        # The ability to specify extra requirements is disabled until admins demand it
+        # rcentry.extra_requirements = utilities.config_safe_get(config, section, 'extra_requirements')
+        rcentry.extra_requirements = None
+        rcentry.extra_transforms = utilities.config_safe_get(config, section, 'extra_transforms')
+
+        rc.add_rcentry(rcentry)
     # end for section in config.sections()
 
     if subclusters_without_max_wall_time:
