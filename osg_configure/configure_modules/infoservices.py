@@ -151,7 +151,7 @@ class InfoServicesConfiguration(BaseConfiguration):
         self.subcluster_sections = ConfigParser.SafeConfigParser()
 
         for section in configuration.sections():
-            if section.lower().startswith('subcluster'):
+            if section.lower().startswith('subcluster') or section.lower().startswith('resource entry'):
                 self.subcluster_sections.add_section(section)
                 for key, value in configuration.items(section):
                     self.subcluster_sections.set(section, key, value)
