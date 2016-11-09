@@ -158,7 +158,8 @@ def check_config(config):
     """
     has_sc = False
     for section in config.sections():
-        if not section.lower().startswith('subcluster'):
+        lsection = section.lower()
+        if not (lsection.startswith('subcluster') or lsection.startswith('resource entry')):
             continue
         has_sc = True
         check_section(config, section)
