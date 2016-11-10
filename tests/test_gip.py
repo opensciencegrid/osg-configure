@@ -442,6 +442,17 @@ class TestGip(unittest.TestCase):
         gip_config = gip.GipConfiguration(logger=global_logger)
         self.assertRaises(exceptions.SettingError, gip_config.check_sc, config_parser, "Subcluster No Name")
 
+    def test_resource_entry(self):
+        """
+        Make sure a Resource Entry section is detected
+        """
+        config_parser = ConfigParser.SafeConfigParser()
+        config_file = get_test_config("gip/resourceentry.ini")
+        config_parser.read(config_file)
+        gip_config = gip.GipConfiguration(logger=global_logger)
+        found_scs = gip_config.check_subclusters(config_parser)
+        self.assertTrue(found_scs, msg="Resource Entry Valid not found.")
+
     def test_user_check_invalid_user(self):
         """
         Check to make sure gip class will distinguish between valid and
