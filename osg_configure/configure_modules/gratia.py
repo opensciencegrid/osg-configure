@@ -357,27 +357,12 @@ in your config.ini file."""
 
         try:
             buf = open(probe_file).read()
-            buf = re.sub(r'(\s*)ProbeName\s*=.*',
-                         r'\1ProbeName="' + "%s:%s" % (probe, hostname) + '"',
-                         buf,
-                         1)
-            buf = re.sub(r'(\s*)SiteName\s*=.*',
-                         r'\1SiteName="' + site + '"',
-                         buf,
-                         1)
-            buf = re.sub(r'(\s*)Grid\s*=.*',
-                         r'\1Grid="' + self.grid_group + '"',
-                         buf,
-                         1)
-            buf = re.sub(r'(\s*)EnableProbe\s*=.*',
-                         r'\1EnableProbe="1"',
-                         buf,
-                         1)
+            buf = self.replace_setting(buf, 'ProbeName', "%s:%s" % (probe, hostname))
+            buf = self.replace_setting(buf, 'SiteName', site)
+            buf = self.replace_setting(buf, 'Grid', self.grid_group)
+            buf = self.replace_setting(buf, 'EnableProbe', '1')
             for var in ['SSLHost', 'SOAPHost', 'SSLRegistrationHost', 'CollectorHost']:
-                buf = re.sub(r'(\s*)' + var + r'\s*=.*',
-                             r'\1' + var + '="' + probe_host + '"',
-                             buf,
-                             1)
+                buf = self.replace_setting(buf, var, probe_host)
 
             if not utilities.atomic_write(probe_file, buf, mode=420):
                 self.log("Error while configuring gratia probes: " +
