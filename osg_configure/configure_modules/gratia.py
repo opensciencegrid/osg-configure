@@ -719,6 +719,8 @@ in your config.ini file."""
 
           returns the string with the option string replaced/added
         """
+        value = str(value).strip('"')
+
         re_obj = re.compile(r"^(\s*)%s\s*=.*$" % setting, re.MULTILINE)
         (new_buf, count) = re_obj.subn(r'\1%s="%s"' % (setting, value), buf, 1)
         if count == 0:
