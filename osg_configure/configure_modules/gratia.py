@@ -704,7 +704,11 @@ in your config.ini file."""
 
           returns the string with the option string replaced/added
         """
-        value = str(value).strip('"')
+        value = str(value)
+        if xml_file:
+            value = value.replace('"', '&quot;')
+        else:
+            value = value.replace('"', '\"')
 
         re_obj = re.compile(r"^(\s*)%s\s*=.*$" % setting, re.MULTILINE)
         (new_buf, count) = re_obj.subn(r'\1%s="%s"' % (setting, value), buf, 1)
