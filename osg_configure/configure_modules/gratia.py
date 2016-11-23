@@ -5,6 +5,7 @@ import re
 import sys
 import logging
 import subprocess
+from xml.sax import saxutils
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
@@ -706,17 +707,20 @@ in your config.ini file."""
         """
         value = str(value)
         if xml_file:
-            value = value.replace('"', '&quot;')
+            quoted_value = saxutils.quoteattr(value)
         else:
-            value = value.replace('"', '\"')
+            # urCollector.conf files are a custom format that require '"'
+            # surrounding the value but support no escaping of quotes or
+            # anything.
+            quoted_value = '"' + value + '"'
 
         re_obj = re.compile(r"^(\s*)%s\s*=.*$" % setting, re.MULTILINE)
-        (new_buf, count) = re_obj.subn(r'\1%s="%s"' % (setting, value), buf, 1)
+        new_buf, count = re_obj.subn(r'\1%s=%s' % (setting, quoted_value), buf, 1)
         if count == 0:
             if xml_file:
-                new_buf = new_buf.replace('/>', "    %s=\"%s\"\n/>" % (setting, value))
+                new_buf = new_buf.replace('/>', "    %s=%s\n/>" % (setting, quoted_value))
             else:
-                new_buf += "%s = \"%s\"\n" % (setting, value)
+                new_buf += "%s = %s\n" % (setting, quoted_value)
         return new_buf
 
     def enabled_services(self):
