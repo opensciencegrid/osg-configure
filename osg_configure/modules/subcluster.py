@@ -6,6 +6,7 @@ from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
 
 REQUIRED = "required"
+REQUIRED_FOR_SUBCLUSTER = "required for subcluster"
 OPTIONAL = "optional"
 
 STRING = "str"
@@ -16,20 +17,20 @@ BOOLEAN = "boolean"
 
 ENTRIES = {
     "name": (REQUIRED, STRING),
-    "cpu_vendor": (REQUIRED, STRING),
-    "cpu_model": (REQUIRED, STRING),
+    "cpu_vendor": (REQUIRED_FOR_SUBCLUSTER, STRING),
+    "cpu_model": (REQUIRED_FOR_SUBCLUSTER, STRING),
     "cores_per_node": (REQUIRED, POSITIVE_INT),
-    "node_count": (REQUIRED, POSITIVE_INT),
-    "cpus_per_node": (REQUIRED, POSITIVE_INT),
-    "cpu_speed_mhz": (REQUIRED, POSITIVE_FLOAT),
+    "node_count": (REQUIRED_FOR_SUBCLUSTER, POSITIVE_INT),
+    "cpus_per_node": (REQUIRED_FOR_SUBCLUSTER, POSITIVE_INT),
+    "cpu_speed_mhz": (REQUIRED_FOR_SUBCLUSTER, POSITIVE_FLOAT),
     "ram_mb": (REQUIRED, POSITIVE_INT),
     "swap_mb": (OPTIONAL, POSITIVE_INT),
     "SI00": (OPTIONAL, POSITIVE_FLOAT),
     "HEPSPEC": (OPTIONAL, POSITIVE_FLOAT),
     "SF00": (OPTIONAL, POSITIVE_FLOAT),
-    "inbound_network": (REQUIRED, BOOLEAN),
-    "outbound_network": (REQUIRED, BOOLEAN),
-    "cpu_platform": (REQUIRED, STRING),
+    "inbound_network": (REQUIRED_FOR_SUBCLUSTER, BOOLEAN),
+    "outbound_network": (REQUIRED_FOR_SUBCLUSTER, BOOLEAN),
+    "cpu_platform": (REQUIRED_FOR_SUBCLUSTER, STRING),
     "allowed_vos": (OPTIONAL, STRING),
     "max_wall_time": (OPTIONAL, POSITIVE_INT),
     "extra_requirements": (OPTIONAL, STRING),
@@ -68,10 +69,12 @@ def check_entry(config, section, option, status, kind):
         entry = str(config.get(section, option)).strip()
     except (ConfigParser.NoSectionError, ConfigParser.NoOptionError, ConfigParser.InterpolationError):
         pass
-    if not entry and status == REQUIRED:
+    is_subcluster = section.lower().startswith('subcluster')
+    if not entry and (status == REQUIRED
+                      or (status == REQUIRED_FOR_SUBCLUSTER and is_subcluster)):
         raise exceptions.SettingError("Can't get value for mandatory setting %s in section %s." % \
                                       (option, section))
-    elif not entry and status == OPTIONAL:
+    elif not entry and (status == OPTIONAL or (status == REQUIRED_FOR_SUBCLUSTER and not is_subcluster)):
         return None
     if kind == STRING:
         # No parsing we can do for strings.
@@ -178,7 +181,7 @@ def resource_catalog_from_config(config, logger=utilities.NullLogger, default_al
 
     rc = resourcecatalog.ResourceCatalog()
 
-    subclusters_without_max_wall_time = []
+    sections_without_max_wall_time = []
     for section in config.sections():
         prefix = None
         if section.lower().startswith('subcluster'):
@@ -191,9 +194,6 @@ def resource_catalog_from_config(config, logger=utilities.NullLogger, default_al
         check_section(config, section)
 
         rcentry = resourcecatalog.RCEntry()
-
-        subcluster = section[len(prefix):].lstrip()
-
         rcentry.name = config.get(section, 'name')
         rcentry.cpus = config.getint(section, 'cores_per_node')
         rcentry.memory = config.getint(section, 'ram_mb')
@@ -202,7 +202,7 @@ def resource_catalog_from_config(config, logger=utilities.NullLogger, default_al
         max_wall_time = utilities.config_safe_get(config, section, 'max_wall_time')
         if not max_wall_time:
             rcentry.max_wall_time = 1440
-            subclusters_without_max_wall_time.append(subcluster)
+            sections_without_max_wall_time.append(section)
         else:
             rcentry.max_wall_time = max_wall_time.strip()
         rcentry.queue = utilities.config_safe_get(config, section, 'queue')
@@ -215,9 +215,9 @@ def resource_catalog_from_config(config, logger=utilities.NullLogger, default_al
         rc.add_rcentry(rcentry)
     # end for section in config.sections()
 
-    if subclusters_without_max_wall_time:
-        logger.warning("No max_wall_time specified for some subclusters; defaulting to 1440."
-                       "\nAdd 'max_wall_time=1440' to the following subcluster(s) to clear this warning:"
-                       "\n%s" % ", ".join(subclusters_without_max_wall_time))
+    if sections_without_max_wall_time:
+        logger.warning("No max_wall_time specified for some sections; defaulting to 1440."
+                       "\nAdd 'max_wall_time=1440' to the following section(s) to clear this warning:"
+                       "\n'%s'" % "', '".join(sections_without_max_wall_time))
 
     return rc
