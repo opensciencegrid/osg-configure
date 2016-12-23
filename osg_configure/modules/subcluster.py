@@ -178,7 +178,7 @@ def resource_catalog_from_config(config, logger=utilities.NullLogger, default_al
 
     rc = resourcecatalog.ResourceCatalog()
 
-    subclusters_without_max_wall_time = []
+    sections_without_max_wall_time = []
     for section in config.sections():
         prefix = None
         if section.lower().startswith('subcluster'):
@@ -191,9 +191,6 @@ def resource_catalog_from_config(config, logger=utilities.NullLogger, default_al
         check_section(config, section)
 
         rcentry = resourcecatalog.RCEntry()
-
-        subcluster = section[len(prefix):].lstrip()
-
         rcentry.name = config.get(section, 'name')
         rcentry.cpus = config.getint(section, 'cores_per_node')
         rcentry.memory = config.getint(section, 'ram_mb')
@@ -202,7 +199,7 @@ def resource_catalog_from_config(config, logger=utilities.NullLogger, default_al
         max_wall_time = utilities.config_safe_get(config, section, 'max_wall_time')
         if not max_wall_time:
             rcentry.max_wall_time = 1440
-            subclusters_without_max_wall_time.append(subcluster)
+            sections_without_max_wall_time.append(section)
         else:
             rcentry.max_wall_time = max_wall_time.strip()
         rcentry.queue = utilities.config_safe_get(config, section, 'queue')
@@ -215,9 +212,9 @@ def resource_catalog_from_config(config, logger=utilities.NullLogger, default_al
         rc.add_rcentry(rcentry)
     # end for section in config.sections()
 
-    if subclusters_without_max_wall_time:
-        logger.warning("No max_wall_time specified for some subclusters; defaulting to 1440."
-                       "\nAdd 'max_wall_time=1440' to the following subcluster(s) to clear this warning:"
-                       "\n%s" % ", ".join(subclusters_without_max_wall_time))
+    if sections_without_max_wall_time:
+        logger.warning("No max_wall_time specified for some sections; defaulting to 1440."
+                       "\nAdd 'max_wall_time=1440' to the following section(s) to clear this warning:"
+                       "\n'%s'" % "', '".join(sections_without_max_wall_time))
 
     return rc
