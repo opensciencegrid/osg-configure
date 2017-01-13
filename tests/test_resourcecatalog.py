@@ -137,15 +137,17 @@ HEPSPEC = 10
   ] \
 }""")
 
-    def testFullResourceEntry(self):
-        # Same as testFull, but using the "Resource Entry" section name instead of "Subcluster"
+    def testResourceEntry(self):
+        # Test using the "Resource Entry" section name instead of "Subcluster"
+        # and also using some of the attributes ATLAS requested
         config = ConfigParser.SafeConfigParser()
         config_io = cStringIO.StringIO(r"""
 [Resource Entry Valid]
 name = red.unl.edu
-ram_mb = 4000
-cores_per_node = 4
+maxmemory = 4000
+cpucount = 4
 queue = red
+vo_tag = ANALYSIS
 """)
         config.readfp(config_io)
         self.assertEqual(subcluster.resource_catalog_from_config(config).compose_text(),
@@ -155,8 +157,9 @@ queue = red
     MaxWallTime = 1440; \
     Memory = 4000; \
     Name = "red.unl.edu"; \
-    Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory; \
-    Transform = [ set_MaxMemory = RequestMemory; set_remote_queue = "red"; set_xcount = RequestCPUs; ]; \
+    Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory && TARGET.VOTag == VOTag; \
+    Transform = [ set_MaxMemory = RequestMemory; set_VOTag = VOTag; set_remote_queue = "red"; set_xcount = RequestCPUs; ]; \
+    VOTag = "ANALYSIS"; \
   ] \
 }""")
 
