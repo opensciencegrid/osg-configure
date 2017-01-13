@@ -7,6 +7,7 @@ from osg_configure.modules import utilities
 
 REQUIRED = "required"
 REQUIRED_FOR_SUBCLUSTER = "required for subcluster"
+REQUIRED_FOR_RESOURCE_ENTRY = "required for resource entry"
 OPTIONAL = "optional"
 
 STRING = "str"
@@ -35,6 +36,7 @@ ENTRIES = {
     "max_wall_time": (OPTIONAL, POSITIVE_INT),
     "extra_requirements": (OPTIONAL, STRING),
     "extra_transforms": (OPTIONAL, STRING),
+    "queue": (REQUIRED_FOR_RESOURCE_ENTRY, STRING),
 }
 
 BANNED_ENTRIES = {
@@ -70,12 +72,14 @@ def check_entry(config, section, option, status, kind):
     except (ConfigParser.NoSectionError, ConfigParser.NoOptionError, ConfigParser.InterpolationError):
         pass
     is_subcluster = section.lower().startswith('subcluster')
-    if not entry and (status == REQUIRED
-                      or (status == REQUIRED_FOR_SUBCLUSTER and is_subcluster)):
-        raise exceptions.SettingError("Can't get value for mandatory setting %s in section %s." % \
-                                      (option, section))
-    elif not entry and (status == OPTIONAL or (status == REQUIRED_FOR_SUBCLUSTER and not is_subcluster)):
-        return None
+    if not entry:
+        if (status == REQUIRED
+            or (status == REQUIRED_FOR_SUBCLUSTER and is_subcluster)
+            or (status == REQUIRED_FOR_RESOURCE_ENTRY and not is_subcluster)):
+            raise exceptions.SettingError("Can't get value for mandatory setting %s in section %s." % \
+                                          (option, section))
+        else:
+            return None
     if kind == STRING:
         # No parsing we can do for strings.
         return entry
