@@ -464,8 +464,7 @@ class TestGip(unittest.TestCase):
         gip_config = gip.GipConfiguration(logger=global_logger)
         did_fail = False
         for section in ["Resource Entry Valid 2",
-                        #"Resource Entry Valid 3"
-                        ]:
+                        "Resource Entry Valid 3"]:
             try:
                 gip_config.check_sc(config_parser, section)
             except exceptions.SettingError:

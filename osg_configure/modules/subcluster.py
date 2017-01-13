@@ -20,11 +20,13 @@ ENTRIES = {
     "name": (REQUIRED, STRING),
     "cpu_vendor": (REQUIRED_FOR_SUBCLUSTER, STRING),
     "cpu_model": (REQUIRED_FOR_SUBCLUSTER, STRING),
-    "cores_per_node": (REQUIRED, POSITIVE_INT),
+    "cores_per_node": (REQUIRED_FOR_SUBCLUSTER, POSITIVE_INT), # also used by resource entry
+    "cpucount": (OPTIONAL, POSITIVE_INT), # alias for cores_per_node
     "node_count": (REQUIRED_FOR_SUBCLUSTER, POSITIVE_INT),
     "cpus_per_node": (REQUIRED_FOR_SUBCLUSTER, POSITIVE_INT),
     "cpu_speed_mhz": (REQUIRED_FOR_SUBCLUSTER, POSITIVE_FLOAT),
-    "ram_mb": (REQUIRED, POSITIVE_INT),
+    "ram_mb": (REQUIRED_FOR_SUBCLUSTER, POSITIVE_INT), # also used by resource entry
+    "maxmemory": (OPTIONAL, POSITIVE_INT), # alias for ram_mb
     "swap_mb": (OPTIONAL, POSITIVE_INT),
     "SI00": (OPTIONAL, POSITIVE_FLOAT),
     "HEPSPEC": (OPTIONAL, POSITIVE_FLOAT),
@@ -37,6 +39,8 @@ ENTRIES = {
     "extra_requirements": (OPTIONAL, STRING),
     "extra_transforms": (OPTIONAL, STRING),
     "queue": (REQUIRED_FOR_RESOURCE_ENTRY, STRING),
+    "subclusters": (OPTIONAL, LIST),
+    "vo_tag": (OPTIONAL, STRING),
 }
 
 BANNED_ENTRIES = {
@@ -56,9 +60,11 @@ ENTRY_RANGES = {
     'SI00': (500, 320000),
     'HEPSPEC': (2, 3200),
     'ram_mb': (512, 8388608),
+    'maxmemory': (512, 8388608),
     'swap_mb': (512, 8388608),
     'cpus_per_node': (1, 2048),
     'cores_per_node': (1, 8192),
+    'cpucount': (1, 8192),
 }
 
 
@@ -185,6 +191,10 @@ def resource_catalog_from_config(config, logger=utilities.NullLogger, default_al
 
     rc = resourcecatalog.ResourceCatalog()
 
+    # list of section names of all subcluster sections
+    subcluster_sections = [section for section in config.sections() if section.lower().startswith('subcluster')]
+    subcluster_names = [config.get(section, 'name').strip() for section in subcluster_sections]
+
     sections_without_max_wall_time = []
     for section in config.sections():
         prefix = None
@@ -199,8 +209,19 @@ def resource_catalog_from_config(config, logger=utilities.NullLogger, default_al
 
         rcentry = resourcecatalog.RCEntry()
         rcentry.name = config.get(section, 'name')
-        rcentry.cpus = config.getint(section, 'cores_per_node')
-        rcentry.memory = config.getint(section, 'ram_mb')
+
+        rcentry.cpus = utilities.config_safe_get(config, section, 'cpucount') or \
+                       utilities.config_safe_get(config, section, 'cores_per_node')
+        if not rcentry.cpus:
+            raise exceptions.SettingError("cpucount / cores_per_node not found in section %s" % section)
+        rcentry.cpus = int(rcentry.cpus)
+
+        rcentry.memory = utilities.config_safe_get(config, section, 'maxmemory') or \
+                         utilities.config_safe_get(config, section, 'ram_mb')
+        if not rcentry.memory:
+            raise exceptions.SettingError("maxmemory / ram_mb not found in section %s" % section)
+        rcentry.memory = int(rcentry.memory)
+
         rcentry.allowed_vos = utilities.config_safe_get(config, section, 'allowed_vos',
                                                         default=default_allowed_vos)
         max_wall_time = utilities.config_safe_get(config, section, 'max_wall_time')
@@ -210,6 +231,16 @@ def resource_catalog_from_config(config, logger=utilities.NullLogger, default_al
         else:
             rcentry.max_wall_time = max_wall_time.strip()
         rcentry.queue = utilities.config_safe_get(config, section, 'queue')
+
+        scs = utilities.config_safe_get(config, section, 'subclusters')
+        if scs:
+            scs = re.split(r'\s*,\s*', scs)
+            for sc in scs:
+                if sc not in subcluster_names:
+                    raise exceptions.SettingError("Undefined subcluster '%s' mentioned in section %s" % (sc, section))
+        rcentry.subclusters = scs
+
+        rcentry.vo_tag = utilities.config_safe_get(config, section, 'vo_tag')
 
         # The ability to specify extra requirements is disabled until admins demand it
         # rcentry.extra_requirements = utilities.config_safe_get(config, section, 'extra_requirements')
