@@ -67,11 +67,11 @@ class RCEntry(object):
 
         if self.allowed_vos is not None:
             if not isinstance(self.allowed_vos, (list, tuple, set, str, unicode)):
-                raise TypeError("'allowed_vos' is a %s; must be a string or a list/tuple/set")
+                raise TypeError("'allowed_vos' is a %s; must be a string or a list/tuple/set" % type(self.allowed_vos))
 
         if self.subclusters is not None:
             if not isinstance(self.subclusters, (list, tuple, set, str, unicode)):
-                raise TypeError("'subclusters' is a %s; must be a string or a list/tuple/set")
+                raise TypeError("'subclusters' is a %s; must be a string or a list/tuple/set" % type(self.subclusters))
 
         return self
 
