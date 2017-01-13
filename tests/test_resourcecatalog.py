@@ -143,17 +143,9 @@ HEPSPEC = 10
         config_io = cStringIO.StringIO(r"""
 [Resource Entry Valid]
 name = red.unl.edu
-node_count = 60
 ram_mb = 4000
-cpu_model = Opteron 275
-cpu_vendor = AMD
-cpu_speed_mhz = 2200
-cpu_platform = x86_64
-cpus_per_node = 2
 cores_per_node = 4
-inbound_network = FALSE
-outbound_network = TRUE
-HEPSPEC = 10
+queue = red
 """)
         config.readfp(config_io)
         self.assertEqual(subcluster.resource_catalog_from_config(config).compose_text(),
@@ -164,7 +156,7 @@ HEPSPEC = 10
     Memory = 4000; \
     Name = "red.unl.edu"; \
     Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory; \
-    Transform = [ set_MaxMemory = RequestMemory; set_xcount = RequestCPUs; ]; \
+    Transform = [ set_MaxMemory = RequestMemory; set_remote_queue = "red"; set_xcount = RequestCPUs; ]; \
   ] \
 }""")
 
