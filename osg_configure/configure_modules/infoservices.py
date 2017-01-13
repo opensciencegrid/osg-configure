@@ -194,9 +194,13 @@ class InfoServicesConfiguration(BaseConfiguration):
                     default_allowed_vos = utilities.get_vos(misc.USER_VO_MAP_LOCATION)
                 except exceptions.ConfigureError, err:
                     self.log("Could not determine allowed VOs: %s" % str(err), level=logging.WARNING)
-                self.resource_catalog = subcluster.resource_catalog_from_config(self.subcluster_sections,
-                                                                                logger=self.logger,
-                                                                                default_allowed_vos=default_allowed_vos)
+                try:
+                    self.resource_catalog = subcluster.resource_catalog_from_config(self.subcluster_sections,
+                                                                                    logger=self.logger,
+                                                                                    default_allowed_vos=default_allowed_vos)
+                except exceptions.SettingError as err:
+                    self.log("Error in info services configuration: %s" % str(err), level=logging.ERROR)
+                    return False
                 self._configure_ce_collector()
 
         self.log("InfoServicesConfiguration.configure completed")

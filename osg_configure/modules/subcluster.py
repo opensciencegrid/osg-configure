@@ -237,7 +237,7 @@ def resource_catalog_from_config(config, logger=utilities.NullLogger, default_al
             scs = re.split(r'\s*,\s*', scs)
             for sc in scs:
                 if sc not in subcluster_names:
-                    raise exceptions.SettingError("Undefined subcluster '%s' mentioned in section %s" % (sc, section))
+                    raise exceptions.SettingError("Undefined subcluster '%s' mentioned in section '%s'" % (sc, section))
         rcentry.subclusters = scs
 
         rcentry.vo_tag = utilities.config_safe_get(config, section, 'vo_tag')
