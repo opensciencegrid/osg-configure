@@ -9,6 +9,8 @@ sys.path.insert(0, '.')
 
 from osg_configure.modules.resourcecatalog import ResourceCatalog, RCEntry
 from osg_configure.modules import subcluster
+from osg_configure.modules import exceptions
+from osg_configure.modules.utilities import get_test_config
 
 
 class TestResourceCatalog(unittest.TestCase):
@@ -163,7 +165,28 @@ vo_tag = ANALYSIS
   ] \
 }""")
 
+    def testResourceEntryWithSubclusters(self):
+        config = ConfigParser.SafeConfigParser()
+        config_file = get_test_config("gip/resourceentry_and_sc.ini")
+        config.read(config_file)
+        self.assertDoesNotRaise(exceptions.SettingError, subcluster.resource_catalog_from_config, config)
+        rc = subcluster.resource_catalog_from_config(config).compose_text()
+        self.assertTrue('Subclusters = { "SC1", "Sub Cluster 2" }; \\' in rc,
+                        '\'subclusters\' attrib improperly transformed')
 
+    def testResourceEntryBad(self):
+        for config_filename in ["gip/resourceentry_missing_cpucount.ini",
+                                "gip/resourceentry_missing_memory.ini",
+                                "gip/resourceentry_missing_queue.ini",
+                                "gip/resourceentry_missing_sc.ini"]:
+            config = ConfigParser.SafeConfigParser()
+            config_file = get_test_config(config_filename)
+            config.read(config_file)
+            try:
+                self.assertRaises(exceptions.SettingError, subcluster.resource_catalog_from_config, config)
+            except AssertionError:
+                sys.stderr.write("Failed to raise error on " + config_filename)
+                raise
 
     def testFullWithExtraTransforms(self):
         config = ConfigParser.SafeConfigParser()

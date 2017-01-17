@@ -471,44 +471,6 @@ class TestGip(unittest.TestCase):
                 did_fail = True
             self.assertFalse(did_fail, msg="Section %s threw an exception." % section)
 
-    def test_resource_entry_and_sc(self):
-        """
-        Make sure a Resource Entry section can reference a subcluster
-        """
-        config_parser = ConfigParser.SafeConfigParser()
-        config_file = get_test_config("gip/resourceentry_and_sc.ini")
-        config_parser.read(config_file)
-        gip_config = gip.GipConfiguration(logger=global_logger)
-        did_fail = False
-        for section in ["Resource Entry Single Subcluster",
-                        "Resource Entry Two Subclusters with Spaces"]:
-            try:
-                gip_config.check_sc(config_parser, section)
-            except exceptions.SettingError:
-                did_fail = True
-            self.assertFalse(did_fail, msg="Section %s threw an exception." % section)
-
-    def test_resource_entry_bad(self):
-        """
-        Make sure bad Resource Entry sections raise errors
-        """
-        config_parser = ConfigParser.SafeConfigParser()
-        config_file = get_test_config("gip/resourceentry_bad.ini")
-        config_parser.read(config_file)
-        gip_config = gip.GipConfiguration(logger=global_logger)
-        for section in ["Resource Entry Undefined SC",
-                        "Resource Entry Missing Queue",
-                        "Resource Entry Missing CPUs",
-                        "Resource Entry Missing Memory"]:
-            # Can't use assertRaises because I can't pass `msg` to it
-            failed_to_fail = False
-            try:
-                gip_config.check_sc(config_parser, section)
-                failed_to_fail = True
-            except exceptions.SettingError:
-                pass
-            self.assertFalse(failed_to_fail, msg="Section %s did not throw an exception." % section)
-
     def test_user_check_invalid_user(self):
         """
         Check to make sure gip class will distinguish between valid and
