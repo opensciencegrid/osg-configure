@@ -47,12 +47,16 @@ BANNED_ENTRIES = {
     "name": "SUBCLUSTER_NAME",
     "node_count": "NUMBER_OF_NODE",
     "ram_mb": "MB_OF_RAM",
+    "maxmemory": "MAX_MB_OF_RAM_ALLOCATED_TO_JOB",
     "cpu_model": "CPU_MODEL_FROM_/proc/cpuinfo",
     "cpu_vendor": "VENDOR_AMD_OR_INTEL",
     "cpu_speed_mhz": "CLOCK_SPEED_MHZ",
     "cpu_platform": "x86_64_OR_i686",
     "cpus_per_node": "#_PHYSICAL_CHIPS_PER_NODE",
     "cores_per_node": "#_CORES_PER_NODE",
+    "cpucount": "CPUS_ALLOCATED_TO_JOB",
+    "max_wall_time": "MAX_MINUTES_OF_RUNTIME",
+    "queue": "CHANGEME",
 }
 
 ENTRY_RANGES = {
