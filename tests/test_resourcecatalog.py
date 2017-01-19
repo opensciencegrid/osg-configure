@@ -159,8 +159,8 @@ vo_tag = ANALYSIS
     MaxWallTime = 1440; \
     Memory = 4000; \
     Name = "red.unl.edu"; \
-    Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory && TARGET.VOTag == VOTag; \
-    Transform = [ set_MaxMemory = RequestMemory; set_VOTag = VOTag; set_remote_queue = "red"; set_xcount = RequestCPUs; ]; \
+    Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory && TARGET.VOTag == "ANALYSIS"; \
+    Transform = [ set_MaxMemory = RequestMemory; set_VOTag = "ANALYSIS"; set_remote_queue = "red"; set_xcount = RequestCPUs; ]; \
     VOTag = "ANALYSIS"; \
   ] \
 }""")

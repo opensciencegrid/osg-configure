@@ -118,9 +118,10 @@ class RCEntry(object):
         transform_classad = classad_parse('[set_xcount = RequestCPUs; set_MaxMemory = RequestMemory]')
 
         if self.vo_tag:
-            attributes['VOTag'] = utilities.classad_quote(self.vo_tag)
-            requirements_clauses.append("TARGET.VOTag == VOTag")
-            transform_classad['set_VOTag'] = "VOTag"
+            quoted_vo_tag = utilities.classad_quote(self.vo_tag)
+            attributes['VOTag'] = quoted_vo_tag
+            requirements_clauses.append("TARGET.VOTag == " + quoted_vo_tag)
+            transform_classad['set_VOTag'] = quoted_vo_tag
 
         attributes['Requirements'] = ' && '.join(requirements_clauses)
 
