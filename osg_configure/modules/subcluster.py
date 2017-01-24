@@ -139,8 +139,7 @@ def check_section(config, section):
     Check attributes related to a subcluster and make sure that they are consistent
     """
     if section.lower().find('changeme') >= 0:
-        msg = "You have a section named 'Subcluster CHANGEME', you must change this name.\n"
-        msg += "'Subcluster Main' is an example"
+        msg = "You have a section named '%s', you must change this name.\n" % section
         raise exceptions.SettingError(msg)
 
     for option, value in ENTRIES.items():
@@ -201,12 +200,8 @@ def resource_catalog_from_config(config, logger=utilities.NullLogger, default_al
 
     sections_without_max_wall_time = []
     for section in config.sections():
-        prefix = None
-        if section.lower().startswith('subcluster'):
-            prefix = 'subcluster'
-        elif section.lower().startswith('resource entry'):
-            prefix = 'resource entry'
-        else:
+        lsection = section.lower()
+        if not (lsection.startswith('subcluster') or lsection.startswith('resource entry')):
             continue
 
         check_section(config, section)
