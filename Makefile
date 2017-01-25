@@ -30,4 +30,8 @@ install-3.2: install
 
 install-3.3: install
 
-.PHONY: _default  install  install-3.1  install-3.2  install-3.3 install-noconfig
+dist:
+	rm -f MANIFEST
+	python setup.py sdist
+
+.PHONY: _default  install  install-3.1  install-3.2  install-3.3 install-noconfig dist
