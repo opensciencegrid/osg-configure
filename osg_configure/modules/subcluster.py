@@ -7,6 +7,7 @@ from osg_configure.modules import utilities
 
 REQUIRED = "required"
 REQUIRED_FOR_SUBCLUSTER = "required for subcluster"
+REQUIRED_FOR_RESOURCE_ENTRY = "required for resource entry"
 OPTIONAL = "optional"
 
 STRING = "str"
@@ -19,11 +20,13 @@ ENTRIES = {
     "name": (REQUIRED, STRING),
     "cpu_vendor": (REQUIRED_FOR_SUBCLUSTER, STRING),
     "cpu_model": (REQUIRED_FOR_SUBCLUSTER, STRING),
-    "cores_per_node": (REQUIRED, POSITIVE_INT),
+    "cores_per_node": (REQUIRED_FOR_SUBCLUSTER, POSITIVE_INT), # also used by resource entry
+    "cpucount": (OPTIONAL, POSITIVE_INT), # alias for cores_per_node
     "node_count": (REQUIRED_FOR_SUBCLUSTER, POSITIVE_INT),
     "cpus_per_node": (REQUIRED_FOR_SUBCLUSTER, POSITIVE_INT),
     "cpu_speed_mhz": (REQUIRED_FOR_SUBCLUSTER, POSITIVE_FLOAT),
-    "ram_mb": (REQUIRED, POSITIVE_INT),
+    "ram_mb": (REQUIRED_FOR_SUBCLUSTER, POSITIVE_INT), # also used by resource entry
+    "maxmemory": (OPTIONAL, POSITIVE_INT), # alias for ram_mb
     "swap_mb": (OPTIONAL, POSITIVE_INT),
     "SI00": (OPTIONAL, POSITIVE_FLOAT),
     "HEPSPEC": (OPTIONAL, POSITIVE_FLOAT),
@@ -35,18 +38,25 @@ ENTRIES = {
     "max_wall_time": (OPTIONAL, POSITIVE_INT),
     "extra_requirements": (OPTIONAL, STRING),
     "extra_transforms": (OPTIONAL, STRING),
+    "queue": (REQUIRED_FOR_RESOURCE_ENTRY, STRING),
+    "subclusters": (OPTIONAL, LIST),
+    "vo_tag": (OPTIONAL, STRING),
 }
 
 BANNED_ENTRIES = {
     "name": "SUBCLUSTER_NAME",
     "node_count": "NUMBER_OF_NODE",
     "ram_mb": "MB_OF_RAM",
+    "maxmemory": "MAX_MB_OF_RAM_ALLOCATED_TO_JOB",
     "cpu_model": "CPU_MODEL_FROM_/proc/cpuinfo",
     "cpu_vendor": "VENDOR_AMD_OR_INTEL",
     "cpu_speed_mhz": "CLOCK_SPEED_MHZ",
     "cpu_platform": "x86_64_OR_i686",
     "cpus_per_node": "#_PHYSICAL_CHIPS_PER_NODE",
     "cores_per_node": "#_CORES_PER_NODE",
+    "cpucount": "CPUS_ALLOCATED_TO_JOB",
+    "max_wall_time": "MAX_MINUTES_OF_RUNTIME",
+    "queue": "CHANGEME",
 }
 
 ENTRY_RANGES = {
@@ -54,9 +64,11 @@ ENTRY_RANGES = {
     'SI00': (500, 320000),
     'HEPSPEC': (2, 3200),
     'ram_mb': (512, 8388608),
+    'maxmemory': (512, 8388608),
     'swap_mb': (512, 8388608),
     'cpus_per_node': (1, 2048),
     'cores_per_node': (1, 8192),
+    'cpucount': (1, 8192),
 }
 
 
@@ -70,12 +82,14 @@ def check_entry(config, section, option, status, kind):
     except (ConfigParser.NoSectionError, ConfigParser.NoOptionError, ConfigParser.InterpolationError):
         pass
     is_subcluster = section.lower().startswith('subcluster')
-    if not entry and (status == REQUIRED
-                      or (status == REQUIRED_FOR_SUBCLUSTER and is_subcluster)):
-        raise exceptions.SettingError("Can't get value for mandatory setting %s in section %s." % \
-                                      (option, section))
-    elif not entry and (status == OPTIONAL or (status == REQUIRED_FOR_SUBCLUSTER and not is_subcluster)):
-        return None
+    if not entry:
+        if (status == REQUIRED
+            or (status == REQUIRED_FOR_SUBCLUSTER and is_subcluster)
+            or (status == REQUIRED_FOR_RESOURCE_ENTRY and not is_subcluster)):
+            raise exceptions.SettingError("Can't get value for mandatory setting %s in section %s." % \
+                                          (option, section))
+        else:
+            return None
     if kind == STRING:
         # No parsing we can do for strings.
         return entry
@@ -125,8 +139,7 @@ def check_section(config, section):
     Check attributes related to a subcluster and make sure that they are consistent
     """
     if section.lower().find('changeme') >= 0:
-        msg = "You have a section named 'Subcluster CHANGEME', you must change this name.\n"
-        msg += "'Subcluster Main' is an example"
+        msg = "You have a section named '%s', you must change this name.\n" % section
         raise exceptions.SettingError(msg)
 
     for option, value in ENTRIES.items():
@@ -181,22 +194,33 @@ def resource_catalog_from_config(config, logger=utilities.NullLogger, default_al
 
     rc = resourcecatalog.ResourceCatalog()
 
+    # list of section names of all subcluster sections
+    subcluster_sections = [section for section in config.sections() if section.lower().startswith('subcluster')]
+    subcluster_names = [config.get(section, 'name').strip() for section in subcluster_sections]
+
     sections_without_max_wall_time = []
     for section in config.sections():
-        prefix = None
-        if section.lower().startswith('subcluster'):
-            prefix = 'subcluster'
-        elif section.lower().startswith('resource entry'):
-            prefix = 'resource entry'
-        else:
+        lsection = section.lower()
+        if not (lsection.startswith('subcluster') or lsection.startswith('resource entry')):
             continue
 
         check_section(config, section)
 
         rcentry = resourcecatalog.RCEntry()
         rcentry.name = config.get(section, 'name')
-        rcentry.cpus = config.getint(section, 'cores_per_node')
-        rcentry.memory = config.getint(section, 'ram_mb')
+
+        rcentry.cpus = utilities.config_safe_get(config, section, 'cpucount') or \
+                       utilities.config_safe_get(config, section, 'cores_per_node')
+        if not rcentry.cpus:
+            raise exceptions.SettingError("cpucount / cores_per_node not found in section %s" % section)
+        rcentry.cpus = int(rcentry.cpus)
+
+        rcentry.memory = utilities.config_safe_get(config, section, 'maxmemory') or \
+                         utilities.config_safe_get(config, section, 'ram_mb')
+        if not rcentry.memory:
+            raise exceptions.SettingError("maxmemory / ram_mb not found in section %s" % section)
+        rcentry.memory = int(rcentry.memory)
+
         rcentry.allowed_vos = utilities.config_safe_get(config, section, 'allowed_vos',
                                                         default=default_allowed_vos)
         max_wall_time = utilities.config_safe_get(config, section, 'max_wall_time')
@@ -206,6 +230,16 @@ def resource_catalog_from_config(config, logger=utilities.NullLogger, default_al
         else:
             rcentry.max_wall_time = max_wall_time.strip()
         rcentry.queue = utilities.config_safe_get(config, section, 'queue')
+
+        scs = utilities.config_safe_get(config, section, 'subclusters')
+        if scs:
+            scs = re.split(r'\s*,\s*', scs)
+            for sc in scs:
+                if sc not in subcluster_names:
+                    raise exceptions.SettingError("Undefined subcluster '%s' mentioned in section '%s'" % (sc, section))
+        rcentry.subclusters = scs
+
+        rcentry.vo_tag = utilities.config_safe_get(config, section, 'vo_tag')
 
         # The ability to specify extra requirements is disabled until admins demand it
         # rcentry.extra_requirements = utilities.config_safe_get(config, section, 'extra_requirements')

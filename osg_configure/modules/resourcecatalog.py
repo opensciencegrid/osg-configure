@@ -26,6 +26,8 @@ class RCEntry(object):
     :type allowed_vos: str or list or None
     :var max_wall_time: optional max run time of job on these nodes in minutes
     :var queue: optional remote queue name
+    :var subclusters: optional list of subclusters connected to this resource
+    :var vo_tag: optional
     :var extra_requirements: optional string of extra requirements clauses (which are ANDed together)
     :var extra_transforms; optional string of transform attributes (which are appended)
     """
@@ -37,6 +39,8 @@ class RCEntry(object):
         self.allowed_vos = kwargs.get('allowed_vos', None)
         self.max_wall_time = kwargs.get('max_wall_time', None)
         self.queue = kwargs.get('queue', '')
+        self.subclusters = kwargs.get('subclusters', None)
+        self.vo_tag = kwargs.get('vo_tag', None)
         self.extra_requirements = kwargs.get('extra_requirements', '')
         self.extra_transforms = kwargs.get('extra_transforms', '')
 
@@ -63,7 +67,11 @@ class RCEntry(object):
 
         if self.allowed_vos is not None:
             if not isinstance(self.allowed_vos, (list, tuple, set, str, unicode)):
-                raise TypeError("'allowed_vos' is a %s; must be a string or a list/tuple/set")
+                raise TypeError("'allowed_vos' is a %s; must be a string or a list/tuple/set" % type(self.allowed_vos))
+
+        if self.subclusters is not None:
+            if not isinstance(self.subclusters, (list, tuple, set, str, unicode)):
+                raise TypeError("'subclusters' is a %s; must be a string or a list/tuple/set" % type(self.subclusters))
 
         return self
 
@@ -80,6 +88,8 @@ class RCEntry(object):
             self.max_wall_time = int(self.max_wall_time)
         if self.allowed_vos is not None and isinstance(self.allowed_vos, str):
             self.allowed_vos = re.split('[ ,]+', self.allowed_vos)
+        if self.subclusters is not None and isinstance(self.subclusters, str):
+            self.subclusters = re.split(r'\s*,\s*', self.subclusters)
 
         return self
 
@@ -101,9 +111,20 @@ class RCEntry(object):
             attributes['AllowedVOs'] = allowed_vos
             requirements_clauses.append("member(TARGET.VO, AllowedVOs)")
 
-        attributes['Requirements'] = ' && '.join(requirements_clauses)
+        if self.subclusters:
+            subclusters = "{ " + ", ".join([utilities.classad_quote(sc) for sc in self.subclusters]) + " }"
+            attributes['Subclusters'] = subclusters
 
         transform_classad = classad_parse('[set_xcount = RequestCPUs; set_MaxMemory = RequestMemory]')
+
+        if self.vo_tag:
+            quoted_vo_tag = utilities.classad_quote(self.vo_tag)
+            attributes['VOTag'] = quoted_vo_tag
+            requirements_clauses.append("TARGET.VOTag == " + quoted_vo_tag)
+            transform_classad['set_VOTag'] = quoted_vo_tag
+
+        attributes['Requirements'] = ' && '.join(requirements_clauses)
+
         if self.queue:
             transform_classad['set_remote_queue'] = utilities.classad_quote(self.queue)
         if self.extra_transforms:

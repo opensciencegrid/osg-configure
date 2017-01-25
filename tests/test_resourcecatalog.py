@@ -9,6 +9,8 @@ sys.path.insert(0, '.')
 
 from osg_configure.modules.resourcecatalog import ResourceCatalog, RCEntry
 from osg_configure.modules import subcluster
+from osg_configure.modules import exceptions
+from osg_configure.modules.utilities import get_test_config
 
 
 class TestResourceCatalog(unittest.TestCase):
@@ -137,23 +139,17 @@ HEPSPEC = 10
   ] \
 }""")
 
-    def testFullResourceEntry(self):
-        # Same as testFull, but using the "Resource Entry" section name instead of "Subcluster"
+    def testResourceEntry(self):
+        # Test using the "Resource Entry" section name instead of "Subcluster"
+        # and also using some of the attributes ATLAS requested
         config = ConfigParser.SafeConfigParser()
         config_io = cStringIO.StringIO(r"""
 [Resource Entry Valid]
 name = red.unl.edu
-node_count = 60
-ram_mb = 4000
-cpu_model = Opteron 275
-cpu_vendor = AMD
-cpu_speed_mhz = 2200
-cpu_platform = x86_64
-cpus_per_node = 2
-cores_per_node = 4
-inbound_network = FALSE
-outbound_network = TRUE
-HEPSPEC = 10
+maxmemory = 4000
+cpucount = 4
+queue = red
+vo_tag = ANALYSIS
 """)
         config.readfp(config_io)
         self.assertEqual(subcluster.resource_catalog_from_config(config).compose_text(),
@@ -163,12 +159,34 @@ HEPSPEC = 10
     MaxWallTime = 1440; \
     Memory = 4000; \
     Name = "red.unl.edu"; \
-    Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory; \
-    Transform = [ set_MaxMemory = RequestMemory; set_xcount = RequestCPUs; ]; \
+    Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory && TARGET.VOTag == "ANALYSIS"; \
+    Transform = [ set_MaxMemory = RequestMemory; set_VOTag = "ANALYSIS"; set_remote_queue = "red"; set_xcount = RequestCPUs; ]; \
+    VOTag = "ANALYSIS"; \
   ] \
 }""")
 
+    def testResourceEntryWithSubclusters(self):
+        config = ConfigParser.SafeConfigParser()
+        config_file = get_test_config("gip/resourceentry_and_sc.ini")
+        config.read(config_file)
+        self.assertDoesNotRaise(exceptions.SettingError, subcluster.resource_catalog_from_config, config)
+        rc = subcluster.resource_catalog_from_config(config).compose_text()
+        self.assertTrue('Subclusters = { "SC1", "Sub Cluster 2" }; \\' in rc,
+                        '\'subclusters\' attrib improperly transformed')
 
+    def testResourceEntryBad(self):
+        for config_filename in ["gip/resourceentry_missing_cpucount.ini",
+                                "gip/resourceentry_missing_memory.ini",
+                                "gip/resourceentry_missing_queue.ini",
+                                "gip/resourceentry_missing_sc.ini"]:
+            config = ConfigParser.SafeConfigParser()
+            config_file = get_test_config(config_filename)
+            config.read(config_file)
+            try:
+                self.assertRaises(exceptions.SettingError, subcluster.resource_catalog_from_config, config)
+            except AssertionError:
+                sys.stderr.write("Failed to raise error on " + config_filename)
+                raise
 
     def testFullWithExtraTransforms(self):
         config = ConfigParser.SafeConfigParser()

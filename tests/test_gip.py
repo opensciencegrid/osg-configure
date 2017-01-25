@@ -463,11 +463,13 @@ class TestGip(unittest.TestCase):
         config_parser.read(config_file)
         gip_config = gip.GipConfiguration(logger=global_logger)
         did_fail = False
-        try:
-            gip_config.check_sc(config_parser, "Resource Entry Valid 2")
-        except exceptions.SettingError:
-            did_fail = True
-        self.assertFalse(did_fail, msg="Valid Resource Entry section threw an exception.")
+        for section in ["Resource Entry Valid Old Attribs",
+                        "Resource Entry Valid New Attribs"]:
+            try:
+                gip_config.check_sc(config_parser, section)
+            except exceptions.SettingError:
+                did_fail = True
+            self.assertFalse(did_fail, msg="Section %s threw an exception." % section)
 
     def test_user_check_invalid_user(self):
         """
