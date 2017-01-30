@@ -156,6 +156,15 @@ class InfoServicesConfiguration(BaseConfiguration):
                 for key, value in configuration.items(section):
                     self.subcluster_sections.set(section, key, value)
 
+        # Check resource catalog
+        # This is a bit clunky to parse it here and not use the result in
+        # configure(), but at this point we don't have a way of knowing what
+        # default_allowed_vos should be.
+        if self.ce_collector_required_rpms_installed and self.htcondor_gateway_enabled and classad is not None:
+            subcluster.resource_catalog_from_config(self.subcluster_sections,
+                                                    logger=self.logger,
+                                                    default_allowed_vos=None)
+
         self.log('InfoServicesConfiguration.parse_configuration completed')
 
     # pylint: disable-msg=W0613
