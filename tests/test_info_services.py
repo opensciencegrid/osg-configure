@@ -137,7 +137,7 @@ class TestInfoServices(unittest.TestCase):
         """
 
         # need to be on a CE to get CE defaults
-        if not utilities.ce_installed():
+        if not (utilities.ce_installed() and utilities.rpm_installed(['gip', 'osg-info-services'])):
             return
         config_file = get_test_config("infoservices/itb_defaults2.ini")
         configuration = ConfigParser.SafeConfigParser()
@@ -170,7 +170,7 @@ class TestInfoServices(unittest.TestCase):
         """
 
         # need to be on a CE to get CE defaults
-        if not utilities.ce_installed():
+        if not (utilities.ce_installed() and utilities.rpm_installed(['gip', 'osg-info-services'])):
             return
         config_file = get_test_config("infoservices/prod_defaults2.ini")
         configuration = ConfigParser.SafeConfigParser()
