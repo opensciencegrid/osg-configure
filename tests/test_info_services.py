@@ -19,18 +19,17 @@ sys.path.insert(0, pathname)
 
 from osg_configure.modules import exceptions
 from osg_configure.configure_modules import infoservices
-from  osg_configure.modules import utilities
+from osg_configure.modules import utilities
 from osg_configure.modules.utilities import get_test_config
 
 global_logger = logging.getLogger(__name__)
-if sys.version_info[0] >= 2 and sys.version_info[1] > 6:
-    global_logger.addHandler(logging.NullHandler())
-else:
+try:
+    from logging import NullHandler
+except ImportError:
     class NullHandler(logging.Handler):
         def emit(self, record):
             pass
-
-    global_logger.addHandler(NullHandler())
+global_logger.addHandler(NullHandler())
 
 
 class TestInfoServices(unittest.TestCase):
