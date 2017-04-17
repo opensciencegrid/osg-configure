@@ -22,22 +22,20 @@ OSG_ENTRIES = {
 }
 
 SE_ENTRIES = {
-    "name": (REQUIRED, STRING),
+    "name": (OPTIONAL, STRING),
     "unique_name": (OPTIONAL, STRING),
-    "srm_endpoint": (REQUIRED, STRING),
+    "srm_endpoint": (OPTIONAL, STRING),
     "srm_version": (OPTIONAL, STRING),
     "transfer_endpoints": (OPTIONAL, STRING),
     "provider_implementation": (OPTIONAL, STRING),
-    "implementation": (REQUIRED, STRING),
-    "version": (REQUIRED, STRING),
-    "default_path": (REQUIRED, STRING),
+    "implementation": (OPTIONAL, STRING),
+    "version": (OPTIONAL, STRING),
+    "default_path": (OPTIONAL, STRING),
     "allowed_vos": (OPTIONAL, LIST),
     "mount_point": (OPTIONAL, LIST),
 }
 
 SE_BANNED_ENTRIES = {
-    "name": "SE_CHANGEME",
-    "srm_endpoint": "httpg://srm.example.com:8443/srm/v2/server",
 }
 
 # Error messages
