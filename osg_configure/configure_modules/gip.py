@@ -21,44 +21,6 @@ OSG_ENTRIES = {
     "Storage": ["app_dir", "data_dir", "worker_node_temp"],
 }
 
-SE_ENTRIES = {
-    "name": (OPTIONAL, STRING),
-    "unique_name": (OPTIONAL, STRING),
-    "srm_endpoint": (OPTIONAL, STRING),
-    "srm_version": (OPTIONAL, STRING),
-    "transfer_endpoints": (OPTIONAL, STRING),
-    "provider_implementation": (OPTIONAL, STRING),
-    "implementation": (OPTIONAL, STRING),
-    "version": (OPTIONAL, STRING),
-    "default_path": (OPTIONAL, STRING),
-    "allowed_vos": (OPTIONAL, LIST),
-    "mount_point": (OPTIONAL, LIST),
-}
-
-SE_BANNED_ENTRIES = {
-}
-
-# Error messages
-MOUNT_POINT_ERROR = """\
-You have enabled the mount_point option, but your input, %(input)s, is invalid
-because of:
-%(reason)s
-
-mount_point should be enabled for sites where the SE is mounted on the worker
-nodes and provides a POSIX-like interface (POSIX-like includes Lustre, HDFS,
-XrootDFS, but not dCache PNFS).
-The value of `mount_point` should be two paths; first, the path where the
-file system is mounted on the worker nodes, followed by the exported directory
-of the file system.  If you mount your file system on the worker nodes with
-the following command:
-  $ mount -t nfs nfs.example.com:/exported/dir /mnt/nfs
-then mount_point should look like this:
-   mount_point = /mnt/nfs,/exported/dir
-
-Paths are lightly validated; they must start with "/" and contain alphanumeric
-characters plus "-" or "_".
-"""
-
 
 class GipConfiguration(BaseConfiguration):
     """
@@ -137,42 +99,6 @@ class GipConfiguration(BaseConfiguration):
         if utilities.ce_installed():
             self._parse_configuration_ce(configuration)
 
-        # Check for the presence of the classic SE
-        has_classic_se = True
-        try:
-            has_classic_se = configuration.getboolean("GIP", "advertise_gsiftp")
-        # pylint: disable-msg=W0702
-        # pylint: disable-msg=W0703
-        # pylint: disable-msg=W0704
-        except Exception:
-            pass
-
-        has_se = False
-        for section in configuration.sections():
-            if not section.lower().startswith('se'):
-                continue
-            has_se = True
-            self.check_se(configuration, section)
-        if not has_se and not has_classic_se:
-            try:
-                self._check_entry(configuration, "GIP", "se_name", REQUIRED, STRING)
-            except:
-                msg = "There is no `SE` section, the old-style SE" + \
-                      "setup in GIP is not configured, and there is no classic SE. " + \
-                      " At least one must be configured.  Please see the configuration" \
-                      " documentation."
-                raise exceptions.SettingError(msg)
-        if configuration.has_option(self.config_section, 'user'):
-            username = configuration.get(self.config_section, 'user')
-            if not validation.valid_user(username):
-                err_msg = "%s is not a valid account on this system" % username
-                self.log(err_msg,
-                         section=self.config_section,
-                         option='user',
-                         level=logging.ERROR)
-                raise exceptions.SettingError(err_msg)
-            self.gip_user = username
-
     def _parse_configuration_ce(self, configuration):
         # All CEs must advertise subclusters
         has_sc = self.check_subclusters(configuration)
@@ -188,83 +114,6 @@ class GipConfiguration(BaseConfiguration):
 
     check_sc = staticmethod(subcluster.check_section)
 
-    def check_se(self, config, section):
-        """
-        Check attributes currently stored and make sure that they are consistent
-        """
-        self.log('GipConfiguration.check_se started')
-        attributes_ok = True
-
-        enabled = True
-        try:
-            if config.has_option(section, 'enabled'):
-                enabled = config.getboolean(section, 'enabled')
-        # pylint: disable-msg=W0703
-        except Exception:
-            enabled = False
-
-        if not enabled:
-            # if section is disabled, we can exit
-            return attributes_ok
-
-        if section.lower().find('changeme') >= 0:
-            msg = "You have a section named 'SE CHANGEME', but it is not turned off.\n"
-            msg += "'SE CHANGEME' is an example; you must change it if it is enabled."
-            raise exceptions.SettingError(msg)
-
-        for option, value in SE_ENTRIES.items():
-            status, kind = value
-            entry = self._check_entry(config, section, option, status, kind)
-            if option in SE_BANNED_ENTRIES and entry == SE_BANNED_ENTRIES[option]:
-                raise exceptions.SettingError("Value for %s in section %s is " \
-                                              "a default or banned entry (%s); " \
-                                              "you must change this value." % \
-                                              (option, section, SE_BANNED_ENTRIES[option]))
-            if entry is None:
-                continue
-
-            # Validate the mount point information
-            if option == 'mount_point':
-                regex = re.compile(r"/(/*[A-Za-z0-9_\-]/*)*$")
-                err_info = {'input': value}
-                if len(entry) != 2:
-                    err_info['reason'] = "Only one path was specified!"
-                    msg = MOUNT_POINT_ERROR % err_info
-                    raise exceptions.SettingError(msg)
-                if not regex.match(entry[0]):
-                    err_info['reason'] = "First path does not pass validation"
-                    msg = MOUNT_POINT_ERROR % err_info
-                    raise exceptions.SettingError(msg)
-                if not regex.match(entry[1]):
-                    err_info['reason'] = "Second path does not pass validation"
-                    msg = MOUNT_POINT_ERROR % err_info
-                    raise exceptions.SettingError(msg)
-
-            if option == 'srm_endpoint':
-                regex = re.compile(r'([A-Za-z]+)://([A-Za-z0-9_\-.]+):([0-9]+)/(.+)')
-                match = regex.match(entry)
-                if not match or match.groups()[3].find('?SFN=') >= 0:
-                    msg = "Given SRM endpoint is not valid! It must be of the form " + \
-                          "srm://<hostname>:<port>/<path>.  The hostname, port, and path " + \
-                          "must be present.  The path should not contain the string '?SFN='"
-                    raise exceptions.SettingError(msg)
-            elif option == 'allowed_vos':
-                user_vo_map = None
-                if config.has_option('Install Locations', 'user_vo_map'):
-                    user_vo_map = config.get('Install Locations', 'user_vo_map')
-                vo_list = utilities.get_vos(user_vo_map)
-                for vo in entry:
-                    if vo not in vo_list:
-                        msg = "The vo %s is explicitly listed in the allowed_vos list in " % vo
-                        msg += "section %s, but is not in the list of allowed VOs." % section
-                        if vo_list:
-                            msg += "  The list of allowed VOs are: %s." % ', '.join(vo_list)
-                        else:
-                            msg += "  There are no allowed VOs detected; contact the experts!"
-                        raise exceptions.SettingError(msg)
-        self.log('GipConfiguration.check_se completed')
-        return attributes_ok
-
     # pylint: disable-msg=W0613
     def configure(self, attributes):
         """
@@ -276,61 +125,6 @@ class GipConfiguration(BaseConfiguration):
             self.log('Not enabled, exiting...')
             self.log('GipConfiguration.configure completed')
             return
-
-        try:
-            gip_pwent = pwd.getpwnam(self.gip_user)
-        except KeyError, e:
-            if self.gip_user != 'tomcat':
-                self.gip_user = 'tomcat'
-                self.log("Couldn't find username %s, trying tomcat" % self.gip_user,
-                         exception=True,
-                         level=logging.WARNING)
-                try:
-                    gip_pwent = pwd.getpwnam(self.gip_user)
-                except KeyError, e:
-                    self.log("Couldn't find username %s" % self.gip_user,
-                             exception=True,
-                             level=logging.ERROR)
-                    raise exceptions.ConfigureError("Couldn't find username %s: %s" % (self.gip_user, e))
-            else:
-                self.log("Couldn't find username %s" % self.gip_user,
-                         exception=True,
-                         level=logging.ERROR)
-                raise exceptions.ConfigureError("Couldn't find username %s: %s" % (self.gip_user, e))
-
-        (gip_uid, gip_gid) = gip_pwent[2:4]
-        gip_tmpdir = os.path.join('/', 'var', 'tmp', 'gip')
-        gip_logdir = os.path.join('/', 'var', 'log', 'gip')
-
-        try:
-            if not os.path.exists(gip_tmpdir):
-                self.log("%s is not present, recreating" % gip_logdir)
-                os.mkdir(gip_tmpdir)
-            if not os.path.isdir(gip_tmpdir):
-                self.log("%s is not a directory, " % gip_tmpdir +
-                         "please remove it and recreate it as a directory ",
-                         level=logging.ERROR)
-                raise exceptions.ConfigureError("GIP tmp directory not setup: %s" % gip_tmpdir)
-            os.chown(gip_tmpdir, gip_uid, gip_gid)
-        except Exception, e:
-            self.log("Can't set permissions on " + gip_tmpdir,
-                     exception=True,
-                     level=logging.ERROR)
-            raise exceptions.ConfigureError("Can't set permissions on %s: %s" % (gip_tmpdir, e))
-
-        try:
-            if not os.path.exists(gip_logdir) or not os.path.isdir(gip_logdir):
-                self.log("%s is not present or is not a directory, " % gip_logdir +
-                         "gip did not install correctly",
-                         level=logging.ERROR)
-                raise exceptions.ConfigureError("GIP log directory not setup: %s" % gip_logdir)
-            os.chown(gip_logdir, gip_uid, gip_gid)
-        except Exception, e:
-            self.log("Can't set permissions on " + gip_logdir,
-                     exception=True,
-                     level=logging.ERROR)
-            raise exceptions.ConfigureError("Can't set permissions on %s: %s" % \
-                                            (gip_logdir, e))
 
         self.log('GipConfiguration.configure completed')
 
