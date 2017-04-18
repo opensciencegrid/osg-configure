@@ -1,25 +1,15 @@
 """Class for verifying gip information"""
 
-import os
-import re
-import pwd
 import logging
 
 from osg_configure.modules import subcluster
 from osg_configure.modules import exceptions
 from osg_configure.modules.baseconfiguration import BaseConfiguration
 from osg_configure.modules import utilities
-from osg_configure.modules import validation
 
 __all__ = ['GipConfiguration']
 
-from osg_configure.modules.subcluster import REQUIRED, OPTIONAL, STRING, POSITIVE_INT, POSITIVE_FLOAT, LIST, BOOLEAN
-
-OSG_ENTRIES = {
-    "Site Information": ["host_name", "site_name", "sponsor", "site_policy",
-                         "contact", "email", "city", "longitude", "latitude"],
-    "Storage": ["app_dir", "data_dir", "worker_node_temp"],
-}
+from osg_configure.modules.subcluster import REQUIRED, POSITIVE_INT
 
 
 class GipConfiguration(BaseConfiguration):
@@ -41,7 +31,6 @@ class GipConfiguration(BaseConfiguration):
                                  'forwarding',
                                  'bosco']
 
-        self.gip_user = None
         self.log('GipConfiguration.__init__ completed')
 
     _check_entry = staticmethod(subcluster.check_entry)
@@ -62,12 +51,11 @@ class GipConfiguration(BaseConfiguration):
         else:
             self.enabled = True
 
-        # TODO Do we want to force the user to have a GIP section? Uncomment the following if not.
-        # if not configuration.has_section(self.config_section):
-        #   self.log("%s section not in config file" % self.config_section)
-        #   self.log('GipConfiguration.parse_configuration completed')
-        #   self.enabled = False
-        #   return
+        if not configuration.has_section(self.config_section):
+            self.log("%s section not in config file" % self.config_section)
+            self.log('GipConfiguration.parse_configuration completed')
+            self.enabled = False
+            return
 
         self.check_config(configuration)
 
@@ -82,20 +70,6 @@ class GipConfiguration(BaseConfiguration):
         The meat of parse_configuration, runs after we've checked that GIP is
         enabled and we have the right RPMs installed.
         """
-        # The following is to set the user that gip files need to belong to
-        # This can be overridden by setting the 'user' option in the [GIP] section
-        self.gip_user = 'tomcat'
-        if configuration.has_option(self.config_section, 'batch'):
-            batch_opt = configuration.get(self.config_section, 'batch').lower()
-            if (not utilities.blank(batch_opt) and
-                        batch_opt not in self._valid_batch_opt):
-                msg = "The batch setting in %s must be a valid option " \
-                      "(e.g. %s), %s was given" % (self.config_section,
-                                                   ",".join(self._valid_batch_opt),
-                                                   batch_opt)
-                self.log(msg, level=logging.ERROR)
-                raise exceptions.SettingError(msg)
-
         if utilities.ce_installed():
             self._parse_configuration_ce(configuration)
 
