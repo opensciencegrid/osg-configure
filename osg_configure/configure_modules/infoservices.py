@@ -21,9 +21,6 @@ CE_COLLECTOR_ATTRIBUTES_FILE = '/etc/condor-ce/config.d/10-osg-attributes-genera
 CE_COLLECTOR_CONFIG_FILE = '/etc/condor-ce/config.d/10-ce-collector-generated.conf'
 HTCONDOR_CE_COLLECTOR_PORT = 9619
 
-SERVICECERT_PATH = "/etc/grid-security/http/httpcert.pem"
-SERVICEKEY_PATH = "/etc/grid-security/http/httpkey.pem"
-
 # BATCH_SYSTEMS here is both the config sections for the batch systems
 # and the values in the OSG_BatchSystems attribute since they are
 # coincidentally the same. If they ever change, make a mapping.
@@ -55,7 +52,6 @@ class InfoServicesConfiguration(BaseConfiguration):
         self._production_defaults = {
             'ce_collectors': 'collector1.opensciencegrid.org:%d,collector2.opensciencegrid.org:%d' % (
                 HTCONDOR_CE_COLLECTOR_PORT, HTCONDOR_CE_COLLECTOR_PORT)}
-        self.copy_host_cert_for_service_cert = False
 
         # for htcondor-ce-info-services:
         self.ce_collectors = []
@@ -131,7 +127,6 @@ class InfoServicesConfiguration(BaseConfiguration):
         # and the enabled batch systems from their respective sections
         self.enabled_batch_systems = [bs for bs in BATCH_SYSTEMS if csgbool(bs, 'enabled')]
 
-        self.copy_host_cert_for_service_cert = csgbool('Misc Services', 'copy_host_cert_for_service_certs')
         self.htcondor_gateway_enabled = csgbool('Gateway', 'htcondor_gateway_enabled')
 
         self.authorization_method = csgbool('Misc Services', 'authorization_method')
@@ -169,11 +164,6 @@ class InfoServicesConfiguration(BaseConfiguration):
             self.log("Not enabled")
             self.log("InfoServicesConfiguration.configure completed")
             return True
-
-        if self.copy_host_cert_for_service_cert:
-            if not self.create_missing_service_cert_key(SERVICECERT_PATH, SERVICEKEY_PATH, 'tomcat'):
-                self.log("Could not create service cert/key", level=logging.ERROR)
-                return False
 
         if self.ce_collector_required_rpms_installed and self.htcondor_gateway_enabled:
             if classad is None:
