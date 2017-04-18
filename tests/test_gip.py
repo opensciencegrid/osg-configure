@@ -56,7 +56,7 @@ class TestGip(unittest.TestCase):
 
     def test_missing_se(self):
         """
-        Make sure that we have failures when there is no configured SE and there
+        Make sure that we ignore when there is no configured SE and there
         is no classic SE.
         """
         did_fail = False
@@ -68,11 +68,11 @@ class TestGip(unittest.TestCase):
             gip_config._parse_configuration(config_parser)
         except exceptions.SettingError:
             did_fail = True
-        self.assertTrue(did_fail, msg="Did not properly detect a missing SE.")
+        self.assertFalse(did_fail, msg="Raised error on missing SE")
 
     def test_missing_se2(self):
         """
-        Make sure that we have no when there is no configured SE and there
+        Make sure that we ignore when there is no configured SE and there
         is a classic SE.
         """
         did_fail = False
@@ -84,7 +84,7 @@ class TestGip(unittest.TestCase):
             gip_config._parse_configuration(config_parser)
         except exceptions.SettingError:
             did_fail = True
-        self.assertFalse(did_fail, msg="Did not properly detect a missing SE.")
+        self.assertFalse(did_fail, msg="Raised error on missing SE")
 
     def test_changeme1(self):
         """
@@ -103,7 +103,7 @@ class TestGip(unittest.TestCase):
 
     def test_changeme2(self):
         """
-        Test should fail because SE CHANGEME section is enabled.
+        Test should ignore an enabled SE CHANGEME section
         """
         did_fail = False
         try:
@@ -114,11 +114,11 @@ class TestGip(unittest.TestCase):
             gip_config._parse_configuration(config_parser)
         except exceptions.SettingError:
             did_fail = True
-        self.assertTrue(did_fail, msg="Did not detect SE CHANGEME section.")
+        self.assertFalse(did_fail, msg="Raised error on SE CHANGEME section")
 
     def test_changeme3(self):
         """
-        Test should fail because SE CHANGEME section is enabled.
+        Test should ignore an enabled SE CHANGEME section
         Variant 2.
         """
         did_fail = False
@@ -130,7 +130,7 @@ class TestGip(unittest.TestCase):
             gip_config._parse_configuration(config_parser)
         except exceptions.SettingError:
             did_fail = True
-        self.assertTrue(did_fail, msg="Did not detect enabled CHANGEME section.")
+        self.assertFalse(did_fail, msg="Raised error on SE CHANGEME section")
 
     def test_changeme4(self):
         """
@@ -320,16 +320,6 @@ class TestGip(unittest.TestCase):
         gip_config._parse_configuration(config_parser)
         gip_config._parse_configuration_ce(config_parser)
 
-        config_parser = ConfigParser.SafeConfigParser()
-        config_file = get_test_config("gip/invalid_jobmanager1.ini")
-        config_parser.read(config_file)
-        config_parser.set('Install Locations',
-                          'user_vo_map',
-                          get_test_config(SAMPLE_VO_MAP_LOCATION))
-        gip_config = gip.GipConfiguration(logger=global_logger)
-        self.failUnlessRaises(exceptions.SettingError,
-                              gip_config._parse_configuration,
-                              configuration=config_parser)
 
     def test_hepspec_valid(self):
         """
@@ -348,7 +338,7 @@ class TestGip(unittest.TestCase):
 
     def test_hepspec_invalid(self):
         """
-        Make sure a invalid HEPSPEC value causes an error..
+        Make sure a invalid HEPSPEC value no longer causes an error..
         """
         config_parser = ConfigParser.SafeConfigParser()
         config_file = get_test_config("gip/sc_samples.ini")
@@ -357,9 +347,7 @@ class TestGip(unittest.TestCase):
         try:
             gip_config.check_sc(config_parser, "Subcluster Bad HEPSPEC")
         except exceptions.SettingError:
-            pass
-        else:
-            self.fail(msg="Invalid HEPSPEC entry did not throw an exception.")
+            self.fail(msg="Invalid HEPSPEC entry threw an exception.")
         try:
             gip_config.check_sc(config_parser, "Subcluster Formerly Bad Cores")
         except exceptions.SettingError:
@@ -403,33 +391,6 @@ class TestGip(unittest.TestCase):
             except exceptions.SettingError:
                 did_fail = True
             self.assertFalse(did_fail, msg="Section %s threw an exception." % section)
-
-    def test_user_check_invalid_user(self):
-        """
-        Check to make sure gip class will distinguish between valid and
-        invalid users
-        """
-        config_parser = ConfigParser.SafeConfigParser()
-        config_file = get_test_config("gip/invalid_user.ini")
-        config_parser.read(config_file)
-        config_parser.set('Install Locations',
-                          'user_vo_map',
-                          get_test_config(SAMPLE_VO_MAP_LOCATION))
-        gip_config = gip.GipConfiguration(logger=global_logger)
-        self.assertRaises(exceptions.SettingError,
-                          gip_config._parse_configuration,
-                          config_parser)
-
-    def test_user_check_valid_user(self):
-        config_parser = ConfigParser.SafeConfigParser()
-        config_file = get_test_config("gip/valid_user.ini")
-        config_parser.read(config_file)
-        config_parser.set('Install Locations',
-                          'user_vo_map',
-                          get_test_config(SAMPLE_VO_MAP_LOCATION))
-        gip_config = gip.GipConfiguration(logger=global_logger)
-        self.assertTrue(gip_config._parse_configuration(config_parser) is None,
-                        "Flagged valid user as being missing")
 
 
 if __name__ == '__main__':
