@@ -37,164 +37,6 @@ class TestInfoServices(unittest.TestCase):
     Unit test class to test InfoServicesConfiguration class
     """
 
-    def testParsing1(self):
-        """
-        Test infoservices parsing
-        """
-
-        config_file = get_test_config("infoservices/infoservices.ini")
-        configuration = ConfigParser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = infoservices.InfoServicesConfiguration(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception, e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        options = settings.options
-        variables = {'bdii_servers': 'http://is1.grid.iu.edu:14001[RAW], http://is2.grid.iu.edu:14001[RAW]'}
-
-        for var in variables:
-            self.assertTrue(options.has_key(var),
-                            "Option %s missing" % var)
-            self.assertEqual(options[var].value,
-                             variables[var],
-                             "Wrong value obtained for %s, got %s but " \
-                             "expected %s" % (var,
-                                              options[var].value,
-                                              variables[var]))
-
-    def testParsingITBDefaults(self):
-        """
-        Test infoservices parsing to make sure it picks up ITB defaults
-        """
-
-        # need to be on a CE to get CE defaults
-        if not utilities.ce_installed():
-            return
-        config_file = get_test_config("infoservices/itb_defaults.ini")
-        configuration = ConfigParser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = infoservices.InfoServicesConfiguration(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception, e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        options = settings.options
-        variables = {'bdii_servers': 'http://is1.grid.iu.edu:14001[RAW],'
-                                     'http://is2.grid.iu.edu:14001[RAW]'}
-
-        for var in variables:
-            self.assertTrue(options.has_key(var),
-                            "Option %s missing" % var)
-            self.assertEqual(options[var].value,
-                             variables[var],
-                             "Wrong value obtained for %s, got %s but " \
-                             "expected %s" % (var,
-                                              options[var].value,
-                                              variables[var]))
-
-    def testParsingProductionDefaults(self):
-        """
-        Test infoservices parsing to make sure it picks up production defaults
-        """
-
-        # need to be on a CE to get CE defaults
-        if not utilities.ce_installed():
-            return
-        config_file = get_test_config("infoservices/prod_defaults.ini")
-        configuration = ConfigParser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = infoservices.InfoServicesConfiguration(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception, e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        options = settings.options
-        variables = {'bdii_servers': 'http://is1.grid.iu.edu:14001[RAW],'
-                                     'http://is2.grid.iu.edu:14001[RAW]'}
-
-        for var in variables:
-            self.assertTrue(options.has_key(var),
-                            "Option %s missing" % var)
-            self.assertEqual(options[var].value,
-                             variables[var],
-                             "Wrong value obtained for %s, got %s but " \
-                             "expected %s" % (var,
-                                              options[var].value,
-                                              variables[var]))
-
-    def testParsingMissingITBDefaults(self):
-        """
-        Test infoservices parsing to make sure it picks up ITB defaults
-        when the infoservices section is missing
-        """
-
-        # need to be on a CE to get CE defaults
-        if not (utilities.ce_installed() and utilities.rpm_installed(['gip', 'osg-info-services'])):
-            return
-        config_file = get_test_config("infoservices/itb_defaults2.ini")
-        configuration = ConfigParser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = infoservices.InfoServicesConfiguration(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception, e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        options = settings.options
-        variables = {'bdii_servers': 'http://is1.grid.iu.edu:14001[RAW],'
-                                     'http://is2.grid.iu.edu:14001[RAW]'}
-
-        for var in variables:
-            self.assertTrue(options.has_key(var),
-                            "Option %s missing" % var)
-            self.assertEqual(options[var].value,
-                             variables[var],
-                             "Wrong value obtained for %s, got %s but " \
-                             "expected %s" % (var,
-                                              options[var].value,
-                                              variables[var]))
-
-    def testParsingMissingProductionDefaults(self):
-        """
-        Test infoservices parsing to make sure it picks up production defaults
-        when the infoservices section is missing
-        """
-
-        # need to be on a CE to get CE defaults
-        if not (utilities.ce_installed() and utilities.rpm_installed(['gip', 'osg-info-services'])):
-            return
-        config_file = get_test_config("infoservices/prod_defaults2.ini")
-        configuration = ConfigParser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = infoservices.InfoServicesConfiguration(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception, e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        options = settings.options
-        variables = {'bdii_servers': 'http://is1.grid.iu.edu:14001[RAW],'
-                                     'http://is2.grid.iu.edu:14001[RAW]'}
-
-        for var in variables:
-            self.assertTrue(options.has_key(var),
-                            "Option %s missing" % var)
-            self.assertEqual(options[var].value,
-                             variables[var],
-                             "Wrong value obtained for %s, got %s but " \
-                             "expected %s" % (var,
-                                              options[var].value,
-                                              variables[var]))
-
     def testParsingDisabled(self):
         """
         Test infoservices parsing when set to disabled
@@ -210,9 +52,6 @@ class TestInfoServices(unittest.TestCase):
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        self.assertEqual(settings.options['bdii_servers'].value, '',
-                         "Disabled configuration should have no attributes")
-
     def testParsingIgnored(self):
         """
         Test infoservices parsing when set to ignored
@@ -227,62 +66,6 @@ class TestInfoServices(unittest.TestCase):
             settings.parse_configuration(configuration)
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
-
-        self.assertEqual(settings.options['bdii_servers'].value, '',
-                         "Disabled configuration should have no attributes")
-
-    def testIgnoredServices(self):
-        """
-        Test infoservices parsing when ignoring just bdii or ress
-        """
-
-        config_file = get_test_config("infoservices/ignore_bdii.ini")
-        configuration = ConfigParser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = infoservices.InfoServicesConfiguration(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception, e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        self.assertEqual(settings.bdii_servers, {},
-                         "Should not have BDII subscriptions when being ignored")
-
-    def testInvalidBDII1(self):
-        """
-        Test the check_attributes function to see if it catches invalid
-        bdii servers
-        """
-
-        config_file = get_test_config("infoservices/invalid_bdii1.ini")
-        configuration = ConfigParser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = infoservices.InfoServicesConfiguration(logger=global_logger)
-        self.assertRaises(exceptions.SettingError,
-                          settings.parse_configuration,
-                          configuration=configuration)
-
-    def testInvalidBDII2(self):
-        """
-        Test the check_attributes function to see if it catches invalid
-        bdii servers
-        """
-
-        config_file = get_test_config("infoservices/invalid_bdii2.ini")
-        configuration = ConfigParser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = infoservices.InfoServicesConfiguration(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception, e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        attributes = settings.get_attributes()
-        self.assertFalse(settings.check_attributes(attributes),
-                         "Did not notice invalid bdii server")
 
     def testValidSettings(self):
         """
@@ -407,25 +190,6 @@ class TestInfoServices(unittest.TestCase):
         self.assertTrue(settings.check_attributes(attributes),
                         "production defaults incorrectly flagged as invalid")
 
-    def testMultipleBDIIServers(self):
-        """
-        Test the check_attributes function to see if it oks the production defaults
-        set when the infoservices section is missing
-        """
-
-        config_file = get_test_config("infoservices/multiple_bdii.ini")
-        configuration = ConfigParser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = infoservices.InfoServicesConfiguration(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception, e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        self.assertTrue(len(settings.bdii_servers) == 3,
-                        "Did not parse bdii servers correctly")
-
     def testServiceList(self):
         """
         Test to make sure right services get returned
@@ -442,8 +206,6 @@ class TestInfoServices(unittest.TestCase):
             self.fail("Received exception while parsing configuration: %s" % e)
         services = settings.enabled_services()
         expected_services = set()
-        if settings.ois_required_rpms_installed:
-            expected_services.add('osg-info-services')
         if settings.ce_collector_required_rpms_installed and settings.htcondor_gateway_enabled:
             expected_services.add('condor-ce')
         self.assertEqual(services, expected_services,
