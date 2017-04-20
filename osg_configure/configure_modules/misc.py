@@ -146,6 +146,14 @@ class MiscConfiguration(BaseConfiguration):
 
         using_gums = False
         using_glexec = not utilities.blank(self.options['glexec_location'].value)
+        if using_glexec and not utilities.rpm_installed('lcmaps-plugins-glexec-tracking'):
+            msg = "Can't use glExec because LCMAPS glExec plugin not installed."\
+                  " Install lcmaps-plugins-glexec-tracking or unset glexec_location"
+            self.log(msg,
+                     option='glexec_location',
+                     section=self.config_section,
+                     level=logging.ERROR)
+            raise exceptions.ConfigureError(msg)
         if self.authorization_method == 'xacml':
             using_gums = True
             self._enable_xacml()
@@ -244,11 +252,11 @@ class MiscConfiguration(BaseConfiguration):
 
         self.log("Writing " + LCMAPS_DB_LOCATION, level=logging.INFO)
         if self.authorization_method == 'xacml':
-            lcmaps_template_fn = 'lcmaps.db.gums'
+            non_glexec_lcmaps_template_fn = lcmaps_template_fn = 'lcmaps.db.gums'
         elif self.authorization_method == 'gridmap' or self.authorization_method == 'local-gridmap':
-            lcmaps_template_fn = 'lcmaps.db.gridmap'
+            non_glexec_lcmaps_template_fn = lcmaps_template_fn = 'lcmaps.db.gridmap'
         elif self.authorization_method == 'vomsmap':
-            lcmaps_template_fn = 'lcmaps.db.vomsmap'
+            non_glexec_lcmaps_template_fn = lcmaps_template_fn = 'lcmaps.db.vomsmap'
         else:
             assert False
 
@@ -256,18 +264,18 @@ class MiscConfiguration(BaseConfiguration):
             lcmaps_template_fn += '.glexec'
 
         lcmaps_template_path = os.path.join(LCMAPS_DB_TEMPLATES_LOCATION, lcmaps_template_fn)
+        non_glexec_lcmaps_template_path = os.path.join(LCMAPS_DB_TEMPLATES_LOCATION, non_glexec_lcmaps_template_fn)
 
         if not validation.valid_file(lcmaps_template_path):
-            # Special case if we're using lcmaps from upcoming or 3.4 (which doesn't have the glexec variants):
+            # Special message if we're using lcmaps from upcoming or 3.4 (which doesn't have the glexec variants):
             if using_glexec and validation.valid_file(non_glexec_lcmaps_template_path):
-                self.log("glExec template not available in this version of lcmaps; disabling glExec",
-                         level=logging.WARNING)
-                lcmaps_template_path = non_glexec_lcmaps_template_path
+                msg = "glExec lcmaps.db templates not available in this version of lcmaps; unset glexec_location or "\
+                      " set edit_lcmaps_db=False"
             else:
                 msg = "lcmaps.db template file not found at %s; ensure lcmaps-db-templates is installed or set"\
                       " edit_lcmaps_db=False" % lcmaps_template_path
-                self.log(msg, level=logging.ERROR)
-                raise exceptions.ConfigureError(msg)
+            self.log(msg, level=logging.ERROR)
+            raise exceptions.ConfigureError(msg)
 
         lcmaps_contents = utilities.read_file(lcmaps_template_path)
         lcmaps_contents = ("# THIS FILE WAS WRITTEN BY OSG-CONFIGURE AND WILL BE OVERWRITTEN ON FUTURE RUNS\n"
