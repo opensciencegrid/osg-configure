@@ -182,13 +182,12 @@ class MiscConfiguration(BaseConfiguration):
                          level=logging.ERROR)
                 raise exceptions.ConfigureError(msg)
         else:
-            self.log("Unknown authorization method: %s" % \
-                     self.authorization_method,
+            self.log("Unknown authorization method: %s; should be one of: %s" %
+                     (self.authorization_method, ", ".join(VALID_AUTH_METHODS)),
                      option='authorization_method',
                      section=self.config_section,
                      level=logging.ERROR)
-            raise exceptions.ConfigureError("Invalid authorization_method option " +
-                                            "in Misc Services")
+            raise exceptions.ConfigureError("Invalid authorization_method option in Misc Services")
 
         if self.options['edit_lcmaps_db'].value:
             if validation.valid_file(LCMAPS_DB_LOCATION):
