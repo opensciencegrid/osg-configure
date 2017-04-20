@@ -20,6 +20,15 @@ HTCONDOR_CE_CONFIG_FILE = '/etc/condor-ce/config.d/50-osg-configure.conf'
 
 VALID_AUTH_METHODS = ['gridmap', 'local-gridmap', 'xacml', 'vomsmap']
 
+IGNORED_OPTIONS = [
+    ## pre-3.4 options
+    # 'glexec_location',
+    # 'enable_cleanup',
+    # 'cleanup_age_in_days',
+    # 'cleanup_users_list',
+    # 'cleanup_cron_time'
+]
+
 class MiscConfiguration(BaseConfiguration):
     """Class to handle attributes and configuration related to miscellaneous services"""
 
@@ -86,7 +95,7 @@ class MiscConfiguration(BaseConfiguration):
             return
 
         self.enabled = True
-        self.get_options(configuration)
+        self.get_options(configuration, ignore_options=IGNORED_OPTIONS)
 
         self.htcondor_gateway_enabled = utilities.config_safe_getboolean(configuration, 'Gateway',
                                                                          'htcondor_gateway_enabled', True)
