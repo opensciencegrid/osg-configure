@@ -2,6 +2,7 @@
 
 import re
 import logging
+import os
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
@@ -14,8 +15,10 @@ __all__ = ['MiscConfiguration']
 GSI_AUTHZ_LOCATION = "/etc/grid-security/gsi-authz.conf"
 GUMS_CLIENT_LOCATION = "/etc/gums/gums-client.properties"
 LCMAPS_DB_LOCATION = "/etc/lcmaps.db"
+LCMAPS_DB_TEMPLATES_LOCATION = "/usr/share/lcmaps/templates"
 HTCONDOR_CE_CONFIG_FILE = '/etc/condor-ce/config.d/50-osg-configure.conf'
 
+VALID_AUTH_METHODS = ['gridmap', 'local-gridmap', 'xacml', 'vomsmap']
 
 class MiscConfiguration(BaseConfiguration):
     """Class to handle attributes and configuration related to miscellaneous services"""
@@ -64,6 +67,7 @@ class MiscConfiguration(BaseConfiguration):
                                               default_value=False)}
         self.config_section = "Misc Services"
         self.htcondor_gateway_enabled = True
+        self.authorization_method = None
         self.log('MiscConfiguration.__init__ completed')
 
     def parse_configuration(self, configuration):
@@ -86,6 +90,7 @@ class MiscConfiguration(BaseConfiguration):
 
         self.htcondor_gateway_enabled = utilities.config_safe_getboolean(configuration, 'Gateway',
                                                                          'htcondor_gateway_enabled', True)
+        self.authorization_method = self.options['authorization_method'].value
 
         self.log('MiscConfiguration.parse_configuration completed')
 
@@ -100,15 +105,14 @@ class MiscConfiguration(BaseConfiguration):
             self.log('MiscConfiguration.check_attributes completed')
             return True
 
-        if (self.options['authorization_method'].value not in \
-                    ['gridmap', 'local-gridmap', 'xacml']):
-            self.log("Setting is not xacml, or gridmap",
+        if self.authorization_method not in VALID_AUTH_METHODS:
+            self.log("Setting is not one of: " + ", ".join(VALID_AUTH_METHODS),
                      option='authorization_method',
                      section=self.config_section,
                      level=logging.ERROR)
             attributes_ok = False
 
-        if self.options['authorization_method'].value == 'xacml':
+        if self.authorization_method == 'xacml':
             if utilities.blank(self.options['gums_host'].value):
                 self.log("Gums host not given",
                          section=self.config_section,
@@ -141,16 +145,28 @@ class MiscConfiguration(BaseConfiguration):
             raise exceptions.ConfigureError('fetch-crl returned non-zero exit code')
 
         using_gums = False
-        if self.options['authorization_method'].value == 'xacml':
+        using_glexec = not utilities.blank(self.options['glexec_location'].value)
+        if self.authorization_method == 'xacml':
             using_gums = True
             self._enable_xacml()
-        elif self.options['authorization_method'].value == 'gridmap':
+            self._update_gums_client_location()
+        elif self.authorization_method == 'gridmap':
             self._disable_callout()
-        elif self.options['authorization_method'].value == 'local-gridmap':
+        elif self.authorization_method == 'local-gridmap':
             self._disable_callout()
+        elif self.authorization_method == 'vomsmap':
+            self._enable_xacml()
+            if using_glexec:
+                msg = "glExec not supported with vomsmap authorization; unset glexec_location or change "\
+                      " authorization_method"
+                self.log(msg,
+                         options='glexec_location',
+                         section=self.config_section,
+                         level=logging.ERROR)
+                raise exceptions.ConfigureError(msg)
         else:
             self.log("Unknown authorization method: %s" % \
-                     self.options['authorization_method'].value,
+                     self.authorization_method,
                      option='authorization_method',
                      section=self.config_section,
                      level=logging.ERROR)
@@ -159,7 +175,7 @@ class MiscConfiguration(BaseConfiguration):
 
         if self.options['edit_lcmaps_db'].value:
             if validation.valid_file(LCMAPS_DB_LOCATION):
-                self._update_lcmaps_file(using_gums)
+                self._write_lcmaps_file(using_glexec)
             else:
                 self.log("Not updating lcmaps.db because it's not accessible",
                          level=logging.DEBUG)
@@ -198,6 +214,7 @@ class MiscConfiguration(BaseConfiguration):
             raise exceptions.ConfigureError("Error while writing to " +
                                             GSI_AUTHZ_LOCATION)
 
+    def _update_gums_client_location(self):
         self.log("Updating " + GUMS_CLIENT_LOCATION, level=logging.INFO)
         location_re = re.compile("^gums.location=.*$", re.MULTILINE)
         authz_re = re.compile("^gums.authz=.*$", re.MULTILINE)
@@ -215,6 +232,52 @@ class MiscConfiguration(BaseConfiguration):
             replacement += "/gums/services/GUMSXACMLAuthorizationServicePort"
             gums_properties = authz_re.sub(replacement, gums_properties)
         utilities.atomic_write(GUMS_CLIENT_LOCATION, gums_properties)
+
+    def _write_lcmaps_file(self, using_glexec=False):
+        assert not (using_glexec and self.authorization_method == 'vomsmap')
+
+        old_lcmaps_contents = utilities.read_file(LCMAPS_DB_LOCATION, default='')
+        if 'THIS FILE WAS WRITTEN BY OSG-CONFIGURE' not in old_lcmaps_contents:
+            backup_path = LCMAPS_DB_LOCATION + '.pre-configure'
+            self.log("Backing up %s to %s" % (LCMAPS_DB_LOCATION, backup_path), level=logging.WARNING)
+            utilities.atomic_write(backup_path, old_lcmaps_contents)
+
+        self.log("Writing " + LCMAPS_DB_LOCATION, level=logging.INFO)
+        if self.authorization_method == 'xacml':
+            lcmaps_template_fn = 'lcmaps.db.gums'
+        elif self.authorization_method == 'gridmap' or self.authorization_method == 'local-gridmap':
+            lcmaps_template_fn = 'lcmaps.db.gridmap'
+        elif self.authorization_method == 'vomsmap':
+            lcmaps_template_fn = 'lcmaps.db.vomsmap'
+        else:
+            assert False
+
+        if using_glexec:
+            lcmaps_template_fn += '.glexec'
+
+        lcmaps_template_path = os.path.join(LCMAPS_DB_TEMPLATES_LOCATION, lcmaps_template_fn)
+
+        if not validation.valid_file(lcmaps_template_path):
+            # Special case if we're using lcmaps from upcoming or 3.4 (which doesn't have the glexec variants):
+            if using_glexec and validation.valid_file(non_glexec_lcmaps_template_path):
+                self.log("glExec template not available in this version of lcmaps; disabling glExec",
+                         level=logging.WARNING)
+                lcmaps_template_path = non_glexec_lcmaps_template_path
+            else:
+                msg = "lcmaps.db template file not found at %s; ensure lcmaps-db-templates is installed or set"\
+                      " edit_lcmaps_db=False" % lcmaps_template_path
+                self.log(msg, level=logging.ERROR)
+                raise exceptions.ConfigureError(msg)
+
+        lcmaps_contents = utilities.read_file(lcmaps_template_path)
+        lcmaps_contents = ("# THIS FILE WAS WRITTEN BY OSG-CONFIGURE AND WILL BE OVERWRITTEN ON FUTURE RUNS\n"
+                           "# Set edit_lcmaps_db = False in the [%s] section of your OSG configuration to\n"
+                           "# keep your changes.\n" % self.config_section
+                           + lcmaps_contents.replace('@GUMSHOST@', str(self.options['gums_host'].value)))
+        if not utilities.atomic_write(LCMAPS_DB_LOCATION, lcmaps_contents):
+            msg = "Error while writing to " + LCMAPS_DB_LOCATION
+            self.log(msg, level=logging.ERROR)
+            raise exceptions.ConfigureError(msg)
 
     def _update_lcmaps_file(self, gums=True):
         """
@@ -385,7 +448,7 @@ configuration:
     def write_gridmap_to_htcondor_ce_config(self):
         contents = utilities.read_file(HTCONDOR_CE_CONFIG_FILE,
                                        default="# This file is managed by osg-configure\n")
-        if self.options['authorization_method'].value == 'xacml':
+        if 'gridmap' not in self.authorization_method:
             # Remove GRIDMAP setting
             contents = re.sub(r'(?m)^\s*GRIDMAP\s*=.*?$[\n]?', "", contents)
         else:
