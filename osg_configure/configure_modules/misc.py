@@ -172,7 +172,6 @@ class MiscConfiguration(BaseConfiguration):
         if self.htcondor_gateway_enabled:
             self.write_gridmap_to_htcondor_ce_config()
 
-        ensure_valid_user_vo_file(using_gums, logger=self.logger)
         # Call configure_vdt_cleanup (enabling or disabling as necessary)
         self._configure_cleanup()
 
@@ -428,13 +427,11 @@ def ensure_valid_user_vo_file(using_gums, logger=utilities.NullLogger):
         temp, invalid_lines = validation.valid_user_vo_file(USER_VO_MAP_LOCATION, True)
         result = result and temp
         if not result:
-            logger.error("Can't generate user-vo-map, manual intervention is needed")
             if not invalid_lines:
-                logger.error("gums-host-cron or edg-mkgridmap generated an empty " +
-                             USER_VO_MAP_LOCATION + " file, please check the "
-                             "appropriate configuration and or log messages")
-                raise exceptions.ConfigureError('Error when generating user-vo-map file')
-            logger.error("Invalid lines in user-vo-map file:")
-            logger.error("\n".join(invalid_lines))
-            raise exceptions.ConfigureError("Error when invoking gums-host-cron or edg-mkgridmap")
-
+                logger.warning("gums-host-cron or edg-mkgridmap generated an empty " +
+                               USER_VO_MAP_LOCATION + " file, please check the "
+                               "appropriate configuration and or log messages")
+            else:
+                logger.warning("Invalid lines in user-vo-map file:")
+                logger.warning("\n".join(invalid_lines))
+            logger.warning("Error when invoking gums-host-cron or edg-mkgridmap")
