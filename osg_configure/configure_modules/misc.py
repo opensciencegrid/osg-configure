@@ -190,11 +190,7 @@ class MiscConfiguration(BaseConfiguration):
             raise exceptions.ConfigureError("Invalid authorization_method option in Misc Services")
 
         if self.options['edit_lcmaps_db'].value:
-            if validation.valid_file(LCMAPS_DB_LOCATION):
-                self._write_lcmaps_file(using_glexec)
-            else:
-                self.log("Not updating lcmaps.db because it's not accessible",
-                         level=logging.DEBUG)
+            self._write_lcmaps_file(using_glexec)
         else:
             self.log("Not updating lcmaps.db because edit_lcmaps_db is false",
                      level=logging.DEBUG)
@@ -253,7 +249,7 @@ class MiscConfiguration(BaseConfiguration):
         assert not (using_glexec and self.authorization_method == 'vomsmap')
 
         old_lcmaps_contents = utilities.read_file(LCMAPS_DB_LOCATION, default='')
-        if 'THIS FILE WAS WRITTEN BY OSG-CONFIGURE' not in old_lcmaps_contents:
+        if old_lcmaps_contents and 'THIS FILE WAS WRITTEN BY OSG-CONFIGURE' not in old_lcmaps_contents:
             backup_path = LCMAPS_DB_LOCATION + '.pre-configure'
             self.log("Backing up %s to %s" % (LCMAPS_DB_LOCATION, backup_path), level=logging.WARNING)
             utilities.atomic_write(backup_path, old_lcmaps_contents)
