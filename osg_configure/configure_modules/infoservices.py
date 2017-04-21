@@ -129,7 +129,7 @@ class InfoServicesConfiguration(BaseConfiguration):
 
         self.htcondor_gateway_enabled = csgbool('Gateway', 'htcondor_gateway_enabled')
 
-        self.authorization_method = csgbool('Misc Services', 'authorization_method')
+        self.authorization_method = csg('Misc Services', 'authorization_method')
         self.subcluster_sections = ConfigParser.SafeConfigParser()
 
         for section in configuration.sections():
