@@ -138,6 +138,12 @@ class InfoServicesConfiguration(BaseConfiguration):
                 for key, value in configuration.items(section):
                     self.subcluster_sections.set(section, key, value)
 
+        if utilities.ce_installed() and not subcluster.check_config(configuration):
+            self.log("On a CE but no valid 'Subcluster' or 'Resource Entry' sections defined."
+                     " This is required to advertise the capabilities of your cluster to the central collector."
+                     " Jobs may not be sent to this CE.",
+                     level=logging.WARNING)
+
         # Check resource catalog
         # This is a bit clunky to parse it here and not use the result in
         # configure(), but at this point we don't have a way of knowing what

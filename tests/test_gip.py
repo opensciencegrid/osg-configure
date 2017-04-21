@@ -24,15 +24,13 @@ else:
 
     global_logger.addHandler(NullHandler())
 
-from osg_configure.configure_modules import gip
 from osg_configure.configure_modules import localsettings
 
 from osg_configure.modules import exceptions
+from osg_configure.modules import subcluster
 from osg_configure.modules import utilities
 
 from osg_configure.modules.utilities import get_test_config
-
-SAMPLE_VO_MAP_LOCATION = 'gip/sample_vo_map'
 
 
 class TestGip(unittest.TestCase):
@@ -42,154 +40,28 @@ class TestGip(unittest.TestCase):
         """
         Make sure that we have failures when there is no configured SC.
         """
-        did_fail = False
-        try:
-            config_parser = ConfigParser.SafeConfigParser()
-            config_file = get_test_config("gip/red-missing-sc.ini")
-            config_parser.read(config_file)
-            gip_config = gip.GipConfiguration(logger=global_logger)
-            gip_config._parse_configuration(config_parser)
-            gip_config._parse_configuration_ce(config_parser)
-        except exceptions.SettingError:
-            did_fail = True
-        self.assertTrue(did_fail, msg="Did not properly detect a missing SC.")
-
-    def test_missing_se(self):
-        """
-        Make sure that we ignore when there is no configured SE and there
-        is no classic SE.
-        """
-        did_fail = False
-        try:
-            config_parser = ConfigParser.SafeConfigParser()
-            config_file = get_test_config("gip/red-missing-se.ini")
-            config_parser.read(config_file)
-            gip_config = gip.GipConfiguration(logger=global_logger)
-            gip_config._parse_configuration(config_parser)
-        except exceptions.SettingError:
-            did_fail = True
-        self.assertFalse(did_fail, msg="Raised error on missing SE")
-
-    def test_missing_se2(self):
-        """
-        Make sure that we ignore when there is no configured SE and there
-        is a classic SE.
-        """
-        did_fail = False
-        try:
-            config_parser = ConfigParser.SafeConfigParser()
-            config_file = get_test_config("gip/red-missing-se2.ini")
-            config_parser.read(config_file)
-            gip_config = gip.GipConfiguration(logger=global_logger)
-            gip_config._parse_configuration(config_parser)
-        except exceptions.SettingError:
-            did_fail = True
-        self.assertFalse(did_fail, msg="Raised error on missing SE")
-
-    def test_changeme1(self):
-        """
-        Test should pass if SE CHANGEME section is disabled.
-        """
-        did_fail = False
-        try:
-            config_parser = ConfigParser.SafeConfigParser()
-            config_file = get_test_config("gip/changeme_section.ini")
-            config_parser.read(config_file)
-            gip_config = gip.GipConfiguration(logger=global_logger)
-            gip_config._parse_configuration(config_parser)
-        except exceptions.SettingError:
-            did_fail = True
-        self.assertFalse(did_fail, msg="Falsely detected an enabled CHANGEME section.")
-
-    def test_changeme2(self):
-        """
-        Test should ignore an enabled SE CHANGEME section
-        """
-        did_fail = False
-        try:
-            config_parser = ConfigParser.SafeConfigParser()
-            config_file = get_test_config("gip/changeme_section_bad.ini")
-            config_parser.read(config_file)
-            gip_config = gip.GipConfiguration(logger=global_logger)
-            gip_config._parse_configuration(config_parser)
-        except exceptions.SettingError:
-            did_fail = True
-        self.assertFalse(did_fail, msg="Raised error on SE CHANGEME section")
-
-    def test_changeme3(self):
-        """
-        Test should ignore an enabled SE CHANGEME section
-        Variant 2.
-        """
-        did_fail = False
-        try:
-            config_parser = ConfigParser.SafeConfigParser()
-            config_file = get_test_config("gip/changeme_section_bad2.ini")
-            config_parser.read(config_file)
-            gip_config = gip.GipConfiguration(logger=global_logger)
-            gip_config._parse_configuration(config_parser)
-        except exceptions.SettingError:
-            did_fail = True
-        self.assertFalse(did_fail, msg="Raised error on SE CHANGEME section")
+        config_parser = ConfigParser.SafeConfigParser()
+        config_file = get_test_config("gip/red-missing-sc.ini")
+        config_parser.read(config_file)
+        self.assertFalse(subcluster.check_config(config_parser), msg="Did not properly detect a missing SC.")
 
     def test_changeme4(self):
         """
-        Test should fail because SC CHANGEME section is present.
-
+        Make sure that we have failures because SC CHANGEME section is present.
         """
-        did_fail = False
-        try:
-            config_parser = ConfigParser.SafeConfigParser()
-            config_file = get_test_config("gip/changeme_section_sc.ini")
-            config_parser.read(config_file)
-            gip_config = gip.GipConfiguration(logger=global_logger)
-            gip_config._parse_configuration(config_parser)
-            gip_config._parse_configuration_ce(config_parser)
-        except exceptions.SettingError:
-            did_fail = True
-        self.assertTrue(did_fail, msg="Did not detect enabled CHANGEME section.")
-
-    def test_changeme5(self):
-        """
-        Test should not fail because SE CHANGEME section is disabled.
-        Variant 2.
-        """
-        did_fail = False
-        try:
-            config_parser = ConfigParser.SafeConfigParser()
-            config_file = get_test_config("gip/changeme_section_bad3.ini")
-            config_parser.read(config_file)
-            gip_config = gip.GipConfiguration(logger=global_logger)
-            gip_config._parse_configuration(config_parser)
-        except exceptions.SettingError:
-            did_fail = True
-        self.assertFalse(did_fail, msg="Falsely detected an enabled CHANGEME section.")
+        config_parser = ConfigParser.SafeConfigParser()
+        config_file = get_test_config("gip/changeme_section_sc.ini")
+        config_parser.read(config_file)
+        self.assertRaises(exceptions.SettingError, subcluster.check_config, config_parser) # detect enabled CHANGEME section.
 
     def test_missing_attributes(self):
         """
         Make sure that we have failures when there are missing attributes.
         """
-        did_fail = False
-        try:
-            config_parser = ConfigParser.SafeConfigParser()
-            config_file = get_test_config("gip/red-missing-attributes.ini")
-            config_parser.read(config_file)
-            gip_config = gip.GipConfiguration(logger=global_logger)
-            gip_config._parse_configuration(config_parser)
-            gip_config._parse_configuration_ce(config_parser)
-        except exceptions.SettingError:
-            did_fail = True
-        self.assertTrue(did_fail, msg="Did not properly detect missing attrs.")
-
-    def test_old_config(self):
-        """
-        Make sure that we can correctly parse an old-style GIP config.
-        """
         config_parser = ConfigParser.SafeConfigParser()
-        config_file = get_test_config("gip/red-old-gip-config.ini")
+        config_file = get_test_config("gip/red-missing-attributes.ini")
         config_parser.read(config_file)
-        gip_config = gip.GipConfiguration(logger=global_logger)
-        gip_config._parse_configuration(config_parser)
+        self.assertRaises(exceptions.SettingError, subcluster.check_config, config_parser) # detect missing attrs.
 
     def test_new_config(self):
         """
@@ -198,20 +70,7 @@ class TestGip(unittest.TestCase):
         config_parser = ConfigParser.SafeConfigParser()
         config_file = get_test_config("gip/red-new-gip-config.ini")
         config_parser.read(config_file)
-        gip_config = gip.GipConfiguration(logger=global_logger)
-        gip_config._parse_configuration(config_parser)
-        gip_config._parse_configuration_ce(config_parser)
-
-    def test_doherty(self):
-        """
-        Make sure that we can correctly parse a correct new-style GIP config.
-        """
-        config_parser = ConfigParser.SafeConfigParser()
-        config_file = get_test_config("gip/doherty.ini")
-        config_parser.read(config_file)
-        gip_config = gip.GipConfiguration(logger=global_logger)
-        gip_config._parse_configuration(config_parser)
-        gip_config._parse_configuration_ce(config_parser)
+        self.assertTrue(subcluster.check_config(config_parser))
 
     def test_local_settings(self):
         """
@@ -242,85 +101,6 @@ class TestGip(unittest.TestCase):
                         msg="Incorrect value wanted value2, " \
                             "got %s" % attributes['bar'])
 
-    def test_allowed_vos(self):
-        """
-        Make sure the allowed VOs is filtered properly.
-        """
-        config_parser = ConfigParser.SafeConfigParser()
-        config_file = get_test_config("gip/allowed_vos.ini")
-        config_parser.read(config_file)
-        config_parser.set('Install Locations',
-                          'user_vo_map',
-                          get_test_config(SAMPLE_VO_MAP_LOCATION))
-        gip_config = gip.GipConfiguration(logger=global_logger)
-        gip_config._parse_configuration(config_parser)
-        gip_config._parse_configuration_ce(config_parser)
-
-    def test_allowed_jobmanagers(self):
-        """
-        Make sure the allowed VOs is filtered properly.
-        """
-        config_parser = ConfigParser.SafeConfigParser()
-        config_file = get_test_config("gip/allowed_jobmanager1.ini")
-        config_parser.read(config_file)
-        config_parser.set('Install Locations',
-                          'user_vo_map',
-                          get_test_config(SAMPLE_VO_MAP_LOCATION))
-        gip_config = gip.GipConfiguration(logger=global_logger)
-        gip_config._parse_configuration(config_parser)
-        gip_config._parse_configuration_ce(config_parser)
-
-        config_parser = ConfigParser.SafeConfigParser()
-        config_file = get_test_config("gip/allowed_jobmanager2.ini")
-        config_parser.read(config_file)
-        config_parser.set('Install Locations',
-                          'user_vo_map',
-                          get_test_config(SAMPLE_VO_MAP_LOCATION))
-        gip_config = gip.GipConfiguration(logger=global_logger)
-        gip_config._parse_configuration(config_parser)
-        gip_config._parse_configuration_ce(config_parser)
-
-        config_parser = ConfigParser.SafeConfigParser()
-        config_file = get_test_config("gip/allowed_jobmanager3.ini")
-        config_parser.read(config_file)
-        config_parser.set('Install Locations',
-                          'user_vo_map',
-                          get_test_config(SAMPLE_VO_MAP_LOCATION))
-        gip_config = gip.GipConfiguration(logger=global_logger)
-        gip_config._parse_configuration(config_parser)
-        gip_config._parse_configuration_ce(config_parser)
-
-        config_parser = ConfigParser.SafeConfigParser()
-        config_file = get_test_config("gip/allowed_jobmanager4.ini")
-        config_parser.read(config_file)
-        config_parser.set('Install Locations',
-                          'user_vo_map',
-                          get_test_config(SAMPLE_VO_MAP_LOCATION))
-        gip_config = gip.GipConfiguration(logger=global_logger)
-        gip_config._parse_configuration(config_parser)
-        gip_config._parse_configuration_ce(config_parser)
-
-        config_parser = ConfigParser.SafeConfigParser()
-        config_file = get_test_config("gip/allowed_jobmanager5.ini")
-        config_parser.read(config_file)
-        config_parser.set('Install Locations',
-                          'user_vo_map',
-                          get_test_config(SAMPLE_VO_MAP_LOCATION))
-        gip_config = gip.GipConfiguration(logger=global_logger)
-        gip_config._parse_configuration(config_parser)
-        gip_config._parse_configuration_ce(config_parser)
-
-        config_parser = ConfigParser.SafeConfigParser()
-        config_file = get_test_config("gip/allowed_jobmanager6.ini")
-        config_parser.read(config_file)
-        config_parser.set('Install Locations',
-                          'user_vo_map',
-                          get_test_config(SAMPLE_VO_MAP_LOCATION))
-        gip_config = gip.GipConfiguration(logger=global_logger)
-        gip_config._parse_configuration(config_parser)
-        gip_config._parse_configuration_ce(config_parser)
-
-
     def test_hepspec_valid(self):
         """
         Make sure a valid HEPSPEC value is accepted.
@@ -329,9 +109,8 @@ class TestGip(unittest.TestCase):
         config_parser = ConfigParser.SafeConfigParser()
         config_file = get_test_config("gip/sc_samples.ini")
         config_parser.read(config_file)
-        gip_config = gip.GipConfiguration(logger=global_logger)
         try:
-            gip_config.check_sc(config_parser, "Subcluster Valid")
+            subcluster.check_section(config_parser, "Subcluster Valid")
         except exceptions.SettingError:
             did_fail = True
         self.assertFalse(did_fail, msg="Valid HEPSPEC entry threw an exception.")
@@ -343,13 +122,12 @@ class TestGip(unittest.TestCase):
         config_parser = ConfigParser.SafeConfigParser()
         config_file = get_test_config("gip/sc_samples.ini")
         config_parser.read(config_file)
-        gip_config = gip.GipConfiguration(logger=global_logger)
         try:
-            gip_config.check_sc(config_parser, "Subcluster Bad HEPSPEC")
+            subcluster.check_section(config_parser, "Subcluster Bad HEPSPEC")
         except exceptions.SettingError:
             self.fail(msg="Invalid HEPSPEC entry threw an exception.")
         try:
-            gip_config.check_sc(config_parser, "Subcluster Formerly Bad Cores")
+            subcluster.check_section(config_parser, "Subcluster Formerly Bad Cores")
         except exceptions.SettingError:
             self.fail(msg="Formerly Bad Cores entry threw an exception")
 
@@ -360,8 +138,7 @@ class TestGip(unittest.TestCase):
         config_parser = ConfigParser.SafeConfigParser()
         config_file = get_test_config("gip/sc_samples.ini")
         config_parser.read(config_file)
-        gip_config = gip.GipConfiguration(logger=global_logger)
-        self.assertRaises(exceptions.SettingError, gip_config.check_sc, config_parser, "Subcluster No Name")
+        self.assertRaises(exceptions.SettingError, subcluster.check_section, config_parser, "Subcluster No Name")
 
     def test_resource_entry(self):
         """
@@ -370,8 +147,7 @@ class TestGip(unittest.TestCase):
         config_parser = ConfigParser.SafeConfigParser()
         config_file = get_test_config("gip/resourceentry.ini")
         config_parser.read(config_file)
-        gip_config = gip.GipConfiguration(logger=global_logger)
-        found_scs = gip_config.check_subclusters(config_parser)
+        found_scs = subcluster.check_config(config_parser)
         self.assertTrue(found_scs, msg="Resource Entry Valid not found.")
 
     def test_resource_entry_2(self):
@@ -382,12 +158,11 @@ class TestGip(unittest.TestCase):
         config_parser = ConfigParser.SafeConfigParser()
         config_file = get_test_config("gip/resourceentry.ini")
         config_parser.read(config_file)
-        gip_config = gip.GipConfiguration(logger=global_logger)
         did_fail = False
         for section in ["Resource Entry Valid Old Attribs",
                         "Resource Entry Valid New Attribs"]:
             try:
-                gip_config.check_sc(config_parser, section)
+                subcluster.check_section(config_parser, section)
             except exceptions.SettingError:
                 did_fail = True
             self.assertFalse(did_fail, msg="Section %s threw an exception." % section)
