@@ -1,4 +1,4 @@
-"""Module for unit testing gip configuration"""
+"""Module for unit testing subcluster / resource entry configuration"""
 
 # pylint: disable=W0703
 # pylint: disable=R0904
@@ -33,15 +33,15 @@ from osg_configure.modules import utilities
 from osg_configure.modules.utilities import get_test_config
 
 
-class TestGip(unittest.TestCase):
-    """Class for unit testing GIP configuration code"""
+class TestSubcluster(unittest.TestCase):
+    """Class for unit testing subcluster / resource entry configuration code"""
 
     def test_missing_sc(self):
         """
         Make sure that we have failures when there is no configured SC.
         """
         config_parser = ConfigParser.SafeConfigParser()
-        config_file = get_test_config("gip/red-missing-sc.ini")
+        config_file = get_test_config("subcluster/red-missing-sc.ini")
         config_parser.read(config_file)
         self.assertFalse(subcluster.check_config(config_parser), msg="Did not properly detect a missing SC.")
 
@@ -50,7 +50,7 @@ class TestGip(unittest.TestCase):
         Make sure that we have failures because SC CHANGEME section is present.
         """
         config_parser = ConfigParser.SafeConfigParser()
-        config_file = get_test_config("gip/changeme_section_sc.ini")
+        config_file = get_test_config("subcluster/changeme_section_sc.ini")
         config_parser.read(config_file)
         self.assertRaises(exceptions.SettingError, subcluster.check_config, config_parser) # detect enabled CHANGEME section.
 
@@ -59,7 +59,7 @@ class TestGip(unittest.TestCase):
         Make sure that we have failures when there are missing attributes.
         """
         config_parser = ConfigParser.SafeConfigParser()
-        config_file = get_test_config("gip/red-missing-attributes.ini")
+        config_file = get_test_config("subcluster/red-missing-attributes.ini")
         config_parser.read(config_file)
         self.assertRaises(exceptions.SettingError, subcluster.check_config, config_parser) # detect missing attrs.
 
@@ -68,7 +68,7 @@ class TestGip(unittest.TestCase):
         Make sure that we can correctly parse a correct new-style GIP config.
         """
         config_parser = ConfigParser.SafeConfigParser()
-        config_file = get_test_config("gip/red-new-gip-config.ini")
+        config_file = get_test_config("subcluster/red-new-gip-config.ini")
         config_parser.read(config_file)
         self.assertTrue(subcluster.check_config(config_parser))
 
@@ -78,7 +78,7 @@ class TestGip(unittest.TestCase):
         """
         config_parser = ConfigParser.SafeConfigParser()
         config_parser.optionxform = str
-        config_file = get_test_config("gip/local_settings.ini")
+        config_file = get_test_config("subcluster/local_settings.ini")
         config_parser.read(config_file)
         local_settings = localsettings.LocalSettings(logger= \
                                                          global_logger)
@@ -107,7 +107,7 @@ class TestGip(unittest.TestCase):
         """
         did_fail = False
         config_parser = ConfigParser.SafeConfigParser()
-        config_file = get_test_config("gip/sc_samples.ini")
+        config_file = get_test_config("subcluster/sc_samples.ini")
         config_parser.read(config_file)
         try:
             subcluster.check_section(config_parser, "Subcluster Valid")
@@ -120,7 +120,7 @@ class TestGip(unittest.TestCase):
         Make sure a invalid HEPSPEC value no longer causes an error..
         """
         config_parser = ConfigParser.SafeConfigParser()
-        config_file = get_test_config("gip/sc_samples.ini")
+        config_file = get_test_config("subcluster/sc_samples.ini")
         config_parser.read(config_file)
         try:
             subcluster.check_section(config_parser, "Subcluster Bad HEPSPEC")
@@ -136,7 +136,7 @@ class TestGip(unittest.TestCase):
         Make sure a missing name causes an error
         """
         config_parser = ConfigParser.SafeConfigParser()
-        config_file = get_test_config("gip/sc_samples.ini")
+        config_file = get_test_config("subcluster/sc_samples.ini")
         config_parser.read(config_file)
         self.assertRaises(exceptions.SettingError, subcluster.check_section, config_parser, "Subcluster No Name")
 
@@ -145,7 +145,7 @@ class TestGip(unittest.TestCase):
         Make sure a Resource Entry section is detected
         """
         config_parser = ConfigParser.SafeConfigParser()
-        config_file = get_test_config("gip/resourceentry.ini")
+        config_file = get_test_config("subcluster/resourceentry.ini")
         config_parser.read(config_file)
         found_scs = subcluster.check_config(config_parser)
         self.assertTrue(found_scs, msg="Resource Entry Valid not found.")
@@ -156,7 +156,7 @@ class TestGip(unittest.TestCase):
         Resource Entry section
         """
         config_parser = ConfigParser.SafeConfigParser()
-        config_file = get_test_config("gip/resourceentry.ini")
+        config_file = get_test_config("subcluster/resourceentry.ini")
         config_parser.read(config_file)
         did_fail = False
         for section in ["Resource Entry Valid Old Attribs",
