@@ -18,22 +18,22 @@ BOOLEAN = "boolean"
 
 ENTRIES = {
     "name": (REQUIRED, STRING),
-    "cpu_vendor": (REQUIRED_FOR_SUBCLUSTER, STRING),
-    "cpu_model": (REQUIRED_FOR_SUBCLUSTER, STRING),
+    "cpu_vendor": (OPTIONAL, STRING),
+    "cpu_model": (OPTIONAL, STRING),
     "cores_per_node": (REQUIRED_FOR_SUBCLUSTER, POSITIVE_INT), # also used by resource entry
     "cpucount": (OPTIONAL, POSITIVE_INT), # alias for cores_per_node
-    "node_count": (REQUIRED_FOR_SUBCLUSTER, POSITIVE_INT),
-    "cpus_per_node": (REQUIRED_FOR_SUBCLUSTER, POSITIVE_INT),
-    "cpu_speed_mhz": (REQUIRED_FOR_SUBCLUSTER, POSITIVE_FLOAT),
+    "node_count": (OPTIONAL, POSITIVE_INT),
+    "cpus_per_node": (OPTIONAL, POSITIVE_INT),
+    "cpu_speed_mhz": (OPTIONAL, POSITIVE_FLOAT),
     "ram_mb": (REQUIRED_FOR_SUBCLUSTER, POSITIVE_INT), # also used by resource entry
     "maxmemory": (OPTIONAL, POSITIVE_INT), # alias for ram_mb
     "swap_mb": (OPTIONAL, POSITIVE_INT),
     "SI00": (OPTIONAL, POSITIVE_FLOAT),
     "HEPSPEC": (OPTIONAL, POSITIVE_FLOAT),
     "SF00": (OPTIONAL, POSITIVE_FLOAT),
-    "inbound_network": (REQUIRED_FOR_SUBCLUSTER, BOOLEAN),
-    "outbound_network": (REQUIRED_FOR_SUBCLUSTER, BOOLEAN),
-    "cpu_platform": (REQUIRED_FOR_SUBCLUSTER, STRING),
+    "inbound_network": (OPTIONAL, BOOLEAN),
+    "outbound_network": (OPTIONAL, BOOLEAN),
+    "cpu_platform": (OPTIONAL, STRING),
     "allowed_vos": (OPTIONAL, STRING),
     "max_wall_time": (OPTIONAL, POSITIVE_INT),
     "extra_requirements": (OPTIONAL, STRING),
@@ -45,14 +45,8 @@ ENTRIES = {
 
 BANNED_ENTRIES = {
     "name": "SUBCLUSTER_NAME",
-    "node_count": "NUMBER_OF_NODE",
     "ram_mb": "MB_OF_RAM",
     "maxmemory": "MAX_MB_OF_RAM_ALLOCATED_TO_JOB",
-    "cpu_model": "CPU_MODEL_FROM_/proc/cpuinfo",
-    "cpu_vendor": "VENDOR_AMD_OR_INTEL",
-    "cpu_speed_mhz": "CLOCK_SPEED_MHZ",
-    "cpu_platform": "x86_64_OR_i686",
-    "cpus_per_node": "#_PHYSICAL_CHIPS_PER_NODE",
     "cores_per_node": "#_CORES_PER_NODE",
     "cpucount": "CPUS_ALLOCATED_TO_JOB",
     "max_wall_time": "MAX_MINUTES_OF_RUNTIME",
@@ -60,13 +54,8 @@ BANNED_ENTRIES = {
 }
 
 ENTRY_RANGES = {
-    'SF00': (500, 320000),
-    'SI00': (500, 320000),
-    'HEPSPEC': (2, 3200),
     'ram_mb': (512, 8388608),
     'maxmemory': (512, 8388608),
-    'swap_mb': (512, 8388608),
-    'cpus_per_node': (1, 2048),
     'cores_per_node': (1, 8192),
     'cpucount': (1, 8192),
 }

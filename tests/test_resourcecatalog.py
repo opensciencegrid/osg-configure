@@ -167,7 +167,7 @@ vo_tag = ANALYSIS
 
     def testResourceEntryWithSubclusters(self):
         config = ConfigParser.SafeConfigParser()
-        config_file = get_test_config("gip/resourceentry_and_sc.ini")
+        config_file = get_test_config("subcluster/resourceentry_and_sc.ini")
         config.read(config_file)
         self.assertDoesNotRaise(exceptions.SettingError, subcluster.resource_catalog_from_config, config)
         rc = subcluster.resource_catalog_from_config(config).compose_text()
@@ -175,10 +175,10 @@ vo_tag = ANALYSIS
                         '\'subclusters\' attrib improperly transformed')
 
     def testResourceEntryBad(self):
-        for config_filename in ["gip/resourceentry_missing_cpucount.ini",
-                                "gip/resourceentry_missing_memory.ini",
-                                "gip/resourceentry_missing_queue.ini",
-                                "gip/resourceentry_missing_sc.ini"]:
+        for config_filename in ["subcluster/resourceentry_missing_cpucount.ini",
+                                "subcluster/resourceentry_missing_memory.ini",
+                                "subcluster/resourceentry_missing_queue.ini",
+                                "subcluster/resourceentry_missing_sc.ini"]:
             config = ConfigParser.SafeConfigParser()
             config_file = get_test_config(config_filename)
             config.read(config_file)
