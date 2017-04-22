@@ -248,7 +248,10 @@ class MiscConfiguration(BaseConfiguration):
         if old_lcmaps_contents and 'THIS FILE WAS WRITTEN BY OSG-CONFIGURE' not in old_lcmaps_contents:
             backup_path = LCMAPS_DB_LOCATION + '.pre-configure'
             self.log("Backing up %s to %s" % (LCMAPS_DB_LOCATION, backup_path), level=logging.WARNING)
-            utilities.atomic_write(backup_path, old_lcmaps_contents)
+            if not utilities.atomic_write(backup_path, old_lcmaps_contents):
+                msg = "Unable to back up old lcmaps.db to %s" % backup_path
+                self.log(msg, level=logging.ERROR)
+                raise exceptions.ConfigureError(msg)
 
         self.log("Writing " + LCMAPS_DB_LOCATION, level=logging.INFO)
         if self.authorization_method == 'xacml':
