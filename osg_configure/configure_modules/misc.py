@@ -2,7 +2,6 @@
 
 import re
 import logging
-import sys
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
@@ -15,7 +14,6 @@ __all__ = ['MiscConfiguration']
 GSI_AUTHZ_LOCATION = "/etc/grid-security/gsi-authz.conf"
 GUMS_CLIENT_LOCATION = "/etc/gums/gums-client.properties"
 LCMAPS_DB_LOCATION = "/etc/lcmaps.db"
-USER_VO_MAP_LOCATION = '/var/lib/osg/user-vo-map'
 HTCONDOR_CE_CONFIG_FILE = '/etc/condor-ce/config.d/50-osg-configure.conf'
 
 
@@ -172,7 +170,6 @@ class MiscConfiguration(BaseConfiguration):
         if self.htcondor_gateway_enabled:
             self.write_gridmap_to_htcondor_ce_config()
 
-        ensure_valid_user_vo_file(using_gums, logger=self.logger)
         # Call configure_vdt_cleanup (enabling or disabling as necessary)
         self._configure_cleanup()
 
@@ -395,46 +392,3 @@ configuration:
             contents = utilities.add_or_replace_setting(contents, "GRIDMAP", "/etc/grid-security/grid-mapfile",
                                                         quote_value=False)
         utilities.atomic_write(HTCONDOR_CE_CONFIG_FILE, contents)
-
-
-def create_user_vo_file(using_gums=False):
-    """
-    Check and create a mapfile if needed
-    """
-
-    map_file = '/var/lib/osg/user-vo-map'
-    try:
-        if validation.valid_user_vo_file(map_file):
-            return True
-        if using_gums:
-            gums_script = '/usr/bin/gums-host-cron'
-        else:
-            gums_script = '/usr/sbin/edg-mkgridmap'
-
-        sys.stdout.write("Running %s, this process may take some time " % gums_script +
-                         "to query vo and gums servers\n")
-        sys.stdout.flush()
-        if not utilities.run_script([gums_script]):
-            return False
-    except IOError:
-        return False
-    return True
-
-
-def ensure_valid_user_vo_file(using_gums, logger=utilities.NullLogger):
-    if not validation.valid_user_vo_file(USER_VO_MAP_LOCATION):
-        logger.info("Trying to create user-vo-map file")
-        result = create_user_vo_file(using_gums)
-        temp, invalid_lines = validation.valid_user_vo_file(USER_VO_MAP_LOCATION, True)
-        result = result and temp
-        if not result:
-            logger.error("Can't generate user-vo-map, manual intervention is needed")
-            if not invalid_lines:
-                logger.error("gums-host-cron or edg-mkgridmap generated an empty " +
-                             USER_VO_MAP_LOCATION + " file, please check the "
-                             "appropriate configuration and or log messages")
-                raise exceptions.ConfigureError('Error when generating user-vo-map file')
-            logger.error("Invalid lines in user-vo-map file:")
-            logger.error("\n".join(invalid_lines))
-            raise exceptions.ConfigureError("Error when invoking gums-host-cron or edg-mkgridmap")
-
