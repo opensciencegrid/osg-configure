@@ -137,7 +137,8 @@ class InfoServicesConfiguration(BaseConfiguration):
             self.log("On a CE but no valid 'Subcluster' or 'Resource Entry' sections defined."
                      " This is required to advertise the capabilities of your cluster to the central collector."
                      " Jobs may not be sent to this CE.",
-                     level=logging.WARNING)
+                     level=logging.ERROR)
+            raise exceptions.SettingError("No Subcluster or Resource Entry sections")
 
         # Check resource catalog
         # This is a bit clunky to parse it here and not use the result in
