@@ -177,12 +177,11 @@ class InfoServicesConfiguration(BaseConfiguration):
                          "\nHTCondor version must be at least 8.2.0.", level=logging.WARNING)
             else:
                 using_gums = self.authorization_method == 'xacml'
-                default_allowed_vos = None
-                try:
-                    ensure_valid_user_vo_file(using_gums, logger=self.logger)
-                    default_allowed_vos = utilities.get_vos(USER_VO_MAP_LOCATION)
-                except exceptions.ConfigureError, err:
-                    self.log("Could not determine allowed VOs: %s" % str(err), level=logging.WARNING)
+                ensure_valid_user_vo_file(using_gums, logger=self.logger)
+                default_allowed_vos = utilities.get_vos(USER_VO_MAP_LOCATION)
+                if not default_allowed_vos:
+                    self.log("Could not determine default allowed VOs for subclusters/resource entries",
+                             level=logging.WARNING)
                 try:
                     self.resource_catalog = subcluster.resource_catalog_from_config(self.subcluster_sections,
                                                                                     logger=self.logger,
