@@ -298,10 +298,6 @@ class TestMisc(unittest.TestCase):
             expected_services = set(['fetch-crl-cron',
                                      'fetch-crl-boot',
                                      'gums-client-cron'])
-        elif utilities.rpm_installed('fetch-crl3'):
-            expected_services = set(['fetch-crl3-cron',
-                                     'fetch-crl3-boot',
-                                     'gums-client-cron'])
         else:
             expected_services = set(['gums-client-cron'])
 
@@ -322,10 +318,6 @@ class TestMisc(unittest.TestCase):
         if utilities.rpm_installed('fetch-crl'):
             expected_services = set(['fetch-crl-cron',
                                      'fetch-crl-boot',
-                                     'edg-mkgridmap'])
-        elif utilities.rpm_installed('fetch-crl3'):
-            expected_services = set(['fetch-crl3-cron',
-                                     'fetch-crl3-boot',
                                      'edg-mkgridmap'])
         else:
             expected_services = set(['edg-mkgridmap'])
