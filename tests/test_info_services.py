@@ -67,25 +67,6 @@ class TestInfoServices(unittest.TestCase):
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-    def testValidSettings(self):
-        """
-        Test the check_attributes function to see if it oks good attributes
-        """
-
-        config_file = get_test_config("infoservices/check_ok.ini")
-        configuration = ConfigParser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = infoservices.InfoServicesConfiguration(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception, e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        attributes = settings.get_attributes()
-        self.assertTrue(settings.check_attributes(attributes),
-                        "Correct settings incorrectly flagged as invalid")
-
     def testValidSettings2(self):
         """
         Test the check_attributes function to see if it oks a disabled section
@@ -104,51 +85,6 @@ class TestInfoServices(unittest.TestCase):
         attributes = settings.get_attributes()
         self.assertTrue(settings.check_attributes(attributes),
                         "Disabled section incorrectly flagged as invalid")
-
-    def testValidITBDefaults(self):
-        """
-        Test the check_attributes function to see if it oks the itb defaults
-        """
-
-        # need to be on a CE to get CE defaults
-        if not utilities.ce_installed():
-            return
-
-        config_file = get_test_config("infoservices/itb_defaults.ini")
-        configuration = ConfigParser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = infoservices.InfoServicesConfiguration(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception, e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        attributes = settings.get_attributes()
-        self.assertTrue(settings.check_attributes(attributes),
-                        "ITB defaults incorrectly flagged as invalid")
-
-    def testValidProductionDefaults(self):
-        """
-        Test the check_attributes function to see if it oks the production defaults
-        """
-
-        # need to be on a CE to get CE defaults
-        if not utilities.ce_installed():
-            return
-        config_file = get_test_config("infoservices/prod_defaults.ini")
-        configuration = ConfigParser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = infoservices.InfoServicesConfiguration(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception, e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        attributes = settings.get_attributes()
-        self.assertTrue(settings.check_attributes(attributes),
-                        "production defaults incorrectly flagged as invalid")
 
     def testMissingCEITBDefaults(self):
         """
@@ -211,16 +147,6 @@ class TestInfoServices(unittest.TestCase):
         self.assertEqual(services, expected_services,
                          "List of enabled services incorrect, " +
                          "got %s but expected %s" % (services, expected_services))
-
-        config_file = get_test_config("infoservices/disabled.ini")
-        configuration = ConfigParser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = infoservices.InfoServicesConfiguration(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception, e:
-            self.fail("Received exception while parsing configuration: %s" % e)
 
 
 if __name__ == '__main__':

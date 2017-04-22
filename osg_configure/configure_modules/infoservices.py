@@ -1,16 +1,14 @@
-"""This module provides a class to handle attributes and configuration
- for OSG info services subscriptions"""
+"""This module provides a class to handle configuration
+ for CE collector info services"""
 
 import re
 import ConfigParser
 import subprocess
-import urlparse
 import logging
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile
-from osg_configure.modules import validation
 from osg_configure.modules.baseconfiguration import BaseConfiguration
 from osg_configure.modules import subcluster
 from osg_configure.configure_modules import misc
@@ -35,25 +33,23 @@ except ImportError:
 class InfoServicesConfiguration(BaseConfiguration):
     """
     Class to handle attributes and configuration related to
-    miscellaneous services
+    info services
     """
 
     def __init__(self, *args, **kwargs):
         # pylint: disable-msg=W0142
         super(InfoServicesConfiguration, self).__init__(*args, **kwargs)
         self.log("InfoServicesConfiguration.__init__ started")
-        # file location for xml file with info services subscriptions
         self.config_section = 'Info Services'
         self.options = {'ce_collectors': configfile.Option(name='ce_collectors',
                                                            default_value='',
                                                            required=configfile.Option.OPTIONAL)}
-        self._itb_defaults = {
-            'ce_collectors': 'collector-itb.opensciencegrid.org:%d' % HTCONDOR_CE_COLLECTOR_PORT}
-        self._production_defaults = {
-            'ce_collectors': 'collector1.opensciencegrid.org:%d,collector2.opensciencegrid.org:%d' % (
-                HTCONDOR_CE_COLLECTOR_PORT, HTCONDOR_CE_COLLECTOR_PORT)}
+        self._itb_default_ce_collectors = \
+            'collector-itb.opensciencegrid.org:%d' % HTCONDOR_CE_COLLECTOR_PORT
+        self._production_default_ce_collectors = \
+            'collector1.opensciencegrid.org:%d,collector2.opensciencegrid.org:%d' % (
+                HTCONDOR_CE_COLLECTOR_PORT, HTCONDOR_CE_COLLECTOR_PORT)
 
-        # for htcondor-ce-info-services:
         self.ce_collectors = []
         self.ce_collector_required_rpms_installed = utilities.rpm_installed('htcondor-ce')
         self.osg_resource = ""
@@ -68,17 +64,16 @@ class InfoServicesConfiguration(BaseConfiguration):
 
     def _set_default_servers(self, configuration):
         group = utilities.config_safe_get(configuration, 'Site Information', 'group')
-        for key in ['ce_collectors']:
-            if group == 'OSG-ITB':
-                self.options[key].default_value = self._itb_defaults[key]
-            else:
-                self.options[key].default_value = self._production_defaults[key]
+        if group == 'OSG-ITB':
+            self.options['ce_collectors'].default_value = self._itb_default_ce_collectors
+        else:
+            self.options['ce_collectors'].default_value = self._production_default_ce_collectors
 
     def _parse_ce_collectors(self, val):
         if val == 'PRODUCTION':
-            return self._production_defaults['ce_collectors'].split(',')
+            return self._production_default_ce_collectors.split(',')
         elif val == 'ITB':
-            return self._itb_defaults['ce_collectors'].split(',')
+            return self._itb_default_ce_collectors.split(',')
         else:
             return val.split(',')
 
@@ -198,25 +193,6 @@ class InfoServicesConfiguration(BaseConfiguration):
         self.log("InfoServicesConfiguration.configure completed")
         return True
 
-    def check_attributes(self, attributes):
-        """Check configuration and make sure things are setup correctly"""
-        self.log("InfoServicesConfiguration.check_attributes started")
-
-        if not self.enabled:
-            self.log("Not enabled")
-            self.log("InfoServicesConfiguration.check_attributes completed")
-            return True
-
-        if self.ignored:
-            self.log('Ignored, returning True')
-            self.log("InfoServicesConfiguration.check_attributes completed")
-            return True
-
-        valid = True
-
-        self.log("InfoServicesConfiguration.check_attributes completed")
-        return valid
-
     def module_name(self):
         """Return a string with the name of the module"""
         return "Infoservices"
@@ -290,7 +266,7 @@ class InfoServicesConfiguration(BaseConfiguration):
         """
         view_hosts = []
         for host in self.ce_collectors:
-            if host.find(':') == -1:
+            if ':' in host:
                 view_hosts.append("%s:%d" % (host, HTCONDOR_CE_COLLECTOR_PORT))
             else:
                 view_hosts.append(host)
@@ -317,7 +293,7 @@ CONDOR_VIEW_HOST = %s
                     process.returncode, error),
                              level=errlevel)
                 return None
-        except OSError, err:
+        except OSError as err:
             self.log('Could not run condor_ce_config_val: %s' % str(err), level=errlevel)
             return None
         output = output.strip()
@@ -328,4 +304,3 @@ CONDOR_VIEW_HOST = %s
             return None
         else:
             return match.group(1)
-
