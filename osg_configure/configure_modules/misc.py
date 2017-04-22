@@ -1,12 +1,11 @@
 """ Module to handle attributes and configuration for misc. sevices """
 
-import re
 import logging
-import sys
+import re
 
+from osg_configure.modules import configfile
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
-from osg_configure.modules import configfile
 from osg_configure.modules import validation
 from osg_configure.modules.baseconfiguration import BaseConfiguration
 
@@ -15,7 +14,6 @@ __all__ = ['MiscConfiguration']
 GSI_AUTHZ_LOCATION = "/etc/grid-security/gsi-authz.conf"
 GUMS_CLIENT_LOCATION = "/etc/gums/gums-client.properties"
 LCMAPS_DB_LOCATION = "/etc/lcmaps.db"
-USER_VO_MAP_LOCATION = '/var/lib/osg/user-vo-map'
 HTCONDOR_CE_CONFIG_FILE = '/etc/condor-ce/config.d/50-osg-configure.conf'
 
 
@@ -394,27 +392,3 @@ configuration:
             contents = utilities.add_or_replace_setting(contents, "GRIDMAP", "/etc/grid-security/grid-mapfile",
                                                         quote_value=False)
         utilities.atomic_write(HTCONDOR_CE_CONFIG_FILE, contents)
-
-
-def ensure_valid_user_vo_file(using_gums, logger=utilities.NullLogger):
-    if not validation.valid_user_vo_file(USER_VO_MAP_LOCATION):
-        logger.info("Trying to create user-vo-map file")
-        if using_gums:
-            gums_script = '/usr/bin/gums-host-cron'
-        else:
-            gums_script = '/usr/sbin/edg-mkgridmap'
-
-        logger.info("Running %s, this process may take some time " % gums_script +
-                    "to query vo and/or gums servers\n")
-        result = utilities.run_script([gums_script])
-        temp, invalid_lines = validation.valid_user_vo_file(USER_VO_MAP_LOCATION, True)
-        result = result and temp
-        if not result:
-            if not invalid_lines:
-                logger.warning("gums-host-cron or edg-mkgridmap generated an empty " +
-                               USER_VO_MAP_LOCATION + " file, please check the "
-                               "appropriate configuration and or log messages")
-            else:
-                logger.warning("Invalid lines in user-vo-map file:")
-                logger.warning("\n".join(invalid_lines))
-            logger.warning("Error when invoking gums-host-cron or edg-mkgridmap")

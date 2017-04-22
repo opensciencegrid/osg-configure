@@ -8,16 +8,17 @@ import logging
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
+from osg_configure.modules import validation
 from osg_configure.modules import configfile
 from osg_configure.modules.baseconfiguration import BaseConfiguration
 from osg_configure.modules import subcluster
-from osg_configure.configure_modules import misc
 
 __all__ = ['InfoServicesConfiguration']
 
 CE_COLLECTOR_ATTRIBUTES_FILE = '/etc/condor-ce/config.d/10-osg-attributes-generated.conf'
 CE_COLLECTOR_CONFIG_FILE = '/etc/condor-ce/config.d/10-ce-collector-generated.conf'
 HTCONDOR_CE_COLLECTOR_PORT = 9619
+USER_VO_MAP_LOCATION = '/var/lib/osg/user-vo-map'
 
 # BATCH_SYSTEMS here is both the config sections for the batch systems
 # and the values in the OSG_BatchSystems attribute since they are
@@ -178,8 +179,8 @@ class InfoServicesConfiguration(BaseConfiguration):
                 using_gums = self.authorization_method == 'xacml'
                 default_allowed_vos = None
                 try:
-                    misc.ensure_valid_user_vo_file(using_gums, logger=self.logger)
-                    default_allowed_vos = utilities.get_vos(misc.USER_VO_MAP_LOCATION)
+                    ensure_valid_user_vo_file(using_gums, logger=self.logger)
+                    default_allowed_vos = utilities.get_vos(USER_VO_MAP_LOCATION)
                 except exceptions.ConfigureError, err:
                     self.log("Could not determine allowed VOs: %s" % str(err), level=logging.WARNING)
                 try:
@@ -305,3 +306,27 @@ CONDOR_VIEW_HOST = %s
             return None
         else:
             return match.group(1)
+
+
+def ensure_valid_user_vo_file(using_gums, logger=utilities.NullLogger):
+    if not validation.valid_user_vo_file(USER_VO_MAP_LOCATION):
+        logger.info("Trying to create user-vo-map file")
+        if using_gums:
+            gums_script = '/usr/bin/gums-host-cron'
+        else:
+            gums_script = '/usr/sbin/edg-mkgridmap'
+
+        logger.info("Running %s, this process may take some time " % gums_script +
+                    "to query vo and/or gums servers\n")
+        result = utilities.run_script([gums_script])
+        temp, invalid_lines = validation.valid_user_vo_file(USER_VO_MAP_LOCATION, True)
+        result = result and temp
+        if not result:
+            if not invalid_lines:
+                logger.warning("gums-host-cron or edg-mkgridmap generated an empty " +
+                               USER_VO_MAP_LOCATION + " file, please check the "
+                               "appropriate configuration and or log messages")
+            else:
+                logger.warning("Invalid lines in user-vo-map file:")
+                logger.warning("\n".join(invalid_lines))
+            logger.warning("Error when invoking gums-host-cron or edg-mkgridmap")
