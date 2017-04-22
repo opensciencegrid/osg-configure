@@ -100,6 +100,7 @@ class MiscConfiguration(BaseConfiguration):
         self.htcondor_gateway_enabled = utilities.config_safe_getboolean(configuration, 'Gateway',
                                                                          'htcondor_gateway_enabled', True)
         self.authorization_method = self.options['authorization_method'].value
+        self.using_glexec = not utilities.blank(self.options['glexec_location'].value)
 
         self.log('MiscConfiguration.parse_configuration completed')
 
@@ -122,14 +123,14 @@ class MiscConfiguration(BaseConfiguration):
             attributes_ok = False
 
         if self.authorization_method == 'xacml':
-            if utilities.blank(self.options['gums_host'].value):
+            gums_host = self.options['gums_host'].value
+            if utilities.blank(gums_host):
                 self.log("Gums host not given",
                          section=self.config_section,
                          option='gums_host',
                          level=logging.ERROR)
                 attributes_ok = False
-
-            if not validation.valid_domain(self.options['gums_host'].value, resolve=True):
+            elif not validation.valid_domain(gums_host, resolve=True):
                 self.log("Gums host not a valid domain name or does not resolve",
                          section=self.config_section,
                          option='gums_host',
@@ -153,8 +154,7 @@ class MiscConfiguration(BaseConfiguration):
             self.log("Error while running fetch-crl script", level=logging.ERROR)
             raise exceptions.ConfigureError('fetch-crl returned non-zero exit code')
 
-        using_glexec = not utilities.blank(self.options['glexec_location'].value)
-        if using_glexec and not utilities.rpm_installed('lcmaps-plugins-glexec-tracking'):
+        if self.using_glexec and not utilities.rpm_installed('lcmaps-plugins-glexec-tracking'):
             msg = "Can't use glExec because LCMAPS glExec plugin not installed."\
                   " Install lcmaps-plugins-glexec-tracking or unset glexec_location"
             self.log(msg,
@@ -163,15 +163,15 @@ class MiscConfiguration(BaseConfiguration):
                      level=logging.ERROR)
             raise exceptions.ConfigureError(msg)
         if self.authorization_method == 'xacml':
-            self._enable_xacml()
+            self._set_lcmaps_callout(True)
             self._update_gums_client_location()
         elif self.authorization_method == 'gridmap':
-            self._disable_callout()
+            self._set_lcmaps_callout(False)
         elif self.authorization_method == 'local-gridmap':
-            self._disable_callout()
+            self._set_lcmaps_callout(False)
         elif self.authorization_method == 'vomsmap':
-            self._enable_xacml()
-            if using_glexec:
+            self._set_lcmaps_callout(True)
+            if self.using_glexec:
                 msg = "glExec not supported with vomsmap authorization; unset glexec_location or change "\
                       " authorization_method"
                 self.log(msg,
@@ -188,7 +188,7 @@ class MiscConfiguration(BaseConfiguration):
             raise exceptions.ConfigureError("Invalid authorization_method option in Misc Services")
 
         if self.options['edit_lcmaps_db'].value:
-            self._write_lcmaps_file(using_glexec)
+            self._write_lcmaps_file()
         else:
             self.log("Not updating lcmaps.db because edit_lcmaps_db is false",
                      level=logging.DEBUG)
@@ -210,19 +210,17 @@ class MiscConfiguration(BaseConfiguration):
         """Return a boolean that indicates whether this module can be configured separately"""
         return True
 
-    def _enable_xacml(self):
-        """
-        Enable authorization services using xacml protocol
-        """
-
+    def _set_lcmaps_callout(self, enable):
         self.log("Updating " + GSI_AUTHZ_LOCATION, level=logging.INFO)
 
-        gsi_contents = "globus_mapping liblcas_lcmaps_gt4_mapping.so lcmaps_callout\n"
+        if enable:
+            gsi_contents = "globus_mapping liblcas_lcmaps_gt4_mapping.so lcmaps_callout\n"
+        else:
+            gsi_contents = "#globus_mapping liblcas_lcmaps_gt4_mapping.so lcmaps_callout\n"
         if not utilities.atomic_write(GSI_AUTHZ_LOCATION, gsi_contents):
-            self.log("Error while writing to " + GSI_AUTHZ_LOCATION,
-                     level=logging.ERROR)
-            raise exceptions.ConfigureError("Error while writing to " +
-                                            GSI_AUTHZ_LOCATION)
+            msg = "Error while writing to " + GSI_AUTHZ_LOCATION
+            self.log(msg, level=logging.ERROR)
+            raise exceptions.ConfigureError(msg)
 
     def _update_gums_client_location(self):
         self.log("Updating " + GUMS_CLIENT_LOCATION, level=logging.INFO)
@@ -243,8 +241,8 @@ class MiscConfiguration(BaseConfiguration):
             gums_properties = authz_re.sub(replacement, gums_properties)
         utilities.atomic_write(GUMS_CLIENT_LOCATION, gums_properties)
 
-    def _write_lcmaps_file(self, using_glexec=False):
-        assert not (using_glexec and self.authorization_method == 'vomsmap')
+    def _write_lcmaps_file(self):
+        assert not (self.using_glexec and self.authorization_method == 'vomsmap')
 
         old_lcmaps_contents = utilities.read_file(LCMAPS_DB_LOCATION, default='')
         if old_lcmaps_contents and 'THIS FILE WAS WRITTEN BY OSG-CONFIGURE' not in old_lcmaps_contents:
@@ -262,7 +260,7 @@ class MiscConfiguration(BaseConfiguration):
         else:
             assert False
 
-        if using_glexec:
+        if self.using_glexec:
             lcmaps_template_fn += '.glexec'
 
         lcmaps_template_path = os.path.join(LCMAPS_DB_TEMPLATES_LOCATION, lcmaps_template_fn)
@@ -270,7 +268,7 @@ class MiscConfiguration(BaseConfiguration):
 
         if not validation.valid_file(lcmaps_template_path):
             # Special message if we're using lcmaps from upcoming or 3.4 (which doesn't have the glexec variants):
-            if using_glexec and validation.valid_file(non_glexec_lcmaps_template_path):
+            if self.using_glexec and validation.valid_file(non_glexec_lcmaps_template_path):
                 msg = "glExec lcmaps.db templates not available in this version of lcmaps; unset glexec_location or "\
                       " set edit_lcmaps_db=False"
             else:
@@ -288,18 +286,6 @@ class MiscConfiguration(BaseConfiguration):
             msg = "Error while writing to " + LCMAPS_DB_LOCATION
             self.log(msg, level=logging.ERROR)
             raise exceptions.ConfigureError(msg)
-
-    def _disable_callout(self):
-        """
-        Enable authorization using gridmap files
-        """
-        self.log("Updating " + GSI_AUTHZ_LOCATION, level=logging.INFO)
-        gsi_contents = "#globus_mapping liblcas_lcmaps_gt4_mapping.so lcmaps_callout\n"
-        if not utilities.atomic_write(GSI_AUTHZ_LOCATION, gsi_contents):
-            self.log("Error while writing to " + GSI_AUTHZ_LOCATION,
-                     level=logging.ERROR)
-            raise exceptions.ConfigureError("Error while writing to " +
-                                            GSI_AUTHZ_LOCATION)
 
     def _configure_cleanup(self):
         """
@@ -345,12 +331,10 @@ class MiscConfiguration(BaseConfiguration):
         services = set()
         if utilities.rpm_installed('fetch-crl'):
             services = set(['fetch-crl-cron', 'fetch-crl-boot'])
-        elif utilities.rpm_installed('fetch-crl3'):
-            services = set(['fetch-crl3-cron', 'fetch-crl3-boot'])
 
-        if self.options['authorization_method'].value == 'xacml':
+        if self.authorization_method == 'xacml':
             services.add('gums-client-cron')
-        elif self.options['authorization_method'].value == 'gridmap':
+        elif self.authorization_method == 'gridmap':
             services.add('edg-mkgridmap')
         if self.options['enable_cleanup'].value:
             services.add('osg-cleanup-cron')
