@@ -396,34 +396,17 @@ configuration:
         utilities.atomic_write(HTCONDOR_CE_CONFIG_FILE, contents)
 
 
-def create_user_vo_file(using_gums=False):
-    """
-    Check and create a mapfile if needed
-    """
-
-    map_file = '/var/lib/osg/user-vo-map'
-    try:
-        if validation.valid_user_vo_file(map_file):
-            return True
+def ensure_valid_user_vo_file(using_gums, logger=utilities.NullLogger):
+    if not validation.valid_user_vo_file(USER_VO_MAP_LOCATION):
+        logger.info("Trying to create user-vo-map file")
         if using_gums:
             gums_script = '/usr/bin/gums-host-cron'
         else:
             gums_script = '/usr/sbin/edg-mkgridmap'
 
-        sys.stdout.write("Running %s, this process may take some time " % gums_script +
-                         "to query vo and gums servers\n")
-        sys.stdout.flush()
-        if not utilities.run_script([gums_script]):
-            return False
-    except IOError:
-        return False
-    return True
-
-
-def ensure_valid_user_vo_file(using_gums, logger=utilities.NullLogger):
-    if not validation.valid_user_vo_file(USER_VO_MAP_LOCATION):
-        logger.info("Trying to create user-vo-map file")
-        result = create_user_vo_file(using_gums)
+        logger.info("Running %s, this process may take some time " % gums_script +
+                    "to query vo and/or gums servers\n")
+        result = utilities.run_script([gums_script])
         temp, invalid_lines = validation.valid_user_vo_file(USER_VO_MAP_LOCATION, True)
         result = result and temp
         if not result:
