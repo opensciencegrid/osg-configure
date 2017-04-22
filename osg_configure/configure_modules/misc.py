@@ -1,11 +1,11 @@
 """ Module to handle attributes and configuration for misc. sevices """
 
-import logging
 import re
+import logging
 
-from osg_configure.modules import configfile
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
+from osg_configure.modules import configfile
 from osg_configure.modules import validation
 from osg_configure.modules.baseconfiguration import BaseConfiguration
 
