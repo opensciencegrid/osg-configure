@@ -180,8 +180,16 @@ class InfoServicesConfiguration(BaseConfiguration):
                 ensure_valid_user_vo_file(using_gums, logger=self.logger)
                 default_allowed_vos = utilities.get_vos(USER_VO_MAP_LOCATION)
                 if not default_allowed_vos:
-                    self.log("Could not determine default allowed VOs for subclusters/resource entries",
-                             level=logging.WARNING)
+                    # UGLY: only issue the warning if the admin hasn't specified allowed_vos for all their SCs/REs
+                    raise_warning = False
+                    for section in self.subcluster_sections.sections():
+                        if not utilities.config_safe_get(self.subcluster_sections, section, 'allowed_vos'):
+                            raise_warning = True
+                    if raise_warning:
+                        self.log("Could not determine default allowed VOs for subclusters/resource entries."
+                                 "\nEnsure %s exists and is non-empty, or fill out allowed_vos in all your Subcluster"
+                                 " and Resource Entry sections." % USER_VO_MAP_LOCATION,
+                                 level=logging.WARNING)
                 try:
                     self.resource_catalog = subcluster.resource_catalog_from_config(self.subcluster_sections,
                                                                                     logger=self.logger,
