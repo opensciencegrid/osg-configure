@@ -2,6 +2,8 @@
 
 import re
 import logging
+import os
+import shutil
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
@@ -14,8 +16,19 @@ __all__ = ['MiscConfiguration']
 GSI_AUTHZ_LOCATION = "/etc/grid-security/gsi-authz.conf"
 GUMS_CLIENT_LOCATION = "/etc/gums/gums-client.properties"
 LCMAPS_DB_LOCATION = "/etc/lcmaps.db"
+LCMAPS_DB_TEMPLATES_LOCATION = "/usr/share/lcmaps/templates"
 HTCONDOR_CE_CONFIG_FILE = '/etc/condor-ce/config.d/50-osg-configure.conf'
 
+VALID_AUTH_METHODS = ['gridmap', 'local-gridmap', 'xacml', 'vomsmap']
+
+IGNORED_OPTIONS = [
+    ## pre-3.4 options
+    # 'glexec_location',
+    # 'enable_cleanup',
+    # 'cleanup_age_in_days',
+    # 'cleanup_users_list',
+    # 'cleanup_cron_time'
+]
 
 class MiscConfiguration(BaseConfiguration):
     """Class to handle attributes and configuration related to miscellaneous services"""
@@ -64,6 +77,7 @@ class MiscConfiguration(BaseConfiguration):
                                               default_value=False)}
         self.config_section = "Misc Services"
         self.htcondor_gateway_enabled = True
+        self.authorization_method = None
         self.log('MiscConfiguration.__init__ completed')
 
     def parse_configuration(self, configuration):
@@ -82,10 +96,12 @@ class MiscConfiguration(BaseConfiguration):
             return
 
         self.enabled = True
-        self.get_options(configuration)
+        self.get_options(configuration, ignore_options=IGNORED_OPTIONS)
 
         self.htcondor_gateway_enabled = utilities.config_safe_getboolean(configuration, 'Gateway',
                                                                          'htcondor_gateway_enabled', True)
+        self.authorization_method = self.options['authorization_method'].value
+        self.using_glexec = not utilities.blank(self.options['glexec_location'].value)
 
         self.log('MiscConfiguration.parse_configuration completed')
 
@@ -100,23 +116,22 @@ class MiscConfiguration(BaseConfiguration):
             self.log('MiscConfiguration.check_attributes completed')
             return True
 
-        if (self.options['authorization_method'].value not in \
-                    ['gridmap', 'local-gridmap', 'xacml']):
-            self.log("Setting is not xacml, or gridmap",
+        if self.authorization_method not in VALID_AUTH_METHODS:
+            self.log("Setting is not one of: " + ", ".join(VALID_AUTH_METHODS),
                      option='authorization_method',
                      section=self.config_section,
                      level=logging.ERROR)
             attributes_ok = False
 
-        if self.options['authorization_method'].value == 'xacml':
-            if utilities.blank(self.options['gums_host'].value):
+        if self.authorization_method == 'xacml':
+            gums_host = self.options['gums_host'].value
+            if utilities.blank(gums_host):
                 self.log("Gums host not given",
                          section=self.config_section,
                          option='gums_host',
                          level=logging.ERROR)
                 attributes_ok = False
-
-            if not validation.valid_domain(self.options['gums_host'].value, resolve=True):
+            elif not validation.valid_domain(gums_host, resolve=True):
                 self.log("Gums host not a valid domain name or does not resolve",
                          section=self.config_section,
                          option='gums_host',
@@ -140,29 +155,41 @@ class MiscConfiguration(BaseConfiguration):
             self.log("Error while running fetch-crl script", level=logging.ERROR)
             raise exceptions.ConfigureError('fetch-crl returned non-zero exit code')
 
-        using_gums = False
-        if self.options['authorization_method'].value == 'xacml':
-            using_gums = True
-            self._enable_xacml()
-        elif self.options['authorization_method'].value == 'gridmap':
-            self._disable_callout()
-        elif self.options['authorization_method'].value == 'local-gridmap':
-            self._disable_callout()
+        if self.using_glexec and not utilities.rpm_installed('lcmaps-plugins-glexec-tracking'):
+            msg = "Can't use glExec because LCMAPS glExec plugin not installed."\
+                  " Install lcmaps-plugins-glexec-tracking or unset glexec_location"
+            self.log(msg,
+                     option='glexec_location',
+                     section=self.config_section,
+                     level=logging.ERROR)
+            raise exceptions.ConfigureError(msg)
+        if self.authorization_method == 'xacml':
+            self._set_lcmaps_callout(True)
+            self._update_gums_client_location()
+        elif self.authorization_method == 'gridmap':
+            self._set_lcmaps_callout(False)
+        elif self.authorization_method == 'local-gridmap':
+            self._set_lcmaps_callout(False)
+        elif self.authorization_method == 'vomsmap':
+            self._set_lcmaps_callout(True)
+            if self.using_glexec:
+                msg = "glExec not supported with vomsmap authorization; unset glexec_location or change "\
+                      " authorization_method"
+                self.log(msg,
+                         options='glexec_location',
+                         section=self.config_section,
+                         level=logging.ERROR)
+                raise exceptions.ConfigureError(msg)
         else:
-            self.log("Unknown authorization method: %s" % \
-                     self.options['authorization_method'].value,
+            self.log("Unknown authorization method: %s; should be one of: %s" %
+                     (self.authorization_method, ", ".join(VALID_AUTH_METHODS)),
                      option='authorization_method',
                      section=self.config_section,
                      level=logging.ERROR)
-            raise exceptions.ConfigureError("Invalid authorization_method option " +
-                                            "in Misc Services")
+            raise exceptions.ConfigureError("Invalid authorization_method option in Misc Services")
 
         if self.options['edit_lcmaps_db'].value:
-            if validation.valid_file(LCMAPS_DB_LOCATION):
-                self._update_lcmaps_file(using_gums)
-            else:
-                self.log("Not updating lcmaps.db because it's not accessible",
-                         level=logging.DEBUG)
+            self._write_lcmaps_file()
         else:
             self.log("Not updating lcmaps.db because edit_lcmaps_db is false",
                      level=logging.DEBUG)
@@ -184,20 +211,19 @@ class MiscConfiguration(BaseConfiguration):
         """Return a boolean that indicates whether this module can be configured separately"""
         return True
 
-    def _enable_xacml(self):
-        """
-        Enable authorization services using xacml protocol
-        """
-
+    def _set_lcmaps_callout(self, enable):
         self.log("Updating " + GSI_AUTHZ_LOCATION, level=logging.INFO)
 
-        gsi_contents = "globus_mapping liblcas_lcmaps_gt4_mapping.so lcmaps_callout\n"
+        if enable:
+            gsi_contents = "globus_mapping liblcas_lcmaps_gt4_mapping.so lcmaps_callout\n"
+        else:
+            gsi_contents = "#globus_mapping liblcas_lcmaps_gt4_mapping.so lcmaps_callout\n"
         if not utilities.atomic_write(GSI_AUTHZ_LOCATION, gsi_contents):
-            self.log("Error while writing to " + GSI_AUTHZ_LOCATION,
-                     level=logging.ERROR)
-            raise exceptions.ConfigureError("Error while writing to " +
-                                            GSI_AUTHZ_LOCATION)
+            msg = "Error while writing to " + GSI_AUTHZ_LOCATION
+            self.log(msg, level=logging.ERROR)
+            raise exceptions.ConfigureError(msg)
 
+    def _update_gums_client_location(self):
         self.log("Updating " + GUMS_CLIENT_LOCATION, level=logging.INFO)
         location_re = re.compile("^gums.location=.*$", re.MULTILINE)
         authz_re = re.compile("^gums.authz=.*$", re.MULTILINE)
@@ -216,116 +242,56 @@ class MiscConfiguration(BaseConfiguration):
             gums_properties = authz_re.sub(replacement, gums_properties)
         utilities.atomic_write(GUMS_CLIENT_LOCATION, gums_properties)
 
-    def _update_lcmaps_file(self, gums=True):
-        """
-        Update lcmaps file and give appropriate messages if lcmaps.db.rpmnew exists
-        """
-        warning_message = """It appears that you've updated the lcmaps RPM and the
-configuration has changed.
-If you have ever edited /etc/lcmaps.db by hand (most people don't), then you
-should:
-   1. Edit /etc/lcmaps.db.rpmnew to make your changes again
-   2. mv /etc/lcmaps.db.rpmnew /etc/lcmaps.db
-If you haven't edited /etc/lcmaps.db by hand, then you can just use the new
-configuration:
-   1. mv /etc/lcmaps.db.rpmnew /etc/lcmaps.db"""
+    def _write_lcmaps_file(self):
+        assert not (self.using_glexec and self.authorization_method == 'vomsmap')
 
-        files_to_update = [LCMAPS_DB_LOCATION]
-        rpmnew_file = LCMAPS_DB_LOCATION + ".rpmnew"
-        if validation.valid_file(rpmnew_file):
-            self.log(warning_message, level=logging.WARNING)
-            files_to_update.append(rpmnew_file)
-
-        for lcmaps_db_file in files_to_update:
-            self.log("Updating " + lcmaps_db_file, level=logging.INFO)
-            lcmaps_db = open(lcmaps_db_file).read()
-
-            lcmaps_db = self._update_lcmaps_text(lcmaps_db, gums, self.options['gums_host'].value)
-
-            utilities.atomic_write(lcmaps_db_file, lcmaps_db)
-
-    def _update_lcmaps_text(self, lcmaps_db, gums, gums_host):
-        #
-        # Update GUMS endpoint (if using GUMS)
-        #
-        if gums:
-            endpoint_re = re.compile(r'^\s*"--endpoint\s+https://.*/gums/services.*"\s*?$',
-                                     re.MULTILINE)
-            replacement = "             \"--endpoint https://%s:8443" % (gums_host)
-            replacement += "/gums/services/GUMSXACMLAuthorizationServicePort\""
-            lcmaps_db = endpoint_re.sub(replacement, lcmaps_db)
-
-        #
-        # Update "authorize_only" section
-        #
-        addition_comment = ("\n\n"
-                            "## Added by osg-configure\n"
-                            "## Set 'edit_lcmaps_db=False' in the [%s] section of your OSG configs\n"
-                            "## to keep osg-configure from modifying this file\n" %
-                            self.config_section)
-
-        # Split the string into four:
-        # 1. Everything before the authorize_only section
-        # 2. The header line to the authorize_only section
-        # 3. The body of the authorize_only section
-        # 4. Everything after the authorize_only section (if present)
-        #
-        # The authorize_only section ends at the end of the file (\Z) or when
-        # another section begins (^[ \t]*[a-zA-Z_]+:)
-        authorize_only_re = re.compile(r'\A(.+)(^[ \t]*authorize_only:[^\n]*?$)(.+?)(^[ \t]*[a-zA-Z_]+:.+|\Z)',
-                                       re.MULTILINE|re.DOTALL)
-        match = authorize_only_re.search(lcmaps_db)
-
-        if not match:
-            self.log("No valid 'authorize_only' section in lcmaps.db; cannot update!",
-                     level=logging.ERROR)
-            raise exceptions.ConfigureError("No valid 'authorize_only' section in lcmaps.db")
-
-        pre_authorize_only, authorize_only_header, authorize_only, post_authorize_only = match.group(1, 2, 3, 4)
-
-        # Look for lines like
-        # "gumsclient -> good | bad" and
-        # "gridmapfile -> good | bad"
-        # which may be commented out.
-        gumsclient_re = re.compile(r'^\s*?[#]*?\s*?gumsclient\s*?->\s*?good\s*?[|]\s*?bad\s*?$',
-                                   re.MULTILINE)
-        gridmapfile_re = re.compile(r'^\s*?[#]*?\s*?gridmapfile\s*?->\s*?good\s*?[|]\s*?bad\s*?$',
-                                    re.MULTILINE)
-
-        if gums:
-            # Comment out gridmapfile line
-            authorize_only = gridmapfile_re.sub("#gridmapfile -> good | bad", authorize_only)
-
-            # If there's a gumsclient line, uncomment it. If not, add one to the beginning of the authorize_only section.
-            authorize_only, changed = gumsclient_re.subn("gumsclient -> good | bad", authorize_only, count=1)
-            if not changed:
-                authorize_only = addition_comment + "gumsclient -> good | bad\n\n" + authorize_only
-                self.log("Added 'gumsclient' authorization method to authorize_only section of %s" % LCMAPS_DB_LOCATION,
-                         level=logging.WARNING)
+        self.log("Writing " + LCMAPS_DB_LOCATION, level=logging.INFO)
+        if self.authorization_method == 'xacml':
+            non_glexec_lcmaps_template_fn = lcmaps_template_fn = 'lcmaps.db.gums'
+        elif self.authorization_method == 'gridmap' or self.authorization_method == 'local-gridmap':
+            non_glexec_lcmaps_template_fn = lcmaps_template_fn = 'lcmaps.db.gridmap'
+        elif self.authorization_method == 'vomsmap':
+            non_glexec_lcmaps_template_fn = lcmaps_template_fn = 'lcmaps.db.vomsmap'
         else:
-            # Comment out gumsclient line
-            authorize_only = gumsclient_re.sub("#gumsclient -> good | bad", authorize_only)
+            assert False
 
-            # If there's a gridmapfile line, uncomment it. If not, add one to the beginning of the authorize_only section.
-            authorize_only, changed = gridmapfile_re.subn("gridmapfile -> good | bad", authorize_only, count=1)
-            if not changed:
-                authorize_only = addition_comment + "gridmapfile -> good | bad\n\n" + authorize_only
-                self.log("Added 'gridmapfile' authorization method to authorize_only section of %s" % LCMAPS_DB_LOCATION,
-                         level=logging.WARNING)
+        if self.using_glexec:
+            lcmaps_template_fn += '.glexec'
 
-        return pre_authorize_only + authorize_only_header + authorize_only + post_authorize_only
+        lcmaps_template_path = os.path.join(LCMAPS_DB_TEMPLATES_LOCATION, lcmaps_template_fn)
+        non_glexec_lcmaps_template_path = os.path.join(LCMAPS_DB_TEMPLATES_LOCATION, non_glexec_lcmaps_template_fn)
 
-    def _disable_callout(self):
-        """
-        Enable authorization using gridmap files
-        """
-        self.log("Updating " + GSI_AUTHZ_LOCATION, level=logging.INFO)
-        gsi_contents = "#globus_mapping liblcas_lcmaps_gt4_mapping.so lcmaps_callout\n"
-        if not utilities.atomic_write(GSI_AUTHZ_LOCATION, gsi_contents):
-            self.log("Error while writing to " + GSI_AUTHZ_LOCATION,
-                     level=logging.ERROR)
-            raise exceptions.ConfigureError("Error while writing to " +
-                                            GSI_AUTHZ_LOCATION)
+        if not validation.valid_file(lcmaps_template_path):
+            # Special message if we're using lcmaps from upcoming or 3.4 (which doesn't have the glexec variants):
+            if self.using_glexec and validation.valid_file(non_glexec_lcmaps_template_path):
+                msg = "glExec lcmaps.db templates not available in this version of lcmaps; unset glexec_location or "\
+                      " set edit_lcmaps_db=False"
+            else:
+                msg = "lcmaps.db template file not found at %s; ensure lcmaps-db-templates is installed or set"\
+                      " edit_lcmaps_db=False" % lcmaps_template_path
+            self.log(msg, level=logging.ERROR)
+            raise exceptions.ConfigureError(msg)
+
+        old_lcmaps_contents = utilities.read_file(LCMAPS_DB_LOCATION, default='')
+        if old_lcmaps_contents and 'THIS FILE WAS WRITTEN BY OSG-CONFIGURE' not in old_lcmaps_contents:
+            backup_path = LCMAPS_DB_LOCATION + '.pre-configure'
+            self.log("Backing up %s to %s" % (LCMAPS_DB_LOCATION, backup_path), level=logging.WARNING)
+            try:
+                shutil.copy2(LCMAPS_DB_LOCATION, backup_path)
+            except EnvironmentError as err:
+                msg = "Unable to back up old lcmaps.db: " + str(err)
+                self.log(msg, level=logging.ERROR)
+                raise exceptions.ConfigureError(msg)
+
+        lcmaps_contents = utilities.read_file(lcmaps_template_path)
+        lcmaps_contents = ("# THIS FILE WAS WRITTEN BY OSG-CONFIGURE AND WILL BE OVERWRITTEN ON FUTURE RUNS\n"
+                           "# Set edit_lcmaps_db = False in the [%s] section of your OSG configuration to\n"
+                           "# keep your changes.\n" % self.config_section
+                           + lcmaps_contents.replace('@GUMSHOST@', str(self.options['gums_host'].value)))
+        if not utilities.atomic_write(LCMAPS_DB_LOCATION, lcmaps_contents):
+            msg = "Error while writing to " + LCMAPS_DB_LOCATION
+            self.log(msg, level=logging.ERROR)
+            raise exceptions.ConfigureError(msg)
 
     def _configure_cleanup(self):
         """
@@ -371,12 +337,10 @@ configuration:
         services = set()
         if utilities.rpm_installed('fetch-crl'):
             services = set(['fetch-crl-cron', 'fetch-crl-boot'])
-        elif utilities.rpm_installed('fetch-crl3'):
-            services = set(['fetch-crl3-cron', 'fetch-crl3-boot'])
 
-        if self.options['authorization_method'].value == 'xacml':
+        if self.authorization_method == 'xacml':
             services.add('gums-client-cron')
-        elif self.options['authorization_method'].value == 'gridmap':
+        elif self.authorization_method == 'gridmap':
             services.add('edg-mkgridmap')
         if self.options['enable_cleanup'].value:
             services.add('osg-cleanup-cron')
@@ -385,7 +349,7 @@ configuration:
     def write_gridmap_to_htcondor_ce_config(self):
         contents = utilities.read_file(HTCONDOR_CE_CONFIG_FILE,
                                        default="# This file is managed by osg-configure\n")
-        if self.options['authorization_method'].value == 'xacml':
+        if 'gridmap' not in self.authorization_method:
             # Remove GRIDMAP setting
             contents = re.sub(r'(?m)^\s*GRIDMAP\s*=.*?$[\n]?', "", contents)
         else:
