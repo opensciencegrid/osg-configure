@@ -3,6 +3,7 @@
 import re
 import logging
 import os
+import shutil
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
@@ -244,15 +245,6 @@ class MiscConfiguration(BaseConfiguration):
     def _write_lcmaps_file(self):
         assert not (self.using_glexec and self.authorization_method == 'vomsmap')
 
-        old_lcmaps_contents = utilities.read_file(LCMAPS_DB_LOCATION, default='')
-        if old_lcmaps_contents and 'THIS FILE WAS WRITTEN BY OSG-CONFIGURE' not in old_lcmaps_contents:
-            backup_path = LCMAPS_DB_LOCATION + '.pre-configure'
-            self.log("Backing up %s to %s" % (LCMAPS_DB_LOCATION, backup_path), level=logging.WARNING)
-            if not utilities.atomic_write(backup_path, old_lcmaps_contents):
-                msg = "Unable to back up old lcmaps.db to %s" % backup_path
-                self.log(msg, level=logging.ERROR)
-                raise exceptions.ConfigureError(msg)
-
         self.log("Writing " + LCMAPS_DB_LOCATION, level=logging.INFO)
         if self.authorization_method == 'xacml':
             non_glexec_lcmaps_template_fn = lcmaps_template_fn = 'lcmaps.db.gums'
@@ -279,6 +271,17 @@ class MiscConfiguration(BaseConfiguration):
                       " edit_lcmaps_db=False" % lcmaps_template_path
             self.log(msg, level=logging.ERROR)
             raise exceptions.ConfigureError(msg)
+
+        old_lcmaps_contents = utilities.read_file(LCMAPS_DB_LOCATION, default='')
+        if old_lcmaps_contents and 'THIS FILE WAS WRITTEN BY OSG-CONFIGURE' not in old_lcmaps_contents:
+            backup_path = LCMAPS_DB_LOCATION + '.pre-configure'
+            self.log("Backing up %s to %s" % (LCMAPS_DB_LOCATION, backup_path), level=logging.WARNING)
+            try:
+                shutil.copy2(LCMAPS_DB_LOCATION, backup_path)
+            except EnvironmentError as err:
+                msg = "Unable to back up old lcmaps.db: " + str(err)
+                self.log(msg, level=logging.ERROR)
+                raise exceptions.ConfigureError(msg)
 
         lcmaps_contents = utilities.read_file(lcmaps_template_path)
         lcmaps_contents = ("# THIS FILE WAS WRITTEN BY OSG-CONFIGURE AND WILL BE OVERWRITTEN ON FUTURE RUNS\n"
