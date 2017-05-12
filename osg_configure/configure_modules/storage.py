@@ -99,14 +99,15 @@ class StorageConfiguration(BaseConfiguration):
             self.log('StorageConfiguration.check_attributes completed')
             return attributes_ok
 
-        # make sure locations exist
-        if not self._check_app_dir(self.options['app_dir'].value):
-            self.log("The app_dir and app_dir/etc directories should exist and " +
-                     "have permissions of 1777 or 777 on OSG installations.",
+        # warn if locations don't exist
+        app_dir = self.options['app_dir'].value
+        if not self._check_app_dir(app_dir):
+            self.log("{app_dir} and/or {app_dir}/etc were not found or have the wrong permissions. These are used for"
+                     " $OSG_APP and $OSG_APP/etc on worker nodes, where they should exist and have permissions of"
+                     " 1777 or 777.".format(app_dir=app_dir),
                      section=self.config_section,
                      option='app_dir',
-                     level=logging.ERROR)
-            attributes_ok = False
+                     level=logging.WARNING)
 
         # WN_TMP may be blank if the job manager dynamically generates it but
         # warni just in case
