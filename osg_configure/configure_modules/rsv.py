@@ -18,7 +18,7 @@ __all__ = ['RsvConfiguration']
 GRAM_CE_TYPE = "gram"
 HTCONDOR_CE_TYPE = "htcondor-ce"
 # The gateway to use if both gram and htcondor-ce are enabled.
-PREFERRED_CE_TYPE = GRAM_CE_TYPE
+PREFERRED_CE_TYPE = HTCONDOR_CE_TYPE
 
 
 class RsvConfiguration(BaseConfiguration):
