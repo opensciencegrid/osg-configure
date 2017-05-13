@@ -45,10 +45,6 @@ class RsvConfiguration(BaseConfiguration):
                             configfile.Option(name='ce_hosts',
                                               default_value='',
                                               required=configfile.Option.OPTIONAL),
-                        'gram_ce_hosts':
-                            configfile.Option(name='gram_ce_hosts',
-                                              default_value='',
-                                              required=configfile.Option.OPTIONAL),
                         'htcondor_ce_hosts':
                             configfile.Option(name='htcondor_ce_hosts',
                                               default_value='',
@@ -186,7 +182,7 @@ class RsvConfiguration(BaseConfiguration):
             self.log('RsvConfiguration.parse_configuration completed')
             return True
 
-        self.get_options(configuration, ignore_options=['enabled'])
+        self.get_options(configuration, ignore_options=['enabled', 'gram_ce_hosts'])
         (self.uid, self.gid) = pwd.getpwnam(self._rsv_user)[2:4]
 
         # If we're on a CE, get the grid group if possible
@@ -268,8 +264,7 @@ class RsvConfiguration(BaseConfiguration):
         attributes_ok &= self._validate_host_list(self._srm_hosts, "srm_hosts")
         if self.htcondor_gateway_enabled:
             attributes_ok &= self._validate_host_list(self._htcondor_ce_hosts, "htcondor_ce_hosts")
-        if self.gram_gateway_enabled:
-            attributes_ok &= self._validate_host_list(self._gram_ce_hosts, "gram_ce_hosts")
+        assert not self.gram_gateway_enabled, "Should have raised an error by now in OSG 3.4"
 
         attributes_ok &= self._check_gridftp_settings()
         attributes_ok &= self._check_srm_settings()
