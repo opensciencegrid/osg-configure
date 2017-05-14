@@ -210,8 +210,13 @@ def resource_catalog_from_config(config, logger=utilities.NullLogger, default_al
             raise exceptions.SettingError("maxmemory / ram_mb not found in section %s" % section)
         rcentry.memory = int(rcentry.memory)
 
-        rcentry.allowed_vos = utilities.config_safe_get(config, section, 'allowed_vos',
-                                                        default=default_allowed_vos)
+        rcentry.allowed_vos = utilities.config_safe_get(config, section, 'allowed_vos', default='DEFAULT').strip()
+        if rcentry.allowed_vos == "":
+            raise exceptions.SettingError("allowed_vos cannot be blank in section '%s'; comment it out or use 'DEFAULT'"
+                                          % section)
+        if rcentry.allowed_vos.upper() == "DEFAULT":
+            rcentry.allowed_vos = default_allowed_vos
+
         max_wall_time = utilities.config_safe_get(config, section, 'max_wall_time')
         if not max_wall_time:
             rcentry.max_wall_time = 1440
