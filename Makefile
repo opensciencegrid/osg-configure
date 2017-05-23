@@ -7,7 +7,7 @@ DATAROOTDIR := $(PREFIX)/share
 PYTHON_SITELIB := $(shell python -c "from distutils.sysconfig import get_python_lib; import sys; sys.stdout.write(get_python_lib())")
 
 _default:
-	@echo "Nothing to make. Try `make install'."
+	@echo "Nothing to make. Try 'make install'."
 
 
 install:
