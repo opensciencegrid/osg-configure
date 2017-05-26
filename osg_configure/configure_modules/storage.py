@@ -218,7 +218,7 @@ class StorageConfiguration(BaseConfiguration):
                 self.log("Directory not present: %s" % app_dir,
                          section=self.config_section,
                          option='app_dir',
-                         level=logging.ERROR)
+                         level=logging.WARNING)
                 return False
 
             etc_dir = os.path.join(app_dir, "etc")
@@ -226,7 +226,7 @@ class StorageConfiguration(BaseConfiguration):
                 self.log("$OSG_APP/etc directory not present: %s" % etc_dir,
                          section=self.config_section,
                          option='app_dir',
-                         level=logging.ERROR)
+                         level=logging.WARNING)
                 return False
 
             permissions = stat.S_IMODE(os.stat(etc_dir).st_mode)
