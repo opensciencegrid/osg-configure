@@ -116,6 +116,12 @@ class MiscConfiguration(BaseConfiguration):
                          option='gums_host',
                          level=logging.ERROR)
                 attributes_ok = False
+            self.log("Gums is deprecated in OSG 3.4. The replacement is the LCMAPS VOMS plugin; please see"
+                     " installation instructions at"
+                     " https://twiki.opensciencegrid.org/bin/view/Documentation/Release3/InstallLcmapsVoms",
+                     section=self.config_section,
+                     option='authorization_method',
+                     level=logging.WARNING)
 
         self.log('MiscConfiguration.check_attributes completed')
         return attributes_ok
