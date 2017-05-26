@@ -6,6 +6,7 @@ import fnmatch
 import pwd
 import re
 import sys
+import logging
 
 from collections import namedtuple
 from itertools import ifilter
@@ -64,7 +65,7 @@ def read_banfile():
                     bans.append(match.group(1))
     except EnvironmentError as err:
         if err.errno == errno.ENOENT:
-            sys.stdout.write(BAN_MAPFILE + " not found - all mappings might fail!")
+            logging.getLogger(__name__).warning("%s not found - all mappings might fail!", BAN_MAPFILE)
         else:
             raise
 
@@ -102,6 +103,7 @@ def get_allowed_vos():
 
 
 def main(*args):
+    logging.basicConfig(level=logging.WARNING)
     print(get_allowed_vos())
     return 0
 
