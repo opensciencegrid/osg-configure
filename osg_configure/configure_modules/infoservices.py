@@ -12,6 +12,7 @@ from osg_configure.modules import validation
 from osg_configure.modules import configfile
 from osg_configure.modules.baseconfiguration import BaseConfiguration
 from osg_configure.modules import subcluster
+from osg_configure.modules import reversevomap
 
 __all__ = ['InfoServicesConfiguration']
 
@@ -176,9 +177,12 @@ class InfoServicesConfiguration(BaseConfiguration):
                          "\nIf not, you may need to add the directory containing the Python bindings to PYTHONPATH."
                          "\nHTCondor version must be at least 8.2.0.", level=logging.WARNING)
             else:
-                using_gums = self.authorization_method == 'xacml'
-                ensure_valid_user_vo_file(using_gums, logger=self.logger)
-                default_allowed_vos = utilities.get_vos(USER_VO_MAP_LOCATION)
+                if self.authorization_method == 'vomsmap':
+                    default_allowed_vos = reversevomap.get_allowed_vos()
+                else:
+                    using_gums = self.authorization_method == 'xacml'
+                    ensure_valid_user_vo_file(using_gums, logger=self.logger)
+                    default_allowed_vos = utilities.get_vos(USER_VO_MAP_LOCATION)
                 if not default_allowed_vos:
                     # UGLY: only issue the warning if the admin hasn't specified allowed_vos for all their SCs/REs
                     raise_warning = False
