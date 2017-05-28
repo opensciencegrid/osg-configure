@@ -125,11 +125,13 @@ cores_per_node = 4
 inbound_network = FALSE
 outbound_network = TRUE
 HEPSPEC = 10
+allowed_vos = osg, atlas
 """)
         config.readfp(config_io)
         self.assertEqual(subcluster.resource_catalog_from_config(config).compose_text(),
                          r"""OSG_ResourceCatalog = { \
   [ \
+    AllowedVOs = { "osg", "atlas" }; \
     CPUs = 4; \
     MaxWallTime = 1440; \
     Memory = 4000; \
@@ -150,11 +152,13 @@ maxmemory = 4000
 cpucount = 4
 queue = red
 vo_tag = ANALYSIS
+allowed_vos = osg, atlas
 """)
         config.readfp(config_io)
         self.assertEqual(subcluster.resource_catalog_from_config(config).compose_text(),
                          r"""OSG_ResourceCatalog = { \
   [ \
+    AllowedVOs = { "osg", "atlas" }; \
     CPUs = 4; \
     MaxWallTime = 1440; \
     Memory = 4000; \
@@ -207,11 +211,13 @@ HEPSPEC = 10
 queue = blue
 extra_transforms = set_WantRHEL6 = 1
 max_wall_time = 1440
+allowed_vos = osg, atlas
 """)
         config.readfp(config_io)
         self.assertEqual(subcluster.resource_catalog_from_config(config).compose_text(),
                          r"""OSG_ResourceCatalog = { \
   [ \
+    AllowedVOs = { "osg", "atlas" }; \
     CPUs = 4; \
     MaxWallTime = 1440; \
     Memory = 4000; \
