@@ -136,7 +136,7 @@ allowed_vos = osg, atlas
     MaxWallTime = 1440; \
     Memory = 4000; \
     Name = "red.unl.edu"; \
-    Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory; \
+    Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory && member(TARGET.VO, AllowedVOs); \
     Transform = [ set_MaxMemory = RequestMemory; set_xcount = RequestCPUs; ]; \
   ] \
 }""")
@@ -163,7 +163,7 @@ allowed_vos = osg, atlas
     MaxWallTime = 1440; \
     Memory = 4000; \
     Name = "red.unl.edu"; \
-    Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory && TARGET.VOTag == "ANALYSIS"; \
+    Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory && member(TARGET.VO, AllowedVOs) && TARGET.VOTag == "ANALYSIS"; \
     Transform = [ set_MaxMemory = RequestMemory; set_VOTag = "ANALYSIS"; set_remote_queue = "red"; set_xcount = RequestCPUs; ]; \
     VOTag = "ANALYSIS"; \
   ] \
@@ -222,7 +222,7 @@ allowed_vos = osg, atlas
     MaxWallTime = 1440; \
     Memory = 4000; \
     Name = "glow.chtc.wisc.edu"; \
-    Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory; \
+    Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory && member(TARGET.VO, AllowedVOs); \
     Transform = [ set_MaxMemory = RequestMemory; set_WantRHEL6 = 1; set_remote_queue = "blue"; set_xcount = RequestCPUs; ]; \
   ] \
 }""")
@@ -249,16 +249,18 @@ queue = blue
 extra_requirements = WantGPUs =?= 1
 extra_transforms = set_WantRHEL6 = 1
 max_wall_time = 1440
+allowed_vos = osg, atlas
 """)
         config.readfp(config_io)
         self.assertEqual(subcluster.resource_catalog_from_config(config).compose_text(),
                          r"""OSG_ResourceCatalog = { \
   [ \
+    AllowedVOs = { "osg", "atlas" }; \
     CPUs = 4; \
     MaxWallTime = 1440; \
     Memory = 4000; \
     Name = "glow.chtc.wisc.edu"; \
-    Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory && WantGPUs =?= 1; \
+    Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory && member(TARGET.VO, AllowedVOs) && WantGPUs =?= 1; \
     Transform = [ set_MaxMemory = RequestMemory; set_WantRHEL6 = 1; set_remote_queue = "blue"; set_xcount = RequestCPUs; ]; \
   ] \
 }""")
