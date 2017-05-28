@@ -225,8 +225,11 @@ def resource_catalog_from_config(config, logger=utilities.NullLogger, default_al
                 logger.error("Either specify a list of VOs, or a '*' to use an autodetected VO list based on the user"
                              "\naccounts available on your CE.")
                 raise exceptions.SettingError("allowed_vos blank in section '%s'" % section)
-            elif rcentry.allowed_vos == "*" and default_allowed_vos:
-                rcentry.allowed_vos = default_allowed_vos
+            elif rcentry.allowed_vos == "*":
+                if default_allowed_vos:
+                    rcentry.allowed_vos = default_allowed_vos
+                else:
+                    rcentry.allowed_vos = None
 
         max_wall_time = utilities.config_safe_get(config, section, 'max_wall_time')
         if not max_wall_time:
