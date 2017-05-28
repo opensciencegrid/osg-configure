@@ -164,9 +164,6 @@ class MiscConfiguration(BaseConfiguration):
         if self.htcondor_gateway_enabled:
             self.write_gridmap_to_htcondor_ce_config()
 
-        # Call configure_vdt_cleanup (enabling or disabling as necessary)
-        self._configure_cleanup()
-
         self.log('MiscConfiguration.configure completed')
         return True
 
