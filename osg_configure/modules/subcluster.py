@@ -210,8 +210,16 @@ def resource_catalog_from_config(config, logger=utilities.NullLogger, default_al
             raise exceptions.SettingError("maxmemory / ram_mb not found in section %s" % section)
         rcentry.memory = int(rcentry.memory)
 
-        rcentry.allowed_vos = utilities.config_safe_get(config, section, 'allowed_vos',
-                                                        default=default_allowed_vos)
+        rcentry.allowed_vos = utilities.config_safe_get(config, section, 'allowed_vos', default="").strip()
+        if not rcentry.allowed_vos:
+            logger.error("No allowed_vos specified for section '%s'."
+                         "\nThe factory will not send jobs to these subclusters/resources. Specify the allowed_vos"
+                         "\nattribute as either a list of VOs, or a '*' to use an autodetected VO list based on"
+                         "\nthe user accounts available on your CE." % section)
+            raise exceptions.SettingError("No allowed_vos for %s" % section)
+        if rcentry.allowed_vos == "*" and default_allowed_vos:
+            rcentry.allowed_vos = default_allowed_vos
+
         max_wall_time = utilities.config_safe_get(config, section, 'max_wall_time')
         if not max_wall_time:
             rcentry.max_wall_time = 1440
