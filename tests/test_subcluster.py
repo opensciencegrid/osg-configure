@@ -167,16 +167,6 @@ class TestSubcluster(unittest.TestCase):
                 did_fail = True
             self.assertFalse(did_fail, msg="Section %s threw an exception." % section)
 
-    def test_resource_entry_invalid(self):
-        """
-        Make sure blank allowed_vos is detected
-        """
-        config_parser = ConfigParser.SafeConfigParser()
-        config_file = get_test_config("subcluster/resourceentry.ini")
-        config_parser.read(config_file)
-        section = "Resource Entry Invalid Blank allowed_vos"
-        self.assertRaises(exceptions.SettingError, subcluster.check_section, config_parser, section)
-
 
 if __name__ == '__main__':
     console = logging.StreamHandler()
