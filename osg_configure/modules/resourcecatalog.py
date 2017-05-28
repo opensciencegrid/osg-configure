@@ -87,9 +87,9 @@ class RCEntry(object):
         if self.max_wall_time is not None:
             self.max_wall_time = int(self.max_wall_time)
         if self.allowed_vos is not None and isinstance(self.allowed_vos, str):
-            self.allowed_vos = re.split('[ ,]+', self.allowed_vos)
+            self.allowed_vos = filter(None, re.split('[ ,]+', self.allowed_vos))
         if self.subclusters is not None and isinstance(self.subclusters, str):
-            self.subclusters = re.split(r'\s*,\s*', self.subclusters)
+            self.subclusters = filter(None, re.split(r'\s*,\s*', self.subclusters))
 
         return self
 
