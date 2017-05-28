@@ -43,7 +43,7 @@ class MiscConfiguration(BaseConfiguration):
                                               required=configfile.Option.OPTIONAL),
                         'authorization_method':
                             configfile.Option(name='authorization_method',
-                                              default_value='xacml'),
+                                              default_value='vomsmap'),
                         'edit_lcmaps_db':
                             configfile.Option(name='edit_lcmaps_db',
                                               required=configfile.Option.OPTIONAL,
