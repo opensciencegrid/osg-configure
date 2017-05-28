@@ -10,6 +10,7 @@ import logging
 # Important libraries are in the parent directory
 sys.path.insert(0, os.path.realpath('../'))
 
+from osg_configure.modules.exceptions import ConfigureError
 from osg_configure.modules.utilities import get_test_config
 from osg_configure.configure_modules import gateway
 
@@ -42,8 +43,8 @@ class TestGateway(unittest.TestCase):
             self.fail("Received exception while parsing configuration: %s" % e)
 
         options = settings.options
-        variables = {'gram_gateway_enabled': True,
-                     'htcondor_gateway_enabled': False}
+        variables = {'gram_gateway_enabled': False,
+                     'htcondor_gateway_enabled': True}
         for var in variables:
             self.assertTrue(options.has_key(var),
                             "Option %s missing" % var)
@@ -51,6 +52,17 @@ class TestGateway(unittest.TestCase):
                              variables[var],
                              "Wrong value obtained for %s, got %s but "
                              "expected %s" % (var, options[var].value, variables[var]))
+
+    def testGram(self):
+        """
+        Verifies that enabling GRAM now causes an error
+        """
+        config_file = get_test_config("gateway/gateway_gram.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.read(config_file)
+
+        settings = gateway.GatewayConfiguration(logger=global_logger)
+        self.assertRaises(ConfigureError, settings.parse_configuration, configuration)
 
 
 if __name__ == '__main__':
