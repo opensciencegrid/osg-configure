@@ -8,6 +8,7 @@ import sys
 import unittest
 import ConfigParser
 import logging
+import pwd
 
 
 # setup system library path 
@@ -45,9 +46,14 @@ class TestRSV(unittest.TestCase):
         # monkey-patch rpm_installed so that RsvConfiguration will parse configuration even if rsv is not installed
         self._old_rpm_installed = utilities.rpm_installed
         utilities.rpm_installed = lambda rpm_name: True
+        # also monkey-patch pwd.getpwnam so we don't get an error if the rsv user doesn't exist
+        self._old_getpwnam = pwd.getpwnam
+        # pw_name, pw_passwd, pw_uid, pw_gid, pw_gecos, pw_dir, pw_shell
+        pwd.getpwnam = lambda name: ('root', '', 0, 0, 'root', '/root', '/bin/bash')
 
     def tearDown(self):
         utilities.rpm_installed = self._old_rpm_installed
+        pwd.getpwnam = self._old_getpwnam
 
     def load_settings_from_files(self, *cfgfiles):
         configuration = ConfigParser.SafeConfigParser()
