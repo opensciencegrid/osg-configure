@@ -56,10 +56,7 @@ class TestRSV(unittest.TestCase):
 
         settings = rsv.RsvConfiguration(logger=global_logger)
         settings.rsv_meta_dir = RSV_META_DIR
-        try:
-            settings.parse_configuration(configuration)
-        except Exception, e:
-            self.fail("Received exception while parsing configuration: %s" % e)
+        settings.parse_configuration(configuration)
 
         return settings
 
@@ -177,10 +174,7 @@ class TestRSV(unittest.TestCase):
 
         settings = rsv.RsvConfiguration(logger=global_logger)
         settings.rsv_meta_dir = RSV_META_DIR
-        try:
-            settings.parse_configuration(configuration)
-        except Exception, e:
-            self.fail("Received exception while parsing configuration: %s" % e)
+        settings.parse_configuration(configuration)
 
         mandatory = ['enable_gratia',
                      'enable_nagios']
