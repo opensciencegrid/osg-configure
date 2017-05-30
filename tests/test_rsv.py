@@ -41,6 +41,14 @@ class TestRSV(unittest.TestCase):
     Unit test class to test RsvConfiguration class
     """
 
+    def setUp(self):
+        # monkey-patch rpm_installed so that RsvConfiguration will parse configuration even if rsv is not installed
+        self._old_rpm_installed = utilities.rpm_installed
+        utilities.rpm_installed = lambda rpm_name: True
+
+    def tearDown(self):
+        utilities.rpm_installed = self._old_rpm_installed
+
     def load_settings_from_files(self, *cfgfiles):
         configuration = ConfigParser.SafeConfigParser()
         for cfgfile in cfgfiles:
@@ -59,10 +67,6 @@ class TestRSV(unittest.TestCase):
         """
         Test rsv parsing
         """
-
-        # need to have rsv installed to get rsv tests working
-        if not utilities.rpm_installed('rsv-core'):
-            return
 
         settings = self.load_settings_from_files("rsv/rsv1.ini")
         options = settings.options
@@ -92,10 +96,6 @@ class TestRSV(unittest.TestCase):
         Test rsv parsing
         """
 
-        # need to have rsv installed to get rsv tests working
-        if not utilities.rpm_installed('rsv-core'):
-            return
-
         settings = self.load_settings_from_files("rsv/rsv2.ini")
         options = settings.options
         variables = {'gratia_probes': '',
@@ -124,9 +124,6 @@ class TestRSV(unittest.TestCase):
         Test rsv parsing
         """
 
-        # need to have rsv installed to get rsv tests working
-        if not utilities.rpm_installed('rsv-core'):
-            return
         settings = self.load_settings_from_files("rsv/multiple_hosts.ini")
         options = settings.options
         variables = {'ce_hosts': 'host1.site.com, host2.site.com',
@@ -154,9 +151,6 @@ class TestRSV(unittest.TestCase):
         Test parsing when ignored
         """
 
-        # need to have rsv installed to get rsv tests working
-        if not utilities.rpm_installed('rsv-core'):
-            return
         settings = self.load_settings_from_files("rsv/ignored.ini")
         attributes = settings.get_attributes()
         self.assertEqual(len(attributes), 0,
@@ -167,9 +161,6 @@ class TestRSV(unittest.TestCase):
         Test parsing when disabled
         """
 
-        # need to have rsv installed to get rsv tests working
-        if not utilities.rpm_installed('rsv-core'):
-            return
         settings = self.load_settings_from_files("rsv/disabled.ini")
         attributes = settings.get_attributes()
         self.assertEqual(len(attributes), 0,
@@ -180,9 +171,6 @@ class TestRSV(unittest.TestCase):
         Test the parsing when attributes are missing, should get exceptions
         """
 
-        # need to have rsv installed to get rsv tests working
-        if not utilities.rpm_installed('rsv-core'):
-            return
         config_file = get_test_config("rsv/rsv2.ini")
         configuration = ConfigParser.SafeConfigParser()
         configuration.read(config_file)
@@ -214,9 +202,6 @@ class TestRSV(unittest.TestCase):
         """
 
 
-        # need to have rsv installed to get rsv tests working
-        if not utilities.rpm_installed('rsv-core'):
-            return
         settings = self.load_settings_from_files("rsv/invalid_key.ini")
         attributes = settings.get_attributes()
         self.assertFalse(settings.check_attributes(attributes),
@@ -227,9 +212,6 @@ class TestRSV(unittest.TestCase):
         Test the check_attributes with a missing rsv key file
         """
 
-        # need to have rsv installed to get rsv tests working
-        if not utilities.rpm_installed('rsv-core'):
-            return
         settings = self.load_settings_from_files("rsv/missing_key.ini")
         attributes = settings.get_attributes()
         self.assertFalse(settings.check_attributes(attributes),
@@ -240,9 +222,6 @@ class TestRSV(unittest.TestCase):
         Test the check_attributes with invalid cert file
         """
 
-        # need to have rsv installed to get rsv tests working
-        if not utilities.rpm_installed('rsv-core'):
-            return
         settings = self.load_settings_from_files("rsv/invalid_cert.ini")
         attributes = settings.get_attributes()
         self.assertFalse(settings.check_attributes(attributes),
@@ -253,9 +232,6 @@ class TestRSV(unittest.TestCase):
         Test the check_attributes with a missing rsv cert file
         """
 
-        # need to have rsv installed to get rsv tests working
-        if not utilities.rpm_installed('rsv-core'):
-            return
         settings = self.load_settings_from_files("rsv/missing_cert.ini")
         attributes = settings.get_attributes()
         self.assertFalse(settings.check_attributes(attributes),
@@ -267,9 +243,6 @@ class TestRSV(unittest.TestCase):
         """
 
 
-        # need to have rsv installed to get rsv tests working
-        if not utilities.rpm_installed('rsv-core'):
-            return
         settings = self.load_settings_from_files("rsv/invalid_proxy.ini")
         attributes = settings.get_attributes()
         self.assertFalse(settings.check_attributes(attributes),
@@ -280,9 +253,6 @@ class TestRSV(unittest.TestCase):
         Test the check_attributes with a missing proxy cert file
         """
 
-        # need to have rsv installed to get rsv tests working
-        if not utilities.rpm_installed('rsv-core'):
-            return
         settings = self.load_settings_from_files("rsv/missing_proxy.ini")
         attributes = settings.get_attributes()
         self.assertFalse(settings.check_attributes(attributes),
@@ -293,9 +263,6 @@ class TestRSV(unittest.TestCase):
         Test the check_attributes with invalid gratia probes
         """
 
-        # need to have rsv installed to get rsv tests working
-        if not utilities.rpm_installed('rsv-core'):
-            return
         settings = self.load_settings_from_files("rsv/invalid_gratia1.ini")
         attributes = settings.get_attributes()
         self.assertFalse(settings.check_attributes(attributes),
@@ -311,9 +278,6 @@ class TestRSV(unittest.TestCase):
         Test the check_attributes with invalid ce host
         """
 
-        # need to have rsv installed to get rsv tests working
-        if not utilities.rpm_installed('rsv-core'):
-            return
         settings = self.load_settings_from_files("rsv/invalid_ce_host.ini")
         attributes = settings.get_attributes()
         self.assertFalse(settings.check_attributes(attributes),
@@ -324,9 +288,6 @@ class TestRSV(unittest.TestCase):
         Test the check_attributes with invalid gums host
         """
 
-        # need to have rsv installed to get rsv tests working
-        if not utilities.rpm_installed('rsv-core'):
-            return
         settings = self.load_settings_from_files("rsv/invalid_gums_host.ini")
         attributes = settings.get_attributes()
         self.assertFalse(settings.check_attributes(attributes),
@@ -337,9 +298,6 @@ class TestRSV(unittest.TestCase):
         Test the check_attributes with invalid gridftp host
         """
 
-        # need to have rsv installed to get rsv tests working
-        if not utilities.rpm_installed('rsv-core'):
-            return
         settings = self.load_settings_from_files("rsv/invalid_gridftp_host.ini")
         attributes = settings.get_attributes()
         self.assertFalse(settings.check_attributes(attributes),
@@ -350,9 +308,6 @@ class TestRSV(unittest.TestCase):
         Test the check_attributes with invalid srm host
         """
 
-        # need to have rsv installed to get rsv tests working
-        if not utilities.rpm_installed('rsv-core'):
-            return
         settings = self.load_settings_from_files("rsv/invalid_srm_host.ini")
         attributes = settings.get_attributes()
         self.assertFalse(settings.check_attributes(attributes),
@@ -363,9 +318,6 @@ class TestRSV(unittest.TestCase):
         Test the check_attributes function to see if it works on valid settings
         """
 
-        # need to have rsv installed to get rsv tests working
-        if not utilities.rpm_installed('rsv-core'):
-            return
         settings = self.load_settings_from_files("rsv/rsv1.ini")
         attributes = settings.get_attributes()
         self.assertTrue(settings.check_attributes(attributes),
@@ -375,9 +327,6 @@ class TestRSV(unittest.TestCase):
         """
         Test the check_attributes function to see if it works on valid settings
         """
-        # need to have rsv installed to get rsv tests working
-        if not utilities.rpm_installed('rsv-core'):
-            return
         settings = self.load_settings_from_files("rsv/rsv2.ini")
         attributes = settings.get_attributes()
         self.assertTrue(settings.check_attributes(attributes),
@@ -388,9 +337,6 @@ class TestRSV(unittest.TestCase):
         Test RSV config accepts IPv6 hostnames
         """
 
-        # need to have rsv installed to get rsv tests working
-        if not utilities.rpm_installed('rsv-core'):
-            return
         settings = self.load_settings_from_files("rsv/rsv_ipv6.ini")
         attributes = settings.get_attributes()
         self.assertTrue(settings.check_attributes(attributes),
@@ -404,7 +350,6 @@ class TestRSV(unittest.TestCase):
         config_file = get_test_config("rsv/rsv_gram.ini")
         config_parser.read(config_file)
         failed = False
-        utilities.rpm_installed = lambda rpm_name: True
         settings = rsv.RsvConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(config_parser)
@@ -417,9 +362,6 @@ class TestRSV(unittest.TestCase):
         """
         Test to make sure right services get returned
         """
-        # If rsv-core is not installed, settings.enabled will always be False
-        if not utilities.rpm_installed('rsv-core'):
-            return
         settings = self.load_settings_from_files("rsv/rsv1.ini")
         services = settings.enabled_services()
         expected_services = set(['rsv', 'condor-cron'])
