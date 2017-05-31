@@ -53,8 +53,7 @@ class TestMisc(unittest.TestCase):
             self.fail("Received exception while parsing configuration: %s" % e)
 
         options = settings.options
-        variables = {'glexec_location': './configs/misc',
-                     'gums_host': 'my.gums.org',
+        variables = {'gums_host': 'my.gums.org',
                      'authorization_method': 'xacml'}
         for var in variables:
             self.assertTrue(options.has_key(var),
@@ -63,15 +62,6 @@ class TestMisc(unittest.TestCase):
                              variables[var],
                              "Wrong value obtained for %s, got %s but " \
                              "expected %s" % (var, options[var].value, variables[var]))
-        attributes = settings.get_attributes()
-        variables = {'OSG_GLEXEC_LOCATION': './configs/misc'}
-        for var in variables:
-            self.assertTrue(attributes.has_key(var),
-                            "Attribute %s missing" % var)
-            self.assertEqual(attributes[var],
-                             variables[var],
-                             "Wrong value obtained for %s, got %s but " \
-                             "expected %s" % (var, attributes[var], variables[var]))
 
     def testParsing2(self):
         """
@@ -89,8 +79,7 @@ class TestMisc(unittest.TestCase):
             self.fail("Received exception while parsing configuration: %s" % e)
 
         options = settings.options
-        variables = {'glexec_location': './configs/misc',
-                     'gums_host': 'my.gums.org',
+        variables = {'gums_host': 'my.gums.org',
                      'authorization_method': 'xacml'}
         for var in variables:
             self.assertTrue(options.has_key(var),
@@ -99,15 +88,6 @@ class TestMisc(unittest.TestCase):
                              variables[var],
                              "Wrong value obtained for %s, got %s but " \
                              "expected %s" % (var, options[var].value, variables[var]))
-        attributes = settings.get_attributes()
-        variables = {'OSG_GLEXEC_LOCATION': './configs/misc'}
-        for var in variables:
-            self.assertTrue(attributes.has_key(var),
-                            "Attribute %s missing" % var)
-            self.assertEqual(attributes[var],
-                             variables[var],
-                             "Wrong value obtained for %s, got %s but " \
-                             "expected %s" % (var, attributes[var], variables[var]))
 
     def testParsingAuthentication(self):
         """

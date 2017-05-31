@@ -14,13 +14,11 @@ install:
 	python setup.py install --root=$(DESTDIR)/
 	mkdir -p  $(DESTDIR)$(SBINDIR)
 	mv -f  $(DESTDIR)$(BINDIR)/$(NAME)  $(DESTDIR)$(SBINDIR)/$(NAME)
-	ln -snf  $(SBINDIR)/$(NAME)  $(DESTDIR)$(SBINDIR)/configure-osg
 
 install-noconfig:
 	python setup.py install_lib install_scripts
 	mkdir -p  $(DESTDIR)$(SBINDIR)
 	mv -f  $(DESTDIR)$(BINDIR)/$(NAME)  $(DESTDIR)$(SBINDIR)/$(NAME)
-	ln -snf  $(SBINDIR)/$(NAME)  $(DESTDIR)$(SBINDIR)/configure-osg
 
 dist:
 	rm -f MANIFEST
