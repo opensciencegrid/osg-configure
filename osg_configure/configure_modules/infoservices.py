@@ -311,7 +311,7 @@ class InfoServicesConfiguration(BaseConfiguration):
         """
         view_hosts = []
         for host in self.ce_collectors:
-            if ':' in host:
+            if ':' not in host:
                 view_hosts.append("%s:%d" % (host, HTCONDOR_CE_COLLECTOR_PORT))
             else:
                 view_hosts.append(host)
