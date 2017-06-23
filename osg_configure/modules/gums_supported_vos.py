@@ -55,7 +55,7 @@ def gums_json_map(gums_host, command, params, certpath, keypath):
     params = urllib.urlencode(params)
     if not re.search(r':\d+$', gums_host):
         gums_host = gums_host + ":8443"
-    url = 'https://%s/gums/json/%s?%s' % (gums_host, command, jsonpath, params)
+    url = 'https://%s/gums/json/%s?%s' % (gums_host, command, params)
     handle = certurlopen(url, certpath, keypath)
     return json.load(handle)
 
@@ -98,6 +98,30 @@ def gums_json_vo_user_map(gums_host, target_host=None,
         raise exceptions.ApplicationError("'map' object not of type dict")
 
     return vo_users
+
+def gums_json_user_vo_map_file(gums_host, target_host=None,
+                          certpath=default_certpath, keypath=default_keypath):
+    json_cmd = "generateOsgUserVoMap"
+    if target_host is None:
+        target_host = get_subject(certpath)
+    params   = {'hostname': target_host}
+    json_map = gums_json_map(gums_host, json_cmd, params, certpath, keypath)
+
+    if _debug:
+        print json_map
+
+    if 'result' not in json_map:
+        raise exceptions.ApplicationError("'result' not in returned json")
+    if json_map['result'] != 'OK':
+        raise exceptions.ApplicationError("%s: %s" % (
+                    json_map.get('result', "Fail"),
+                    json_map.get('message', "(no message)")))
+    if 'map' not in json_map:
+        raise exceptions.ApplicationError("Missing 'map' object")
+
+    mapfile = json_map['map']
+
+    return mapfile
 
 def gums_supported_vos(gums_host, target_host=None,
                        certpath=default_certpath, keypath=default_keypath):

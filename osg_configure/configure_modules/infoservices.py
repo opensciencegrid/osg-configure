@@ -199,11 +199,11 @@ class InfoServicesConfiguration(BaseConfiguration):
                     default_allowed_vos = reversevomap.get_allowed_vos()
                 else:
                     using_gums = self.authorization_method == 'xacml'
+                    ensure_valid_user_vo_file(using_gums, gums_host=self.gums_host, logger=self.logger)
                     try:
                         default_allowed_vos = gums_supported_vos.gums_supported_vos(self.gums_host)
                     except exceptions.ApplicationError, e:
                         self.log("Could not query GUMS server via JSON interface: %s" % e, level=logging.DEBUG)
-                        ensure_valid_user_vo_file(using_gums, logger=self.logger)
                         default_allowed_vos = utilities.get_vos(USER_VO_MAP_LOCATION)
                 if not default_allowed_vos:
                     # UGLY: only issue the warning if the admin has requested autodetection for some of their SCs/REs
@@ -347,10 +347,17 @@ CONDOR_VIEW_HOST = %s
             return match.group(1)
 
 
-def ensure_valid_user_vo_file(using_gums, logger=utilities.NullLogger):
+def ensure_valid_user_vo_file(using_gums, gums_host=None, logger=utilities.NullLogger):
     if not validation.valid_user_vo_file(USER_VO_MAP_LOCATION):
         logger.info("Trying to create user-vo-map file")
         if using_gums:
+            try:
+                user_vo_file_text = gums_supported_vos.gums_json_user_vo_map_file(gums_host)
+                open(USER_VO_MAP_LOCATION, "w").write(user_vo_file_text)
+                return True
+            except exceptions.ApplicationError, e:
+                self.log("Could not query GUMS server via JSON interface: %s" % e, level=logging.DEBUG)
+
             gums_script = '/usr/bin/gums-host-cron'
         else:
             gums_script = '/usr/sbin/edg-mkgridmap'
