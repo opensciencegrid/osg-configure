@@ -352,11 +352,12 @@ def ensure_valid_user_vo_file(using_gums, gums_host=None, logger=utilities.NullL
         logger.info("Trying to create user-vo-map file")
         if using_gums:
             try:
+                logger.info("Querying GUMS server via JSON interface. This may take some time")
                 user_vo_file_text = gums_supported_vos.gums_json_user_vo_map_file(gums_host)
                 open(USER_VO_MAP_LOCATION, "w").write(user_vo_file_text)
                 return True
             except exceptions.ApplicationError, e:
-                self.log("Could not query GUMS server via JSON interface: %s" % e, level=logging.WARNING)
+                logger.warning("Could not query GUMS server via JSON interface, falling back to gums-host-cron: %s" % e)
 
             gums_script = '/usr/bin/gums-host-cron'
         else:
