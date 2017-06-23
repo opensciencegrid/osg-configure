@@ -344,7 +344,7 @@ CONDOR_VIEW_HOST = %s
 
 
 def ensure_valid_user_vo_file(using_gums, gums_host=None, logger=utilities.NullLogger):
-    if not validation.valid_user_vo_file(USER_VO_MAP_LOCATION):
+    if not (validation.valid_user_vo_file(USER_VO_MAP_LOCATION) and utilities.get_vos(USER_VO_MAP_LOCATION)):
         logger.info("Trying to create user-vo-map file")
         if using_gums:
             try:
