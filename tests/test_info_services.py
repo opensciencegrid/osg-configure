@@ -18,7 +18,11 @@ pathname = os.path.realpath('../')
 sys.path.insert(0, pathname)
 
 from osg_configure.modules import exceptions
-from osg_configure.configure_modules import infoservices
+try:
+    from osg_configure.configure_modules import infoservices
+except ImportError:
+    infoservices = None
+    print("infoservices not found -- skipping infoservices tests")
 from osg_configure.modules import utilities
 from osg_configure.modules.utilities import get_test_config
 
@@ -42,6 +46,7 @@ class TestInfoServices(unittest.TestCase):
         Test infoservices parsing when set to disabled
         """
 
+        if not infoservices: return
         config_file = get_test_config("infoservices/disabled.ini")
         configuration = ConfigParser.SafeConfigParser()
         configuration.read(config_file)
@@ -57,6 +62,7 @@ class TestInfoServices(unittest.TestCase):
         Test infoservices parsing when set to ignored
         """
 
+        if not infoservices: return
         config_file = get_test_config("infoservices/ignored.ini")
         configuration = ConfigParser.SafeConfigParser()
         configuration.read(config_file)
@@ -72,6 +78,7 @@ class TestInfoServices(unittest.TestCase):
         Test the check_attributes function to see if it oks a disabled section
         """
 
+        if not infoservices: return
         config_file = get_test_config("infoservices/disabled.ini")
         configuration = ConfigParser.SafeConfigParser()
         configuration.read(config_file)
@@ -92,6 +99,7 @@ class TestInfoServices(unittest.TestCase):
         set when the infoservices section is missing
         """
 
+        if not infoservices: return
         config_file = get_test_config("infoservices/itb_defaults2.ini")
         configuration = ConfigParser.SafeConfigParser()
         configuration.read(config_file)
@@ -112,6 +120,7 @@ class TestInfoServices(unittest.TestCase):
         set when the infoservices section is missing
         """
 
+        if not infoservices: return
         config_file = get_test_config("infoservices/prod_defaults2.ini")
         configuration = ConfigParser.SafeConfigParser()
         configuration.read(config_file)
@@ -131,6 +140,7 @@ class TestInfoServices(unittest.TestCase):
         Test to make sure right services get returned
         """
 
+        if not infoservices: return
         config_file = get_test_config("infoservices/infoservices.ini")
         configuration = ConfigParser.SafeConfigParser()
         configuration.read(config_file)
