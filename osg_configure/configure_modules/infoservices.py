@@ -200,11 +200,7 @@ class InfoServicesConfiguration(BaseConfiguration):
                 else:
                     using_gums = self.authorization_method == 'xacml'
                     ensure_valid_user_vo_file(using_gums, gums_host=self.gums_host, logger=self.logger)
-                    try:
-                        default_allowed_vos = gums_supported_vos.gums_supported_vos(self.gums_host)
-                    except exceptions.ApplicationError, e:
-                        self.log("Could not query GUMS server via JSON interface: %s" % e, level=logging.WARNING)
-                        default_allowed_vos = utilities.get_vos(USER_VO_MAP_LOCATION)
+                    default_allowed_vos = utilities.get_vos(USER_VO_MAP_LOCATION)
                 if not default_allowed_vos:
                     # UGLY: only issue the warning if the admin has requested autodetection for some of their SCs/REs
                     raise_warning = False
