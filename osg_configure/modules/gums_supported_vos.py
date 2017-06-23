@@ -105,7 +105,11 @@ def gums_json_user_vo_map_file(gums_host, target_host=None,
     if target_host is None:
         target_host = get_subject(certpath)
     params   = {'hostname': target_host}
-    json_map = gums_json_map(gums_host, json_cmd, params, certpath, keypath)
+    try:
+        json_map = gums_json_map(gums_host, json_cmd, params, certpath, keypath)
+    except EnvironmentError, e:
+        raise exceptions.ApplicationError(
+            "Error contacting gums host via json interface: %s" % e)
 
     if _debug:
         print json_map
