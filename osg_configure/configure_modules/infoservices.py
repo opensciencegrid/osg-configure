@@ -346,30 +346,34 @@ CONDOR_VIEW_HOST = %s
 def ensure_valid_user_vo_file(using_gums, gums_host=None, logger=utilities.NullLogger):
     if not (validation.valid_user_vo_file(USER_VO_MAP_LOCATION) and utilities.get_vos(USER_VO_MAP_LOCATION)):
         logger.info("Trying to create user-vo-map file")
+        result = False
         if using_gums:
-            try:
-                logger.info("Querying GUMS server via JSON interface. This may take some time")
-                user_vo_file_text = gums_supported_vos.gums_json_user_vo_map_file(gums_host)
-                open(USER_VO_MAP_LOCATION, "w").write(user_vo_file_text)
-                return True
-            except exceptions.ApplicationError, e:
-                logger.warning("Could not query GUMS server via JSON interface, falling back to gums-host-cron: %s" % e)
-
-            gums_script = '/usr/bin/gums-host-cron'
+            logger.info("Querying GUMS server. This may take some time")
+            result = utilities.run_script(['/usr/bin/gums-host-cron'])
+            if not result:
+                # gums-host-cron failed, let's try the json interface
+                try:
+                    logger.info("Querying GUMS server via JSON interface. This may take some time")
+                    user_vo_file_text = gums_supported_vos.gums_json_user_vo_map_file(gums_host)
+                    open(USER_VO_MAP_LOCATION, "w").write(user_vo_file_text)
+                    return True
+                except exceptions.ApplicationError, e:
+                    logger.warning("Could not query GUMS server via JSON interface: %s" % e)
         else:
-            gums_script = '/usr/sbin/edg-mkgridmap'
+            logger.info("Running edg-mkgridmap, this process may take some time to query vo servers")
+            result = utilities.run_script(['/usr/sbin/edg-mkgridmap'])
 
-        logger.info("Running %s, this process may take some time " % gums_script +
-                    "to query vo and/or gums servers\n")
-        result = utilities.run_script([gums_script])
         temp, invalid_lines = validation.valid_user_vo_file(USER_VO_MAP_LOCATION, True)
         result = result and temp
         if not result:
             if not invalid_lines:
-                logger.warning("gums-host-cron or edg-mkgridmap generated an empty " +
-                               USER_VO_MAP_LOCATION + " file, please check the "
-                               "appropriate configuration and or log messages")
+                logger.warning("Empty %s generated, please check the GUMS configuration (if using GUMS), "
+                               "the edg-mkgridmap configuration (if not using GUMS), and/or log messages for the above"
+                               % USER_VO_MAP_LOCATION)
             else:
                 logger.warning("Invalid lines in user-vo-map file:")
                 logger.warning("\n".join(invalid_lines))
-            logger.warning("Error when invoking gums-host-cron or edg-mkgridmap")
+            logger.warning("Error creating user-vo-map file")
+            return False
+        else:
+            return True
