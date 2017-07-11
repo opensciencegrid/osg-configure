@@ -5,6 +5,7 @@ import re
 import os
 import ConfigParser
 import subprocess
+import sys
 import logging
 
 from osg_configure.configure_modules.misc import MiscConfiguration
@@ -355,19 +356,22 @@ CONDOR_VIEW_HOST = %s
             self.log("Trying to create user-vo-map file", level=logging.INFO)
             result = False
             if using_gums:
-                self.log("Querying GUMS server. This may take some time", level=logging.INFO)
+                sys.stdout.write("Querying GUMS server. This may take some time\n")
+                sys.stdout.flush()
                 result = utilities.run_script(['/usr/bin/gums-host-cron'])
                 if not result:
                     # gums-host-cron failed, let's try the json interface
                     try:
-                        self.log("Querying GUMS server via JSON interface. This may take some time", level=logging.INFO)
+                        sys.stdout.write("Querying GUMS server via JSON interface. This may take some time\n")
+                        sys.stdout.flush()
                         user_vo_file_text = gums_supported_vos.gums_json_user_vo_map_file(self.gums_host)
                         open(USER_VO_MAP_LOCATION, "w").write(user_vo_file_text)
                         return True
                     except exceptions.ApplicationError, e:
                         self.log("Could not query GUMS server via JSON interface: %s" % e, level=logging.WARNING)
             else:
-                self.log("Running edg-mkgridmap, this process may take some time to query vo servers", level=logging.INFO)
+                sys.stdout.write("Running edg-mkgridmap, this process may take some time to query vo servers\n")
+                sys.stdout.flush()
                 result = utilities.run_script(['/usr/sbin/edg-mkgridmap'])
 
             temp, invalid_lines = validation.valid_user_vo_file(USER_VO_MAP_LOCATION, True)
