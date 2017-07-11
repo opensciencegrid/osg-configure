@@ -137,6 +137,24 @@ class MiscConfiguration(BaseConfiguration):
                          option='gums_host',
                          level=logging.ERROR)
                 attributes_ok = False
+        elif self.authorization_method == 'vomsmap':
+            if self.using_glexec:
+                msg = "glExec not supported with vomsmap authorization; unset glexec_location or change"\
+                      " authorization_method"
+                self.log(msg,
+                         options='glexec_location',
+                         section=self.config_section,
+                         level=logging.ERROR)
+                attributes_ok = False
+
+        if self.using_glexec and not utilities.rpm_installed('lcmaps-plugins-glexec-tracking'):
+            msg = "Can't use glExec because LCMAPS glExec plugin not installed."\
+                  " Install lcmaps-plugins-glexec-tracking or unset glexec_location"
+            self.log(msg,
+                     option='glexec_location',
+                     section=self.config_section,
+                     level=logging.ERROR)
+            attributes_ok = False
 
         self.log('MiscConfiguration.check_attributes completed')
         return attributes_ok
@@ -155,14 +173,6 @@ class MiscConfiguration(BaseConfiguration):
             self.log("Error while running fetch-crl script", level=logging.ERROR)
             raise exceptions.ConfigureError('fetch-crl returned non-zero exit code')
 
-        if self.using_glexec and not utilities.rpm_installed('lcmaps-plugins-glexec-tracking'):
-            msg = "Can't use glExec because LCMAPS glExec plugin not installed."\
-                  " Install lcmaps-plugins-glexec-tracking or unset glexec_location"
-            self.log(msg,
-                     option='glexec_location',
-                     section=self.config_section,
-                     level=logging.ERROR)
-            raise exceptions.ConfigureError(msg)
         if self.authorization_method == 'xacml':
             self._set_lcmaps_callout(True)
             self._update_gums_client_location()
@@ -172,14 +182,6 @@ class MiscConfiguration(BaseConfiguration):
             self._set_lcmaps_callout(False)
         elif self.authorization_method == 'vomsmap':
             self._set_lcmaps_callout(True)
-            if self.using_glexec:
-                msg = "glExec not supported with vomsmap authorization; unset glexec_location or change "\
-                      " authorization_method"
-                self.log(msg,
-                         options='glexec_location',
-                         section=self.config_section,
-                         level=logging.ERROR)
-                raise exceptions.ConfigureError(msg)
         else:
             self.log("Unknown authorization method: %s; should be one of: %s" %
                      (self.authorization_method, ", ".join(VALID_AUTH_METHODS)),
