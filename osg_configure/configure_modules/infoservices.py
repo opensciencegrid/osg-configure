@@ -205,7 +205,7 @@ class InfoServicesConfiguration(BaseConfiguration):
                     using_gums = self.authorization_method == 'xacml'
                     # HACK for SOFTWARE-2792
                     if using_gums:
-                        self.misc_module._update_gums_client_location()
+                        self.misc_module.update_gums_client_location()
                     ensure_valid_user_vo_file(using_gums, gums_host=self.gums_host, logger=self.logger)
                     default_allowed_vos = utilities.get_vos(USER_VO_MAP_LOCATION)
                 if not default_allowed_vos:
