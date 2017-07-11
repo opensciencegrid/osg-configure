@@ -7,6 +7,7 @@ import ConfigParser
 import subprocess
 import logging
 
+from osg_configure.configure_modules.misc import MiscConfiguration
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
 from osg_configure.modules import gums_supported_vos
@@ -66,6 +67,7 @@ class InfoServicesConfiguration(BaseConfiguration):
         self.authorization_method = None
         self.subcluster_sections = None
         self.gums_host = None
+        self.misc_module = MiscConfiguration(*args, **kwargs)
 
         self.log("InfoServicesConfiguration.__init__ completed")
 
@@ -116,6 +118,8 @@ class InfoServicesConfiguration(BaseConfiguration):
                                         'bdii_servers'])
 
         self.ce_collectors = self._parse_ce_collectors(self.options['ce_collectors'].value)
+
+        self.misc_module.parse_configuration(configuration)
 
         def csg(section, option):
             return utilities.config_safe_get(configuration, section, option, None)
@@ -199,6 +203,9 @@ class InfoServicesConfiguration(BaseConfiguration):
                     default_allowed_vos = reversevomap.get_allowed_vos()
                 else:
                     using_gums = self.authorization_method == 'xacml'
+                    # HACK for SOFTWARE-2792
+                    if using_gums:
+                        self.misc_module._update_gums_client_location()
                     ensure_valid_user_vo_file(using_gums, gums_host=self.gums_host, logger=self.logger)
                     default_allowed_vos = utilities.get_vos(USER_VO_MAP_LOCATION)
                 if not default_allowed_vos:
