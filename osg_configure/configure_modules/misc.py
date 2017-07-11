@@ -123,6 +123,11 @@ class MiscConfiguration(BaseConfiguration):
                      option='authorization_method',
                      level=logging.WARNING)
 
+        if self.using_glexec:
+            msg = "glExec is not supported in OSG 3.4; unset glexec_location"
+            self.log(msg, options='glexec_location', section=self.config_section, level=logging.ERROR)
+            attributes_ok = False
+
         self.log('MiscConfiguration.check_attributes completed')
         return attributes_ok
 
@@ -140,10 +145,6 @@ class MiscConfiguration(BaseConfiguration):
             self.log("Error while running fetch-crl script", level=logging.ERROR)
             raise exceptions.ConfigureError('fetch-crl returned non-zero exit code')
 
-        if self.using_glexec:
-            msg = "glExec is not supported in OSG 3.4; unset glexec_location"
-            self.log(msg, options='glexec_location', section=self.config_section, level=logging.ERROR)
-            raise exceptions.ConfigureError(msg)
         if self.authorization_method == 'xacml':
             self._set_lcmaps_callout(True)
             self._update_gums_client_location()
