@@ -5,8 +5,10 @@ import re
 import os
 import ConfigParser
 import subprocess
+import sys
 import logging
 
+from osg_configure.configure_modules.misc import MiscConfiguration
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
 from osg_configure.modules import gums_supported_vos
@@ -66,6 +68,7 @@ class InfoServicesConfiguration(BaseConfiguration):
         self.authorization_method = None
         self.subcluster_sections = None
         self.gums_host = None
+        self.misc_module = MiscConfiguration(*args, **kwargs)
 
         self.log("InfoServicesConfiguration.__init__ completed")
 
@@ -116,6 +119,8 @@ class InfoServicesConfiguration(BaseConfiguration):
                                         'bdii_servers'])
 
         self.ce_collectors = self._parse_ce_collectors(self.options['ce_collectors'].value)
+
+        self.misc_module.parse_configuration(configuration)
 
         def csg(section, option):
             return utilities.config_safe_get(configuration, section, option, None)
@@ -199,7 +204,10 @@ class InfoServicesConfiguration(BaseConfiguration):
                     default_allowed_vos = reversevomap.get_allowed_vos()
                 else:
                     using_gums = self.authorization_method == 'xacml'
-                    ensure_valid_user_vo_file(using_gums, gums_host=self.gums_host, logger=self.logger)
+                    # HACK for SOFTWARE-2792
+                    if using_gums:
+                        self.misc_module.update_gums_client_location()
+                    self._ensure_valid_user_vo_file()
                     default_allowed_vos = utilities.get_vos(USER_VO_MAP_LOCATION)
                 if not default_allowed_vos:
                     # UGLY: only issue the warning if the admin has requested autodetection for some of their SCs/REs
@@ -342,38 +350,41 @@ CONDOR_VIEW_HOST = %s
         else:
             return match.group(1)
 
-
-def ensure_valid_user_vo_file(using_gums, gums_host=None, logger=utilities.NullLogger):
-    if not (validation.valid_user_vo_file(USER_VO_MAP_LOCATION) and utilities.get_vos(USER_VO_MAP_LOCATION)):
-        logger.info("Trying to create user-vo-map file")
-        result = False
-        if using_gums:
-            logger.info("Querying GUMS server. This may take some time")
-            result = utilities.run_script(['/usr/bin/gums-host-cron'])
-            if not result:
-                # gums-host-cron failed, let's try the json interface
-                try:
-                    logger.info("Querying GUMS server via JSON interface. This may take some time")
-                    user_vo_file_text = gums_supported_vos.gums_json_user_vo_map_file(gums_host)
-                    open(USER_VO_MAP_LOCATION, "w").write(user_vo_file_text)
-                    return True
-                except exceptions.ApplicationError, e:
-                    logger.warning("Could not query GUMS server via JSON interface: %s" % e)
-        else:
-            logger.info("Running edg-mkgridmap, this process may take some time to query vo servers")
-            result = utilities.run_script(['/usr/sbin/edg-mkgridmap'])
-
-        temp, invalid_lines = validation.valid_user_vo_file(USER_VO_MAP_LOCATION, True)
-        result = result and temp
-        if not result:
-            if not invalid_lines:
-                logger.warning("Empty %s generated, please check the GUMS configuration (if using GUMS), "
-                               "the edg-mkgridmap configuration (if not using GUMS), and/or log messages for the above"
-                               % USER_VO_MAP_LOCATION)
+    def _ensure_valid_user_vo_file(self):
+        using_gums = self.authorization_method == 'xacml'
+        if not (validation.valid_user_vo_file(USER_VO_MAP_LOCATION) and utilities.get_vos(USER_VO_MAP_LOCATION)):
+            self.log("Trying to create user-vo-map file", level=logging.INFO)
+            result = False
+            if using_gums:
+                sys.stdout.write("Querying GUMS server. This may take some time\n")
+                sys.stdout.flush()
+                result = utilities.run_script(['/usr/bin/gums-host-cron'])
+                if not result:
+                    # gums-host-cron failed, let's try the json interface
+                    try:
+                        sys.stdout.write("Querying GUMS server via JSON interface. This may take some time\n")
+                        sys.stdout.flush()
+                        user_vo_file_text = gums_supported_vos.gums_json_user_vo_map_file(self.gums_host)
+                        open(USER_VO_MAP_LOCATION, "w").write(user_vo_file_text)
+                        return True
+                    except exceptions.ApplicationError, e:
+                        self.log("Could not query GUMS server via JSON interface: %s" % e, level=logging.WARNING)
             else:
-                logger.warning("Invalid lines in user-vo-map file:")
-                logger.warning("\n".join(invalid_lines))
-            logger.warning("Error creating user-vo-map file")
-            return False
-        else:
-            return True
+                sys.stdout.write("Running edg-mkgridmap, this process may take some time to query vo servers\n")
+                sys.stdout.flush()
+                result = utilities.run_script(['/usr/sbin/edg-mkgridmap'])
+
+            temp, invalid_lines = validation.valid_user_vo_file(USER_VO_MAP_LOCATION, True)
+            result = result and temp
+            if not result:
+                if not invalid_lines:
+                    self.log("Empty %s generated, please check the GUMS configuration (if using GUMS), "
+                             "the edg-mkgridmap configuration (if not using GUMS), and/or log messages for the above"
+                             % USER_VO_MAP_LOCATION, level=logging.WARNING)
+                else:
+                    self.log("Invalid lines in user-vo-map file:", level=logging.WARNING)
+                    self.log("\n".join(invalid_lines), level=logging.WARNING)
+                self.log("Error creating user-vo-map file", level=logging.WARNING)
+                return False
+            else:
+                return True

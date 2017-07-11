@@ -147,7 +147,7 @@ class MiscConfiguration(BaseConfiguration):
 
         if self.authorization_method == 'xacml':
             self._set_lcmaps_callout(True)
-            self._update_gums_client_location()
+            self.update_gums_client_location()
         elif self.authorization_method == 'gridmap':
             self._set_lcmaps_callout(False)
         elif self.authorization_method == 'local-gridmap':
@@ -194,7 +194,7 @@ class MiscConfiguration(BaseConfiguration):
             self.log(msg, level=logging.ERROR)
             raise exceptions.ConfigureError(msg)
 
-    def _update_gums_client_location(self):
+    def update_gums_client_location(self):
         self.log("Updating " + GUMS_CLIENT_LOCATION, level=logging.INFO)
         location_re = re.compile("^gums.location=.*$", re.MULTILINE)
         authz_re = re.compile("^gums.authz=.*$", re.MULTILINE)
