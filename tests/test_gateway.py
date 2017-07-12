@@ -10,7 +10,6 @@ import logging
 # Important libraries are in the parent directory
 sys.path.insert(0, os.path.realpath('../'))
 
-from osg_configure.modules.exceptions import ConfigureError
 from osg_configure.modules.utilities import get_test_config
 from osg_configure.configure_modules import gateway
 
@@ -62,7 +61,10 @@ class TestGateway(unittest.TestCase):
         configuration.read(config_file)
 
         settings = gateway.GatewayConfiguration(logger=global_logger)
-        self.assertRaises(ConfigureError, settings.parse_configuration, configuration)
+        settings.parse_configuration(configuration)
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
+                         "Did not raise error on GRAM enabled")
 
 
 if __name__ == '__main__':
