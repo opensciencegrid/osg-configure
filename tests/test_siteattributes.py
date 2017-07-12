@@ -302,7 +302,7 @@ class TestSiteAttributes(unittest.TestCase):
 
         attributes = settings.get_attributes()
         self.assertFalse(settings.check_attributes(attributes),
-                         "Invalid email ignored")
+                         "Invalid sponsor ignored")
 
     def testInvalidSponsor2(self):
         """
@@ -323,7 +323,7 @@ class TestSiteAttributes(unittest.TestCase):
 
         attributes = settings.get_attributes()
         self.assertFalse(settings.check_attributes(attributes),
-                         "Invalid email ignored")
+                         "Invalid sponsor ignored")
 
     def testInvalidSponsor3(self):
         """
@@ -332,7 +332,7 @@ class TestSiteAttributes(unittest.TestCase):
         """
 
         config_file = get_test_config("siteattributes/" \
-                                      "invalid_sponsor2.ini")
+                                      "invalid_sponsor3.ini")
         configuration = ConfigParser.SafeConfigParser()
         configuration.read(config_file)
 
@@ -344,7 +344,7 @@ class TestSiteAttributes(unittest.TestCase):
 
         attributes = settings.get_attributes()
         self.assertFalse(settings.check_attributes(attributes),
-                         "Invalid email ignored")
+                         "Invalid sponsor ignored")
 
     def testValidSettings(self):
         """
