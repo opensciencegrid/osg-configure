@@ -325,27 +325,6 @@ class TestSiteAttributes(unittest.TestCase):
         self.assertFalse(settings.check_attributes(attributes),
                          "Invalid sponsor ignored")
 
-    def testInvalidSponsor3(self):
-        """
-        Test the check_attributes where the sponsor isn't on list
-        of allow VOs
-        """
-
-        config_file = get_test_config("siteattributes/" \
-                                      "invalid_sponsor3.ini")
-        configuration = ConfigParser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = siteattributes.SiteAttributes(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception, e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        attributes = settings.get_attributes()
-        self.assertFalse(settings.check_attributes(attributes),
-                         "Invalid sponsor ignored")
-
     def testValidSettings(self):
         """
         Test the check_attributes function to see if it oks good attributes
