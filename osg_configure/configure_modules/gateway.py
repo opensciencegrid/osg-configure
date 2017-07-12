@@ -60,19 +60,26 @@ class GatewayConfiguration(BaseConfiguration):
         self.gram_gateway_enabled = self.options['gram_gateway_enabled'].value
         self.htcondor_gateway_enabled = self.options['htcondor_gateway_enabled'].value
 
-        if self.gram_gateway_enabled:
-            self.log('GRAM gateway is no longer supported',
-                     option='gram_gateway_enabled',
-                     section=self.config_section,
-                     level=logging.ERROR)
-            raise exceptions.ConfigureError('GRAM gateway is no longer supported')
         self.log('GatewayConfiguration.parse_configuration completed')
 
     # Not overriding enabled_services -- only job manager modules need the gateways enabled
     # def enabled_services(self):
 
-    # Not overriding check_attributes -- all attributes are independent.
-    # def check_attributes(self, attributes):
+    def check_attributes(self, attributes):
+        """Check attributes currently stored and make sure that they are consistent"""
+        self.log('GatewayConfiguration.check_attributes started')
+        attributes_ok = True
+
+        if self.gram_gateway_enabled:
+            self.log('GRAM gateway is no longer supported',
+                     option='gram_gateway_enabled',
+                     section=self.config_section,
+                     level=logging.ERROR)
+            attributes_ok = False
+
+        self.log('GatewayConfiguration.check_attributes completed')
+        return attributes_ok
+
 
     # Not overriding configure -- all configuration in other modules
     # def configure(self, attributes):
