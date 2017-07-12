@@ -11,11 +11,6 @@ class SettingError(Error):
     pass
 
 
-class ApplicationError(Error):
-    """Class for exceptions due to an application error at runtime"""
-    pass
-
-
-class ConfigureError(ApplicationError):
+class ConfigureError(Error):
     """Class for exceptions due to problems while running vdt configure scripts"""
     pass
