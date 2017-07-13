@@ -367,7 +367,7 @@ CONDOR_VIEW_HOST = %s
                         user_vo_file_text = gums_supported_vos.gums_json_user_vo_map_file(self.gums_host)
                         open(USER_VO_MAP_LOCATION, "w").write(user_vo_file_text)
                         return True
-                    except exceptions.ApplicationError, e:
+                    except exceptions.Error as e:
                         self.log("Could not query GUMS server via JSON interface: %s" % e, level=logging.WARNING)
             else:
                 sys.stdout.write("Running edg-mkgridmap, this process may take some time to query vo servers\n")

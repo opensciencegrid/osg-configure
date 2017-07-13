@@ -81,25 +81,25 @@ def gums_json_vo_user_map(gums_host, target_host=None,
     try:
         json_map = gums_json_map(gums_host, json_cmd, params, certpath, keypath)
     except EnvironmentError, e:
-        raise exceptions.ApplicationError(
+        raise exceptions.Error(
             "Error contacting gums host via json interface: %s" % e)
 
     if _debug:
         print json_map
 
     if 'result' not in json_map:
-        raise exceptions.ApplicationError("'result' not in returned json")
+        raise exceptions.Error("'result' not in returned json")
     if json_map['result'] != 'OK':
-        raise exceptions.ApplicationError("%s: %s" % (
+        raise exceptions.Error("%s: %s" % (
                     json_map.get('result', "Fail"),
                     json_map.get('message', "(no message)")))
     if 'map' not in json_map:
-        raise exceptions.ApplicationError("Missing 'map' object")
+        raise exceptions.Error("Missing 'map' object")
 
     vo_users = json_map['map']
 
     if type(vo_users) is not dict:
-        raise exceptions.ApplicationError("'map' object not of type dict")
+        raise exceptions.Error("'map' object not of type dict")
 
     return vo_users
 
@@ -112,20 +112,20 @@ def gums_json_user_vo_map_file(gums_host, target_host=None,
     try:
         json_map = gums_json_map(gums_host, json_cmd, params, certpath, keypath)
     except EnvironmentError, e:
-        raise exceptions.ApplicationError(
+        raise exceptions.Error(
             "Error contacting gums host via json interface: %s" % e)
 
     if _debug:
         print json_map
 
     if 'result' not in json_map:
-        raise exceptions.ApplicationError("'result' not in returned json")
+        raise exceptions.Error("'result' not in returned json")
     if json_map['result'] != 'OK':
-        raise exceptions.ApplicationError("%s: %s" % (
+        raise exceptions.Error("%s: %s" % (
                     json_map.get('result', "Fail"),
                     json_map.get('message', "(no message)")))
     if 'map' not in json_map:
-        raise exceptions.ApplicationError("Missing 'map' object")
+        raise exceptions.Error("Missing 'map' object")
 
     mapfile = json_map['map']
 
