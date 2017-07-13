@@ -614,6 +614,11 @@ def main():
         else:
             parser.print_usage()
             error_exit("Must specify either -c, -v, or -l")
+    except exceptions.Error as err:
+        debug_info = "Fatal exception %s\n%s" % (err, traceback.format_exc())
+        if logger:
+            logger.debug(debug_info)
+        error_exit("Fatal exception: %s" % err)
     except SystemExit:
         # needed since SystemExit inherits from Exception
         raise

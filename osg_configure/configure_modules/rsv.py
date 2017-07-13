@@ -16,10 +16,6 @@ from osg_configure.modules.baseconfiguration import BaseConfiguration
 __all__ = ['RsvConfiguration']
 
 
-class ConfigFailed(Exception):
-    pass
-
-
 class RsvConfiguration(BaseConfiguration):
     """Class to handle attributes and configuration related to osg-rsv services"""
 
@@ -323,7 +319,7 @@ class RsvConfiguration(BaseConfiguration):
             self._set_gratia_collector(self.options['gratia_collector'].value)
 
             self._configure_condor_location()
-        except ConfigFailed:
+        except exceptions.ConfigureError:
             return False
 
         self.log('RsvConfiguration.configure completed')
@@ -476,7 +472,9 @@ class RsvConfiguration(BaseConfiguration):
 
         if not self.create_missing_service_cert_key(service_cert, service_key, 'rsv'):
             # creation unsuccessful
-            raise ConfigFailed("Could not create service cert (%s) and key (%s)" % (service_cert, service_key))
+            self.log("Could not create service cert (%s) and key (%s)" % (service_cert, service_key),
+                     level=logging.ERROR)
+            raise exceptions.ConfigureError
 
     def _get_metrics_by_type(self, metric_type, enabled=True):
         """
@@ -527,7 +525,7 @@ class RsvConfiguration(BaseConfiguration):
                      level=logging.ERROR)
             self.log("Metrics: %s" % " ".join(metrics),
                      level=logging.ERROR)
-            raise ConfigFailed
+            raise exceptions.ConfigureError
 
     def _configure_ce_metrics(self):
         """Enable CE metrics.
@@ -741,7 +739,7 @@ class RsvConfiguration(BaseConfiguration):
             self.log("They must match, or you must have only one Gratia host " +
                      "definition (which will be used for all hosts",
                      level=logging.ERROR)
-            raise ConfigFailed
+            raise exceptions.ConfigureError
 
         i = 0
         for ce in self._ce_hosts:
@@ -794,7 +792,7 @@ class RsvConfiguration(BaseConfiguration):
             sysconf.close()
         except IOError, err:
             self.log("Error trying to write to file (%s): %s" % (sysconf_file, err))
-            raise ConfigFailed
+            raise exceptions.ConfigureError
 
         # Adjust the Condor-Cron configuration
         conf_file = os.path.join('/', 'etc', 'condor-cron', 'config.d', 'condor_location')
@@ -805,7 +803,7 @@ class RsvConfiguration(BaseConfiguration):
             config.close()
         except IOError, err:
             self.log("Error trying to write to file (%s): %s" % (conf_file, err))
-            raise ConfigFailed
+            raise exceptions.ConfigureError
 
     def _validate_host_list(self, hosts, setting):
         """ Validate a list of hosts """
@@ -936,7 +934,7 @@ class RsvConfiguration(BaseConfiguration):
                 config.write(config_fp)
             except EnvironmentError, err:
                 self.log("Error writing to %s: %s" % (allmetrics_conf_path, str(err)), level=logging.ERROR)
-                raise ConfigFailed
+                raise exceptions.ConfigureError
         finally:
             config_fp.close()
 
@@ -972,7 +970,7 @@ class RsvConfiguration(BaseConfiguration):
         self.log("Enabling consumers: %s " % consumer_list)
 
         if not utilities.run_script([self.rsv_control, "-v0", "--enable"] + consumers):
-            raise ConfigFailed
+            raise exceptions.ConfigureError
 
     def _configure_nagios_files(self):
         """ Store the nagios configuration """
@@ -1239,11 +1237,11 @@ class RsvConfiguration(BaseConfiguration):
                 self.log("Can't correct condor-cron uid/gid, please double check",
                          level=logging.ERROR)
             if not utilities.atomic_write(condor_id_fname, ids):
-                raise ConfigFailed
+                raise exceptions.ConfigureError
         elif match is None:
             ids += "CONDOR_IDS = %d.%d\n" % (condor_ent.pw_uid, condor_ent.pw_gid)
             if not utilities.atomic_write(condor_id_fname, ids):
-                raise ConfigFailed
+                raise exceptions.ConfigureError
 
 
 def split_list(item_list):
