@@ -1,5 +1,6 @@
-include README
+include README.md
 include Makefile
+include LICENSE
 recursive-include scripts *
 recursive-include config *
 recursive-include tests *
