@@ -195,7 +195,7 @@ class RsvConfiguration(BaseConfiguration):
         self._srm_hosts = split_list_exclude_blank(self.options['srm_hosts'].value)
 
         if self._gram_ce_hosts:
-            msg = "GRAM is no longer supported as of OSG 3.4; please unset gram_ce_hosts"
+            msg = "GRAM is no longer supported as of Nov. 2016; please unset gram_ce_hosts"
             self.log(msg, section=self.config_section, option='gram_ce_hosts', level=logging.ERROR)
             raise exceptions.ConfigureError(msg)
 
@@ -219,7 +219,7 @@ class RsvConfiguration(BaseConfiguration):
         if configuration.has_section('Gateway'):
             if configuration.has_option('Gateway', 'gram_gateway_enabled'):
                 if configuration.getboolean('Gateway', 'gram_gateway_enabled'):
-                    msg = "GRAM is no longer supported as of OSG 3.4; please turn off gram_gateway_enabled"
+                    msg = "GRAM is no longer supported as of Nov. 2016; please turn off gram_gateway_enabled"
                     self.log(msg, section='Gateway', option='gram_gateway_enabled', level=logging.ERROR)
                     raise exceptions.ConfigureError(msg)
 
@@ -264,7 +264,7 @@ class RsvConfiguration(BaseConfiguration):
         attributes_ok &= self._validate_host_list(self._srm_hosts, "srm_hosts")
         if self.htcondor_gateway_enabled:
             attributes_ok &= self._validate_host_list(self._htcondor_ce_hosts, "htcondor_ce_hosts")
-        assert not self.gram_gateway_enabled, "Should have raised an error by now in OSG 3.4"
+        assert not self.gram_gateway_enabled, "Should have raised an error by now"
 
         attributes_ok &= self._check_gridftp_settings()
         attributes_ok &= self._check_srm_settings()
