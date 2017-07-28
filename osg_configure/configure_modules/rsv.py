@@ -188,11 +188,6 @@ class RsvConfiguration(BaseConfiguration):
         self._gums_hosts = split_list_exclude_blank(self.options['gums_hosts'].value)
         self._srm_hosts = split_list_exclude_blank(self.options['srm_hosts'].value)
 
-        if self._gram_ce_hosts:
-            msg = "GRAM is no longer supported as of OSG 3.4; please unset gram_ce_hosts"
-            self.log(msg, section=self.config_section, option='gram_ce_hosts', level=logging.ERROR)
-            raise exceptions.ConfigureError(msg)
-
         # If the gridftp hosts are not defined then they default to the CE hosts
         if self.options['gridftp_hosts'].value == '':
             # check to see if the setting is in the config file
@@ -212,10 +207,7 @@ class RsvConfiguration(BaseConfiguration):
         # How we run remote probes depends on this
         if configuration.has_section('Gateway'):
             if configuration.has_option('Gateway', 'gram_gateway_enabled'):
-                if configuration.getboolean('Gateway', 'gram_gateway_enabled'):
-                    msg = "GRAM is no longer supported as of OSG 3.4; please turn off gram_gateway_enabled"
-                    self.log(msg, section='Gateway', option='gram_gateway_enabled', level=logging.ERROR)
-                    raise exceptions.ConfigureError(msg)
+                self.gram_gateway_enabled = configuration.getboolean('Gateway', 'gram_gateway_enabled')
 
             if configuration.has_option('Gateway', 'htcondor_gateway_enabled'):
                 self.htcondor_gateway_enabled = configuration.getboolean('Gateway', 'htcondor_gateway_enabled')
@@ -254,6 +246,10 @@ class RsvConfiguration(BaseConfiguration):
                      " Note: it needs a valid shell and home directory." % self._rsv_user,
                      level=logging.ERROR)
             return False
+        if self._gram_ce_hosts:
+            self.log("GRAM is no longer supported as of Nov. 2016; please unset gram_ce_hosts",
+                     section=self.config_section, option='gram_ce_hosts', level=logging.ERROR)
+            return False
 
         # Slurp in all the meta files which will tell us what type of metrics
         # we have and if they are enabled by default.
@@ -267,7 +263,6 @@ class RsvConfiguration(BaseConfiguration):
         attributes_ok &= self._validate_host_list(self._srm_hosts, "srm_hosts")
         if self.htcondor_gateway_enabled:
             attributes_ok &= self._validate_host_list(self._htcondor_ce_hosts, "htcondor_ce_hosts")
-        assert not self.gram_gateway_enabled, "Should have raised an error by now in OSG 3.4"
 
         attributes_ok &= self._check_gridftp_settings()
         attributes_ok &= self._check_srm_settings()
