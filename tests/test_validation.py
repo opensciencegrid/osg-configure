@@ -221,61 +221,6 @@ class TestValidation(unittest.TestCase):
     #                     "Got error on valid file %s" % filename)
 
 
-    def test_valid_contact(self):
-        """
-        Test functionality of valid_contact to make sure that it rejects incorrect
-        contact strings and accepts correct ones
-        """
-
-        jobmanagers = ['pbs', 'lsf', 'sge', 'condor', 'slurm']
-        domain_port = 'example.net:8888'
-        ipv4addr_port = '12.34.56.78:8888'
-
-        for jobmanager in jobmanagers:
-            for test_manager in jobmanagers:
-                contact = "%s/jobmanager-%s" % (domain_port, test_manager)
-                if test_manager == jobmanager:
-                    self.assertTrue(validation.valid_contact(contact,
-                                                             jobmanager),
-                                    "%s labeled as invalid contact" % contact)
-                else:
-                    self.assertFalse(validation.valid_contact(contact,
-                                                              jobmanager),
-                                     "%s labeled as valid contact" % contact)
-        contact = "%s/jobmanager-condor" % (ipv4addr_port)
-        self.assertTrue(validation.valid_contact(contact, 'condor'),
-                        "%s labeled as invalid contact" % contact)
-        domain_port = 'example.net:234a'
-        for jobmanager in jobmanagers:
-            contact = "%s/jobmanager-%s" % (domain_port, jobmanager)
-            self.assertFalse(validation.valid_contact(contact, jobmanager),
-                             "%s labeled as valid contact" % contact)
-        domain_port = 'fdf%34@!:8888'
-        for jobmanager in jobmanagers:
-            contact = "%s/jobmanager-%s" % (domain_port, jobmanager)
-            self.assertFalse(validation.valid_contact(contact, jobmanager),
-                             "%s labeled as valid contact" % contact)
-
-    def test_valid_contact_ipv6(self):
-        valid_hosts = [
-            '[1234:5678:9abc:def::01]:8888', # ipv6 addr with port
-            '1234:5678:9abc:def::01',        # ipv6 addr with no port
-            '[1234:5678:9abc:def::01]',      # ipv6 addr with brackets but no port
-        ]
-        invalid_hosts = [
-            'fghi::01',                      # not hex
-            '[[::ff]]',                      # too many brackets
-        ]
-        for testval in valid_hosts:
-            contact = testval + "/jobmanager"
-            self.assertTrue(validation.valid_contact(contact, ''),
-                            "%s labeled as invalid contact" % contact)
-        for testval in invalid_hosts:
-            contact = testval + "/jobmanager"
-            self.assertFalse(validation.valid_contact(contact, ''),
-                            "%s labeled as valid contact" % contact)
-
-
 
 if __name__ == '__main__':
     unittest.main()
