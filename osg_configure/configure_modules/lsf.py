@@ -15,9 +15,6 @@ __all__ = ['LSFConfiguration']
 class LSFConfiguration(JobManagerConfiguration):
     """Class to handle attributes related to lsf job manager configuration"""
 
-    LSF_CONFIG_FILE = '/etc/grid-services/available/jobmanager-lsf-seg'
-    GRAM_CONFIG_FILE = '/etc/globus/globus-lsf.conf'
-
     def __init__(self, *args, **kwargs):
         # pylint: disable-msg=W0142
         super(LSFConfiguration, self).__init__(*args, **kwargs)

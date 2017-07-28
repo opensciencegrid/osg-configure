@@ -16,11 +16,6 @@ __all__ = ['SlurmConfiguration']
 class SlurmConfiguration(JobManagerConfiguration):
     """Class to handle attributes related to SLURM job manager configuration"""
 
-    # Using PBS emulation in SLURM to interface with globus gatekeeper so
-    # config files being used will be the globus PBS config files
-    SLURM_CONFIG_FILE = '/etc/grid-services/available/jobmanager-pbs-seg'
-    GRAM_CONFIG_FILE = '/etc/globus/globus-pbs.conf'
-
     def __init__(self, *args, **kwargs):
         # pylint: disable-msg=W0142
         super(SlurmConfiguration, self).__init__(*args, **kwargs)

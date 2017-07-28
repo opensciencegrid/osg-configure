@@ -16,8 +16,6 @@ __all__ = ['CondorConfiguration']
 class CondorConfiguration(JobManagerConfiguration):
     """Class to handle attributes related to condor job manager configuration"""
 
-    CONDOR_CONFIG_FILE = '/etc/grid-services/available/jobmanager-condor'
-    GRAM_CONFIG_FILE = '/etc/globus/globus-condor.conf'
     DEFAULT_LOCAL_CONFIG_DIR = '/etc/condor/config.d'
 
     def __init__(self, *args, **kwargs):

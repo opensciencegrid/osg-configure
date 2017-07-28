@@ -15,8 +15,6 @@ __all__ = ['SGEConfiguration']
 class SGEConfiguration(JobManagerConfiguration):
     """Class to handle attributes related to sge job manager configuration"""
 
-    SGE_CONFIG_FILE = '/etc/grid-services/available/jobmanager-sge-seg'
-    GRAM_CONFIG_FILE = '/etc/globus/globus-sge.conf'
     BLAH_CONFIG = JobManagerConfiguration.BLAH_CONFIG
 
     def __init__(self, *args, **kwargs):

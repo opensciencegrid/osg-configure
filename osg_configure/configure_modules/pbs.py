@@ -15,9 +15,6 @@ __all__ = ['PBSConfiguration']
 class PBSConfiguration(JobManagerConfiguration):
     """Class to handle attributes related to pbs job manager configuration"""
 
-    PBS_CONFIG_FILE = '/etc/grid-services/available/jobmanager-pbs-seg'
-    GRAM_CONFIG_FILE = '/etc/globus/globus-pbs.conf'
-
     def __init__(self, *args, **kwargs):
         # pylint: disable-msg=W0142
         super(PBSConfiguration, self).__init__(*args, **kwargs)
