@@ -37,7 +37,6 @@ class PBSConfiguration(JobManagerConfiguration):
                                               default_value='')}
         self.config_section = "PBS"
         self.pbs_bin_location = None
-        self._set_default = True
         self.log('PBSConfiguration.__init__ completed')
 
     def parse_configuration(self, configuration):
@@ -69,15 +68,6 @@ class PBSConfiguration(JobManagerConfiguration):
         self.options['home'] = configfile.Option(name='job_manager_home',
                                                  value=self.options['pbs_location'].value,
                                                  mapping='OSG_JOB_MANAGER_HOME')
-
-        # used to see if we need to enable the default fork manager, if we don't
-        # find the managed fork service enabled, set the default manager to fork
-        # needed since the managed fork section could be removed after managed fork
-        # was enabled
-        if (configuration.has_section('Managed Fork') and
-                configuration.has_option('Managed Fork', 'enabled') and
-                configuration.getboolean('Managed Fork', 'enabled')):
-            self._set_default = False
 
         self.pbs_bin_location = os.path.join(self.options['pbs_location'].value, 'bin')
 

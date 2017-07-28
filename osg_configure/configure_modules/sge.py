@@ -50,7 +50,6 @@ class SGEConfiguration(JobManagerConfiguration):
                             configfile.Option(name='available_queues',
                                               required=configfile.Option.OPTIONAL,
                                               default_value='')}
-        self._set_default = True
         self.config_section = "SGE"
         self.log('SGEConfiguration.__init__ completed')
 
@@ -86,15 +85,6 @@ class SGEConfiguration(JobManagerConfiguration):
         self.options['osg_sge_location'] = configfile.Option(name='sge_location',
                                                              value=self.options['sge_root'].value,
                                                              mapping='OSG_SGE_LOCATION')
-
-        # used to see if we need to enable the default fork manager, if we don't
-        # find the managed fork service enabled, set the default manager to fork
-        # needed since the managed fork section could be removed after managed fork
-        # was enabled
-        if (configuration.has_section('Managed Fork') and
-                configuration.has_option('Managed Fork', 'enabled') and
-                configuration.getboolean('Managed Fork', 'enabled')):
-            self._set_default = False
 
         self.log('SGEConfiguration.parse_configuration completed')
 

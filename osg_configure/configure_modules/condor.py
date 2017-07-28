@@ -34,7 +34,6 @@ class CondorConfiguration(JobManagerConfiguration):
                                               required=configfile.Option.OPTIONAL,
                                               default_value=utilities.get_condor_config(),
                                               mapping='OSG_CONDOR_CONFIG')}
-        self._set_default = True
         self.condor_bin_location = None
         self.log('CondorConfiguration.__init__ completed')
 
@@ -68,11 +67,6 @@ class CondorConfiguration(JobManagerConfiguration):
         self.options['home'] = configfile.Option(name='job_manager_home',
                                                  value=self.options['condor_location'].value,
                                                  mapping='OSG_JOB_MANAGER_HOME')
-
-        if (configuration.has_section('Managed Fork') and
-                configuration.has_option('Managed Fork', 'enabled') and
-                configuration.getboolean('Managed Fork', 'enabled')):
-            self._set_default = False
 
         self.condor_bin_location = os.path.join(self.options['condor_location'].value, 'bin')
 

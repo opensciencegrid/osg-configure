@@ -40,7 +40,6 @@ class LSFConfiguration(JobManagerConfiguration):
                                               default_value='')}
         self.config_section = 'LSF'
         self.lsf_bin_location = None
-        self._set_default = True
 
         self.log('LSFConfiguration.__init__ completed')
 
@@ -74,11 +73,6 @@ class LSFConfiguration(JobManagerConfiguration):
         self.options['home'] = configfile.Option(name='job_manager_home',
                                                  value=self.options['lsf_location'].value,
                                                  mapping='OSG_JOB_MANAGER_HOME')
-
-        if (configuration.has_section('Managed Fork') and
-                configuration.has_option('Managed Fork', 'enabled') and
-                configuration.getboolean('Managed Fork', 'enabled')):
-            self._set_default = False
 
         self.lsf_bin_location = os.path.join(self.options['lsf_location'].value, 'bin')
 
