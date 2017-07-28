@@ -403,11 +403,15 @@ class TestRSV(unittest.TestCase):
         config_parser = ConfigParser.SafeConfigParser()
         config_file = get_test_config("rsv/rsv_gram.ini")
         config_parser.read(config_file)
+        old_rpm_installed = utilities.rpm_installed
         utilities.rpm_installed = lambda rpm_name: True
-        settings = rsv.RsvConfiguration(logger=global_logger)
-        settings.parse_configuration(config_parser)
-        self.assertFalse(settings.check_attributes(settings.get_attributes()),
-                        "gram_ce_hosts incorrectly flagged as correct")
+        try:
+            settings = rsv.RsvConfiguration(logger=global_logger)
+            settings.parse_configuration(config_parser)
+            self.assertFalse(settings.check_attributes(settings.get_attributes()),
+                            "gram_ce_hosts incorrectly flagged as correct")
+        finally:
+            utilities.rpm_installed = old_rpm_installed
 
     def testServiceList(self):
         """
