@@ -37,25 +37,6 @@ class SGEConfiguration(JobManagerConfiguration):
                         'sge_bin_location':
                             configfile.Option(name='sge_bin_location',
                                               default_value='default'),
-                        'job_contact':
-                            configfile.Option(name='job_contact',
-                                              mapping='OSG_JOB_CONTACT'),
-                        'util_contact':
-                            configfile.Option(name='util_contact',
-                                              mapping='OSG_UTIL_CONTACT'),
-                        'seg_enabled':
-                            configfile.Option(name='seg_enabled',
-                                              required=configfile.Option.OPTIONAL,
-                                              opt_type=bool,
-                                              default_value=False),
-                        'log_file':
-                            configfile.Option(name='log_file',
-                                              required=configfile.Option.OPTIONAL,
-                                              default_value=''),
-                        'log_directory':
-                            configfile.Option(name='log_directory',
-                                              required=configfile.Option.OPTIONAL,
-                                              default_value=''),
                         'default_queue':
                             configfile.Option(name='default_queue',
                                               required=configfile.Option.OPTIONAL,
@@ -68,12 +49,7 @@ class SGEConfiguration(JobManagerConfiguration):
                         'available_queues':
                             configfile.Option(name='available_queues',
                                               required=configfile.Option.OPTIONAL,
-                                              default_value=''),
-                        'accept_limited':
-                            configfile.Option(name='accept_limited',
-                                              required=configfile.Option.OPTIONAL,
-                                              opt_type=bool,
-                                              default_value=False)}
+                                              default_value='')}
         self._set_default = True
         self.config_section = "SGE"
         self.log('SGEConfiguration.__init__ completed')
@@ -97,7 +73,8 @@ class SGEConfiguration(JobManagerConfiguration):
             self.log('SGEConfiguration.parse_configuration completed')
             return True
 
-        self.get_options(configuration, ignore_options=['enabled'])
+        self.get_options(configuration, ignore_options=['enabled', 'job_contact', 'util_contact', 'accept_limited',
+                                                        'seg_enabled', 'log_file', 'log_directory'])
 
         # fill in values for sge_location and home
         self.options['job_manager'] = configfile.Option(name='job_manager',
@@ -110,15 +87,6 @@ class SGEConfiguration(JobManagerConfiguration):
                                                              value=self.options['sge_root'].value,
                                                              mapping='OSG_SGE_LOCATION')
 
-        # if log_directory is set and log_file is not, copy log_directory over to
-        # log_file and warn the admin
-        if (self.options['log_directory'].value != '' and
-                    self.options['log_file'].value == ''):
-            self.options['log_file'].value = self.options['log_directory'].value
-            self.log("log_directory is deprecated, please use log_file instead",
-                     option='log_directory',
-                     section=self.config_section,
-                     level=logging.WARNING)
         # used to see if we need to enable the default fork manager, if we don't
         # find the managed fork service enabled, set the default manager to fork
         # needed since the managed fork section could be removed after managed fork
@@ -174,35 +142,6 @@ class SGEConfiguration(JobManagerConfiguration):
                      section=self.config_section,
                      level=logging.ERROR)
 
-        if not validation.valid_contact(self.options['job_contact'].value,
-                                        'sge'):
-            attributes_ok = False
-            self.log("Invalid job contact: %s" %
-                     (self.options['job_contact'].value),
-                     option='job_contact',
-                     section=self.config_section,
-                     level=logging.ERROR)
-
-        if not validation.valid_contact(self.options['util_contact'].value,
-                                        'sge'):
-            attributes_ok = False
-            self.log("Invalid util contact: %s" %
-                     (self.options['util_contact'].value),
-                     option='util_contact',
-                     section=self.config_section,
-                     level=logging.ERROR)
-
-        if self.options['seg_enabled'].value:
-            if (self.options['log_file'].value is None or
-                    not validation.valid_file(self.options['log_file'].value)):
-                mesg = "%s is not a valid file path " % self.options['log_file'].value
-                mesg += "for sge log files"
-                self.log(mesg,
-                         section=self.config_section,
-                         option='log_file',
-                         level=logging.ERROR)
-                attributes_ok = False
-
         key = 'sge_config'
         if (not self.options[key].value or
                 not validation.valid_file(self.options[key].value)):
@@ -230,39 +169,6 @@ class SGEConfiguration(JobManagerConfiguration):
             self.log('SGEConfiguration.configure completed')
             return True
 
-        if self.gram_gateway_enabled:
-
-            # The accept_limited argument was added for Steve Timm.  We are not adding
-            # it to the default config.ini template because we do not think it is
-            # useful to a wider audience.
-            # See VDT RT ticket 7757 for more information.
-            if self.options['accept_limited'].value:
-                if not self.enable_accept_limited(SGEConfiguration.SGE_CONFIG_FILE):
-                    self.log('Error writing to ' + SGEConfiguration.SGE_CONFIG_FILE,
-                             level=logging.ERROR)
-                    self.log('SGEConfiguration.configure completed')
-                    return False
-            else:
-                if not self.disable_accept_limited(SGEConfiguration.SGE_CONFIG_FILE):
-                    self.log('Error writing to ' + SGEConfiguration.SGE_CONFIG_FILE,
-                             level=logging.ERROR)
-                    self.log('SGEConfiguration.configure completed')
-                    return False
-
-            if self.options['seg_enabled'].value:
-                self.enable_seg('sge', SGEConfiguration.SGE_CONFIG_FILE)
-            else:
-                self.disable_seg('sge', SGEConfiguration.SGE_CONFIG_FILE)
-
-            if not self.setup_gram_config():
-                self.log('Error writing to ' + SGEConfiguration.GRAM_CONFIG_FILE,
-                         level=logging.ERROR)
-                return False
-
-            if self._set_default:
-                self.log('Configuring gatekeeper to use regular fork service')
-                self.set_default_jobmanager('fork')
-
         if self.htcondor_gateway_enabled:
             self.setup_blah_config()
             self.write_binpaths_to_blah_config('sge', self.options['sge_bin_location'].value)
@@ -278,40 +184,6 @@ class SGEConfiguration(JobManagerConfiguration):
 
     def separately_configurable(self):
         """Return a boolean that indicates whether this module can be configured separately"""
-        return True
-
-    def setup_gram_config(self):
-        """
-        Populate the gram config file with correct values
-
-        Returns True if successful, False otherwise
-        """
-        buf = open(SGEConfiguration.GRAM_CONFIG_FILE).read()
-
-        for binfile in ['qsub', 'qstat', 'qdel', 'qconf']:
-            bin_location = os.path.join(self.options['sge_bin_location'].value, binfile)
-            if validation.valid_file(bin_location):
-                buf = utilities.add_or_replace_setting(buf, binfile, bin_location)
-
-        for setting in ['sge_cell', 'sge_root', 'sge_config']:
-            buf = utilities.add_or_replace_setting(buf, setting, self.options[setting].value)
-
-        if self.options['seg_enabled'].value:
-            buf = utilities.add_or_replace_setting(buf, 'log_path', self.options['log_file'].value)
-
-        if self.options['default_queue'].value != '':
-            buf = utilities.add_or_replace_setting(buf, 'default_queue', self.options['default_queue'].value)
-
-            if self.options['validate_queues'].value:
-                buf = utilities.add_or_replace_setting(buf, 'validate_queues', 'yes', quote_value=False)
-            else:
-                buf = utilities.add_or_replace_setting(buf, 'validate_queues', 'no', quote_value=False)
-
-        if self.options['available_queues'].value != '':
-            buf = utilities.add_or_replace_setting(buf, 'available_queues', self.options['available_queues'].value)
-
-        if not utilities.atomic_write(SGEConfiguration.GRAM_CONFIG_FILE, buf):
-            return False
         return True
 
     def setup_blah_config(self):
@@ -337,9 +209,6 @@ class SGEConfiguration(JobManagerConfiguration):
 
         services = set(['globus-gridftp-server'])
         services.update(self.gateway_services())
-        if self.options['seg_enabled'].value:
-            services.add('globus-scheduler-event-generator')
-            services.add('globus-gatekeeper')
         return services
 
     def get_accounting_file(self):
