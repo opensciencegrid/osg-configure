@@ -403,15 +403,11 @@ class TestRSV(unittest.TestCase):
         config_parser = ConfigParser.SafeConfigParser()
         config_file = get_test_config("rsv/rsv_gram.ini")
         config_parser.read(config_file)
-        failed = False
         utilities.rpm_installed = lambda rpm_name: True
         settings = rsv.RsvConfiguration(logger=global_logger)
-        try:
-            settings.parse_configuration(config_parser)
-        except exceptions.ConfigureError as err:
-            failed = True
-        self.assertTrue(failed,
-                        "gram_ce_hosts did not raise proper exception")
+        settings.parse_configuration(config_parser)
+        self.assertFalse(settings.check_attributes(settings.get_attributes()),
+                        "gram_ce_hosts incorrectly flagged as correct")
 
     def testServiceList(self):
         """
