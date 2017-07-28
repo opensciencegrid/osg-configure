@@ -42,8 +42,8 @@ class TestGateway(unittest.TestCase):
             self.fail("Received exception while parsing configuration: %s" % e)
 
         options = settings.options
-        variables = {'gram_gateway_enabled': True,
-                     'htcondor_gateway_enabled': False}
+        variables = {'gram_gateway_enabled': False,
+                     'htcondor_gateway_enabled': True}
         for var in variables:
             self.assertTrue(options.has_key(var),
                             "Option %s missing" % var)
@@ -51,6 +51,20 @@ class TestGateway(unittest.TestCase):
                              variables[var],
                              "Wrong value obtained for %s, got %s but "
                              "expected %s" % (var, options[var].value, variables[var]))
+
+    def testGram(self):
+        """
+        Verifies that enabling GRAM now causes an error
+        """
+        config_file = get_test_config("gateway/gateway_gram.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.read(config_file)
+
+        settings = gateway.GatewayConfiguration(logger=global_logger)
+        settings.parse_configuration(configuration)
+        attributes = settings.get_attributes()
+        self.assertFalse(settings.check_attributes(attributes),
+                         "Did not raise error on GRAM enabled")
 
 
 if __name__ == '__main__':

@@ -1,7 +1,10 @@
 """ Module to handle configuration of the job gateway services (globus-gatekeeper and condor-ce)
 """
 
+import logging
+
 from osg_configure.modules import configfile
+from osg_configure.modules import exceptions
 from osg_configure.modules.baseconfiguration import BaseConfiguration
 
 __all__ = ['GatewayConfiguration']
@@ -62,8 +65,21 @@ class GatewayConfiguration(BaseConfiguration):
     # Not overriding enabled_services -- only job manager modules need the gateways enabled
     # def enabled_services(self):
 
-    # Not overriding check_attributes -- all attributes are independent.
-    # def check_attributes(self, attributes):
+    def check_attributes(self, attributes):
+        """Check attributes currently stored and make sure that they are consistent"""
+        self.log('GatewayConfiguration.check_attributes started')
+        attributes_ok = True
+
+        if self.gram_gateway_enabled:
+            self.log('GRAM gateway is no longer supported',
+                     option='gram_gateway_enabled',
+                     section=self.config_section,
+                     level=logging.ERROR)
+            attributes_ok = False
+
+        self.log('GatewayConfiguration.check_attributes completed')
+        return attributes_ok
+
 
     # Not overriding configure -- all configuration in other modules
     # def configure(self, attributes):
