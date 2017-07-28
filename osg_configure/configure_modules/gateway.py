@@ -71,7 +71,7 @@ class GatewayConfiguration(BaseConfiguration):
         attributes_ok = True
 
         if self.gram_gateway_enabled:
-            self.log('GRAM gateway is no longer supported',
+            self.log('GRAM is no longer supported as of Nov. 2016; please unset gram_gateway_enabled',
                      option='gram_gateway_enabled',
                      section=self.config_section,
                      level=logging.ERROR)
