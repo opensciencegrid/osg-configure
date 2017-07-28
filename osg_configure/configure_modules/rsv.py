@@ -174,7 +174,6 @@ class RsvConfiguration(BaseConfiguration):
             return True
 
         self.get_options(configuration, ignore_options=['enabled'])
-        (self.uid, self.gid) = pwd.getpwnam(self._rsv_user)[2:4]
 
         # If we're on a CE, get the grid group if possible
         if configuration.has_section('Site Information'):
@@ -247,6 +246,14 @@ class RsvConfiguration(BaseConfiguration):
         if self._gram_ce_hosts:
             self.log("GRAM is no longer supported as of Nov. 2016; please unset gram_ce_hosts",
                      section=self.config_section, option='gram_ce_hosts', level=logging.ERROR)
+            return False
+        try:
+            (self.uid, self.gid) = pwd.getpwnam(self._rsv_user)[2:4]
+        except KeyError:  # no such user
+            self.log("The %s user does not exist. RSV will not work without that user."
+                     " Please reinstall the rsv* RPMs or create the user yourself."
+                     " Note: it needs a valid shell and home directory." % self._rsv_user,
+                     level=logging.ERROR)
             return False
 
         # Slurp in all the meta files which will tell us what type of metrics

@@ -8,6 +8,7 @@ import sys
 import unittest
 import ConfigParser
 import logging
+import pwd
 
 
 # setup system library path 
@@ -40,6 +41,19 @@ class TestRSV(unittest.TestCase):
     """
     Unit test class to test RsvConfiguration class
     """
+
+    def setUp(self):
+        # monkey-patch rpm_installed so that RsvConfiguration will parse configuration even if rsv is not installed
+        self._old_rpm_installed = utilities.rpm_installed
+        utilities.rpm_installed = lambda rpm_name: True
+        # also monkey-patch pwd.getpwnam so we don't get an error if the rsv user doesn't exist
+        self._old_getpwnam = pwd.getpwnam
+        # pw_name, pw_passwd, pw_uid, pw_gid, pw_gecos, pw_dir, pw_shell
+        pwd.getpwnam = lambda name: ('root', '', 0, 0, 'root', '/root', '/bin/bash')
+
+    def tearDown(self):
+        utilities.rpm_installed = self._old_rpm_installed
+        pwd.getpwnam = self._old_getpwnam
 
     def load_settings_from_files(self, *cfgfiles):
         configuration = ConfigParser.SafeConfigParser()
@@ -403,15 +417,10 @@ class TestRSV(unittest.TestCase):
         config_parser = ConfigParser.SafeConfigParser()
         config_file = get_test_config("rsv/rsv_gram.ini")
         config_parser.read(config_file)
-        old_rpm_installed = utilities.rpm_installed
-        utilities.rpm_installed = lambda rpm_name: True
-        try:
-            settings = rsv.RsvConfiguration(logger=global_logger)
-            settings.parse_configuration(config_parser)
-            self.assertFalse(settings.check_attributes(settings.get_attributes()),
-                            "gram_ce_hosts incorrectly flagged as correct")
-        finally:
-            utilities.rpm_installed = old_rpm_installed
+        settings = rsv.RsvConfiguration(logger=global_logger)
+        settings.parse_configuration(config_parser)
+        self.assertFalse(settings.check_attributes(settings.get_attributes()),
+                        "gram_ce_hosts incorrectly flagged as correct")
 
     def testServiceList(self):
         """
