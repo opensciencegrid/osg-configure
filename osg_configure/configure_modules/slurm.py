@@ -30,16 +30,6 @@ class SlurmConfiguration(JobManagerConfiguration):
                             configfile.Option(name='slurm_location',
                                               default_value='/usr',
                                               mapping='OSG_PBS_LOCATION'),
-                        'job_contact':
-                            configfile.Option(name='job_contact',
-                                              mapping='OSG_JOB_CONTACT'),
-                        'util_contact':
-                            configfile.Option(name='util_contact',
-                                              mapping='OSG_UTIL_CONTACT'),
-                        'log_directory':
-                            configfile.Option(name='log_directory',
-                                              required=configfile.Option.OPTIONAL,
-                                              default_value=''),
                         'db_host':
                             configfile.Option(name='db_host',
                                               required=configfile.Option.OPTIONAL,
@@ -64,12 +54,7 @@ class SlurmConfiguration(JobManagerConfiguration):
                         'slurm_cluster':
                             configfile.Option(name='slurm_cluster',
                                               required=configfile.Option.OPTIONAL,
-                                              default_value=''),
-                        'accept_limited':
-                            configfile.Option(name='accept_limited',
-                                              required=configfile.Option.OPTIONAL,
-                                              opt_type=bool,
-                                              default_value=False)}
+                                              default_value='')}
         self.config_section = "SLURM"
         self.slurm_bin_location = None
         self._set_default = True
@@ -94,7 +79,8 @@ class SlurmConfiguration(JobManagerConfiguration):
             self.log('SlurmConfiguration.parse_configuration completed')
             return True
 
-        self.get_options(configuration, ignore_options=['enabled'])
+        self.get_options(configuration, ignore_options=['enabled', 'job_contact', 'util_contact',
+                                                        'accept_limited', 'log_directory'])
 
         # set OSG_JOB_MANAGER and OSG_JOB_MANAGER_HOME
         self.options['job_manager'] = configfile.Option(name='job_manager',
@@ -150,24 +136,6 @@ class SlurmConfiguration(JobManagerConfiguration):
                      section=self.config_section,
                      level=logging.ERROR)
 
-        if not validation.valid_contact(self.options['job_contact'].value,
-                                        'pbs'):
-            attributes_ok = False
-            self.log("Invalid job contact: %s" %
-                     (self.options['job_contact'].value),
-                     option='job_contact',
-                     section=self.config_section,
-                     level=logging.ERROR)
-
-        if not validation.valid_contact(self.options['util_contact'].value,
-                                        'pbs'):
-            attributes_ok = False
-            self.log("Invalid util contact: %s" %
-                     (self.options['util_contact'].value),
-                     option='util_contact',
-                     section=self.config_section,
-                     level=logging.ERROR)
-
         self.log('SlurmConfiguration.check_attributes completed')
         return attributes_ok
 
@@ -186,42 +154,6 @@ class SlurmConfiguration(JobManagerConfiguration):
             self.log('SlurmConfiguration.configure completed')
             return True
 
-        if self.gram_gateway_enabled:
-
-            # The accept_limited argument was added for Steve Timm.  We are not adding
-            # it to the default config.ini template because we do not think it is
-            # useful to a wider audience.
-            # See VDT RT ticket 7757 for more information.
-            if self.options['accept_limited'].value:
-                if not self.enable_accept_limited(SlurmConfiguration.SLURM_CONFIG_FILE):
-                    self.log('Error writing to ' + SlurmConfiguration.SLURM_CONFIG_FILE,
-                             level=logging.ERROR)
-                    self.log('SlurmConfiguration.configure completed')
-                    return False
-            else:
-                if not self.disable_accept_limited(SlurmConfiguration.SLURM_CONFIG_FILE):
-                    self.log('Error writing to ' + SlurmConfiguration.SLURM_CONFIG_FILE,
-                             level=logging.ERROR)
-                    self.log('SlurmConfiguration.configure completed')
-                    return False
-
-                    #    self.disable_seg('pbs', SlurmConfiguration.SLURM_CONFIG_FILE)
-                    #    if self.options['seg_enabled'].value:
-                    #      self.enable_seg('pbs', SlurmConfiguration.SLURM_CONFIG_FILE)
-                    #    else:
-                    #      self.disable_seg('pbs', SlurmConfiguration.SLURM_CONFIG_FILE)
-
-            # make sure the SEG is disabled
-            self.disable_seg('pbs', SlurmConfiguration.SLURM_CONFIG_FILE)
-            if not self.setup_gram_config():
-                self.log('Error writing to ' + SlurmConfiguration.GRAM_CONFIG_FILE,
-                         level=logging.ERROR)
-                return False
-
-            if self._set_default:
-                self.log('Configuring gatekeeper to use regular fork service')
-                self.set_default_jobmanager('fork')
-
         if self.htcondor_gateway_enabled:
             self.write_binpaths_to_blah_config('slurm', self.slurm_bin_location)
             self.write_blah_disable_wn_proxy_renewal_to_blah_config()
@@ -236,23 +168,6 @@ class SlurmConfiguration(JobManagerConfiguration):
 
     def separately_configurable(self):
         """Return a boolean that indicates whether this module can be configured separately"""
-        return True
-
-    def setup_gram_config(self):
-        """
-        Populate the gram config file with correct values
-
-        Returns True if successful, False otherwise
-        """
-        contents = open(SlurmConfiguration.GRAM_CONFIG_FILE).read()
-        for binfile in ['qsub', 'qstat', 'qdel']:
-            bin_location = os.path.join(self.slurm_bin_location, binfile)
-            if validation.valid_file(bin_location):
-                contents = utilities.add_or_replace_setting(contents, binfile, bin_location)
-
-        if not utilities.atomic_write(SlurmConfiguration.GRAM_CONFIG_FILE, contents):
-            return False
-
         return True
 
     def enabled_services(self):
