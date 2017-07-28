@@ -1,12 +1,10 @@
 """ Base class for all job manager configuration classes """
 
-import re
 import os
 import logging
 
 from osg_configure.modules.baseconfiguration import BaseConfiguration
 from osg_configure.modules import utilities
-from osg_configure.modules import validation
 
 __all__ = ['JobManagerConfiguration']
 
@@ -14,16 +12,12 @@ __all__ = ['JobManagerConfiguration']
 class JobManagerConfiguration(BaseConfiguration):
     """Base class for inheritance by jobmanager configuration classes"""
     HTCONDOR_CE_CONFIG_FILE = '/etc/condor-ce/config.d/50-osg-configure.conf'
-
     BLAH_CONFIG = '/etc/blah.config'
 
     def __init__(self, *args, **kwargs):
         # pylint: disable-msg=W0142
         super(JobManagerConfiguration, self).__init__(*args, **kwargs)
         self.attributes = {}
-        self.lrms = ['pbs', 'sge', 'lsf', 'condor']
-        self.seg_admin_path = '/usr/sbin/globus-scheduler-event-generator-admin'
-        self.gram_gateway_enabled = False
         self.htcondor_gateway_enabled = True
 
     def parse_configuration(self, configuration):
