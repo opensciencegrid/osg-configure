@@ -427,9 +427,9 @@ def ce_installed():
 
 def gateway_installed():
     """
-    Check to see if a job gateway (i.e. globus-gatekeeper or htcondor-ce) is installed
+    Check to see if a job gateway (i.e. htcondor-ce) is installed
     """
-    return any_rpms_installed('globus-gatekeeper', 'htcondor-ce')
+    return rpm_installed('htcondor-ce')
 
 
 def any_rpms_installed(*rpm_names):
