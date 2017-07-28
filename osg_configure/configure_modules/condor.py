@@ -33,18 +33,7 @@ class CondorConfiguration(JobManagerConfiguration):
                             configfile.Option(name='condor_config',
                                               required=configfile.Option.OPTIONAL,
                                               default_value=utilities.get_condor_config(),
-                                              mapping='OSG_CONDOR_CONFIG'),
-                        'job_contact':
-                            configfile.Option(name='job_contact',
-                                              mapping='OSG_JOB_CONTACT'),
-                        'util_contact':
-                            configfile.Option(name='util_contact',
-                                              mapping='OSG_UTIL_CONTACT'),
-                        'accept_limited':
-                            configfile.Option(name='accept_limited',
-                                              required=configfile.Option.OPTIONAL,
-                                              opt_type=bool,
-                                              default_value=False)}
+                                              mapping='OSG_CONDOR_CONFIG')}
         self._set_default = True
         self.condor_bin_location = None
         self.log('CondorConfiguration.__init__ completed')
@@ -70,7 +59,7 @@ class CondorConfiguration(JobManagerConfiguration):
             self.log('CondorConfiguration.parse_configuration completed')
             return True
 
-        self.get_options(configuration, ignore_options=['enabled'])
+        self.get_options(configuration, ignore_options=['enabled', 'job_contact', 'util_contact', 'accept_limited'])
 
         # set OSG_JOB_MANAGER and OSG_JOB_MANAGER_HOME
         self.options['job_manager'] = configfile.Option(name='job_manager',
@@ -130,24 +119,6 @@ class CondorConfiguration(JobManagerConfiguration):
                      section=self.config_section,
                      level=logging.ERROR)
 
-        if not validation.valid_contact(self.options['job_contact'].value,
-                                        'condor'):
-            attributes_ok = False
-            self.log("Invalid job contact: %s" %
-                     (self.options['job_contact'].value),
-                     option='job_contact',
-                     section=self.config_section,
-                     level=logging.ERROR)
-
-        if not validation.valid_contact(self.options['util_contact'].value,
-                                        'condor'):
-            attributes_ok = False
-            self.log("Invalid util contact: %s" %
-                     (self.options['util_contact'].value),
-                     option='util_contact',
-                     section=self.config_section,
-                     level=logging.ERROR)
-
         self.log('CondorConfiguration.check_attributes completed returning %s' \
                  % attributes_ok)
         return attributes_ok
@@ -166,33 +137,6 @@ class CondorConfiguration(JobManagerConfiguration):
             self.log('condor not enabled')
             self.log('CondorConfiguration.configure completed')
             return True
-
-        if self.gram_gateway_enabled:
-
-            # The accept_limited argument was added for Steve Timm.  We are not adding
-            # it to the default config.ini template because we do not think it is
-            # useful to a wider audience.
-            # See VDT RT ticket 7757 for more information.
-            if self.options['accept_limited'].value:
-                if not self.enable_accept_limited(CondorConfiguration.CONDOR_CONFIG_FILE):
-                    self.log('Error writing to ' + CondorConfiguration.CONDOR_CONFIG_FILE,
-                             level=logging.ERROR)
-                    self.log('CondorConfiguration.configure completed')
-                    return False
-            else:
-                if not self.disable_accept_limited(CondorConfiguration.CONDOR_CONFIG_FILE):
-                    self.log('Error writing to ' + CondorConfiguration.CONDOR_CONFIG_FILE,
-                             level=logging.ERROR)
-                    self.log('CondorConfiguration.configure completed')
-                    return False
-
-            if not self.setup_gram_config():
-                self.log('Error writing to ' + CondorConfiguration.GRAM_CONFIG_FILE,
-                         level=logging.ERROR)
-                return False
-            if self._set_default:
-                self.log('Configuring gatekeeper to use regular fork service')
-                self.set_default_jobmanager('fork')
 
         if self.htcondor_gateway_enabled:
             if not self.setup_htcondor_ce_config():
@@ -216,26 +160,6 @@ class CondorConfiguration(JobManagerConfiguration):
 
     def separately_configurable(self):
         """Return a boolean that indicates whether this module can be configured separately"""
-        return True
-
-    def setup_gram_config(self):
-        """
-        Populate the gram config file with correct values
-
-        Returns True if successful, False otherwise
-        """
-
-        buf = open(CondorConfiguration.GRAM_CONFIG_FILE).read()
-        for binfile in ['condor_submit', 'condor_rm']:
-            bin_location = os.path.join(self.condor_bin_location, binfile)
-            if validation.valid_file(bin_location):
-                buf = utilities.add_or_replace_setting(buf, binfile, bin_location)
-        if not utilities.blank(self.options['condor_config'].value):
-            buf = utilities.add_or_replace_setting(buf, 'condor_config', self.options['condor_config'].value)
-
-        if not utilities.atomic_write(CondorConfiguration.GRAM_CONFIG_FILE, buf):
-            return False
-
         return True
 
     def setup_htcondor_ce_config(self):

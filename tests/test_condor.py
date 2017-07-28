@@ -53,8 +53,6 @@ class TestCondor(unittest.TestCase):
         options = {'OSG_JOB_MANAGER_HOME': '/opt/condor',
                    'OSG_CONDOR_LOCATION': '/opt/condor',
                    'OSG_CONDOR_CONFIG': '/etc/condor/condor_config',
-                   'OSG_JOB_CONTACT': 'my.domain.com/jobmanager-condor',
-                   'OSG_UTIL_CONTACT': 'my.domain.com/jobmanager',
                    'OSG_JOB_MANAGER': 'Condor'}
         for option in options:
             value = options[option]
@@ -280,45 +278,6 @@ class TestCondor(unittest.TestCase):
         attributes = settings.get_attributes()
         self.assertTrue(settings.check_attributes(attributes),
                         "Correct settings incorrectly flagged as missing")
-
-    def testInvalidJobContact(self):
-        """
-        Test the check_attributes function to see if it catches invalid job contacts
-        """
-
-        config_file = get_test_config("condor/invalid_job_contact.ini")
-        configuration = ConfigParser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = condor.CondorConfiguration(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception, e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        attributes = settings.get_attributes()
-        self.assertFalse(settings.check_attributes(attributes),
-                         "Did not notice invalid host in jobcontact option")
-
-    def testInvalidUtilityContact(self):
-        """
-        Test the check_attributes function to see if it catches invalid
-        utility contacts
-        """
-
-        config_file = get_test_config("condor/invalid_utility_contact.ini")
-        configuration = ConfigParser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = condor.CondorConfiguration(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception, e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        attributes = settings.get_attributes()
-        self.assertFalse(settings.check_attributes(attributes),
-                         "Did not notice invalid host in utility_contact option")
 
     def testServiceList(self):
         """
