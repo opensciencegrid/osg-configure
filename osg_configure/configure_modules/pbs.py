@@ -27,21 +27,6 @@ class PBSConfiguration(JobManagerConfiguration):
                             configfile.Option(name='pbs_location',
                                               default_value='/usr',
                                               mapping='OSG_PBS_LOCATION'),
-                        'job_contact':
-                            configfile.Option(name='job_contact',
-                                              mapping='OSG_JOB_CONTACT'),
-                        'util_contact':
-                            configfile.Option(name='util_contact',
-                                              mapping='OSG_UTIL_CONTACT'),
-                        'seg_enabled':
-                            configfile.Option(name='seg_enabled',
-                                              required=configfile.Option.OPTIONAL,
-                                              opt_type=bool,
-                                              default_value=False),
-                        'log_directory':
-                            configfile.Option(name='log_directory',
-                                              required=configfile.Option.OPTIONAL,
-                                              default_value=''),
                         'accounting_log_directory':
                             configfile.Option(name='accounting_log_directory',
                                               required=configfile.Option.OPTIONAL,
@@ -49,12 +34,7 @@ class PBSConfiguration(JobManagerConfiguration):
                         'pbs_server':
                             configfile.Option(name='pbs_server',
                                               required=configfile.Option.OPTIONAL,
-                                              default_value=''),
-                        'accept_limited':
-                            configfile.Option(name='accept_limited',
-                                              required=configfile.Option.OPTIONAL,
-                                              opt_type=bool,
-                                              default_value=False)}
+                                              default_value='')}
         self.config_section = "PBS"
         self.pbs_bin_location = None
         self._set_default = True
@@ -79,7 +59,8 @@ class PBSConfiguration(JobManagerConfiguration):
             self.log('PBSConfiguration.parse_configuration completed')
             return True
 
-        self.get_options(configuration, ignore_options=['enabled'])
+        self.get_options(configuration, ignore_options=['enabled', 'job_contact', 'util_contact', 'accept_limited',
+                                                        'seg_enabled', 'log_directory'])
 
         # set OSG_JOB_MANAGER and OSG_JOB_MANAGER_HOME
         self.options['job_manager'] = configfile.Option(name='job_manager',
@@ -135,24 +116,6 @@ class PBSConfiguration(JobManagerConfiguration):
                      section=self.config_section,
                      level=logging.ERROR)
 
-        if not validation.valid_contact(self.options['job_contact'].value,
-                                        'pbs'):
-            attributes_ok = False
-            self.log("Invalid job contact: %s" %
-                     (self.options['job_contact'].value),
-                     option='job_contact',
-                     section=self.config_section,
-                     level=logging.ERROR)
-
-        if not validation.valid_contact(self.options['util_contact'].value,
-                                        'pbs'):
-            attributes_ok = False
-            self.log("Invalid util contact: %s" %
-                     (self.options['util_contact'].value),
-                     option='util_contact',
-                     section=self.config_section,
-                     level=logging.ERROR)
-
         self.log('PBSConfiguration.check_attributes completed')
         return attributes_ok
 
@@ -171,39 +134,6 @@ class PBSConfiguration(JobManagerConfiguration):
             self.log('PBSConfiguration.configure completed')
             return True
 
-        if self.gram_gateway_enabled:
-
-            # The accept_limited argument was added for Steve Timm.  We are not adding
-            # it to the default config.ini template because we do not think it is
-            # useful to a wider audience.
-            # See VDT RT ticket 7757 for more information.
-            if self.options['accept_limited'].value:
-                if not self.enable_accept_limited(PBSConfiguration.PBS_CONFIG_FILE):
-                    self.log('Error writing to ' + PBSConfiguration.PBS_CONFIG_FILE,
-                             level=logging.ERROR)
-                    self.log('PBSConfiguration.configure completed')
-                    return False
-            else:
-                if not self.disable_accept_limited(PBSConfiguration.PBS_CONFIG_FILE):
-                    self.log('Error writing to ' + PBSConfiguration.PBS_CONFIG_FILE,
-                             level=logging.ERROR)
-                    self.log('PBSConfiguration.configure completed')
-                    return False
-
-            if self.options['seg_enabled'].value:
-                self.enable_seg('pbs', PBSConfiguration.PBS_CONFIG_FILE)
-            else:
-                self.disable_seg('pbs', PBSConfiguration.PBS_CONFIG_FILE)
-
-            if not self.setup_gram_config():
-                self.log('Error writing to ' + PBSConfiguration.GRAM_CONFIG_FILE,
-                         level=logging.ERROR)
-                return False
-
-            if self._set_default:
-                self.log('Configuring gatekeeper to use regular fork service')
-                self.set_default_jobmanager('fork')
-
         if self.htcondor_gateway_enabled:
             self.write_binpaths_to_blah_config('pbs', self.pbs_bin_location)
             self.write_blah_disable_wn_proxy_renewal_to_blah_config()
@@ -220,39 +150,6 @@ class PBSConfiguration(JobManagerConfiguration):
         """Return a boolean that indicates whether this module can be configured separately"""
         return True
 
-    def setup_gram_config(self):
-        """
-        Populate the gram config file with correct values
-
-        Returns True if successful, False otherwise
-        """
-        contents = open(PBSConfiguration.GRAM_CONFIG_FILE).read()
-        for binfile in ['qsub', 'qstat', 'qdel']:
-            bin_location = os.path.join(self.pbs_bin_location, binfile)
-            if validation.valid_file(bin_location):
-                contents = utilities.add_or_replace_setting(contents, binfile, bin_location)
-
-        if self.options['pbs_server'].value != '':
-            contents = utilities.add_or_replace_setting(contents, 'pbs_default', self.options['pbs_server'].value)
-
-        if self.options['seg_enabled'].value:
-            if (self.options['log_directory'].value is None or
-                    not validation.valid_directory(self.options['log_directory'].value)):
-                mesg = "%s is not a valid directory location " % self.options['log_directory'].value
-                mesg += "for pbs log files"
-                self.log(mesg,
-                         section=self.config_section,
-                         option='log_directory',
-                         level=logging.ERROR)
-                return False
-
-            contents = utilities.add_or_replace_setting(contents, 'log_path', self.options['log_directory'].value)
-
-        if not utilities.atomic_write(PBSConfiguration.GRAM_CONFIG_FILE, contents):
-            return False
-
-        return True
-
     def enabled_services(self):
         """Return a list of  system services needed for module to work
         """
@@ -262,7 +159,4 @@ class PBSConfiguration(JobManagerConfiguration):
 
         services = set(['globus-gridftp-server'])
         services.update(self.gateway_services())
-        if self.options['seg_enabled'].value:
-            services.add('globus-scheduler-event-generator')
-            services.add('globus-gatekeeper')
         return services
