@@ -173,22 +173,6 @@ class TestSlurm(unittest.TestCase):
                          "List of enabled services incorrect, " +
                          "got %s but expected %s" % (services, expected_services))
 
-        config_file = get_test_config("slurm/seg_enabled.ini")
-        configuration = ConfigParser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = slurm.SlurmConfiguration(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception, e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-        services = settings.enabled_services()
-        expected_services = set(['condor-ce',
-                                 'globus-gridftp-server'])
-        self.assertEqual(services, expected_services,
-                         "List of enabled services incorrect, " +
-                         "got %s but expected %s" % (services, expected_services))
-
         config_file = get_test_config("slurm/slurm_disabled.ini")
         configuration = ConfigParser.SafeConfigParser()
         configuration.read(config_file)
