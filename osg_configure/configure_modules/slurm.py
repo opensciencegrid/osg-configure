@@ -19,6 +19,7 @@ class SlurmConfiguration(JobManagerConfiguration):
     def __init__(self, *args, **kwargs):
         # pylint: disable-msg=W0142
         super(SlurmConfiguration, self).__init__(*args, **kwargs)
+        self.logger = logging.getLogger(__name__)
         self.log('SlurmConfiguration.__init__ started')
         # dictionary to hold information about options
         self.options = {'slurm_location':

@@ -20,7 +20,7 @@ class BaseConfiguration(object):
     """Base class for inheritance by configuration"""
     # pylint: disable-msg=W0613
     def __init__(self, *args, **kwargs):
-        self.logger = kwargs['logger']
+        self.logger = logging.getLogger(__name__)
         self.ignored = False
         self.enabled = False
         self.options = {}

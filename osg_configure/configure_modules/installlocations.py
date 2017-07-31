@@ -15,6 +15,7 @@ class InstallLocations(BaseConfiguration):
     def __init__(self, *args, **kwargs):
         # pylint: disable-msg=W0142
         super(InstallLocations, self).__init__(*args, **kwargs)
+        self.logger = logging.getLogger(__name__)
         self.log('InstallLocations.configure started')
         self.options = {'globus':
                             configfile.Option(name='globus',
