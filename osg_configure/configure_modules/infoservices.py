@@ -47,6 +47,7 @@ class InfoServicesConfiguration(BaseConfiguration):
     def __init__(self, *args, **kwargs):
         # pylint: disable-msg=W0142
         super(InfoServicesConfiguration, self).__init__(*args, **kwargs)
+        self.logger = logging.getLogger(__name__)
         self.log("InfoServicesConfiguration.__init__ started")
         self.config_section = 'Info Services'
         self.options = {'ce_collectors': configfile.Option(name='ce_collectors',
@@ -158,9 +159,7 @@ class InfoServicesConfiguration(BaseConfiguration):
         # configure(), but at this point we don't have a way of knowing what
         # default_allowed_vos should be.
         if self.ce_collector_required_rpms_installed and self.htcondor_gateway_enabled and classad is not None:
-            subcluster.resource_catalog_from_config(self.subcluster_sections,
-                                                    logger=self.logger,
-                                                    default_allowed_vos=None)
+            subcluster.resource_catalog_from_config(self.subcluster_sections, default_allowed_vos=None)
 
         self.log('InfoServicesConfiguration.parse_configuration completed')
 
@@ -228,7 +227,6 @@ class InfoServicesConfiguration(BaseConfiguration):
                                      level=logging.WARNING)
                 try:
                     self.resource_catalog = subcluster.resource_catalog_from_config(self.subcluster_sections,
-                                                                                    logger=self.logger,
                                                                                     default_allowed_vos=default_allowed_vos)
                 except exceptions.SettingError as err:
                     self.log("Error in info services configuration: %s" % str(err), level=logging.ERROR)

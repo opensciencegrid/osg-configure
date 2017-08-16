@@ -17,6 +17,7 @@ class JobManagerConfiguration(BaseConfiguration):
     def __init__(self, *args, **kwargs):
         # pylint: disable-msg=W0142
         super(JobManagerConfiguration, self).__init__(*args, **kwargs)
+        self.logger = logging.getLogger(__name__)
         self.attributes = {}
         self.htcondor_gateway_enabled = True
 

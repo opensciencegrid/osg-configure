@@ -21,6 +21,7 @@ class CondorConfiguration(JobManagerConfiguration):
     def __init__(self, *args, **kwargs):
         # pylint: disable-msg=W0142
         super(CondorConfiguration, self).__init__(*args, **kwargs)
+        self.logger = logging.getLogger(__name__)
         self.log('CondorConfiguration.__init__ started')
         self.config_section = "Condor"
         self.options = {'condor_location':
@@ -138,7 +139,7 @@ class CondorConfiguration(JobManagerConfiguration):
             self.write_binpaths_to_blah_config('condor', self.condor_bin_location)
             self.write_htcondor_ce_sentinel()
 
-        if not utilities.reconfig_service('condor', 'condor_reconfig', log=self.logger):
+        if not utilities.reconfig_service('condor', 'condor_reconfig'):
             self.log('Error reloading condor config', level=logging.WARNING)
 
         self.warn_on_non_default_local_config_dir()
