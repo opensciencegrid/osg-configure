@@ -127,7 +127,6 @@ class RsvConfiguration(BaseConfiguration):
         self._gratia_metric_map = {}
         self._enable_rsv_downloads = False
         self._meta = ConfigParser.RawConfigParser()
-        self.gram_gateway_enabled = False
         self.htcondor_gateway_enabled = True
         self.use_service_cert = True
         self.copy_host_cert_for_service_cert = False
@@ -211,9 +210,6 @@ class RsvConfiguration(BaseConfiguration):
         # Check the options for which gateways are enabled
         # How we run remote probes depends on this
         if configuration.has_section('Gateway'):
-            if configuration.has_option('Gateway', 'gram_gateway_enabled'):
-                self.gram_gateway_enabled = configuration.getboolean('Gateway', 'gram_gateway_enabled')
-
             if configuration.has_option('Gateway', 'htcondor_gateway_enabled'):
                 self.htcondor_gateway_enabled = configuration.getboolean('Gateway', 'htcondor_gateway_enabled')
 
@@ -529,9 +525,9 @@ class RsvConfiguration(BaseConfiguration):
 
     def _configure_ce_metrics(self):
         """Enable CE metrics.
-        This consists of OSG-GRAM-CE metrics for gram_ce_hosts, OSG-HTCondor-CE
+        This consists of OSG-HTCondor-CE
         metrics for htcondor_ce_hosts and OSG-CE metrics for ce_hosts (which should
-        include gram_ce_hosts and htcondor_ce_hosts).
+        include htcondor_ce_hosts).
 
         :raise ConfigFailed: if enabling metrics fails
         """
@@ -885,18 +881,16 @@ class RsvConfiguration(BaseConfiguration):
         self._write_rsv_conf(config)
 
     def _configure_ce_types(self):
-        """Write config files that set the ce-type for GRAM-CE hosts and HTCondor-CE hosts.
+        """Write config files that set the ce-type for HTCondor-CE hosts.
 
         :raise ConfigFailed: if writing any config file failed.
 
         """
-        if self.gram_gateway_enabled:
-            assert False, 'should have been caught already'
         if self.htcondor_gateway_enabled:
             for host in self._htcondor_ce_hosts:
-                self._configure_ce_type_for_host(host, "htcondor-ce")
+                self._configure_ce_type_for_host(host)
 
-    def _configure_ce_type_for_host(self, hostname, ce_type):
+    def _configure_ce_type_for_host(self, hostname):
         """Write config file that sets the ce-type for all probes on a host.
         Specifically, a directory is created (if missing) under the metrics config
         dir for that host, and an allmetrics.conf file is placed into it.
@@ -905,8 +899,6 @@ class RsvConfiguration(BaseConfiguration):
 
         :param hostname: FQDN of the host to configure probes for
         :type hostname: str
-        :param ce_type: either 'gram' or 'htcondor-ce'
-        :type ce_type: str
         :raise ConfigFailed: if writing the config file failed
         :rtype: None
 
@@ -926,7 +918,7 @@ class RsvConfiguration(BaseConfiguration):
 
         if not config.has_section('allmetrics'):
             config.add_section('allmetrics')
-        config.set('allmetrics', 'ce-type', ce_type)
+        config.set('allmetrics', 'ce-type', 'htcondor-ce')
 
         config_fp = open(allmetrics_conf_path, 'w')
         try:

@@ -337,28 +337,6 @@ def valid_ini_references(files):
     return status
 
 
-def valid_contact(contact, jobmanager):
-    """
-    Check a contact string to make sure that it's valid, e.g. host[:port]/jobmanager
-    returns True or False
-    """
-
-    if not contact or len(contact.split('/')) != 2:
-        return False
-    (host_part, jobmanager_part) = contact.split('/')
-
-    if '-' in jobmanager_part and jobmanager_part.split('-')[1] != jobmanager:
-        # invalid jobmanager
-        return False
-
-    host, port = utilities.split_host_port(host_part)
-    if port:
-        try:
-            int(port)
-        except (TypeError, ValueError):
-            return False
-    return valid_domain(host)
-
 # Quick function to check if configuration value is an integer
 def valid_integer(to_check):
     """
