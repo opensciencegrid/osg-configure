@@ -52,8 +52,6 @@ class TestLSF(unittest.TestCase):
         attributes = settings.get_attributes()
         options = {'OSG_JOB_MANAGER_HOME': '/opt/lsf',
                    'OSG_LSF_LOCATION': '/opt/lsf',
-                   'OSG_JOB_CONTACT': 'my.domain.com/jobmanager-lsf',
-                   'OSG_UTIL_CONTACT': 'my.domain.com/jobmanager',
                    'OSG_JOB_MANAGER': 'LSF'}
         for option in options:
             value = options[option]
@@ -169,44 +167,6 @@ class TestLSF(unittest.TestCase):
         attributes = settings.get_attributes()
         self.assertTrue(settings.check_attributes(attributes),
                         "Correct settings incorrectly flagged as invalid")
-
-    def testInvalidJobContact(self):
-        """
-        Test the check_attributes function to see if it catches invalid job contacts
-        """
-        config_file = get_test_config("lsf/invalid_job_contact.ini")
-        configuration = ConfigParser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = lsf.LSFConfiguration(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception, e:
-            print e
-            self.fail("Received exception while parsing configuration")
-
-        attributes = settings.get_attributes()
-        self.assertFalse(settings.check_attributes(attributes),
-                         "Did not notice invalid host in jobcontact option")
-
-    def testInvalidUtilityContact(self):
-        """
-        Test the check_attributes function to see if it catches invalid
-        utility contacts
-        """
-        config_file = get_test_config("lsf/invalid_utility_contact.ini")
-        configuration = ConfigParser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = lsf.LSFConfiguration(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception, e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        attributes = settings.get_attributes()
-        self.assertFalse(settings.check_attributes(attributes),
-                         "Did not notice invalid host in utility_contact option")
 
     def testServiceList(self):
         """

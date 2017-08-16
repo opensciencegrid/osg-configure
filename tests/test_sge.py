@@ -53,8 +53,6 @@ class TestSGE(unittest.TestCase):
         options = {'OSG_JOB_MANAGER_HOME': './test_files',
                    'OSG_SGE_LOCATION': './test_files',
                    'OSG_SGE_ROOT': './test_files',
-                   'OSG_JOB_CONTACT': 'my.domain.com/jobmanager-sge',
-                   'OSG_UTIL_CONTACT': 'my.domain.com/jobmanager',
                    'OSG_SGE_CELL': 'sge',
                    'OSG_JOB_MANAGER': 'SGE'}
         for option in options:
@@ -110,9 +108,7 @@ class TestSGE(unittest.TestCase):
 
         mandatory = ['sge_root',
                      'sge_cell',
-                     'sge_bin_location',
-                     'job_contact',
-                     'util_contact']
+                     'sge_bin_location']
         for option in mandatory:
             config_file = get_test_config("sge/sge1.ini")
             configuration = ConfigParser.SafeConfigParser()
@@ -223,104 +219,6 @@ class TestSGE(unittest.TestCase):
         self.assertTrue(settings.check_attributes(attributes),
                         "Correct settings incorrectly flagged as invalid")
 
-    def testLogDir(self):
-        """
-        Test the check_attributes function to see if it works on valid settings
-        """
-
-        config_file = get_test_config("sge/sge_log_dir.ini")
-        configuration = ConfigParser.SafeConfigParser()
-        configuration.read(config_file)
-        root = os.path.join(config_file[:-20], 'test_files')
-        configuration.set('SGE', 'sge_root', root)
-
-        settings = sge.SGEConfiguration(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception, e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        err_msg = "Got incorrect value, expected " + \
-                  "%s but " % get_test_config('./test_files/subscriptions.xml') + \
-                  "got %s instead\n" % settings.options['log_file'].value
-        self.assertEqual(settings.options['log_file'].value,
-                         '/etc/hosts',
-                         err_msg)
-
-        attributes = settings.get_attributes()
-        self.assertTrue(settings.check_attributes(attributes),
-                        "Correct settings incorrectly flagged as invalid")
-
-    def testLogFile(self):
-        """
-        Test the check_attributes function to see if it works on valid settings
-        using log_directory or log_path
-        """
-
-        config_file = get_test_config("sge/sge_log_file.ini")
-        configuration = ConfigParser.SafeConfigParser()
-        configuration.read(config_file)
-        root = os.path.join(config_file[:-20], 'test_files')
-        configuration.set('SGE', 'sge_root', root)
-
-        settings = sge.SGEConfiguration(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception, e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        err_msg = "Got incorrect value, expected " + \
-                  "%s but " % get_test_config('./test_files/subscriptions.xml') + \
-                  "got %s instead\n" % settings.options['log_file'].value
-
-        self.assertEqual(settings.options['log_file'].value,
-                         '/etc/hosts',
-                         err_msg)
-
-        attributes = settings.get_attributes()
-        self.assertTrue(settings.check_attributes(attributes),
-                        "Correct settings incorrectly flagged as invalid")
-
-    def testInvalidJobContact(self):
-        """
-        Test the check_attributes function to see if it catches invalid job contacts
-        """
-
-        config_file = get_test_config("sge/invalid_job_contact.ini")
-        configuration = ConfigParser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = sge.SGEConfiguration(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception, e:
-            print e
-            self.fail("Received exception while parsing configuration")
-
-        attributes = settings.get_attributes()
-        self.assertFalse(settings.check_attributes(attributes),
-                         "Did not notice invalid host in jobcontact option")
-
-    def testInvalidUtilityContact(self):
-        """
-        Test the check_attributes function to see if it catches invalid
-        utility contacts
-        """
-
-        config_file = get_test_config("sge/invalid_utility_contact.ini")
-        configuration = ConfigParser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = sge.SGEConfiguration(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception, e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        attributes = settings.get_attributes()
-        self.assertFalse(settings.check_attributes(attributes),
-                         "Did not notice invalid host in utility_contact option")
-
     def testServiceList(self):
         """
         Test to make sure right services get returned
@@ -338,24 +236,6 @@ class TestSGE(unittest.TestCase):
         services = settings.enabled_services()
         expected_services = set(['condor-ce',
                                  'globus-gridftp-server'])
-        self.assertEqual(services, expected_services,
-                         "List of enabled services incorrect, " +
-                         "got %s but expected %s" % (services, expected_services))
-
-        config_file = get_test_config("sge/seg_enabled.ini")
-        configuration = ConfigParser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = sge.SGEConfiguration(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception, e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-        services = settings.enabled_services()
-        expected_services = set(['condor-ce',
-                                 'globus-gatekeeper',
-                                 'globus-gridftp-server',
-                                 'globus-scheduler-event-generator'])
         self.assertEqual(services, expected_services,
                          "List of enabled services incorrect, " +
                          "got %s but expected %s" % (services, expected_services))

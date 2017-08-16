@@ -36,7 +36,6 @@ DEFAULT_JOB_ENVIRONMENT_ATTRIBUTES = ['GLOBUS_LOCATION',
                                       'OSG_SITE_READ',
                                       'OSG_SITE_WRITE',
                                       'OSG_SQUID_LOCATION',
-                                      'OSG_JOB_CONTACT',
                                       'PATH']
 BATCH_SYSTEM_CONFIG_RPMS = ['osg-configure-condor', 'osg-configure-lsf', 'osg-configure-pbs', 'osg-configure-sge',
                             'osg-configure-slurm', 'osg-configure-bosco']
@@ -245,22 +244,7 @@ def configure_system(modules, logger, configure_module=None, force=False):
                            "any of the *.ini files. osg-configure will not configure "
                            "any of the batch systems. This may lead to your CE being "
                            "unable to run jobs.")
-            try:
-                job_environment_attributes.remove('OSG_JOB_CONTACT')
-                logger.warning("Not setting the OSG_JOB_CONTACT variable, since that "
-                               "requires a batch system to be enabled (see above). "
-                               "Other than enabling a batch system, there is no further "
-                               "action to take.")
-            except ValueError:
-                pass
         else:
-            if gateway_module and not gateway_module.gram_gateway_enabled:
-                try:
-                    job_environment_attributes.remove('OSG_JOB_CONTACT')
-                    logger.info('Not setting OSG_JOB_CONTACT (GRAM gateway is disabled).')
-                except ValueError:
-                    pass
-
             if ((gateway_module and not gateway_module.htcondor_gateway_enabled) or
                     (condor_module and not condor_module.enabled)):
                 try:
