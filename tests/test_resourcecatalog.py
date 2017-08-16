@@ -7,8 +7,14 @@ pathname = os.path.realpath('../')
 sys.path.insert(0, pathname)
 sys.path.insert(0, '.')
 
-from osg_configure.modules.resourcecatalog import ResourceCatalog, RCEntry
-from osg_configure.modules import subcluster
+try:
+    from osg_configure.modules import resourcecatalog
+    from osg_configure.modules.resourcecatalog import ResourceCatalog, RCEntry
+    from osg_configure.modules import subcluster
+except ImportError:
+    resourcecatalog = None
+    subcluster = None
+    print("resourcecatalog and/or subcluster not found -- skipping resourcecatalog tests")
 from osg_configure.modules import exceptions
 from osg_configure.modules.utilities import get_test_config
 
@@ -21,12 +27,15 @@ class TestResourceCatalog(unittest.TestCase):
             self.fail('%s called with %r and %r raised %s' % (function.__name__, args, kwargs, exception.__name__))
 
     def setUp(self):
+        if not resourcecatalog: return
         self.rc = ResourceCatalog()
 
     def testEmpty(self):
+        if not resourcecatalog: return
         self.assertEqual(self.rc.compose_text().strip(), "OSG_ResourceCatalog = {}")
 
     def testSingle(self):
+        if not resourcecatalog: return
         self.rc.add_rcentry(RCEntry(name='sc1', cpus=1, memory=2000))
         self.assertEqual(self.rc.compose_text().strip(), r"""OSG_ResourceCatalog = { \
   [ \
@@ -39,6 +48,7 @@ class TestResourceCatalog(unittest.TestCase):
 }""")
 
     def testMulti(self):
+        if not resourcecatalog: return
         (self.rc
          .add_rcentry(RCEntry(name='sc1', cpus=1, memory=2000))
          .add_rcentry(RCEntry(name='sc2', cpus=2, memory=4000))
@@ -69,10 +79,12 @@ class TestResourceCatalog(unittest.TestCase):
 }""")
 
     def testNoName(self):
+        if not resourcecatalog: return
         rce = RCEntry(name='', cpus=1, memory=1)
         self.assertRaises(ValueError, self.rc.add_rcentry, rce)
 
     def testOutOfRange(self):
+        if not resourcecatalog: return
         rce = RCEntry(name='sc', cpus=-1, memory=1)
         self.assertRaises(ValueError, self.rc.add_rcentry, rce)
         rce.cpus = 1
@@ -80,10 +92,12 @@ class TestResourceCatalog(unittest.TestCase):
         self.assertRaises(ValueError, self.rc.add_rcentry, rce)
 
     def testZeroMaxWallTime(self):
+        if not resourcecatalog: return
         rce = RCEntry(name='sc', cpus=1, memory=1, max_wall_time=0)
         self.assertDoesNotRaise(ValueError, self.rc.add_rcentry, rce)
 
     def testExtraRequirements(self):
+        if not resourcecatalog: return
         rce = RCEntry(name='sc', cpus=1, memory=2000, extra_requirements='TARGET.WantGPUs =?= 1')
         self.rc.add_rcentry(rce)
         self.assertEqual(self.rc.compose_text().strip(), r"""OSG_ResourceCatalog = { \
@@ -97,6 +111,7 @@ class TestResourceCatalog(unittest.TestCase):
 }""")
 
     def testExtraTransforms(self):
+        if not resourcecatalog: return
         rce = RCEntry(name='sc', cpus=1, memory=2000, extra_transforms='set_WantRHEL6 = 1')
         self.rc.add_rcentry(rce)
         self.assertEqual(self.rc.compose_text().strip(), r"""OSG_ResourceCatalog = { \
@@ -110,6 +125,7 @@ class TestResourceCatalog(unittest.TestCase):
 }""")
 
     def testFull(self):
+        if not resourcecatalog: return
         config = ConfigParser.SafeConfigParser()
         config_io = cStringIO.StringIO(r"""
 [Subcluster Valid]
@@ -142,6 +158,7 @@ allowed_vos = osg, atlas
 }""")
 
     def testResourceEntry(self):
+        if not resourcecatalog: return
         # Test using the "Resource Entry" section name instead of "Subcluster"
         # and also using some of the attributes ATLAS requested
         config = ConfigParser.SafeConfigParser()
@@ -170,6 +187,7 @@ allowed_vos = osg, atlas
 }""")
 
     def testResourceEntryWithSubclusters(self):
+        if not resourcecatalog: return
         config = ConfigParser.SafeConfigParser()
         config_file = get_test_config("subcluster/resourceentry_and_sc.ini")
         config.read(config_file)
@@ -179,6 +197,7 @@ allowed_vos = osg, atlas
                         '\'subclusters\' attrib improperly transformed')
 
     def testResourceEntryBad(self):
+        if not resourcecatalog: return
         for config_filename in ["subcluster/resourceentry_missing_cpucount.ini",
                                 "subcluster/resourceentry_missing_memory.ini",
                                 "subcluster/resourceentry_missing_queue.ini",
@@ -193,6 +212,7 @@ allowed_vos = osg, atlas
                 raise
 
     def testFullWithExtraTransforms(self):
+        if not resourcecatalog: return
         config = ConfigParser.SafeConfigParser()
         config_io = cStringIO.StringIO(r"""
 [Subcluster Test]
@@ -230,6 +250,7 @@ allowed_vos = osg, atlas
     def testFullWithExtras(self):
         # Disable this test because the feature is disabled for now
         return
+        if not resourcecatalog: return
         config = ConfigParser.SafeConfigParser()
         config_io = cStringIO.StringIO(r"""
 [Subcluster Test]
