@@ -20,6 +20,7 @@ class SGEConfiguration(JobManagerConfiguration):
     def __init__(self, *args, **kwargs):
         # pylint: disable-msg=W0142
         super(SGEConfiguration, self).__init__(*args, **kwargs)
+        self.logger = logging.getLogger(__name__)
         self.log('SGEConfiguration.__init__ started')
         # option information
         self.options = {'sge_root':

@@ -26,6 +26,7 @@ class BoscoConfiguration(JobManagerConfiguration):
     def __init__(self, *args, **kwargs):
         # pylint: disable-msg=W0142
         super(BoscoConfiguration, self).__init__(*args, **kwargs)
+        self.logger = logging.getLogger(__name__)
         self.log('BoscoConfiguration.__init__ started')
         
         # dictionary to hold information about options

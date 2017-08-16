@@ -34,6 +34,7 @@ class MiscConfiguration(BaseConfiguration):
     def __init__(self, *args, **kwargs):
         # pylint: disable-msg=W0142
         super(MiscConfiguration, self).__init__(*args, **kwargs)
+        self.logger = logging.getLogger(__name__)
         self.log('MiscConfiguration.__init__ started')
         self.options = {'glexec_location':
                             configfile.Option(name='glexec_location',

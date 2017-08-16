@@ -44,20 +44,20 @@ BATCH_SYSTEM_CONFIG_RPMS = ['osg-configure-condor', 'osg-configure-lsf', 'osg-co
 ############################# Function Definitions ############################
 
 
-def real_error_exit(logger, message="Critical error occurred, exiting", exception=None):
+def real_error_exit(message="Critical error occurred, exiting", exception=None):
     """Function to do all the cleanup and exit if an error occurs"""
-    logger.critical(message)
+    logging.critical(message)
     if exception is not None:
-        logger.critical("Exception: %s" % (exception))
+        logging.critical("Exception: %s" % (exception))
     sys.stderr.write("%s\n" % message)
     sys.stderr.write("You may be able to get more details rerunning %s with the -d " \
                      "option and/or by examining %s\n" % (sys.argv[0], LOG_FILE))
     sys.exit(1)
 
 
-def real_normal_exit(logger, message="Configuration completed, exiting..."):
+def real_normal_exit(message="Configuration completed, exiting..."):
     """Function to do all the cleanup and exit"""
-    logger.info(message)
+    logging.info(message)
     sys.stdout.write("%s\n" % message)
     sys.exit(0)
 
@@ -76,7 +76,7 @@ def normal_exit(msg):
     sys.exit(0)
 
 
-def get_configuration_modules(logger):
+def get_configuration_modules():
     """Instantiate and return modules in configure_modules directory"""
     try:
         module_dirs = os.path.split(os.path.dirname(utilities.__file__))[0]
@@ -92,7 +92,7 @@ def get_configuration_modules(logger):
                                     globals(),
                                     locals(),
                                     [''])
-            objects.append(getattr(module_ref, module_ref.__all__[0])(logger=logger))
+            objects.append(getattr(module_ref, module_ref.__all__[0])())
     return objects
 
 
@@ -153,13 +153,12 @@ def write_attributes(attributes, local_site_attributes, job_environment_attribut
         error_exit("Error writing attributes to osg-job-environment.conf", exception)
 
 
-def configure_system(modules, logger, configure_module=None, force=False):
+def configure_system(modules, configure_module=None, force=False):
     """
     Read configuration files and try to configure the osg system
 
     Keyword arguments:
     modules -- list of module objects installed
-    logger -- logger instance to log messages to
     configure_module -- if not None, the specific module to configure
     force -- if True, force configuration even if verification fails
     """
@@ -205,9 +204,9 @@ def configure_system(modules, logger, configure_module=None, force=False):
             if attribute:
                 attribute_to_option_map[attribute] = attribute_to_option_map.get(attribute, []) + [(section, name)]
 
-    if not check_configuration(modules, attributes, logger):
+    if not check_configuration(modules, attributes):
         if force:
-            logger.warn("Invalid attributes found but forcing configuration.")
+            logging.warn("Invalid attributes found but forcing configuration.")
             sys.stderr.write("Invalid attributes found but forcing configuration.\n")
         else:
             error_exit("Invalid attributes found, exiting")
@@ -218,15 +217,15 @@ def configure_system(modules, logger, configure_module=None, force=False):
             error_exit("%s specified but that module is not present" % configure_module)
 
     for module in modules:
-        logger.debug("Configuring %s" % (module.__class__.__name__))
+        logging.debug("Configuring %s" % (module.__class__.__name__))
         if configure_module is not None:
             if module.module_name().lower() != configure_module.lower():
-                logger.debug("Skipping %s configuration" % (module.__class__.__name__))
+                logging.debug("Skipping %s configuration" % (module.__class__.__name__))
                 continue
         try:
             module.configure(attributes)
         except exceptions.ConfigureError, e:
-            logger.debug("Got ConfigureError %s" % e)
+            logging.debug("Got ConfigureError %s" % e)
             error_exit("Can't configure module, exiting")
 
     if utilities.ce_installed():
@@ -240,16 +239,16 @@ def configure_system(modules, logger, configure_module=None, force=False):
 
 
         if not configfile.jobmanager_enabled(config):
-            logger.warning("CE install detected, but no batch systems are enabled in "
-                           "any of the *.ini files. osg-configure will not configure "
-                           "any of the batch systems. This may lead to your CE being "
-                           "unable to run jobs.")
+            logging.warning("CE install detected, but no batch systems are enabled in "
+                            "any of the *.ini files. osg-configure will not configure "
+                            "any of the batch systems. This may lead to your CE being "
+                            "unable to run jobs.")
         else:
             if ((gateway_module and not gateway_module.htcondor_gateway_enabled) or
                     (condor_module and not condor_module.enabled)):
                 try:
                     job_environment_attributes.remove('PATH')
-                    logger.info('Not setting PATH (not HTCondor-CE with Condor).')
+                    logging.info('Not setting PATH (not HTCondor-CE with Condor).')
                 except ValueError:
                     pass
 
@@ -258,19 +257,18 @@ def configure_system(modules, logger, configure_module=None, force=False):
         if gateway_module and gateway_module.htcondor_gateway_enabled:
             # Reconfigure htcondor-ce after writing the attributes files
             # so the job route expressions get re-evaluated and the changes go into effect
-            if not utilities.reconfig_service('condor-ce', 'condor_ce_reconfig', logger):
-                logger.warning('Error reloading condor-ce config')
+            if not utilities.reconfig_service('condor-ce', 'condor_ce_reconfig'):
+                logging.warning('Error reloading condor-ce config')
     else:
-        logger.debug("Skipped writing job attributes (not a CE)")
+        logging.debug("Skipped writing job attributes (not a CE)")
 
 
-def query_option(modules, logger, option=None):
+def query_option(modules, option=None):
     """
     Read configuration files and get the file a given option is defined in
 
     Arguments:
     modules -- list of module objects to verify
-    logger -- logger instance to log messages to
     option -- the option to search for given as section.option,
               if section is omitted then, the each section is searched
     """
@@ -334,12 +332,11 @@ def query_option(modules, logger, option=None):
     normal_exit("Query completed")
 
 
-def list_enabled_services(modules, logger):
+def list_enabled_services(modules):
     """Read configuration files and list system services that should be enabled
 
     Arguments:
     modules -- list of module objects to verify
-    logger -- logger instance to log messages to
     """
     if modules == []:
         error_exit("No modules found, exiting")
@@ -369,14 +366,13 @@ def list_enabled_services(modules, logger):
     normal_exit("Completed successfully")
 
 
-def verify_system(modules, logger):
+def verify_system(modules):
     """
     Read configuration files and try to verify the configuration
     to make sure that it's sane and points to valid information
 
     Keyword arguments:
     modules -- list of module objects to verify
-    logger -- logger instance to log messages to
     """
     if modules == []:
         error_exit("No modules found, exiting")
@@ -407,18 +403,17 @@ def verify_system(modules, logger):
             local_attributes.update(module.get_attributes())
         attributes.update(module.get_attributes())
 
-    if not check_configuration(modules, attributes, logger):
+    if not check_configuration(modules, attributes):
         error_exit("Invalid attributes found, exiting")
     normal_exit("Configuration verified successfully")
 
 
-def list_modules(modules, logger):
+def list_modules(modules):
     """
     Print out a list of all modules available on the system
 
     Keyword arguments:
     modules -- list of module objects installed
-    logger -- logger instance to log messages to
     """
     if modules == []:
         error_exit("No modules found, exiting")
@@ -435,18 +430,17 @@ def list_modules(modules, logger):
     normal_exit("Modules listed successfully")
 
 
-def check_configuration(modules, attributes, logger):
+def check_configuration(modules, attributes):
     """
     Read a configuration file and check it to make sure that it will work
 
     Keyword arguments:
     modules -- list of module objects to check
-    logger -- logger instance to log messages to
     """
     # get a list of configuration modules
 
     if modules == []:
-        logger.warning("No configuration modules found")
+        logging.warning("No configuration modules found")
         return False
 
     try:
@@ -556,7 +550,7 @@ def main():
 
     # setup logging
     try:
-        logger = logging.getLogger(__name__)
+        logger = logging.getLogger('')
         formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
         handler = logging.FileHandler(LOG_FILE, 'a')
         logger.setLevel(log_level)
@@ -570,8 +564,8 @@ def main():
         console.setFormatter(formatter)
         logger.addHandler(console)
 
-        error_exit = lambda mesg=error_exit_message, exception=None: real_error_exit(logger, mesg, exception)
-        normal_exit = lambda mesg=normal_exit_message: real_normal_exit(logger, mesg)
+        error_exit = lambda mesg=error_exit_message, exception=None: real_error_exit(mesg, exception)
+        normal_exit = lambda mesg=normal_exit_message: real_normal_exit(mesg)
 
 
     except IOError:
@@ -580,21 +574,21 @@ def main():
 
     try:
         # get a list of configuration modules
-        modules = get_configuration_modules(logger)
+        modules = get_configuration_modules()
 
         if options.mode == CONFIGURE:
             # configure settings
-            configure_system(modules, logger, configure_module)
+            configure_system(modules, configure_module)
             pass
         elif options.mode == VERIFY:
             # verify settings
-            verify_system(modules, logger)
+            verify_system(modules)
         elif options.mode == LIST:
-            list_modules(modules, logger)
+            list_modules(modules)
         elif options.mode == QUERY:
-            query_option(modules, logger, option=options.option)
+            query_option(modules, option=options.option)
         elif options.mode == ENABLED_SERVICES:
-            list_enabled_services(modules, logger)
+            list_enabled_services(modules)
         else:
             parser.print_usage()
             error_exit("Must specify either -c, -v, or -l")

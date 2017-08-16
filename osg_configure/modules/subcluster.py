@@ -171,13 +171,13 @@ def check_config(config):
     return has_sc
 
 
-def resource_catalog_from_config(config, logger=utilities.NullLogger, default_allowed_vos=None):
+def resource_catalog_from_config(config, default_allowed_vos=None):
     """
     Create a ResourceCatalog from the subcluster entries in a config
     :type config: ConfigParser.ConfigParser
-    :type logger: logging.Logger or None
     :rtype: ResourceCatalog
     """
+    logger = logging.getLogger(__name__)
     assert isinstance(config, ConfigParser.ConfigParser)
     from osg_configure.modules import resourcecatalog
 

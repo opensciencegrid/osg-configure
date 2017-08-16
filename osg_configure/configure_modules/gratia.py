@@ -51,6 +51,7 @@ in your config.ini file."""
     def __init__(self, *args, **kwargs):
         # pylint: disable-msg=W0142
         super(GratiaConfiguration, self).__init__(*args, **kwargs)
+        self.logger = logging.getLogger(__name__)
         self.log("GratiaConfiguration.__init__ started")
 
         self.config_section = 'Gratia'
