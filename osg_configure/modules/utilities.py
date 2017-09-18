@@ -227,11 +227,7 @@ def fetch_crl():
             sys.stdout.flush()
             return True
 
-        crl_path = '/usr/sbin'
-        if rpm_installed('fetch-crl'):
-            crl_path = os.path.join(crl_path, 'fetch-crl')
-        elif rpm_installed('fetch-crl3'):
-            crl_path = os.path.join(crl_path, 'fetch-crl3')
+        crl_path = '/usr/sbin/fetch-crl'
 
         # Some CRLs are often problematic; it's better to ignore some errors than to halt configuration. (SOFTWARE-1428)
         error_message_whitelist = [  # whitelist partially taken from osg-test
