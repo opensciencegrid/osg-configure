@@ -333,7 +333,7 @@ def get_condor_config_val(variable, executable='condor_config_val', quiet_undefi
     condor_config_val reports an error.
     """
     try:
-        process = subprocess.Popen([executable, '-expand', variable],
+        process = subprocess.Popen([executable, variable],
                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output, error = process.communicate()
         if error and not (error.startswith('Not defined:') and quiet_undefined):
