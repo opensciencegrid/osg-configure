@@ -48,6 +48,11 @@ class MiscConfiguration(BaseConfiguration):
                         'authorization_method':
                             configfile.Option(name='authorization_method',
                                               default_value='xacml'),
+                        'all_fqans':
+                            configfile.Option(name='all_fqans',
+                                              required=configfile.Option.OPTIONAL,
+                                              opt_type=bool,
+                                              default_value=False),
                         'edit_lcmaps_db':
                             configfile.Option(name='edit_lcmaps_db',
                                               required=configfile.Option.OPTIONAL,
@@ -103,6 +108,7 @@ class MiscConfiguration(BaseConfiguration):
                                                                          'htcondor_gateway_enabled', True)
         self.authorization_method = self.options['authorization_method'].value
         self.using_glexec = not utilities.blank(self.options['glexec_location'].value)
+        self.all_fqans = self.options['all_fqans'].value
 
         self.log('MiscConfiguration.parse_configuration completed')
 
@@ -247,7 +253,10 @@ class MiscConfiguration(BaseConfiguration):
         elif self.authorization_method == 'gridmap' or self.authorization_method == 'local-gridmap':
             non_glexec_lcmaps_template_fn = lcmaps_template_fn = 'lcmaps.db.gridmap'
         elif self.authorization_method == 'vomsmap':
-            non_glexec_lcmaps_template_fn = lcmaps_template_fn = 'lcmaps.db.vomsmap'
+            if self.all_fqans:
+                non_glexec_lcmaps_template_fn = lcmaps_template_fn = 'lcmaps.db.vomsmap.allfqans'
+            else:
+                non_glexec_lcmaps_template_fn = lcmaps_template_fn = 'lcmaps.db.vomsmap'
         else:
             assert False
 
