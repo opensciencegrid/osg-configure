@@ -119,7 +119,7 @@ class MiscConfiguration(BaseConfiguration):
                 attributes_ok = False
             self.log("Gums is deprecated in OSG 3.4. The replacement is the LCMAPS VOMS plugin; please see"
                      " installation instructions at"
-                     " https://twiki.opensciencegrid.org/bin/view/Documentation/Release3/InstallLcmapsVoms",
+                     " https://opensciencegrid.github.io/docs/security/lcmaps-voms-authentication/",
                      section=self.config_section,
                      option='authorization_method',
                      level=logging.WARNING)
