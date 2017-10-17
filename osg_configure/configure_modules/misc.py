@@ -45,7 +45,6 @@ class MiscConfiguration(BaseConfiguration):
                         'authorization_method':
                             configfile.Option(name='authorization_method',
                                               default_value='vomsmap'),
-                                              default_value='xacml'),
                         'all_fqans':
                             configfile.Option(name='all_fqans',
                                               required=configfile.Option.OPTIONAL,
