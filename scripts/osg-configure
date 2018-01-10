@@ -86,7 +86,9 @@ def get_configuration_modules():
 
     objects = []
     for module in modules:
-        if module.split(".")[-1] == "py" and module != "__init__.py":
+        if module.endswith(".py") and module not in ["__init__.py", "siteattributes.py"]:
+            # ^ siteattributes.py was renamed to siteinformation.py but it may
+            # be left over from an old install.
             module_name = module.split(".")[0]
             module_ref = __import__('osg_configure.configure_modules.' + module_name,
                                     globals(),
