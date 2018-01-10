@@ -106,6 +106,7 @@ class BaseConfiguration(object):
                 message = "Option '%s' in section '%s' located in %s: " % (kwargs['option'],
                                                                            kwargs['section'],
                                                                            file_location)
+                message += "\n" + " " * 9
         message += mesg
         self.logger.log(log_level, message, exc_info=exception)
 
@@ -145,7 +146,7 @@ class BaseConfiguration(object):
                                       option)
                 self.log("Got %s" % option.value)
             except ConfigParser.Error as err:
-                self.log("\n\t Syntax error in configuration: %s" % err,
+                self.log("Syntax error in configuration: %s" % err,
                          option=option.name,
                          section=self.config_section,
                          level=logging.ERROR,
