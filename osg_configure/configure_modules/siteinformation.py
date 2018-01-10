@@ -134,13 +134,11 @@ class SiteInformation(BaseConfiguration):
                      level=logging.ERROR)
             attributes_ok = False
 
-        # site_name or resource/resource_group must be specified not both
-        if (not utilities.blank(self.options['site_name'].value) and
-                (not utilities.blank(self.options['resource'].value) or
-                     not utilities.blank(self.options['resource_group'].value))):
-            self.log("In section '%s', site_name and " % self.config_section +
-                     "resource or resource_group given at the same time, " +
-                     "you should use just the resource and resource_group settings.",
+        if not utilities.blank(self.options['site_name'].value):
+            self.log("The site_name setting has been deprecated in favor of the"
+                     " resource and resource_group settings and will be removed",
+                     section=self.config_section,
+                     option="site_name",
                      level=logging.WARNING)
 
         if self.options['latitude'].value > 90 or self.options['latitude'].value < -90:
