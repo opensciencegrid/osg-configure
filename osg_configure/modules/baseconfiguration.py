@@ -144,6 +144,13 @@ class BaseConfiguration(object):
                                       self.config_section,
                                       option)
                 self.log("Got %s" % option.value)
+            except ConfigParser.Error as err:
+                self.log("\n\t Syntax error in configuration: %s" % err,
+                         option=option.name,
+                         section=self.config_section,
+                         level=logging.ERROR,
+                         exception=False)
+                raise exceptions.SettingError(str(err))
             except Exception:
                 self.log("Received exception when parsing option",
                          option=option.name,
