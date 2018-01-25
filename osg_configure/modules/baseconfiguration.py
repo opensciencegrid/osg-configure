@@ -106,8 +106,11 @@ class BaseConfiguration(object):
                 message = "Option '%s' in section '%s' located in %s: " % (kwargs['option'],
                                                                            kwargs['section'],
                                                                            file_location)
-                message += "\n" + " " * 9
-        message += mesg
+                message += "\n" + " " * 9 + ("\n" + " " * 9).join(mesg.split("\n"))
+            else:
+                message += mesg
+        else:
+            message += mesg
         self.logger.log(log_level, message, exc_info=exception)
 
     def check_config(self, configuration):
