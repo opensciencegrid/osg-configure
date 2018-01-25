@@ -9,10 +9,10 @@ from osg_configure.modules import configfile
 from osg_configure.modules import validation
 from osg_configure.modules.baseconfiguration import BaseConfiguration
 
-__all__ = ['SiteAttributes']
+__all__ = ['SiteInformation']
 
 
-class SiteAttributes(BaseConfiguration):
+class SiteInformation(BaseConfiguration):
     """Class to handle attributes related to site information such as location and
     contact information
     """
@@ -21,9 +21,9 @@ class SiteAttributes(BaseConfiguration):
 
     def __init__(self, *args, **kwargs):
         # pylint: disable-msg=W0142
-        super(SiteAttributes, self).__init__(*args, **kwargs)
+        super(SiteInformation, self).__init__(*args, **kwargs)
         self.logger = logging.getLogger(__name__)
-        self.log('SiteAttributes.__init__ started')
+        self.log('SiteInformation.__init__ started')
         self.options = {'group':
                             configfile.Option(name='group',
                                               default_value='OSG',
@@ -77,34 +77,34 @@ class SiteAttributes(BaseConfiguration):
 
         self.config_section = "Site Information"
         self.enabled = True
-        self.log('SiteAttributes.__init__ completed')
+        self.log('SiteInformation.__init__ completed')
 
     def parse_configuration(self, configuration):
         """Try to get configuration information from ConfigParser or SafeConfigParser object given
         by configuration and write recognized settings to attributes dict
         """
-        self.log('SiteAttributes.parse_configuration started')
+        self.log('SiteInformation.parse_configuration started')
 
         self.check_config(configuration)
 
         if not configuration.has_section(self.config_section):
             self.enabled = False
             self.log("%s section not in config file" % self.config_section)
-            self.log('SiteAttributes.parse_configuration completed')
+            self.log('SiteInformation.parse_configuration completed')
             return
 
         self.get_options(configuration, ignore_options=self.IGNORE_OPTIONS)
-        self.log('SiteAttributes.parse_configuration completed')
+        self.log('SiteInformation.parse_configuration completed')
 
     # pylint: disable-msg=W0613
     def check_attributes(self, attributes):
         """Check attributes currently stored and make sure that they are consistent"""
-        self.log('SiteAttributes.check_attributes started')
+        self.log('SiteInformation.check_attributes started')
         attributes_ok = True
 
         if not self.enabled:
             self.log('Not enabled, returning True')
-            self.log('SiteAttributes.check_attributes completed')
+            self.log('SiteInformation.check_attributes completed')
             return attributes_ok
 
 
@@ -134,13 +134,11 @@ class SiteAttributes(BaseConfiguration):
                      level=logging.ERROR)
             attributes_ok = False
 
-        # site_name or resource/resource_group must be specified not both
-        if (not utilities.blank(self.options['site_name'].value) and
-                (not utilities.blank(self.options['resource'].value) or
-                     not utilities.blank(self.options['resource_group'].value))):
-            self.log("In section '%s', site_name and " % self.config_section +
-                     "resource or resource_group given at the same time, " +
-                     "you should use just the resource and resource_group settings.",
+        if not utilities.blank(self.options['site_name'].value):
+            self.log("The site_name setting has been deprecated in favor of the"
+                     " resource and resource_group settings and will be removed",
+                     section=self.config_section,
+                     option="site_name",
                      level=logging.WARNING)
 
         if self.options['latitude'].value > 90 or self.options['latitude'].value < -90:
@@ -253,7 +251,7 @@ class SiteAttributes(BaseConfiguration):
                      option='sponsor',
                      level=logging.ERROR)
             attributes_ok = False
-        self.log('SiteAttributes.check_attributes completed')
+        self.log('SiteInformation.check_attributes completed')
         return attributes_ok
 
     def module_name(self):

@@ -14,7 +14,7 @@ pathname = os.path.realpath('../')
 sys.path.insert(0, pathname)
 
 from osg_configure.modules import exceptions
-from osg_configure.configure_modules import siteattributes
+from osg_configure.configure_modules import siteinformation
 from osg_configure.modules.utilities import get_test_config
 
 global_logger = logging.getLogger(__name__)
@@ -43,7 +43,7 @@ class TestSiteAttributes(unittest.TestCase):
         configuration = ConfigParser.SafeConfigParser()
         configuration.read(config_file)
 
-        settings = siteattributes.SiteAttributes(logger=global_logger)
+        settings = siteinformation.SiteInformation(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
         except Exception, e:
@@ -78,7 +78,7 @@ class TestSiteAttributes(unittest.TestCase):
         configuration = ConfigParser.SafeConfigParser()
         configuration.read(config_file)
 
-        settings = siteattributes.SiteAttributes(logger=global_logger)
+        settings = siteinformation.SiteInformation(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
         except Exception, e:
@@ -113,7 +113,7 @@ class TestSiteAttributes(unittest.TestCase):
         configuration = ConfigParser.SafeConfigParser()
         configuration.read(config_file)
 
-        settings = siteattributes.SiteAttributes(logger=global_logger)
+        settings = siteinformation.SiteInformation(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
         except Exception, e:
@@ -150,7 +150,7 @@ class TestSiteAttributes(unittest.TestCase):
         configuration = ConfigParser.SafeConfigParser()
         configuration.read(config_file)
 
-        settings = siteattributes.SiteAttributes(logger=global_logger)
+        settings = siteinformation.SiteInformation(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
         except Exception, e:
@@ -170,7 +170,7 @@ class TestSiteAttributes(unittest.TestCase):
             configuration.read(config_file)
             configuration.remove_option('Site Information', option)
 
-            settings = siteattributes.SiteAttributes(logger=global_logger)
+            settings = siteinformation.SiteInformation(logger=global_logger)
             self.assertRaises(exceptions.SettingError,
                               settings.parse_configuration,
                               configuration)
@@ -185,7 +185,7 @@ class TestSiteAttributes(unittest.TestCase):
         configuration = ConfigParser.SafeConfigParser()
         configuration.read(config_file)
 
-        settings = siteattributes.SiteAttributes(logger=global_logger)
+        settings = siteinformation.SiteInformation(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
         except Exception, e:
@@ -199,7 +199,7 @@ class TestSiteAttributes(unittest.TestCase):
                                       "invalid_latitude2.ini")
         configuration = ConfigParser.SafeConfigParser()
         configuration.read(config_file)
-        settings = siteattributes.SiteAttributes(logger=global_logger)
+        settings = siteinformation.SiteInformation(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
         except Exception, e:
@@ -219,7 +219,7 @@ class TestSiteAttributes(unittest.TestCase):
         configuration = ConfigParser.SafeConfigParser()
         configuration.read(config_file)
 
-        settings = siteattributes.SiteAttributes(logger=global_logger)
+        settings = siteinformation.SiteInformation(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
         except Exception, e:
@@ -233,7 +233,7 @@ class TestSiteAttributes(unittest.TestCase):
                                       "invalid_longitude2.ini")
         configuration = ConfigParser.SafeConfigParser()
         configuration.read(config_file)
-        settings = siteattributes.SiteAttributes(logger=global_logger)
+        settings = siteinformation.SiteInformation(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
         except Exception, e:
@@ -253,7 +253,7 @@ class TestSiteAttributes(unittest.TestCase):
         configuration = ConfigParser.SafeConfigParser()
         configuration.read(config_file)
 
-        settings = siteattributes.SiteAttributes(logger=global_logger)
+        settings = siteinformation.SiteInformation(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
         except Exception, e:
@@ -273,7 +273,7 @@ class TestSiteAttributes(unittest.TestCase):
         configuration = ConfigParser.SafeConfigParser()
         configuration.read(config_file)
 
-        settings = siteattributes.SiteAttributes(logger=global_logger)
+        settings = siteinformation.SiteInformation(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
         except Exception, e:
@@ -294,7 +294,7 @@ class TestSiteAttributes(unittest.TestCase):
         configuration = ConfigParser.SafeConfigParser()
         configuration.read(config_file)
 
-        settings = siteattributes.SiteAttributes(logger=global_logger)
+        settings = siteinformation.SiteInformation(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
         except Exception, e:
@@ -315,7 +315,7 @@ class TestSiteAttributes(unittest.TestCase):
         configuration = ConfigParser.SafeConfigParser()
         configuration.read(config_file)
 
-        settings = siteattributes.SiteAttributes(logger=global_logger)
+        settings = siteinformation.SiteInformation(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
         except Exception, e:
@@ -334,7 +334,7 @@ class TestSiteAttributes(unittest.TestCase):
         configuration = ConfigParser.SafeConfigParser()
         configuration.read(config_file)
 
-        settings = siteattributes.SiteAttributes(logger=global_logger)
+        settings = siteinformation.SiteInformation(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
         except Exception, e:
@@ -353,7 +353,7 @@ class TestSiteAttributes(unittest.TestCase):
         configuration = ConfigParser.SafeConfigParser()
         configuration.read(config_file)
 
-        settings = siteattributes.SiteAttributes(logger=global_logger)
+        settings = siteinformation.SiteInformation(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
         except Exception, e:

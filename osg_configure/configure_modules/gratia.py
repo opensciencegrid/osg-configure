@@ -452,11 +452,9 @@ in your config.ini file."""
             resource = configuration.get('Site Information', 'site_name')
             self.options['resource'].value = resource
         else:
-            self.log('No site_name or resource defined in Site Information, this'
-                     ' is required on a CE',
+            self.log('No resource defined in Site Information, this is required on a CE',
                      level=logging.ERROR)
-            raise exceptions.SettingError('In Site Information, '
-                                          'site_name or resource needs to be set')
+            raise exceptions.SettingError('In Site Information, resource needs to be set')
 
         if configuration.has_option('Site Information', 'group'):
             group = configuration.get('Site Information', 'group')
