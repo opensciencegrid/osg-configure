@@ -106,7 +106,11 @@ class BaseConfiguration(object):
                 message = "Option '%s' in section '%s' located in %s: " % (kwargs['option'],
                                                                            kwargs['section'],
                                                                            file_location)
-        message += mesg
+                message += "\n" + " " * 9 + ("\n" + " " * 9).join(mesg.split("\n"))
+            else:
+                message += mesg
+        else:
+            message += mesg
         self.logger.log(log_level, message, exc_info=exception)
 
     def check_config(self, configuration):
@@ -144,6 +148,13 @@ class BaseConfiguration(object):
                                       self.config_section,
                                       option)
                 self.log("Got %s" % option.value)
+            except ConfigParser.Error as err:
+                self.log("Syntax error in configuration: %s" % err,
+                         option=option.name,
+                         section=self.config_section,
+                         level=logging.ERROR,
+                         exception=False)
+                raise exceptions.SettingError(str(err))
             except Exception:
                 self.log("Received exception when parsing option",
                          option=option.name,
