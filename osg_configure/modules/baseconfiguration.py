@@ -113,19 +113,15 @@ class BaseConfiguration(object):
             message += mesg
         self.logger.log(log_level, message, exc_info=exception)
 
-    def check_config(self, configuration):
+    @staticmethod
+    def check_config(configuration):
         """
         Make sure config argument is of the correct type
         """
 
-        if configuration is None or \
-                (configuration.__class__.__name__ is not 'ConfigParser' and
-                         configuration.__class__.__name__ is not 'SafeConfigParser'):
-            err_msg = 'Invalid type for configuration, must be a ConfigParser '
-            err_msg += 'or SafeConfigParser object'
-            self.log(err_msg, level=logging.ERROR)
-            raise TypeError('Invalid type for configuration, must be a ' +
-                            'ConfigParser or SafeConfigParser object')
+        if not isinstance(configuration, ConfigParser.ConfigParser):
+            raise TypeError('Invalid type for configuration, must be a '
+                            'ConfigParser or subclass')
 
     def get_options(self, configuration, **kwargs):
         """
@@ -174,6 +170,10 @@ class BaseConfiguration(object):
                      option=option,
                      section=self.config_section,
                      level=logging.WARNING)
+
+    def opt_val(self, opt_name):
+        """Return the value of an option by name."""
+        return self.options[opt_name].value
 
     def get_attributes(self, converter=str):
         """
