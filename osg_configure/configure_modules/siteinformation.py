@@ -10,6 +10,10 @@ from osg_configure.modules.baseconfiguration import BaseConfiguration
 
 __all__ = ['SiteInformation']
 
+# convenience
+MANDATORY = configfile.Option.MANDATORY
+MANDATORY_ON_CE = configfile.Option.MANDATORY_ON_CE
+OPTIONAL = configfile.Option.OPTIONAL
 
 class SiteInformation(BaseConfiguration):
     """Class to handle attributes related to site information such as location and
@@ -25,54 +29,63 @@ class SiteInformation(BaseConfiguration):
         self.log('SiteInformation.__init__ started')
         self.options = {'group':
                             configfile.Option(name='group',
+                                              required=MANDATORY,
                                               default_value='OSG',
                                               mapping='OSG_GROUP'),
                         'host_name':
                             configfile.Option(name='host_name',
+                                              required=MANDATORY_ON_CE,
                                               default_value='',
                                               mapping='OSG_HOSTNAME'),
                         'site_name':
                             configfile.Option(name='site_name',
-                                              required=configfile.Option.OPTIONAL,
+                                              required=OPTIONAL,
                                               default_value='',
                                               mapping='OSG_SITE_NAME'),
                         'sponsor':
                             configfile.Option(name='sponsor',
+                                              required=MANDATORY_ON_CE,
                                               mapping='OSG_SPONSOR'),
                         'site_policy':
                             configfile.Option(name='site_policy',
-                                              required=configfile.Option.OPTIONAL,
+                                              required=OPTIONAL,
                                               default_value='',
                                               mapping='OSG_SITE_INFO'),
                         'contact':
                             configfile.Option(name='contact',
+                                              required=MANDATORY_ON_CE,
                                               mapping='OSG_CONTACT_NAME'),
                         'email':
                             configfile.Option(name='email',
+                                              required=MANDATORY_ON_CE,
                                               mapping='OSG_CONTACT_EMAIL'),
                         'city':
                             configfile.Option(name='city',
+                                              required=MANDATORY_ON_CE,
                                               mapping='OSG_SITE_CITY'),
                         'country':
                             configfile.Option(name='country',
+                                              required=MANDATORY_ON_CE,
                                               mapping='OSG_SITE_COUNTRY'),
                         'longitude':
                             configfile.Option(name='longitude',
                                               opt_type=float,
+                                              required=MANDATORY_ON_CE,
                                               mapping='OSG_SITE_LONGITUDE'),
                         'latitude':
                             configfile.Option(name='latitude',
                                               opt_type=float,
+                                              required=MANDATORY_ON_CE,
                                               mapping='OSG_SITE_LATITUDE'),
                         'resource':
                             configfile.Option(name='resource',
-                                              required=configfile.Option.OPTIONAL,
+                                              required=OPTIONAL,
                                               default_value='',
                                               mapping='OSG_SITE_NAME'),
                         'resource_group':
                             configfile.Option(name='resource_group',
                                               default_value='',
-                                              required=configfile.Option.OPTIONAL)}
+                                              required=OPTIONAL)}
 
         self.config_section = "Site Information"
         self.enabled = True
