@@ -130,14 +130,6 @@ class SiteInformation(BaseConfiguration):
                      level=logging.ERROR)
             attributes_ok = False
 
-        # host_name must be different from the default setting
-        if self.options['host_name'].value == 'my.domain.name':
-            self.log("Setting left at default value: my.domain.name",
-                     option='host_name',
-                     section=self.config_section,
-                     level=logging.ERROR)
-            attributes_ok = False
-
         # host_name must be a valid dns name, check this by getting it's ip adddress
         if not validation.valid_domain(self.options['host_name'].value, True):
             self.log("hostname %s can't be resolved" % self.options['host_name'].value,
@@ -169,14 +161,6 @@ class SiteInformation(BaseConfiguration):
                      level=logging.ERROR)
             attributes_ok = False
 
-
-        # make sure that the email address is different from the default value
-        if self.options['email'] == 'foo@my.domain':
-            self.log("The email setting must be changed from the default",
-                     section=self.config_section,
-                     option='email',
-                     level=logging.ERROR)
-            attributes_ok = False
 
         # make sure the email address has the correct format
         if not validation.valid_email(self.options['email'].value):
