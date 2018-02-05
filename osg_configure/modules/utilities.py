@@ -416,18 +416,32 @@ def atomic_write(filename=None, contents=None, **kwargs):
     return True
 
 
+__ce_installed = None
+__gateway_installed = None
+
+
 def ce_installed():
     """
     Return True if one of the base osg-ce metapackages (osg-ce or osg-htcondor-ce) is installed
     """
-    return any_rpms_installed('osg-ce', 'osg-htcondor-ce')
+    global __ce_installed
+
+    if __ce_installed is None:
+        __ce_installed = any_rpms_installed("osg-ce", "osg-htcondor-ce")
+
+    return __ce_installed
 
 
 def gateway_installed():
     """
     Check to see if a job gateway (i.e. htcondor-ce) is installed
     """
-    return rpm_installed('htcondor-ce')
+    global __gateway_installed
+
+    if __gateway_installed is None:
+        __gateway_installed = rpm_installed("htcondor-ce")
+
+    return __gateway_installed
 
 
 def any_rpms_installed(*rpm_names):
