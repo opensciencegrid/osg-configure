@@ -119,20 +119,20 @@ class SiteInformation(BaseConfiguration):
             self.log('SiteInformation.check_attributes completed')
             return attributes_ok
 
-
-
         # OSG_GROUP must be either OSG or OSG-ITB
-        if self.options['group'].value not in ('OSG', 'OSG-ITB'):
+        group = self.opt_val("group")
+        if group not in ('OSG', 'OSG-ITB'):
             self.log("The group setting must be either OSG or OSG-ITB, got: %s" %
-                     self.options['group'].value,
+                     group,
                      option='group',
                      section=self.config_section,
                      level=logging.ERROR)
             attributes_ok = False
 
+        host_name = self.opt_val("host_name")
         # host_name must be a valid dns name, check this by getting it's ip adddress
-        if not validation.valid_domain(self.options['host_name'].value, True):
-            self.log("hostname %s can't be resolved" % self.options['host_name'].value,
+        if host_name and not validation.valid_domain(host_name, True):
+            self.log("hostname %s can't be resolved" % host_name,
                      option='host_name',
                      section=self.config_section,
                      level=logging.ERROR)
@@ -145,33 +145,43 @@ class SiteInformation(BaseConfiguration):
                      option="site_name",
                      level=logging.WARNING)
 
-        if self.options['latitude'].value > 90 or self.options['latitude'].value < -90:
+        latitude = self.opt_val("latitude")
+        if latitude is not None and not -90 < latitude < 90:
             self.log("Latitude must be between -90 and 90, got %s" %
-                     self.options['latitude'].value,
+                     latitude,
                      section=self.config_section,
                      option='latitude',
                      level=logging.ERROR)
             attributes_ok = False
 
-        if self.options['longitude'].value > 180 or self.options['longitude'].value < -180:
+        longitude = self.opt_val("longitude")
+        if longitude is not None and not -180 < longitude < 180:
             self.log("Longitude must be between -180 and 180, got %s" %
-                     self.options['longitude'].value,
+                     longitude,
                      section=self.config_section,
                      option='longitude',
                      level=logging.ERROR)
             attributes_ok = False
 
-
+        email = self.opt_val("email")
         # make sure the email address has the correct format
-        if not validation.valid_email(self.options['email'].value):
+        if email is not None and not validation.valid_email(email):
             self.log("Invalid email address in site information: %s" %
-                     self.options['email'].value,
+                     email,
                      section=self.config_section,
                      option='email',
                      level=logging.ERROR)
             attributes_ok = False
 
-        vo_list = self.options['sponsor'].value
+        sponsor = self.opt_val("sponsor")
+        if sponsor is not None:
+            attributes_ok &= self.check_sponsor(sponsor)
+
+        self.log('SiteInformation.check_attributes completed')
+        return attributes_ok
+
+    def check_sponsor(self, sponsor):
+        attributes_ok = True
         percentage = 0
         vo_names = utilities.get_vos(None)
         if vo_names == []:
@@ -183,7 +193,7 @@ class SiteInformation(BaseConfiguration):
         vo_names.append('local')  # local is a valid vo name
 
         cap_vo_names = [vo.upper() for vo in vo_names]
-        for vo in re.split(r'\s*,?\s*', vo_list):
+        for vo in re.split(r'\s*,?\s*', sponsor):
             vo_name = vo.split(':')[0]
             if vo_name not in vo_names:
                 if vo_name.upper() in cap_vo_names:
@@ -247,7 +257,7 @@ class SiteInformation(BaseConfiguration):
                      option='sponsor',
                      level=logging.ERROR)
             attributes_ok = False
-        self.log('SiteInformation.check_attributes completed')
+
         return attributes_ok
 
     def module_name(self):
