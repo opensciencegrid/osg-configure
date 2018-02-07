@@ -1,6 +1,5 @@
 """ Module to handle attributes related to the site location and details """
 
-import socket
 import re
 import logging
 
