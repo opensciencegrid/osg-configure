@@ -58,18 +58,6 @@ def valid_domain(host, resolve=False):
     return True
 
 
-def _all(iterable):
-    """Return True if all elements in iterable are true
-
-    Equivalent to the 'all' builtin in Python 2.5+
-    """
-    # from the Python documentation
-    for element in iterable:
-        if not element:
-            return False
-    return True
-
-
 def valid_hostname(hostname):
     """Return if a hostname is valid according to the standard"""
     # from https://stackoverflow.com/a/2532344
@@ -85,7 +73,7 @@ def valid_hostname(hostname):
     if hostname[-1] == ".":
         hostname = hostname[:-1] # strip exactly one dot from the right, if present
     allowed = re.compile("(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
-    return _all(allowed.match(x) for x in hostname.split("."))
+    return all(allowed.match(x) for x in hostname.split("."))
 
 
 def valid_email(address):
