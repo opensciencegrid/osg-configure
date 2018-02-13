@@ -1,7 +1,9 @@
 """ Module to handle site specific local settings """
 
 import logging
+import re
 from osg_configure.modules.baseconfiguration import BaseConfiguration
+from osg_configure.modules.exceptions import SettingError
 
 __all__ = ['LocalSettings']
 
@@ -47,6 +49,12 @@ class LocalSettings(BaseConfiguration):
             if name in configuration.defaults():
                 self.log("%s is a default, skipping" % (name))
                 continue
+            # Validate name because it will be used as the name of an env var
+            if not re.match(r"[A-Za-z_][A-Za-z0-9_]*$", name):
+                raise SettingError("Invalid variable name " + name)
+            # Values are already double-quoted so adding quotes would be a syntax error
+            if value.startswith('"') or value.rstrip().endswith('"'):
+                raise SettingError("Value for " + name + " should not be quoted")
             self.attributes[name] = value
         self.log('LocalSettings.parse_configuration completed')
 
