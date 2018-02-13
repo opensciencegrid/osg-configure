@@ -74,6 +74,18 @@ class TestLocalSettings(unittest.TestCase):
                           configuration)
 
 
+    def testBogusQuote(self):
+        config_file = get_test_config("localsettings/bogusquote.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.optionxform = str
+        configuration.read(config_file)
+
+        settings = localsettings.LocalSettings(logger=global_logger)
+        self.assertRaises(exceptions.SettingError,
+                          settings.parse_configuration,
+                          configuration)
+
+
 if __name__ == '__main__':
     console = logging.StreamHandler()
     console.setLevel(logging.ERROR)
