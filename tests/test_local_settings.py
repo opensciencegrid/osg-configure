@@ -15,6 +15,7 @@ sys.path.insert(0, pathname)
 
 from osg_configure.configure_modules import localsettings
 from osg_configure.modules.utilities import get_test_config
+from osg_configure.modules import exceptions
 
 # NullHandler is only available in Python 2.7+
 try:
@@ -55,16 +56,34 @@ class TestLocalSettings(unittest.TestCase):
         self.assertEqual(attributes['test1'], 'Value1',
                          'Wrong value obtained for test1')
 
-        self.assertTrue(attributes.has_key('Test2-'),
-                        'Attribute Test2- missing')
-        self.assertEqual(attributes['Test2-'], 'Val03-42',
-                         'Wrong value obtained for Test2-')
+        self.assertFalse(attributes.has_key('missing_key'),
+                         'Non-existent key (missing_key) found')
 
-        self.assertFalse(attributes.has_key('missing-key'),
-                         'Non-existent key (missing-key) found')
-
-        self.assertFalse(attributes.has_key('default-key'),
+        self.assertFalse(attributes.has_key('default_key'),
                          'Default key recognized as a local attribute')
+
+    def testBogusVarName(self):
+        config_file = get_test_config("localsettings/bogusvarname.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.optionxform = str
+        configuration.read(config_file)
+
+        settings = localsettings.LocalSettings(logger=global_logger)
+        self.assertRaises(exceptions.SettingError,
+                          settings.parse_configuration,
+                          configuration)
+
+
+    def testBogusQuote(self):
+        config_file = get_test_config("localsettings/bogusquote.ini")
+        configuration = ConfigParser.SafeConfigParser()
+        configuration.optionxform = str
+        configuration.read(config_file)
+
+        settings = localsettings.LocalSettings(logger=global_logger)
+        self.assertRaises(exceptions.SettingError,
+                          settings.parse_configuration,
+                          configuration)
 
 
 if __name__ == '__main__':
