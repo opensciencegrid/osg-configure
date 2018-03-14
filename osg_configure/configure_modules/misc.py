@@ -170,7 +170,7 @@ class MiscConfiguration(BaseConfiguration):
             self.log("Not updating lcmaps.db because edit_lcmaps_db is false",
                      level=logging.DEBUG)
 
-        if self.htcondor_gateway_enabled:
+        if self.htcondor_gateway_enabled and utilities.ce_installed():
             self.write_gridmap_to_htcondor_ce_config()
 
         self.log('MiscConfiguration.configure completed')
