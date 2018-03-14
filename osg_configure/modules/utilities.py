@@ -556,72 +556,10 @@ def config_safe_getboolean(configuration, section, option, default=None):
         return default
 
 
-def fallback_classad_quote(input_value):
-    r"""Quote a Python string according to classad syntax (fallback if classad.quote is missing)
-
-    Reference: http://pegasus.isi.edu/wms/docs/3.0/javadoc/edu/isi/pegasus/planner/code/generator/condor/CondorQuoteParser.html
-    This is an implementation according to the state diagram on that page.
-    """
-
-    def A0(_):
-        return ''
-
-    def A1(inchar_):
-        return inchar_
-
-    def A2(_):
-        return "'"
-
-    def A3(_):
-        return "''"
-
-    def A4(_):
-        return '""'
-
-    S0 = 'S0'
-    S1 = 'S1'
-    S2 = 'S2'
-    S3 = 'S3'
-    BACKSLASH = "\\"
-    SINGLE = "'"
-    DOUBLE = '"'
-    OTHER = 'other'
-
-    STATE_TABLE = {
-        S0: {BACKSLASH: (A0, S0), SINGLE: (A2, S2), DOUBLE: (A2, S3), OTHER: (A1, S0)},
-        S1: {BACKSLASH: (A1, S0), SINGLE: (A3, S0), DOUBLE: (A4, S0), OTHER: (A1, S0)},
-        S2: {BACKSLASH: (A1, S2), SINGLE: (A2, S0), DOUBLE: (A4, S2), OTHER: (A1, S2)},
-        S3: {BACKSLASH: (A1, S3), SINGLE: (A3, S3), DOUBLE: (A2, S0), OTHER: (A1, S3)}
-    }
-
-    quoted_value = ""
-    state = S0
-    for inchar in str(input_value):
-        if inchar in STATE_TABLE[state]:
-            nextchar_fun, state = STATE_TABLE[state][inchar]
-        else:
-            nextchar_fun, state = STATE_TABLE[state][OTHER]
-        quoted_value += nextchar_fun(inchar)
-
-    if state == S0:
-        return '"' + quoted_value + '"'
-    elif state == S1:
-        raise ValueError("Unexpected end of input in '%s'" % input_value)
-    elif state == S2:
-        raise ValueError("Unmatched single quotes in '%s'" % input_value)
-    elif state == S3:
-        raise ValueError("Unmatched double quotes in '%s'" % input_value)
-
-
-try:
+# Import classad here because it might not be available for e.g. SEs
+def classad_quote(input_value):
     import classad
-
-    _classad_quote = classad.quote
-
-    def classad_quote(input_value):
-        return _classad_quote(str(input_value))
-except (ImportError, AttributeError):
-    classad_quote = fallback_classad_quote
+    return classad.quote(str(input_value))
 
 
 def add_or_replace_setting(old_buf, variable, new_value, quote_value=True):
