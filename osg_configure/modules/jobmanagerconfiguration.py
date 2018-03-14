@@ -60,7 +60,7 @@ class JobManagerConfiguration(BaseConfiguration):
             utilities.atomic_write(self.BLAH_CONFIG, contents)
 
     def write_htcondor_ce_sentinel(self):
-        if self.htcondor_gateway_enabled:
+        if self.htcondor_gateway_enabled and utilities.ce_installed():
             contents = utilities.read_file(self.HTCONDOR_CE_CONFIG_FILE,
                                            default="# This file is managed by osg-configure\n")
             contents = utilities.add_or_replace_setting(contents, "OSG_CONFIGURED", "true", quote_value=False)
