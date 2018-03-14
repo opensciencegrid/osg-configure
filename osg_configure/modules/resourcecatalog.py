@@ -3,19 +3,6 @@ import re
 import utilities
 
 
-def classad_parse(inputstr):
-    """Parse string into a classad.
-
-    Uses classad.parseOne if available (HTCondor 8.3+), and
-    classad.parse otherwise (HTCondor 8.2, deprecated in 8.3).
-
-    """
-    if hasattr(classad, 'parseOne'):
-        return classad.parseOne(inputstr)
-    else:
-        return classad.parse(inputstr)
-
-
 class RCEntry(object):
     """Contains the data in a ResourceCatalog entry
     :var name: name of the resource
@@ -115,7 +102,7 @@ class RCEntry(object):
             subclusters = "{ " + ", ".join([utilities.classad_quote(sc) for sc in self.subclusters]) + " }"
             attributes['Subclusters'] = subclusters
 
-        transform_classad = classad_parse('[set_xcount = RequestCPUs; set_MaxMemory = RequestMemory]')
+        transform_classad = classad.parseOne('[set_xcount = RequestCPUs; set_MaxMemory = RequestMemory]')
 
         if self.vo_tag:
             quoted_vo_tag = utilities.classad_quote(self.vo_tag)
@@ -129,7 +116,7 @@ class RCEntry(object):
             transform_classad['set_remote_queue'] = utilities.classad_quote(self.queue)
         if self.extra_transforms:
             try:
-                extra_transforms_classad = classad_parse(self._munge_extra_transforms(self.extra_transforms))
+                extra_transforms_classad = classad.parseOne(self._munge_extra_transforms(self.extra_transforms))
             except SyntaxError, e:
                 raise ValueError("Unable to parse 'extra_transforms': %s" % e)
             transform_classad.update(extra_transforms_classad)
