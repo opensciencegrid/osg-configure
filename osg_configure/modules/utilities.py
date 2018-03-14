@@ -241,7 +241,7 @@ def fetch_crl():
         try:
             fetch_crl_process = subprocess.Popen([crl_path, '-p', '10', '-T', '30'], stdout=subprocess.PIPE,
                                                  stderr=subprocess.STDOUT)
-        except OSError, e:
+        except OSError as e:
             if e.errno == errno.ENOENT:
                 sys.stdout.write("Can't find fetch-crl script, skipping fetch-crl invocation\n")
                 sys.stdout.flush()
@@ -280,7 +280,7 @@ def run_script(script):
 
     try:
         process = subprocess.Popen(script)
-    except OSError, e:
+    except OSError as e:
         if e.errno == errno.ENOENT:
             return False
         else:
@@ -392,10 +392,10 @@ def atomic_write(filename=None, contents=None, **kwargs):
         if mode is None:
             try:
                 mode = stat.S_IMODE(os.stat(filename).st_mode)
-            except OSError, e:
+            except OSError as e:
                 if e.errno == errno.ENOENT:
                     # file doesn't exist; give it 0644 permissions by default
-                    mode = 0644
+                    mode = 0o644
                 else:
                     raise
         try:
@@ -495,7 +495,7 @@ def get_test_config(config_file=''):
     return None
 
 
-def make_directory(dir_name, perms=0755, uid=None, gid=None):
+def make_directory(dir_name, perms=0o755, uid=None, gid=None):
     """
     Create a directory with specified permissions and uid/gid.  Will use the
     current user's uid and gid if not specified.

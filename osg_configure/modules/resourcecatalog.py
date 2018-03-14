@@ -117,7 +117,7 @@ class RCEntry(object):
         if self.extra_transforms:
             try:
                 extra_transforms_classad = classad.parseOne(self._munge_extra_transforms(self.extra_transforms))
-            except SyntaxError, e:
+            except SyntaxError as e:
                 raise ValueError("Unable to parse 'extra_transforms': %s" % e)
             transform_classad.update(extra_transforms_classad)
         attributes['Transform'] = '['
