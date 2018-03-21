@@ -131,14 +131,14 @@ class SiteInformation(BaseConfiguration):
 
         host_name = self.opt_val("host_name")
         # host_name must be a valid dns name, check this by getting it's ip adddress
-        if host_name and not validation.valid_domain(host_name, True):
+        if not utilities.blank(host_name) and not validation.valid_domain(host_name, True):
             self.log("hostname %s can't be resolved" % host_name,
                      option='host_name',
                      section=self.config_section,
                      level=logging.ERROR)
             attributes_ok = False
 
-        if not utilities.blank(self.options['site_name'].value):
+        if not utilities.blank(self.opt_val("site_name")):
             self.log("The site_name setting has been deprecated in favor of the"
                      " resource and resource_group settings and will be removed",
                      section=self.config_section,
@@ -146,7 +146,7 @@ class SiteInformation(BaseConfiguration):
                      level=logging.WARNING)
 
         latitude = self.opt_val("latitude")
-        if latitude is not None and not -90 < latitude < 90:
+        if not utilities.blank(latitude) and not -90 < latitude < 90:
             self.log("Latitude must be between -90 and 90, got %s" %
                      latitude,
                      section=self.config_section,
@@ -155,7 +155,7 @@ class SiteInformation(BaseConfiguration):
             attributes_ok = False
 
         longitude = self.opt_val("longitude")
-        if longitude is not None and not -180 < longitude < 180:
+        if not utilities.blank(longitude) and not -180 < longitude < 180:
             self.log("Longitude must be between -180 and 180, got %s" %
                      longitude,
                      section=self.config_section,
@@ -165,7 +165,7 @@ class SiteInformation(BaseConfiguration):
 
         email = self.opt_val("email")
         # make sure the email address has the correct format
-        if email is not None and not validation.valid_email(email):
+        if not utilities.blank(email) and not validation.valid_email(email):
             self.log("Invalid email address in site information: %s" %
                      email,
                      section=self.config_section,
@@ -174,7 +174,7 @@ class SiteInformation(BaseConfiguration):
             attributes_ok = False
 
         sponsor = self.opt_val("sponsor")
-        if sponsor is not None:
+        if not utilities.blank(sponsor):
             attributes_ok &= self.check_sponsor(sponsor)
 
         self.log('SiteInformation.check_attributes completed')
