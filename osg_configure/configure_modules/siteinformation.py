@@ -10,6 +10,10 @@ from osg_configure.modules.baseconfiguration import BaseConfiguration
 
 __all__ = ['SiteInformation']
 
+# convenience
+MANDATORY = configfile.Option.MANDATORY
+MANDATORY_ON_CE = configfile.Option.MANDATORY_ON_CE
+OPTIONAL = configfile.Option.OPTIONAL
 
 class SiteInformation(BaseConfiguration):
     """Class to handle attributes related to site information such as location and
@@ -25,54 +29,63 @@ class SiteInformation(BaseConfiguration):
         self.log('SiteInformation.__init__ started')
         self.options = {'group':
                             configfile.Option(name='group',
+                                              required=MANDATORY,
                                               default_value='OSG',
                                               mapping='OSG_GROUP'),
                         'host_name':
                             configfile.Option(name='host_name',
+                                              required=MANDATORY_ON_CE,
                                               default_value='',
                                               mapping='OSG_HOSTNAME'),
                         'site_name':
                             configfile.Option(name='site_name',
-                                              required=configfile.Option.OPTIONAL,
+                                              required=OPTIONAL,
                                               default_value='',
                                               mapping='OSG_SITE_NAME'),
                         'sponsor':
                             configfile.Option(name='sponsor',
+                                              required=MANDATORY_ON_CE,
                                               mapping='OSG_SPONSOR'),
                         'site_policy':
                             configfile.Option(name='site_policy',
-                                              required=configfile.Option.OPTIONAL,
+                                              required=OPTIONAL,
                                               default_value='',
                                               mapping='OSG_SITE_INFO'),
                         'contact':
                             configfile.Option(name='contact',
+                                              required=MANDATORY_ON_CE,
                                               mapping='OSG_CONTACT_NAME'),
                         'email':
                             configfile.Option(name='email',
+                                              required=MANDATORY_ON_CE,
                                               mapping='OSG_CONTACT_EMAIL'),
                         'city':
                             configfile.Option(name='city',
+                                              required=MANDATORY_ON_CE,
                                               mapping='OSG_SITE_CITY'),
                         'country':
                             configfile.Option(name='country',
+                                              required=MANDATORY_ON_CE,
                                               mapping='OSG_SITE_COUNTRY'),
                         'longitude':
                             configfile.Option(name='longitude',
                                               opt_type=float,
+                                              required=MANDATORY_ON_CE,
                                               mapping='OSG_SITE_LONGITUDE'),
                         'latitude':
                             configfile.Option(name='latitude',
                                               opt_type=float,
+                                              required=MANDATORY_ON_CE,
                                               mapping='OSG_SITE_LATITUDE'),
                         'resource':
                             configfile.Option(name='resource',
-                                              required=configfile.Option.OPTIONAL,
+                                              required=OPTIONAL,
                                               default_value='',
                                               mapping='OSG_SITE_NAME'),
                         'resource_group':
                             configfile.Option(name='resource_group',
                                               default_value='',
-                                              required=configfile.Option.OPTIONAL)}
+                                              required=OPTIONAL)}
 
         self.config_section = "Site Information"
         self.enabled = True
@@ -106,75 +119,69 @@ class SiteInformation(BaseConfiguration):
             self.log('SiteInformation.check_attributes completed')
             return attributes_ok
 
-
-
         # OSG_GROUP must be either OSG or OSG-ITB
-        if self.options['group'].value not in ('OSG', 'OSG-ITB'):
+        group = self.opt_val("group")
+        if group not in ('OSG', 'OSG-ITB'):
             self.log("The group setting must be either OSG or OSG-ITB, got: %s" %
-                     self.options['group'].value,
+                     group,
                      option='group',
                      section=self.config_section,
                      level=logging.ERROR)
             attributes_ok = False
 
-        # host_name must be different from the default setting
-        if self.options['host_name'].value == 'my.domain.name':
-            self.log("Setting left at default value: my.domain.name",
-                     option='host_name',
-                     section=self.config_section,
-                     level=logging.ERROR)
-            attributes_ok = False
-
+        host_name = self.opt_val("host_name")
         # host_name must be a valid dns name, check this by getting it's ip adddress
-        if not validation.valid_domain(self.options['host_name'].value, True):
-            self.log("hostname %s can't be resolved" % self.options['host_name'].value,
+        if not utilities.blank(host_name) and not validation.valid_domain(host_name, True):
+            self.log("hostname %s can't be resolved" % host_name,
                      option='host_name',
                      section=self.config_section,
                      level=logging.ERROR)
             attributes_ok = False
 
-        if not utilities.blank(self.options['site_name'].value):
+        if not utilities.blank(self.opt_val("site_name")):
             self.log("The site_name setting has been deprecated in favor of the"
                      " resource and resource_group settings and will be removed",
                      section=self.config_section,
                      option="site_name",
                      level=logging.WARNING)
 
-        if self.options['latitude'].value > 90 or self.options['latitude'].value < -90:
+        latitude = self.opt_val("latitude")
+        if not utilities.blank(latitude) and not -90 < latitude < 90:
             self.log("Latitude must be between -90 and 90, got %s" %
-                     self.options['latitude'].value,
+                     latitude,
                      section=self.config_section,
                      option='latitude',
                      level=logging.ERROR)
             attributes_ok = False
 
-        if self.options['longitude'].value > 180 or self.options['longitude'].value < -180:
+        longitude = self.opt_val("longitude")
+        if not utilities.blank(longitude) and not -180 < longitude < 180:
             self.log("Longitude must be between -180 and 180, got %s" %
-                     self.options['longitude'].value,
+                     longitude,
                      section=self.config_section,
                      option='longitude',
                      level=logging.ERROR)
             attributes_ok = False
 
-
-        # make sure that the email address is different from the default value
-        if self.options['email'] == 'foo@my.domain':
-            self.log("The email setting must be changed from the default",
-                     section=self.config_section,
-                     option='email',
-                     level=logging.ERROR)
-            attributes_ok = False
-
+        email = self.opt_val("email")
         # make sure the email address has the correct format
-        if not validation.valid_email(self.options['email'].value):
+        if not utilities.blank(email) and not validation.valid_email(email):
             self.log("Invalid email address in site information: %s" %
-                     self.options['email'].value,
+                     email,
                      section=self.config_section,
                      option='email',
                      level=logging.ERROR)
             attributes_ok = False
 
-        vo_list = self.options['sponsor'].value
+        sponsor = self.opt_val("sponsor")
+        if not utilities.blank(sponsor):
+            attributes_ok &= self.check_sponsor(sponsor)
+
+        self.log('SiteInformation.check_attributes completed')
+        return attributes_ok
+
+    def check_sponsor(self, sponsor):
+        attributes_ok = True
         percentage = 0
         vo_names = utilities.get_vos(None)
         if vo_names == []:
@@ -186,7 +193,7 @@ class SiteInformation(BaseConfiguration):
         vo_names.append('local')  # local is a valid vo name
 
         cap_vo_names = [vo.upper() for vo in vo_names]
-        for vo in re.split(r'\s*,?\s*', vo_list):
+        for vo in re.split(r'\s*,?\s*', sponsor):
             vo_name = vo.split(':')[0]
             if vo_name not in vo_names:
                 if vo_name.upper() in cap_vo_names:
@@ -250,7 +257,7 @@ class SiteInformation(BaseConfiguration):
                      option='sponsor',
                      level=logging.ERROR)
             attributes_ok = False
-        self.log('SiteInformation.check_attributes completed')
+
         return attributes_ok
 
     def module_name(self):

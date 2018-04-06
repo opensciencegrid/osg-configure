@@ -103,7 +103,7 @@ def get_file_list(**kwargs):
     return file_list
 
 
-def get_option(config, section, option=None):
+def get_option(config, section, option):
     """
     Get an option from a config file with optional defaults and mandatory
     options.
@@ -114,10 +114,8 @@ def get_option(config, section, option=None):
     option  --  an Option object to information on the option to retrieve
 
     """
-
-    if option is None:
-        raise exceptions.SettingError('No option passed to get_option')
-
+    is_required_option = (option.required == Option.MANDATORY
+                          or (option.required == Option.MANDATORY_ON_CE and utilities.ce_installed()))
     if config.has_option(section, option.name):
         try:
 
@@ -135,18 +133,16 @@ def get_option(config, section, option=None):
                 # return the default if possible, otherwise raise an exception
                 # if the option is mandatory
 
-                if (option.required == Option.MANDATORY and
-                            option.default_value is None):
+                if option.default_value is not None:
+                    option.value = option.default_value
+                elif is_required_option:
                     raise exceptions.SettingError("Can't get value for %s in %s " \
                                                   "section and no default given" % \
                                                   (option.name, section))
-                option.value = option.default_value
-
-
         except ValueError:
             error_mesg = "%s  in %s section is of the wrong type" % (option.name, section)
             raise exceptions.SettingError(error_mesg)
-    elif option.required == Option.MANDATORY:
+    elif is_required_option:
         err_mesg = "Can't get value for %s in %s section" % (option.name, section)
         raise exceptions.SettingError(err_mesg)
     else:
@@ -179,6 +175,7 @@ class Option(object):
     """
     MANDATORY = 1
     OPTIONAL = 2
+    MANDATORY_ON_CE = 3
 
     def __init__(self, **kwargs):
         """
@@ -191,7 +188,7 @@ class Option(object):
         mapping - option's mapping in osg attributes file, None if option should
                   not be written to file
         required - whether file should is required to be in config file or not
-                   use Option.MANDATORY or Option.OPTIONAL
+                   use Option.MANDATORY, Option.OPTIONAL, or Option.MANDATORY_ON_CE
         name - option name
         """
 
@@ -200,7 +197,8 @@ class Option(object):
             self.value = kwargs.get('value', '')
         elif self.opt_type == int or self.opt_type == float:
             self.value = kwargs.get('value', 0)
-        # TODO Add a default for self.value? (None?)
+        else:
+            self.value = None
         self.default_value = kwargs.get('default_value', None)
         self.required = kwargs.get('required', Option.MANDATORY)
         self.name = kwargs.get('name', 'option')

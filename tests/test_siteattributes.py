@@ -15,7 +15,7 @@ sys.path.insert(0, pathname)
 
 from osg_configure.modules import exceptions
 from osg_configure.configure_modules import siteinformation
-from osg_configure.modules.utilities import get_test_config
+from osg_configure.modules.utilities import get_test_config, ce_installed
 
 # NullHandler is only available in Python 2.7+
 try:
@@ -156,14 +156,19 @@ class TestSiteAttributes(unittest.TestCase):
         except Exception, e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        mandatory = ['host_name',
-                     'sponsor',
-                     'contact',
-                     'email',
-                     'city',
-                     'country',
-                     'longitude',
-                     'latitude']
+        mandatory_on_all = ['group']
+        # ^ TODO OSG 3.5: add "resource" to this list
+        mandatory_on_ce = ['host_name',
+                           'sponsor',
+                           'contact',
+                           'email',
+                           'city',
+                           'country',
+                           'longitude',
+                           'latitude']
+        mandatory = list(mandatory_on_all)
+        if ce_installed():
+            mandatory += mandatory_on_ce
         for option in mandatory:
             config_file = get_test_config("siteattributes/siteattributes1.ini")
             configuration = ConfigParser.SafeConfigParser()
