@@ -27,10 +27,10 @@ __all__ = ['get_elements',
            'run_script',
            'get_condor_location',
            'get_condor_config',
-           'get_condor_config_val'
+           'get_condor_config_val',
            'atomic_write',
            'ce_installed',
-           'any_rpms_installed'
+           'any_rpms_installed',
            'rpm_installed',
            'get_test_config',
            'make_directory',
