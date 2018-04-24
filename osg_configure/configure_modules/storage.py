@@ -162,7 +162,7 @@ class StorageConfiguration(BaseConfiguration):
                          level=logging.WARNING)
             try:
                 if validation.valid_file(grid3_location):
-                    os.chmod(grid3_location, 0666)
+                    os.chmod(grid3_location, 0o666)
             except IOError:
                 self.log("Can't set permissions on grid3-location file at %s" % \
                          (grid3_location),

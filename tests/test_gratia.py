@@ -47,7 +47,7 @@ class TestGratia(unittest.TestCase):
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         options = settings.options
@@ -77,7 +77,7 @@ class TestGratia(unittest.TestCase):
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         options = settings.options
@@ -106,7 +106,7 @@ class TestGratia(unittest.TestCase):
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         options = settings.options
@@ -135,7 +135,7 @@ class TestGratia(unittest.TestCase):
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         options = settings.options
@@ -155,7 +155,7 @@ class TestGratia(unittest.TestCase):
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         options = settings.options
@@ -184,7 +184,7 @@ class TestGratia(unittest.TestCase):
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         options = settings.options
@@ -209,7 +209,7 @@ class TestGratia(unittest.TestCase):
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         self.assertEqual(len(settings.options['probes'].value),
@@ -228,7 +228,7 @@ class TestGratia(unittest.TestCase):
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         self.assertEqual(len(settings.options['probes'].value),
@@ -248,7 +248,7 @@ class TestGratia(unittest.TestCase):
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -267,7 +267,7 @@ class TestGratia(unittest.TestCase):
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -288,7 +288,7 @@ class TestGratia(unittest.TestCase):
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -309,7 +309,7 @@ class TestGratia(unittest.TestCase):
         except OSError:
             # Need to rewrite or remove this test due to new checks with condor
             pass
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -329,7 +329,7 @@ class TestGratia(unittest.TestCase):
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -350,7 +350,7 @@ class TestGratia(unittest.TestCase):
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -369,7 +369,7 @@ class TestGratia(unittest.TestCase):
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -388,7 +388,7 @@ class TestGratia(unittest.TestCase):
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
         services = settings.enabled_services()
         expected_services = set(['gratia-probes-cron'])
@@ -403,7 +403,7 @@ class TestGratia(unittest.TestCase):
         settings = gratia.GratiaConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
         services = settings.enabled_services()
         expected_services = set()

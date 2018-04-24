@@ -46,7 +46,7 @@ class TestSGE(unittest.TestCase):
         settings = sge.SGEConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -75,7 +75,7 @@ class TestSGE(unittest.TestCase):
         settings = sge.SGEConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -94,7 +94,7 @@ class TestSGE(unittest.TestCase):
         settings = sge.SGEConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -132,7 +132,7 @@ class TestSGE(unittest.TestCase):
         settings = sge.SGEConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -151,7 +151,7 @@ class TestSGE(unittest.TestCase):
         settings = sge.SGEConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -170,7 +170,7 @@ class TestSGE(unittest.TestCase):
         settings = sge.SGEConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -191,7 +191,7 @@ class TestSGE(unittest.TestCase):
         settings = sge.SGEConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -212,7 +212,7 @@ class TestSGE(unittest.TestCase):
         settings = sge.SGEConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -231,7 +231,7 @@ class TestSGE(unittest.TestCase):
         settings = sge.SGEConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
         services = settings.enabled_services()
         expected_services = set(['condor-ce',
@@ -247,7 +247,7 @@ class TestSGE(unittest.TestCase):
         settings = sge.SGEConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
         services = settings.enabled_services()
         expected_services = set()
@@ -262,7 +262,7 @@ class TestSGE(unittest.TestCase):
         settings = sge.SGEConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
         services = settings.enabled_services()
         expected_services = set()

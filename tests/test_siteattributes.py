@@ -46,7 +46,7 @@ class TestSiteAttributes(unittest.TestCase):
         settings = siteinformation.SiteInformation(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -81,7 +81,7 @@ class TestSiteAttributes(unittest.TestCase):
         settings = siteinformation.SiteInformation(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -116,7 +116,7 @@ class TestSiteAttributes(unittest.TestCase):
         settings = siteinformation.SiteInformation(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -153,7 +153,7 @@ class TestSiteAttributes(unittest.TestCase):
         settings = siteinformation.SiteInformation(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         mandatory_on_all = ['group']
@@ -193,7 +193,7 @@ class TestSiteAttributes(unittest.TestCase):
         settings = siteinformation.SiteInformation(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -207,7 +207,7 @@ class TestSiteAttributes(unittest.TestCase):
         settings = siteinformation.SiteInformation(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -227,7 +227,7 @@ class TestSiteAttributes(unittest.TestCase):
         settings = siteinformation.SiteInformation(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -241,7 +241,7 @@ class TestSiteAttributes(unittest.TestCase):
         settings = siteinformation.SiteInformation(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -261,7 +261,7 @@ class TestSiteAttributes(unittest.TestCase):
         settings = siteinformation.SiteInformation(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -281,7 +281,7 @@ class TestSiteAttributes(unittest.TestCase):
         settings = siteinformation.SiteInformation(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -302,7 +302,7 @@ class TestSiteAttributes(unittest.TestCase):
         settings = siteinformation.SiteInformation(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -323,7 +323,7 @@ class TestSiteAttributes(unittest.TestCase):
         settings = siteinformation.SiteInformation(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -342,7 +342,7 @@ class TestSiteAttributes(unittest.TestCase):
         settings = siteinformation.SiteInformation(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -361,7 +361,7 @@ class TestSiteAttributes(unittest.TestCase):
         settings = siteinformation.SiteInformation(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()

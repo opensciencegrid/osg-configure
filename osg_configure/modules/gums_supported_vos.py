@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+from __future__ import print_function
 import os
 import re
 import pwd
@@ -80,12 +81,12 @@ def gums_json_vo_user_map(gums_host, target_host=None,
     params   = {'hostname': target_host}
     try:
         json_map = gums_json_map(gums_host, json_cmd, params, certpath, keypath)
-    except EnvironmentError, e:
+    except EnvironmentError as e:
         raise exceptions.Error(
             "Error contacting gums host via json interface: %s" % e)
 
     if _debug:
-        print json_map
+        print(json_map)
 
     if 'result' not in json_map:
         raise exceptions.Error("'result' not in returned json")
@@ -111,12 +112,12 @@ def gums_json_user_vo_map_file(gums_host, target_host=None,
     params   = {'hostname': target_host}
     try:
         json_map = gums_json_map(gums_host, json_cmd, params, certpath, keypath)
-    except EnvironmentError, e:
+    except EnvironmentError as e:
         raise exceptions.Error(
             "Error contacting gums host via json interface: %s" % e)
 
     if _debug:
-        print json_map
+        print(json_map)
 
     if 'result' not in json_map:
         raise exceptions.Error("'result' not in returned json")
