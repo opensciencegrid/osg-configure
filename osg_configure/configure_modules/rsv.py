@@ -89,11 +89,13 @@ class RsvConfiguration(BaseConfiguration):
                                               default_value=False),
                         'enable_gratia':
                             configfile.Option(name='enable_gratia',
-                                              opt_type=bool),
+                                              opt_type=bool,
+                                              required=configfile.Option.OPTIONAL,
+                                              default_value=False),
                         'gratia_collector':
                             configfile.Option(name='gratia_collector',
                                               required=configfile.Option.OPTIONAL,
-                                              default_value='rsv.grid.iu.edu:8880'),
+                                              default_value=""),
                         'condor_location':
                             configfile.Option(name='condor_location',
                                               default_value='',
@@ -308,7 +310,7 @@ class RsvConfiguration(BaseConfiguration):
             # Setup Apache?  I think this is done in the RPM
 
             # Fix the Gratia ProbeConfig file to point at the appropriate collector
-            self._set_gratia_collector(self.options['gratia_collector'].value)
+            self._set_gratia_collector(self.opt_val("gratia_collector"))
 
             self._configure_condor_location()
         except exceptions.ConfigureError:
@@ -1088,8 +1090,15 @@ class RsvConfiguration(BaseConfiguration):
         """ Put the appropriate collector URL into the ProbeConfig file """
 
         if not self.options['enable_gratia'].value:
-            self.log("Not configuring Gratia collector because enable_gratia is not true")
             return True
+
+        if not collector:
+            self.log("The Gratia consumer is enabled but no RSV Gratia collector was provided.\n"
+                     "OSG no longer provides a central RSV Gratia collector; if you are running your own,\n"
+                     "set gratia_consumer in the RSV section to point to this collector.  If you are not\n"
+                     "running your own, then set enable_gratia in the RSV section to False.",
+                     level=logging.WARNING)
+            return False
 
         probe_conf = os.path.join('/', 'etc', 'gratia', 'metric', 'ProbeConfig')
 
