@@ -182,8 +182,7 @@ class TestRSV(unittest.TestCase):
         settings.rsv_meta_dir = RSV_META_DIR
         settings.parse_configuration(configuration)
 
-        mandatory = ['enable_gratia',
-                     'enable_nagios']
+        mandatory = ['enable_nagios']
         for option in mandatory:
             config_file = get_test_config("rsv/rsv1.ini")
             configuration = ConfigParser.SafeConfigParser()
