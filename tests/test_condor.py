@@ -46,7 +46,7 @@ class TestCondor(unittest.TestCase):
         settings = condor.CondorConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -74,7 +74,7 @@ class TestCondor(unittest.TestCase):
         settings = condor.CondorConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -93,7 +93,7 @@ class TestCondor(unittest.TestCase):
         settings = condor.CondorConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -116,7 +116,7 @@ class TestCondor(unittest.TestCase):
         settings = condor.CondorConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -136,7 +136,7 @@ class TestCondor(unittest.TestCase):
         settings = condor.CondorConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -161,7 +161,7 @@ class TestCondor(unittest.TestCase):
         settings = condor.CondorConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -184,7 +184,7 @@ class TestCondor(unittest.TestCase):
         settings = condor.CondorConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -211,7 +211,7 @@ class TestCondor(unittest.TestCase):
         settings = condor.CondorConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -233,7 +233,7 @@ class TestCondor(unittest.TestCase):
             settings = condor.CondorConfiguration(logger=global_logger)
             try:
                 settings.parse_configuration(configuration)
-            except Exception, e:
+            except Exception as e:
                 self.fail("Received exception while parsing configuration: %s" % e)
 
             attributes = settings.get_attributes()
@@ -253,7 +253,7 @@ class TestCondor(unittest.TestCase):
         settings = condor.CondorConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -272,7 +272,7 @@ class TestCondor(unittest.TestCase):
         settings = condor.CondorConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -291,7 +291,7 @@ class TestCondor(unittest.TestCase):
         settings = condor.CondorConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
         services = settings.enabled_services()
         expected_services = set(['condor-ce', 'globus-gridftp-server'])
@@ -306,7 +306,7 @@ class TestCondor(unittest.TestCase):
         settings = condor.CondorConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
         services = settings.enabled_services()
         expected_services = set()

@@ -7,6 +7,7 @@
 # pylint: disable=W0703
 # pylint: disable=R0904
 
+from __future__ import print_function
 import os
 import sys
 import unittest
@@ -54,7 +55,7 @@ class TestInfoServices(unittest.TestCase):
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
     def testParsingIgnored(self):
@@ -70,7 +71,7 @@ class TestInfoServices(unittest.TestCase):
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
     def testValidSettings2(self):
@@ -86,7 +87,7 @@ class TestInfoServices(unittest.TestCase):
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -107,7 +108,7 @@ class TestInfoServices(unittest.TestCase):
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -128,7 +129,7 @@ class TestInfoServices(unittest.TestCase):
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -148,7 +149,7 @@ class TestInfoServices(unittest.TestCase):
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
         services = settings.enabled_services()
         expected_services = set()

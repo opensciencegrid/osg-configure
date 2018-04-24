@@ -121,7 +121,7 @@ def write_attribute_file(filename=None, attributes=None):
     """
     if filename:
         file_contents = _compose_attribute_file(attributes or {})
-        atomic_write(filename, file_contents, mode=0644)
+        atomic_write(filename, file_contents, mode=0o644)
 
 
 def get_set_membership(test_set, reference_set, defaults=None):

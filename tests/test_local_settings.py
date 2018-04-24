@@ -47,7 +47,7 @@ class TestLocalSettings(unittest.TestCase):
         settings = localsettings.LocalSettings(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()

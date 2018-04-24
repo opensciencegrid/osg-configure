@@ -47,7 +47,7 @@ def read_config_files(**kwargs):
         config = ConfigParser.SafeConfigParser()
         if case_sensitive:
             config.optionxform = str
-    except ConfigParser.Error, e:
+    except ConfigParser.Error as e:
         raise IOError("Can't read and parse config files:\n%s" % e)
     read_files = config.read(file_list)
     read_files.sort()
@@ -84,7 +84,7 @@ def get_option_location(option, section, **kwargs):
             config.readfp(open(fn, 'r'))
             if config.has_option(section, option):
                 return fn
-        except ConfigParser.Error, e:
+        except ConfigParser.Error as e:
             raise Exception("Can't parse %s:\n%s" % (fn, e))
 
     return None

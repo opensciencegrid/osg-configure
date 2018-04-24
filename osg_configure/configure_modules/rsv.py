@@ -782,7 +782,7 @@ class RsvConfiguration(BaseConfiguration):
                                                                condor_dir))
                 sysconf.write("export PATH\n")
             sysconf.close()
-        except IOError, err:
+        except IOError as err:
             self.log("Error trying to write to file (%s): %s" % (sysconf_file, err))
             raise exceptions.ConfigureError
 
@@ -793,7 +793,7 @@ class RsvConfiguration(BaseConfiguration):
             if self.options['condor_location'].value:
                 config.write("RELEASE_DIR = %s" % condor_dir)
             config.close()
-        except IOError, err:
+        except IOError as err:
             self.log("Error trying to write to file (%s): %s" % (conf_file, err))
             raise exceptions.ConfigureError
 
@@ -920,7 +920,7 @@ class RsvConfiguration(BaseConfiguration):
         try:
             try:
                 config.write(config_fp)
-            except EnvironmentError, err:
+            except EnvironmentError as err:
                 self.log("Error writing to %s: %s" % (allmetrics_conf_path, str(err)), level=logging.ERROR)
                 raise exceptions.ConfigureError
         finally:
@@ -966,7 +966,7 @@ class RsvConfiguration(BaseConfiguration):
         # The Nagios conf file contains a password so set it to mode 0400 owned by rsv
         pw_file = os.path.join(self.rsv_conf_dir, 'rsv-nagios.conf')
         os.chown(pw_file, self.uid, self.gid)
-        os.chmod(pw_file, 0400)
+        os.chmod(pw_file, 0o400)
 
         # Add the configuration file
         nagios_conf_file = os.path.join(self.rsv_conf_dir, 'consumers/nagios-consumer.conf')
@@ -1113,21 +1113,21 @@ class RsvConfiguration(BaseConfiguration):
 
         log_folder = os.path.join(parent_dir, 'logs')
         if not os.path.exists(log_folder):
-            utilities.make_directory(log_folder, 0755, self.uid, self.gid)
+            utilities.make_directory(log_folder, 0o755, self.uid, self.gid)
         elif os.path.isdir(log_folder):
             os.chown(log_folder, self.uid, self.gid)
         conf = re.sub(r'(\s*)LogFolder\s*=.*', r'\1LogFolder="' + log_folder + '"', conf, 1)
 
         data_folder = os.path.join(parent_dir, 'data')
         if not os.path.exists(data_folder):
-            utilities.make_directory(data_folder, 0755, self.uid, self.gid)
+            utilities.make_directory(data_folder, 0o755, self.uid, self.gid)
         elif os.path.isdir(data_folder):
             os.chown(data_folder, self.uid, self.gid)
         conf = re.sub(r'(\s*)DataFolder\s*=.*', r'\1DataFolder="' + data_folder + '"', conf, 1)
 
         working_folder = os.path.join(parent_dir, 'tmp')
         if not os.path.exists(working_folder):
-            utilities.make_directory(working_folder, 0755, self.uid, self.gid)
+            utilities.make_directory(working_folder, 0o755, self.uid, self.gid)
         elif os.path.isdir(working_folder):
             os.chown(working_folder, self.uid, self.gid)
         conf = re.sub(r'(\s*)WorkingFolder\s*=.*',

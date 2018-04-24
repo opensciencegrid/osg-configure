@@ -198,7 +198,7 @@ class BoscoConfiguration(JobManagerConfiguration):
         # First, get the uid of the username so we can seteuid
         try:
             user_info = pwd.getpwnam(username)
-        except KeyError, e:
+        except KeyError as e:
             self.log("Error finding username: %s on system." % username, level=logging.ERROR)
             return False
         
@@ -286,7 +286,7 @@ Host %(host)s
                 self.log("stdout:\n%s" % stdout, level=logging.DEBUG)
                 self.log("stderr:\n%s" % stderr, level=logging.DEBUG)
 
-        except Exception, e:
+        except Exception as e:
             self.log("Error in bosco installation: %s" % str(e), level=logging.ERROR)
             return False
             

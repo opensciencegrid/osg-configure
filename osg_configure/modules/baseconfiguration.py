@@ -276,13 +276,13 @@ class BaseConfiguration(object):
                 parent_dir = os.path.abspath(os.path.dirname(to_path))
                 try:
                     os.makedirs(parent_dir)
-                except OSError, err:
+                except OSError as err:
                     if err.errno != errno.EEXIST:
                         self.log("Could not create directory %s" % parent_dir, exception=err, level=logging.ERROR)
                         return False
                 try:
                     os.chown(parent_dir, user_pwd.pw_uid, user_pwd.pw_gid)
-                except EnvironmentError, err:
+                except EnvironmentError as err:
                     self.log("Could not set ownership of %s" % parent_dir, exception=err, level=logging.ERROR)
                     return False
                 from_fh = open(from_path, 'rb')
@@ -293,7 +293,7 @@ class BaseConfiguration(object):
                     return False
                 try:
                     os.chown(to_path, user_pwd.pw_uid, user_pwd.pw_gid)
-                except EnvironmentError, err:
+                except EnvironmentError as err:
                     self.log("Could not set ownership of %s" % to_path, exception=err, level=logging.ERROR)
                     return False
 

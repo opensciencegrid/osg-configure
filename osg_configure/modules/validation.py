@@ -251,7 +251,7 @@ def valid_ini_file(filename):
     file_buffer.seek(0)
     try:
         configuration.readfp(file_buffer)
-    except ConfigParser.ParsingError, e:
+    except ConfigParser.ParsingError as e:
         sys.stderr.write("Error while parsing: %s\n%s\n" % (filename, e))
         sys.stderr.write("Lines with options should not start with a space\n")
         return False
@@ -286,7 +286,7 @@ def valid_ini_references(files):
     configuration = ConfigParser.SafeConfigParser()
     try:
         configuration.read(files)
-    except ConfigParser.InterpolationError, e:
+    except ConfigParser.InterpolationError as e:
         sys.stderr.write("Error with variable interpolation:\n%s\n" % e)
         return False
 

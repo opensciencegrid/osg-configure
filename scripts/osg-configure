@@ -81,7 +81,7 @@ def get_configuration_modules():
     try:
         module_dirs = os.path.split(os.path.dirname(utilities.__file__))[0]
         modules = os.listdir(os.path.join(module_dirs, "configure_modules"))
-    except OSError, exception:
+    except OSError as exception:
         error_exit("Can't get configuration modules, exiting...", exception)
 
     objects = []
@@ -126,7 +126,7 @@ def write_attributes(attributes, local_site_attributes, job_environment_attribut
     try:
         filename = os.path.join(OUTPUT_DIRECTORY, "osg-local-job-environment.conf")
         utilities.write_attribute_file(filename, local_site_attributes)
-    except IOError, exception:
+    except IOError as exception:
         error_exit("Error writing attributes to osg-local-job-environment.conf", exception)
 
 
@@ -137,7 +137,7 @@ def write_attributes(attributes, local_site_attributes, job_environment_attribut
         for key in job_environment_attributes:
             try:
                 temp[key] = attributes[key]
-            except KeyError, exception:
+            except KeyError as exception:
                 if key == 'OSG_SQUID_LOCATION':
                     continue
                 else:
@@ -151,7 +151,7 @@ def write_attributes(attributes, local_site_attributes, job_environment_attribut
                                 errmsg += "Option %r\n" % (name)
                     error_exit(errmsg, exception)
         utilities.write_attribute_file(filename, temp)
-    except IOError, exception:
+    except IOError as exception:
         error_exit("Error writing attributes to osg-job-environment.conf", exception)
 
 
@@ -172,7 +172,7 @@ def configure_system(modules, configure_module=None, force=False):
 
     try:
         config = configfile.read_config_files()
-    except IOError, e:
+    except IOError as e:
         error_exit("Can't read configuration files: %s" % e)
 
     for module in modules:
@@ -184,11 +184,11 @@ def configure_system(modules, configure_module=None, force=False):
                 continue
             else:
                 module.parse_configuration(config)
-        except exceptions.SettingError, exception:
+        except exceptions.SettingError as exception:
             error_exit("Error in %s while parsing configuration" % \
                        (module.__class__.__name__),
                        exception)
-        except ConfigParser.ParsingError, exception:
+        except ConfigParser.ParsingError as exception:
             error_exit("Error while parsing configuration: %s" % exception)
 
     attributes = {}
@@ -226,7 +226,7 @@ def configure_system(modules, configure_module=None, force=False):
                 continue
         try:
             module.configure(attributes)
-        except exceptions.ConfigureError, e:
+        except exceptions.ConfigureError as e:
             logging.debug("Got ConfigureError %s" % e)
             error_exit("Can't configure module, exiting")
 
@@ -282,7 +282,7 @@ def query_option(modules, option=None):
 
     try:
         config = configfile.read_config_files()
-    except IOError, e:
+    except IOError as e:
         error_exit("Can't read configuration files: %s" % e)
 
     if '.' in option:
@@ -345,17 +345,17 @@ def list_enabled_services(modules):
 
     try:
         config = configfile.read_config_files()
-    except IOError, e:
+    except IOError as e:
         error_exit("Can't read configuration files: %s" % e)
 
     for module in modules:
         try:
             module.parse_configuration(config)
-        except exceptions.SettingError, exception:
+        except exceptions.SettingError as exception:
             error_exit("Error in %s while parsing configuration" % \
                        (module.__class__.__name__),
                        exception)
-        except ConfigParser.ParsingError, exception:
+        except ConfigParser.ParsingError as exception:
             error_exit("Error while parsing configuration: %s" % exception)
 
     sys.stdout.write("System services associated with current configuration:\n")
@@ -381,7 +381,7 @@ def verify_system(modules):
 
     try:
         config = configfile.read_config_files()
-    except IOError, e:
+    except IOError as e:
         error_exit("Can't read configuration files: %s" % e)
 
     for module in modules:
@@ -392,10 +392,10 @@ def verify_system(modules):
                 continue
             else:
                 module.parse_configuration(config)
-        except exceptions.SettingError, exception:
+        except exceptions.SettingError as exception:
             error_exit("Error in %s while parsing configuration" % (module.__class__.__name__),
                        exception)
-        except ConfigParser.ParsingError, exception:
+        except ConfigParser.ParsingError as exception:
             error_exit("Error while parsing configuration: %s" % exception)
 
     attributes = {}
@@ -447,7 +447,7 @@ def check_configuration(modules, attributes):
 
     try:
         configfile.read_config_files()
-    except IOError, e:
+    except IOError as e:
         error_exit("Can't read configuration files: %s" % e)
 
     status = True
@@ -531,7 +531,7 @@ def main():
         error_exit("You must be root when running %s" % sys.argv[0])
 
     # Set the umask so we get the right permissions on files
-    os.umask(022)
+    os.umask(0o22)
 
     if 'VDT_LOCATION' in os.environ:
         error_exit("$VDT_LOCATION exists in the environment, it looks like " +
@@ -602,7 +602,7 @@ def main():
     except SystemExit:
         # needed since SystemExit inherits from Exception
         raise
-    except Exception, e:
+    except Exception as e:
         debug_info = "Unhandled exception %s\n%s" % (e, traceback.format_exc())
         if logger:
             logger.debug(debug_info)

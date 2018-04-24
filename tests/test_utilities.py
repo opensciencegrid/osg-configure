@@ -34,7 +34,7 @@ class TestUtilities(unittest.TestCase):
                 self.assertEqual(open(attribute_file).read(),
                                  open(attribute_standard).read(),
                                  'Attribute files are not equal')
-            except Exception, ex:
+            except Exception as ex:
                 self.fail('Got exception while testing write_attribute_file' \
                           "functionality:\n%s" % ex)
         finally:

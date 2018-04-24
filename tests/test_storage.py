@@ -52,7 +52,7 @@ class TestStorage(unittest.TestCase):
         settings = storage.StorageConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -74,7 +74,7 @@ class TestStorage(unittest.TestCase):
         if not validation.valid_directory('/tmp/etc'):
             # handle cases where this is not run under osg test framework
             os.mkdir('/tmp/etc')
-            os.chmod('/tmp/etc', 0777)
+            os.chmod('/tmp/etc', 0o777)
             self.assertTrue(settings.check_attributes(attributes))
             os.rmdir('/tmp/etc')
         else:
@@ -95,7 +95,7 @@ class TestStorage(unittest.TestCase):
         settings = storage.StorageConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -117,7 +117,7 @@ class TestStorage(unittest.TestCase):
         if not validation.valid_directory('/tmp/etc'):
             # handle cases where this is not run under osg test framework
             os.mkdir('/tmp/etc')
-            os.chmod('/tmp/etc', 0777)
+            os.chmod('/tmp/etc', 0o777)
             self.assertTrue(settings.check_attributes(attributes))
             os.rmdir('/tmp/etc')
         else:
@@ -138,7 +138,7 @@ class TestStorage(unittest.TestCase):
         settings = storage.StorageConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -159,7 +159,7 @@ class TestStorage(unittest.TestCase):
         if not validation.valid_directory('/tmp/etc'):
             # handle cases where this is not run under osg test framework
             os.mkdir('/tmp/etc')
-            os.chmod('/tmp/etc', 0777)
+            os.chmod('/tmp/etc', 0o777)
             self.assertTrue(settings.check_attributes(attributes))
             os.rmdir('/tmp/etc')
         else:
@@ -180,7 +180,7 @@ class TestStorage(unittest.TestCase):
         settings = storage.StorageConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()

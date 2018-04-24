@@ -335,7 +335,7 @@ in your config.ini file."""
                     self.log("Subscription for %s in %s found" % (probe_host, probe_file))
                     return True
             # pylint: disable-msg=W0703
-            except Exception, e:
+            except Exception as e:
                 self.log("Exception checking element, %s" % e)
 
         self.log("GratiaConfiguration._subscription_present completed")
@@ -658,7 +658,7 @@ in your config.ini file."""
                                                                                    history_dir),
                                      level=logging.ERROR)
                             valid = False
-                    except OSError, e:
+                    except OSError as e:
                         self.log("Error comparing DataFolder setting in %s (%s) and condor PER_JOB_HISTORY_DIR %s:\n%s"
                                  % (config_location, data_folder, history_dir, e),
                                  level=logging.ERROR)
@@ -682,7 +682,7 @@ in your config.ini file."""
                                                                                                errtext),
                          level=logging.INFO)
                 return None
-        except OSError, err:
+        except OSError as err:
             self.log("While checking gratia parameters: Error running %s: %s" % (condor_config_val_bin, str(err)),
                      level=logging.INFO)
             return None

@@ -49,7 +49,7 @@ class TestMisc(unittest.TestCase):
         settings = misc.MiscConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         options = settings.options
@@ -75,7 +75,7 @@ class TestMisc(unittest.TestCase):
         settings = misc.MiscConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         options = settings.options
@@ -101,7 +101,7 @@ class TestMisc(unittest.TestCase):
         settings = misc.MiscConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         self.assertTrue(settings.options.has_key('authorization_method'),
@@ -120,7 +120,7 @@ class TestMisc(unittest.TestCase):
         settings = misc.MiscConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         self.assertTrue(settings.options.has_key('authorization_method'),
@@ -139,7 +139,7 @@ class TestMisc(unittest.TestCase):
         settings = misc.MiscConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         self.assertTrue(settings.options.has_key('authorization_method'),
@@ -195,7 +195,7 @@ class TestMisc(unittest.TestCase):
         settings = misc.MiscConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -214,7 +214,7 @@ class TestMisc(unittest.TestCase):
         settings = misc.MiscConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -233,7 +233,7 @@ class TestMisc(unittest.TestCase):
         settings = misc.MiscConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -252,7 +252,7 @@ class TestMisc(unittest.TestCase):
         settings = misc.MiscConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
@@ -271,7 +271,7 @@ class TestMisc(unittest.TestCase):
         settings = misc.MiscConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
         services = settings.enabled_services()
         if utilities.rpm_installed('fetch-crl'):
@@ -292,7 +292,7 @@ class TestMisc(unittest.TestCase):
         settings = misc.MiscConfiguration(logger=global_logger)
         try:
             settings.parse_configuration(configuration)
-        except Exception, e:
+        except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
         services = settings.enabled_services()
         if utilities.rpm_installed('fetch-crl'):
