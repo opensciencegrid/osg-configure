@@ -89,11 +89,9 @@ class RsvConfiguration(BaseConfiguration):
                                               default_value=False),
                         'enable_gratia':
                             configfile.Option(name='enable_gratia',
-                                              opt_type=bool),
-                        'gratia_collector':
-                            configfile.Option(name='gratia_collector',
+                                              opt_type=bool,
                                               required=configfile.Option.OPTIONAL,
-                                              default_value='rsv.grid.iu.edu:8880'),
+                                              default_value=False),
                         'condor_location':
                             configfile.Option(name='condor_location',
                                               default_value='',
@@ -168,7 +166,7 @@ class RsvConfiguration(BaseConfiguration):
             self.log('RsvConfiguration.parse_configuration completed')
             return True
 
-        self.get_options(configuration, ignore_options=['enabled'])
+        self.get_options(configuration, ignore_options=['enabled', 'gratia_collector'])
 
         # If we're on a CE, get the grid group if possible
         if configuration.has_section('Site Information'):
@@ -306,9 +304,6 @@ class RsvConfiguration(BaseConfiguration):
             self._configure_default_ce_type()
             self._configure_ce_types()
             # Setup Apache?  I think this is done in the RPM
-
-            # Fix the Gratia ProbeConfig file to point at the appropriate collector
-            self._set_gratia_collector(self.options['gratia_collector'].value)
 
             self._configure_condor_location()
         except exceptions.ConfigureError:
@@ -931,15 +926,17 @@ class RsvConfiguration(BaseConfiguration):
 
         # The current logic is:
         #  - we ALWAYS want the html-consumer if we are told to install consumers
-        #  - we want the gratia-consumer if enable_gratia is True
+        #  - we NEVER want the gratia-consumer
         #  - we want the nagios-consumer if enable_nagios is True
         #  - we want the zabbix-consumer if enable_zabbix is True and rsv-consumers-zabbix is installed
 
         consumers = ["html-consumer"]
 
-        if self.options['enable_gratia'].value:
-            consumers.append("gratia-consumer")
-            # TODO - set up Gratia directories?  Look at setup_gratia() in configure_rsv
+        if self.opt_val("enable_gratia"):
+            self.log("Your configuration has enabled the Gratia consumer but the service which the Gratia consumer "
+                     "reports to has been shut down. Please turn off 'enable_gratia' in the RSV section. "
+                     "Gratia consumer configuration will be ignored.",
+                     level=logging.WARNING)
 
         if self.options['enable_nagios'].value:
             consumers.append("nagios-consumer")
@@ -959,6 +956,7 @@ class RsvConfiguration(BaseConfiguration):
 
         if not utilities.run_script([self.rsv_control, "-v0", "--enable"] + consumers):
             raise exceptions.ConfigureError
+        utilities.run_script([self.rsv_control, "-v0", "--disable", "gratia-consumer"])  # don't care if this fails
 
     def _configure_nagios_files(self):
         """ Store the nagios configuration """
@@ -1083,63 +1081,6 @@ class RsvConfiguration(BaseConfiguration):
 
         # We shouldn't reach here, but just in case...
         return array
-
-    def _set_gratia_collector(self, collector):
-        """ Put the appropriate collector URL into the ProbeConfig file """
-
-        if not self.options['enable_gratia'].value:
-            self.log("Not configuring Gratia collector because enable_gratia is not true")
-            return True
-
-        probe_conf = os.path.join('/', 'etc', 'gratia', 'metric', 'ProbeConfig')
-
-        self.log("Putting collector '%s' into Gratia conf file '%s'" % (collector, probe_conf))
-
-        conf = open(probe_conf).read()
-
-        conf = re.sub("CollectorHost=\".+\"", "CollectorHost=\"%s\"" % collector, conf)
-        conf = re.sub("SSLHost=\".+\"", "SSLHost=\"%s\"" % collector, conf)
-        conf = re.sub("SSLRegistrationHost=\".+\"", "SSLRegistrationHost=\"%s\"" % collector, conf)
-        conf = re.sub(r'(\s*)EnableProbe\s*=.*', r'\1EnableProbe="1"', conf, 1)
-        conf = re.sub(r'(\s*)Grid\s*=.*', r'\1Grid="' + self.grid_group + '"', conf, 1)
-        conf = re.sub(r'(\s*)SiteName\s*=.*', r'\1SiteName="' + self.site_name + '"', conf, 1)
-
-        # Set logging to whatever is appropriate.  We'll just go with level=1, rotate=7 for now
-        conf = re.sub(r'(\s*)LogLevel\s*=.*', r'\1LogLevel="1"', conf, 1)
-        conf = re.sub(r'(\s*)LogRotate\s*=.*', r'\1LogRotate="7"', conf, 1)
-
-        # Also, set up the directories to use the proper log/data/working dirs
-        parent_dir = os.path.join('/', 'var', 'log', 'gratia', 'rsv')
-
-        log_folder = os.path.join(parent_dir, 'logs')
-        if not os.path.exists(log_folder):
-            utilities.make_directory(log_folder, 0o755, self.uid, self.gid)
-        elif os.path.isdir(log_folder):
-            os.chown(log_folder, self.uid, self.gid)
-        conf = re.sub(r'(\s*)LogFolder\s*=.*', r'\1LogFolder="' + log_folder + '"', conf, 1)
-
-        data_folder = os.path.join(parent_dir, 'data')
-        if not os.path.exists(data_folder):
-            utilities.make_directory(data_folder, 0o755, self.uid, self.gid)
-        elif os.path.isdir(data_folder):
-            os.chown(data_folder, self.uid, self.gid)
-        conf = re.sub(r'(\s*)DataFolder\s*=.*', r'\1DataFolder="' + data_folder + '"', conf, 1)
-
-        working_folder = os.path.join(parent_dir, 'tmp')
-        if not os.path.exists(working_folder):
-            utilities.make_directory(working_folder, 0o755, self.uid, self.gid)
-        elif os.path.isdir(working_folder):
-            os.chown(working_folder, self.uid, self.gid)
-        conf = re.sub(r'(\s*)WorkingFolder\s*=.*',
-                      r'\1WorkingFolder="' + working_folder + '"',
-                      conf,
-                      1)
-
-        if not utilities.atomic_write(probe_conf, conf):
-            self.log("Error while configuring metric probe: can't " +
-                     "write to %s" % probe_conf,
-                     level=logging.ERROR)
-            raise exceptions.ConfigureError("Error configuring gratia")
 
     def _check_srm_settings(self):
         """
