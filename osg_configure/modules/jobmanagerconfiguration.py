@@ -55,8 +55,11 @@ class JobManagerConfiguration(BaseConfiguration):
     def write_blah_disable_wn_proxy_renewal_to_blah_config(self):
         if os.path.exists(self.BLAH_CONFIG):
             contents = utilities.read_file(self.BLAH_CONFIG)
-            contents = utilities.add_or_replace_setting(contents, "blah_disable_wn_proxy_renewal", "yes",
-                                                        quote_value=True)
+            for option, value in [("blah_disable_wn_proxy_renewal", "yes"),
+                                  ("blah_delegate_renewed_proxies", "no"),
+                                  ("blah_disable_limited_proxy", "yes")]:
+                contents = utilities.add_or_replace_setting(contents, option, value,
+                                                            quote_value=True)
             utilities.atomic_write(self.BLAH_CONFIG, contents)
 
     def write_htcondor_ce_sentinel(self):
