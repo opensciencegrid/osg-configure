@@ -46,5 +46,17 @@ setup(name='osg-configure',
       url='http://www.opensciencegrid.org',
       packages=['osg_configure', 'osg_configure.modules', 'osg_configure.configure_modules'],
       scripts=['scripts/osg-configure'],
-      data_files=get_data_files()
-      )
+      data_files=get_data_files(),
+      classifiers=[
+          "Development Status :: 6 - Mature",
+          "Environment :: Console",
+          "Intended Audience :: System Administrators",
+          "License :: OSI Approved :: Apache Software License",
+          "Operating System :: POSIX :: Linux",
+          "Programming Language :: Python :: 2",
+          "Programming Language :: Python :: 2.6",
+          "Programming Language :: Python :: 2.7"
+      ],
+      platforms=["Linux"],
+      license="Apache Software License 2.0"
+)
