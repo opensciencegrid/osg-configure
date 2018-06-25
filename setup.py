@@ -1,14 +1,7 @@
 from distutils.core import setup
-import glob, re, os
+import glob, os
 
-
-def get_version():
-    """
-    Gets version from osg-configure script file
-    """
-    buffer = open('scripts/osg-configure').read()
-    match = re.search("VERSION\s+=\s+'(.*)'", buffer)
-    return match.group(1)
+from osg_configure.version import __version__
 
 
 def get_data_files():
@@ -44,7 +37,7 @@ def get_data_files():
 
 
 setup(name='osg-configure',
-      version=get_version(),
+      version=__version__,
       description='Package for osg-configure and associated scripts',
       author='Suchandra Thapa',
       author_email='sthapa@ci.uchicago.edu',
