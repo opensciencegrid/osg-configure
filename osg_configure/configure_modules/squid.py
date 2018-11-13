@@ -21,23 +21,7 @@ class SquidConfiguration(BaseConfiguration):
         self.options = {'location':
                             configfile.Option(name='location',
                                               default_value='None',
-                                              mapping='OSG_SQUID_LOCATION'),
-                        'policy':
-                            configfile.Option(name='policy',
-                                              required=configfile.Option.OPTIONAL,
-                                              mapping='OSG_SQUID_POLICY'),
-                        'cache_size':
-                            configfile.Option(name='cache_size',
-                                              required=configfile.Option.OPTIONAL,
-                                              default_value=0,
-                                              opt_type=int,
-                                              mapping='OSG_SQUID_CACHE_SIZE'),
-                        'memory_size':
-                            configfile.Option(name='memory_size',
-                                              required=configfile.Option.OPTIONAL,
-                                              default_value=0,
-                                              opt_type=int,
-                                              mapping='OSG_SQUID_MEM_CACHE')}
+                                              mapping='OSG_SQUID_LOCATION')}
         self.config_section = 'Squid'
         self.log('SquidConfiguration.__init__ completed')
 
@@ -60,7 +44,7 @@ class SquidConfiguration(BaseConfiguration):
             if not self.ignored and not self.enabled:
                 return True
 
-        self.get_options(configuration, ignore_options=['enabled'])
+        self.get_options(configuration, ignore_options=['enabled', 'policy', 'cache_size', 'memory_size'])
 
         if not (utilities.blank(self.options['location'].value) or
                         self.options['location'].value == 'None'):

@@ -51,10 +51,7 @@ class TestSquid(unittest.TestCase):
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
-        variables = {'OSG_SQUID_LOCATION': "test.com:3128",
-                     'OSG_SQUID_POLICY': 'LRU',
-                     'OSG_SQUID_CACHE_SIZE': '2048',
-                     'OSG_SQUID_MEM_CACHE': '256'}
+        variables = {'OSG_SQUID_LOCATION': "test.com:3128"}
         for var in variables:
             self.assertTrue(attributes.has_key(var),
                             "Attribute %s missing" % var)
@@ -79,10 +76,7 @@ class TestSquid(unittest.TestCase):
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
-        variables = {'OSG_SQUID_LOCATION': 'example.com:3128',
-                     'OSG_SQUID_POLICY': 'LRU',
-                     'OSG_SQUID_CACHE_SIZE': '2048',
-                     'OSG_SQUID_MEM_CACHE': '256'}
+        variables = {'OSG_SQUID_LOCATION': 'example.com:3128'}
         for var in variables:
             self.assertTrue(attributes.has_key(var),
                             "Attribute %s missing" % var)
@@ -131,13 +125,10 @@ class TestSquid(unittest.TestCase):
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
-        self.assertEqual(len(attributes), 4,
-                         "Ignored configuration should have 4 attributes")
+        self.assertEqual(len(attributes), 1,
+                         "Ignored configuration should have 1 attribute")
 
-        variables = {'OSG_SQUID_LOCATION': 'test.com:3128',
-                     'OSG_SQUID_POLICY': 'LRU',
-                     'OSG_SQUID_CACHE_SIZE': '2048',
-                     'OSG_SQUID_MEM_CACHE': '256'}
+        variables = {'OSG_SQUID_LOCATION': 'test.com:3128'}
         for var in variables:
             self.assertTrue(attributes.has_key(var),
                             "Attribute %s missing" % var)
@@ -162,38 +153,6 @@ class TestSquid(unittest.TestCase):
             self.assertRaises(exceptions.SettingError,
                               settings.parse_configuration,
                               configuration)
-
-    def testBadMemory(self):
-        """
-        Test the check_attributes function when memory size is not an integer
-        """
-
-        if not ce_installed():
-            return True
-        config_file = get_test_config("squid/squid_bad_mem.ini")
-        configuration = ConfigParser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = squid.SquidConfiguration(logger=global_logger)
-        self.assertRaises(exceptions.SettingError,
-                          settings.parse_configuration,
-                          configuration)
-
-    def testBadCache(self):
-        """
-        Test the check_attributes function when cache size is not an integer
-        """
-
-        if not ce_installed():
-            return True
-        config_file = get_test_config("squid/squid_bad_cache.ini")
-        configuration = ConfigParser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = squid.SquidConfiguration(logger=global_logger)
-        self.assertRaises(exceptions.SettingError,
-                          settings.parse_configuration,
-                          configuration)
 
     def testBadHost(self):
         """
