@@ -21,7 +21,6 @@ __all__ = ['valid_domain',
            'valid_boolean',
            'valid_executable',
            'valid_ini_file',
-           'valid_contact',
            'valid_integer']
 
 
