@@ -164,7 +164,6 @@ def configure_system(modules, configure_module=None, force=False):
     configure_module -- if not None, the specific module to configure
     force -- if True, force configuration even if verification fails
     """
-
     if not modules:
         error_exit("No modules found, exiting")
     if not validation.valid_location(CONFIG_DIRECTORY):
@@ -206,7 +205,7 @@ def configure_system(modules, configure_module=None, force=False):
             if attribute:
                 attribute_to_option_map[attribute] = attribute_to_option_map.get(attribute, []) + [(section, name)]
 
-    if not check_configuration(modules, attributes):
+    if not check_configuration(modules, attributes, force):
         if force:
             logging.warn("Invalid attributes found but forcing configuration.")
             sys.stderr.write("Invalid attributes found but forcing configuration.\n")
@@ -432,7 +431,7 @@ def list_modules(modules):
     normal_exit("Modules listed successfully")
 
 
-def check_configuration(modules, attributes):
+def check_configuration(modules, attributes, force=False):
     """
     Read a configuration file and check it to make sure that it will work
 
@@ -453,6 +452,8 @@ def check_configuration(modules, attributes):
     status = True
     for module in modules:
         status &= module.check_attributes(attributes)
+        if (not status) and (not force):
+            break
     return status
 
 
