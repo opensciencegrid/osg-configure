@@ -12,6 +12,9 @@ from osg_configure.modules.jobmanagerconfiguration import JobManagerConfiguratio
 __all__ = ['PBSConfiguration']
 
 
+PBS_FLAVORS = ['torque', 'pro']
+
+
 class PBSConfiguration(JobManagerConfiguration):
     """Class to handle attributes related to pbs job manager configuration"""
 
@@ -32,7 +35,11 @@ class PBSConfiguration(JobManagerConfiguration):
                         'pbs_server':
                             configfile.Option(name='pbs_server',
                                               required=configfile.Option.OPTIONAL,
-                                              default_value='')}
+                                              default_value=''),
+                        'pbs_flavor':
+                            configfile.Option(name='pbs_flavor',
+                                              required=configfile.Option.OPTIONAL,
+                                              default_value='torque')}
         self.config_section = "PBS"
         self.pbs_bin_location = None
         self.log('PBSConfiguration.__init__ completed')
@@ -104,6 +111,13 @@ class PBSConfiguration(JobManagerConfiguration):
                      section=self.config_section,
                      level=logging.ERROR)
 
+        if self.opt_val('pbs_flavor') not in PBS_FLAVORS:
+            attributes_ok = False
+            self.log("Invalid pbs_flavor %s; should be one of %s" % (self.opt_val('pbs_flavor'), ", ".join(PBS_FLAVORS)),
+                     option='pbs_flavor',
+                     section=self.config_section,
+                     level=logging.ERROR)
+
         self.log('PBSConfiguration.check_attributes completed')
         return attributes_ok
 
@@ -125,6 +139,7 @@ class PBSConfiguration(JobManagerConfiguration):
         if self.htcondor_gateway_enabled:
             self.write_binpaths_to_blah_config('pbs', self.pbs_bin_location)
             self.write_blah_disable_wn_proxy_renewal_to_blah_config()
+            self.set_pbs_pro_in_blah_config()
             self.write_htcondor_ce_sentinel()
 
         self.log('PBSConfiguration.configure completed')
@@ -148,3 +163,11 @@ class PBSConfiguration(JobManagerConfiguration):
         services = set(['globus-gridftp-server'])
         services.update(self.gateway_services())
         return services
+
+    def set_pbs_pro_in_blah_config(self):
+        if os.path.exists(self.BLAH_CONFIG):
+            contents = utilities.read_file(self.BLAH_CONFIG)
+            new_value = "yes" if self.opt_val('pbs_flavor') == "pro" else "no"
+            contents = utilities.add_or_replace_setting(contents, "pbs_pro", new_value,
+                                                        quote_value=False)
+            utilities.atomic_write(self.BLAH_CONFIG, contents)
