@@ -21,7 +21,8 @@ __all__ = ['BoscoConfiguration']
 
 class BoscoConfiguration(JobManagerConfiguration):
     """Class to handle attributes related to Bosco job manager configuration"""
-
+    SSH_CONFIG_SECTION_BEGIN = "### THIS SECTION MANAGED BY OSG-CONFIGURE\n"
+    SSH_CONFIG_SECTION_END = "### END OF SECTION MANAGED BY OSG-CONFIGURE\n"
 
     def __init__(self, *args, **kwargs):
         # pylint: disable-msg=W0142
@@ -49,7 +50,12 @@ class BoscoConfiguration(JobManagerConfiguration):
                         'max_jobs':
                             configfile.Option(name='max_jobs',
                                               requred=configfile.Option.OPTIONAL,
-                                              default_value=1000)}
+                                              default_value=1000),
+                        'edit_ssh_config':
+                            configfile.Option(name='edit_ssh_config',
+                                              required=configfile.Option.OPTIONAL,
+                                              opt_type=bool,
+                                              default_value=True)}
                                               
         
         self.config_section = "BOSCO"
@@ -231,24 +237,9 @@ class BoscoConfiguration(JobManagerConfiguration):
 
         os.chmod(ssh_key_loc, stat.S_IRUSR | stat.S_IWUSR)
 
-        # Add a section to .ssh/config for this host
-        config_path = os.path.join(user_home, ".ssh", "config")
-        #  Split the entry point by the "@"
-        (username, host) = self.options["endpoint"].value.split('@')
-        host_config = """
-Host %(host)s
-    HostName %(host)s
-    User %(username)s
-    IdentityFile %(key_loc)s
-""" % {'host': host, 'username': user_name, 'key_loc': ssh_key_loc}
+        if self.opt_val("edit_ssh_config"):
+            self.edit_ssh_config(ssh_key_loc, user_home, user_name)
 
-        # Search the config for the above host
-        if not self._search_config(host, config_path):
-            
-            with open(config_path, 'a') as f:
-                f.write(host_config)
-                self.log("Wrote %s", config_path, level=logging.DEBUG)
-        
         # Change the ownership of everything to the user
         # https://stackoverflow.com/questions/2853723/whats-the-python-way-for-recursively-setting-file-permissions
         path = os.path.join(user_home, ".ssh")  
@@ -330,6 +321,41 @@ Host %(host)s
             self.log("Error in bosco installation: %s" % e, level=logging.ERROR)
             return False
         return True
+
+    def edit_ssh_config(self, ssh_key_loc, user_home, user_name):
+        # Add a section to .ssh/config for this host
+        config_path = os.path.join(user_home, ".ssh", "config")
+        #  Split the entry point by the "@"
+        username, host = self.options["endpoint"].value.split('@')
+        host_config = """
+Host %(host)s
+    HostName %(host)s
+    User %(user_name)s
+    IdentityFile %(ssh_key_loc)s
+""" % locals()
+        text_to_add = "%s%s%s" % (self.SSH_CONFIG_SECTION_BEGIN, host_config, self.SSH_CONFIG_SECTION_END)
+        if not os.path.exists(config_path):
+            utilities.atomic_write(config_path, text_to_add)
+            return
+
+        config_contents = ""
+        with open(config_path) as f:
+            config_contents = f.read()
+
+        section_re = re.compile(r"%s.+?%s" % (re.escape(self.SSH_CONFIG_SECTION_BEGIN), re.escape(self.SSH_CONFIG_SECTION_END)),
+                                re.MULTILINE | re.DOTALL)
+        host_re = re.compile(r"^\s*Host\s+%s\s*$" % re.escape(host), re.MULTILINE)
+
+        if section_re.search(config_contents):
+            config_contents = section_re.sub(text_to_add, config_contents)
+            self.logger.debug("osg-configure section found in %s", config_path)
+        elif host_re.search(config_contents):
+            self.logger.info("Host %s already found in %s but not in an osg-configure section. Not modifying it.", host, config_path)
+            return
+        else:
+            config_contents += "\n" + text_to_add
+
+        utilities.atomic_write(config_path, config_contents)
 
     def _write_route_config_vars(self):
         """
