@@ -146,7 +146,7 @@ class SiteInformation(BaseConfiguration):
                      level=logging.WARNING)
 
         latitude = self.opt_val("latitude")
-        if not utilities.blank(latitude) and not -90 < latitude < 90:
+        if not utilities.blank(latitude) and not -90 <= latitude <= 90:
             self.log("Latitude must be between -90 and 90, got %s" %
                      latitude,
                      section=self.config_section,
@@ -155,7 +155,7 @@ class SiteInformation(BaseConfiguration):
             attributes_ok = False
 
         longitude = self.opt_val("longitude")
-        if not utilities.blank(longitude) and not -180 < longitude < 180:
+        if not utilities.blank(longitude) and not -180 <= longitude <= 180:
             self.log("Longitude must be between -180 and 180, got %s" %
                      longitude,
                      section=self.config_section,
