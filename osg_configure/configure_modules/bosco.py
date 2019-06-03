@@ -108,10 +108,6 @@ class BoscoConfiguration(JobManagerConfiguration):
                      section=self.config_section,
                      level=logging.ERROR)
         
-        # Change the  batch value to pbs if it slurm, for now
-        if self.options['batch'].value is 'slurm':
-            self.options['batch'].value = 'pbs'
-        
         # TODO: check if the ssh_key has the correct permissions!
         if not validation.valid_file(self.options['ssh_key'].value):
             attributes_ok = False
