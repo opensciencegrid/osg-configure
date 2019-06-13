@@ -364,6 +364,7 @@ CONDOR_VIEW_HOST = %s
                         sys.stdout.flush()
                         user_vo_file_text = gums_supported_vos.gums_json_user_vo_map_file(self.gums_host)
                         open(USER_VO_MAP_LOCATION, "w").write(user_vo_file_text)
+                        self.log("Wrote %s", USER_VO_MAP_LOCATION, level=logging.DEBUG)
                         return True
                     except exceptions.Error as e:
                         self.log("Could not query GUMS server via JSON interface: %s" % e, level=logging.WARNING)

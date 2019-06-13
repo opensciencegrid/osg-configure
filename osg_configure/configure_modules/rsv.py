@@ -777,6 +777,7 @@ class RsvConfiguration(BaseConfiguration):
                                                                condor_dir))
                 sysconf.write("export PATH\n")
             sysconf.close()
+            self.log("Wrote %s", sysconf_file, level=logging.DEBUG)
         except IOError as err:
             self.log("Error trying to write to file (%s): %s" % (sysconf_file, err))
             raise exceptions.ConfigureError
@@ -788,6 +789,7 @@ class RsvConfiguration(BaseConfiguration):
             if self.options['condor_location'].value:
                 config.write("RELEASE_DIR = %s" % condor_dir)
             config.close()
+            self.log("Wrote %s", conf_file, level=logging.DEBUG)
         except IOError as err:
             self.log("Error trying to write to file (%s): %s" % (conf_file, err))
             raise exceptions.ConfigureError
@@ -830,6 +832,7 @@ class RsvConfiguration(BaseConfiguration):
         config_fp = open(self.rsv_conf, 'w')
         try:
             config.write(config_fp)
+            self.log("Wrote %s", self.rsv_conf, level=logging.DEBUG)
         finally:
             config_fp.close()
 
@@ -915,6 +918,7 @@ class RsvConfiguration(BaseConfiguration):
         try:
             try:
                 config.write(config_fp)
+                self.log("Wrote %s", allmetrics_conf_path, level=logging.DEBUG)
             except EnvironmentError as err:
                 self.log("Error writing to %s: %s" % (allmetrics_conf_path, str(err)), level=logging.ERROR)
                 raise exceptions.ConfigureError
@@ -986,6 +990,7 @@ class RsvConfiguration(BaseConfiguration):
         config_fp = open(nagios_conf_file, 'w')
         config.write(config_fp)
         config_fp.close()
+        self.log("Wrote %s", nagios_conf_file, level=logging.DEBUG)
 
     def _configure_zabbix_files(self):
         """ Store the zabbix configuration """
@@ -1012,6 +1017,7 @@ class RsvConfiguration(BaseConfiguration):
         config_fp = open(zabbix_conf_file, 'w')
         config.write(config_fp)
         config_fp.close()
+        self.log("Wrote %s", zabbix_conf_file, level=logging.DEBUG)
 
     def load_rsv_meta_files(self):
         """ All the RSV meta files are in INI format.  Pull them in so that we know what

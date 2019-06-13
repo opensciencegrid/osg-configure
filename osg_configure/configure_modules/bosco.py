@@ -247,6 +247,7 @@ Host %(host)s
             
             with open(config_path, 'a') as f:
                 f.write(host_config)
+                self.log("Wrote %s", config_path, level=logging.DEBUG)
         
         # Change the ownership of everything to the user
         # https://stackoverflow.com/questions/2853723/whats-the-python-way-for-recursively-setting-file-permissions
