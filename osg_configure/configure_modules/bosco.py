@@ -42,6 +42,10 @@ class BoscoConfiguration(JobManagerConfiguration):
                         'ssh_key':
                             configfile.Option(name='ssh_key',
                                               requred=configfile.Option.MANDATORY),
+                        'run_bosco_cluster':
+                            configfile.Option(name='run_bosco_cluster',
+                                              required=configfile.Option.OPTIONAL,
+                                              default_value=True),
                         'max_jobs':
                             configfile.Option(name='max_jobs',
                                               requred=configfile.Option.OPTIONAL,
@@ -246,32 +250,39 @@ Host %(host)s
             for momo in files:
                 os.chown(os.path.join(root, momo), user_uid, user_gid)
         os.chown(path, user_uid, user_gid)
-                
+
+        if not self.options['run_bosco_cluster']:
+            return True
+
+        return self._run_bosco_cluster(user_gid, user_home, user_name, user_uid)
+
+    def _run_bosco_cluster(self, user_gid, user_home, user_name, user_uid):
         # Function to demote to a specified uid and gid
         def demote(user_uid, user_gid):
             def result():
                 os.setgid(user_gid)
                 os.setuid(user_uid)
+
             return result
-        
+
         try:
 
             # Set the user home directory
             env = os.environ.copy()
-            env[ 'HOME'     ]  = user_home
-            env[ 'LOGNAME'  ]  = user_name
-            env[ 'USER'     ]  = user_name
-            
+            env['HOME'] = user_home
+            env['LOGNAME'] = user_name
+            env['USER'] = user_name
+
             # Step 2. Run bosco cluster to install the remote cluster
-            install_cmd = "bosco_cluster -a %(endpoint)s %(rms)s" % { 
+            install_cmd = "bosco_cluster -a %(endpoint)s %(rms)s" % {
                 'endpoint': self.options['endpoint'].value,
-                'rms': self.options['batch'].value}
-                
+                'rms':      self.options['batch'].value}
+
             self.log("Bosco command to execute: %s" % install_cmd)
             process = subprocess.Popen(install_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True,
-                                       preexec_fn = demote(user_uid, user_gid), env=env)
-            (stdout, stderr) = process.communicate()
-            returncode = process.wait()
+                                       preexec_fn=demote(user_uid, user_gid), env=env)
+            stdout, stderr = process.communicate()
+            returncode = process.returncode
             if returncode:
                 self.log("Bosco installation command failed with exit code %i" % returncode, level=logging.ERROR)
                 self.log("stdout:\n%s" % stdout, level=logging.ERROR)
@@ -283,9 +294,8 @@ Host %(host)s
                 self.log("stderr:\n%s" % stderr, level=logging.DEBUG)
 
         except Exception as e:
-            self.log("Error in bosco installation: %s" % str(e), level=logging.ERROR)
+            self.log("Error in bosco installation: %s" % e, level=logging.ERROR)
             return False
-            
         return True
 
     def _write_route_config_vars(self):
