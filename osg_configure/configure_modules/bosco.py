@@ -301,16 +301,16 @@ Host %(host)s
                         self.log("Entry found in clusterlist", level=logging.DEBUG)
                         return True
                 else:
-                    self.log("Unexpected exit code from bosco_cluster -l: %d" % returncode, level=logging.ERROR)
+                    self.log("bosco_cluster -l failed with unexpected exit code %d" % returncode, level=logging.ERROR)
                     self.log("stdout:\n%s" % stdout, level=logging.ERROR)
                     self.log("stderr:\n%s" % stderr, level=logging.ERROR)
                     return False
 
             # Step 2. Run bosco cluster to install the remote cluster
-            install_cmd = "bosco_cluster -a %(endpoint)s %(rms)s" % locals()
+            install_cmd = ["bosco_cluster", "-a", endpoint, rms]
 
-            self.log("Bosco command to execute: %s" % install_cmd)
-            process = subprocess.Popen(install_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True,
+            self.log("Bosco command to execute: %s" % install_cmd, level=logging.DEBUG)
+            process = subprocess.Popen(install_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                        preexec_fn=demote(user_uid, user_gid), env=env)
             stdout, stderr = process.communicate()
             returncode = process.returncode
