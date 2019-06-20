@@ -261,10 +261,9 @@ Host %(host)s
         if self.opt_val("install_cluster") == "never":
             return True
 
-        if_needed = self.opt_val("install_cluster") == "if_needed"
-        return self._run_bosco_cluster(user_gid, user_home, user_name, user_uid, if_needed)
+        return self._run_bosco_cluster(user_gid, user_home, user_name, user_uid)
 
-    def _run_bosco_cluster(self, user_gid, user_home, user_name, user_uid, if_needed=False):
+    def _run_bosco_cluster(self, user_gid, user_home, user_name, user_uid):
         # Function to demote to a specified uid and gid
         def demote(uid, gid):
             def result():
@@ -282,9 +281,9 @@ Host %(host)s
             env['USER'] = user_name
 
             endpoint = self.opt_val("endpoint")
-            rms = self.opt_val("batch")
+            batch = self.opt_val("batch")
 
-            if if_needed:
+            if self.opt_val("install_cluster") == "if_needed":
                 # Only install if it's not in the clusterlist
                 cmd = ["bosco_cluster", "-l"]
                 process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -295,8 +294,9 @@ Host %(host)s
                     self.log("Bosco clusterlist empty", level=logging.DEBUG)
                 elif returncode == 0:
                     self.log("Bosco clusterlist:\n%s" % stdout, level=logging.DEBUG)
+                    # Looking for a line like "bosco@submit.example.net/pbs"
                     pattern = re.compile(r"^%s/%s" % (re.escape(endpoint),
-                                                      re.escape(rms)), re.MULTILINE)
+                                                      re.escape(batch)), re.MULTILINE)
                     if pattern.search(stdout):
                         self.log("Entry found in clusterlist", level=logging.DEBUG)
                         return True
@@ -306,8 +306,9 @@ Host %(host)s
                     self.log("stderr:\n%s" % stderr, level=logging.ERROR)
                     return False
 
-            # Step 2. Run bosco cluster to install the remote cluster
-            install_cmd = ["bosco_cluster", "-a", endpoint, rms]
+
+            # Run bosco cluster to install the remote cluster
+            install_cmd = ["bosco_cluster", "-a", endpoint, batch]
 
             self.log("Bosco command to execute: %s" % install_cmd, level=logging.DEBUG)
             process = subprocess.Popen(install_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -363,7 +364,3 @@ Host %(host)s
                     return True
         
         return False
-        
-        
-        
-        
