@@ -410,6 +410,7 @@ def atomic_write(filename=None, contents=None, **kwargs):
             os.unlink(temp_name)
             raise
         os.rename(temp_name, filename)
+        logger.debug("Wrote %s", filename)
         os.chmod(filename, mode)
     except EnvironmentError:
         return False

@@ -80,13 +80,14 @@ class BaseConfiguration(object):
         """Return a boolean that indicates whether this module can be configured separately"""
         return False
 
-    def log(self, mesg, **kwargs):
+    def log(self, mesg, *args, **kwargs):
         """
         Generate a log message if option and section are given then the file
         that generated the error is added to log message
 
         Arguments:
         mesg - message to add to default log message
+        args - arguments to substitute into mesg
 
         Keyword Arguments:
         option - option that caused the log message to be created
@@ -111,7 +112,7 @@ class BaseConfiguration(object):
                 message += mesg
         else:
             message += mesg
-        self.logger.log(log_level, message, exc_info=exception)
+        self.logger.log(log_level, message, *args, exc_info=exception)
 
     @staticmethod
     def check_config(configuration):
