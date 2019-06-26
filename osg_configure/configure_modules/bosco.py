@@ -42,6 +42,10 @@ class BoscoConfiguration(JobManagerConfiguration):
                         'ssh_key':
                             configfile.Option(name='ssh_key',
                                               requred=configfile.Option.MANDATORY),
+                        'install_cluster':
+                            configfile.Option(name='install_cluster',
+                                              required=configfile.Option.OPTIONAL,
+                                              default_value="if_needed"),
                         'max_jobs':
                             configfile.Option(name='max_jobs',
                                               requred=configfile.Option.OPTIONAL,
@@ -147,7 +151,14 @@ class BoscoConfiguration(JobManagerConfiguration):
                      option='endpoint',
                      section=self.config_section,
                      level=logging.ERROR)
-        
+
+        if self.opt_val("install_cluster") not in ["always", "never", "if_needed"]:
+            self.log("install_cluster attribute is not valid: %s" %
+                     self.opt_val("install_cluster"),
+                     option="install_cluster",
+                     section=self.config_section,
+                     level=logging.ERROR)
+
         self.log('BoscoConfiguration.check_attributes completed')
         return attributes_ok
         
@@ -246,32 +257,64 @@ Host %(host)s
             for momo in files:
                 os.chown(os.path.join(root, momo), user_uid, user_gid)
         os.chown(path, user_uid, user_gid)
-                
+
+        if self.opt_val("install_cluster") == "never":
+            return True
+
+        return self._run_bosco_cluster(user_gid, user_home, user_name, user_uid)
+
+    def _run_bosco_cluster(self, user_gid, user_home, user_name, user_uid):
         # Function to demote to a specified uid and gid
-        def demote(user_uid, user_gid):
+        def demote(uid, gid):
             def result():
-                os.setgid(user_gid)
-                os.setuid(user_uid)
+                os.setgid(gid)
+                os.setuid(uid)
+
             return result
-        
+
         try:
 
             # Set the user home directory
             env = os.environ.copy()
-            env[ 'HOME'     ]  = user_home
-            env[ 'LOGNAME'  ]  = user_name
-            env[ 'USER'     ]  = user_name
-            
-            # Step 2. Run bosco cluster to install the remote cluster
-            install_cmd = "bosco_cluster -a %(endpoint)s %(rms)s" % { 
-                'endpoint': self.options['endpoint'].value,
-                'rms': self.options['batch'].value}
-                
-            self.log("Bosco command to execute: %s" % install_cmd)
-            process = subprocess.Popen(install_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True,
-                                       preexec_fn = demote(user_uid, user_gid), env=env)
-            (stdout, stderr) = process.communicate()
-            returncode = process.wait()
+            env['HOME'] = user_home
+            env['LOGNAME'] = user_name
+            env['USER'] = user_name
+
+            endpoint = self.opt_val("endpoint")
+            batch = self.opt_val("batch")
+
+            if self.opt_val("install_cluster") == "if_needed":
+                # Only install if it's not in the clusterlist
+                cmd = ["bosco_cluster", "-l"]
+                process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                           preexec_fn=demote(user_uid, user_gid), env=env)
+                stdout, stderr = process.communicate()
+                returncode = process.returncode
+                if returncode == 2:
+                    self.log("Bosco clusterlist empty", level=logging.DEBUG)
+                elif returncode == 0:
+                    self.log("Bosco clusterlist:\n%s" % stdout, level=logging.DEBUG)
+                    # Looking for a line like "bosco@submit.example.net/pbs"
+                    pattern = re.compile(r"^%s/%s" % (re.escape(endpoint),
+                                                      re.escape(batch)), re.MULTILINE)
+                    if pattern.search(stdout):
+                        self.log("Entry found in clusterlist", level=logging.DEBUG)
+                        return True
+                else:
+                    self.log("bosco_cluster -l failed with unexpected exit code %d" % returncode, level=logging.ERROR)
+                    self.log("stdout:\n%s" % stdout, level=logging.ERROR)
+                    self.log("stderr:\n%s" % stderr, level=logging.ERROR)
+                    return False
+
+
+            # Run bosco cluster to install the remote cluster
+            install_cmd = ["bosco_cluster", "-a", endpoint, batch]
+
+            self.log("Bosco command to execute: %s" % install_cmd, level=logging.DEBUG)
+            process = subprocess.Popen(install_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                       preexec_fn=demote(user_uid, user_gid), env=env)
+            stdout, stderr = process.communicate()
+            returncode = process.returncode
             if returncode:
                 self.log("Bosco installation command failed with exit code %i" % returncode, level=logging.ERROR)
                 self.log("stdout:\n%s" % stdout, level=logging.ERROR)
@@ -283,9 +326,8 @@ Host %(host)s
                 self.log("stderr:\n%s" % stderr, level=logging.DEBUG)
 
         except Exception as e:
-            self.log("Error in bosco installation: %s" % str(e), level=logging.ERROR)
+            self.log("Error in bosco installation: %s" % e, level=logging.ERROR)
             return False
-            
         return True
 
     def _write_route_config_vars(self):
@@ -322,7 +364,3 @@ Host %(host)s
                     return True
         
         return False
-        
-        
-        
-        
