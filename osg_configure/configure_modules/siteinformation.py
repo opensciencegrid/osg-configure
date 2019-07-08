@@ -45,7 +45,8 @@ class SiteInformation(BaseConfiguration):
                                               mapping='OSG_SITE_NAME'),
                         'sponsor':
                             configfile.Option(name='sponsor',
-                                              required=MANDATORY_ON_CE,
+                                              required=OPTIONAL,
+                                              default_value='',
                                               mapping='OSG_SPONSOR'),
                         'site_policy':
                             configfile.Option(name='site_policy',
