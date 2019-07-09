@@ -159,7 +159,6 @@ class TestSiteAttributes(unittest.TestCase):
         mandatory_on_all = ['group']
         # ^ TODO OSG 3.5: add "resource" to this list
         mandatory_on_ce = ['host_name',
-                           'sponsor',
                            'contact',
                            'email',
                            'city',
