@@ -197,7 +197,7 @@ class SiteInformation(BaseConfiguration):
         vo_names.update(["usatlas", "uscms", "local"])
 
         valid_vo_names_msg = "Valid VO names are as follows:\n%s" % (
-            "\n".join(sorted(vo_names))
+            ", ".join(sorted(vo_names))
         )
         cap_vo_names = set(vo.upper() for vo in vo_names)
         for vo in re.split(r'\s*,?\s*', sponsor):
@@ -220,7 +220,6 @@ class SiteInformation(BaseConfiguration):
                                  option='sponsor',
                                  level=logging.WARNING)
                         self.log(valid_vo_names_msg, level=logging.WARNING)
-                        attributes_ok = False
                     else:
                         self.log("Can't check VOs in sponsor setting because no VO mappings were found."
                                  " Install vo-client-lcmaps-voms for mappings.",
