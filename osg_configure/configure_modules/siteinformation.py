@@ -185,48 +185,8 @@ class SiteInformation(BaseConfiguration):
     def check_sponsor(self, sponsor):
         attributes_ok = True
         percentage = 0
-        vo_names = (set(utilities.get_vos(None))  # get from user-vo-map (backwards compat with old auth methods; remove in 3.5)
-                    or
-                    reversevomap.get_vos(reversevomap.read_mapfiles()))  # get from voms-mapfiles
-        if vo_names:
-            have_vo_mappings = True
-        else:
-            have_vo_mappings = False
-
-        # Special cases:
-        vo_names.update(["usatlas", "uscms", "local"])
-
-        valid_vo_names_msg = "Valid VO names are as follows:\n%s" % (
-            ", ".join(sorted(vo_names))
-        )
-        cap_vo_names = set(vo.upper() for vo in vo_names)
         for vo in re.split(r'\s*,?\s*', sponsor):
             vo_split = vo.split(':')
-
-            vo_name = vo_split[0]
-            if vo_name not in vo_names:
-                if vo_name.upper() in cap_vo_names:
-                    self.log("VO name %s has the wrong capitialization" % vo_name,
-                             section=self.config_section,
-                             option='sponsor',
-                             level=logging.WARNING)
-                    self.log(valid_vo_names_msg, level=logging.WARNING)
-                else:
-                    if have_vo_mappings:
-                        self.log("In %s section, problem with sponsor setting" % \
-                                 self.config_section)
-                        self.log("VO name %s not found" % vo_name,
-                                 section=self.config_section,
-                                 option='sponsor',
-                                 level=logging.WARNING)
-                        self.log(valid_vo_names_msg, level=logging.WARNING)
-                    else:
-                        self.log("Can't check VOs in sponsor setting because no VO mappings were found."
-                                 " Install vo-client-lcmaps-voms for mappings.",
-                                 section=self.config_section,
-                                 option='sponsor',
-                                 level=logging.WARNING)
-
             if len(vo_split) == 1:
                 percentage += 100
             elif len(vo_split) == 2:
