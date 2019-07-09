@@ -249,6 +249,7 @@ class SiteInformation(BaseConfiguration):
                          level=logging.ERROR)
                 self.log("Sponsors should be given as sponsor:percentage "
                          "separated by a space or comma")
+                attributes_ok = False
 
         if percentage != 100:
             self.log("VO percentages in sponsor field do not add up to 100, got %s"
