@@ -218,8 +218,8 @@ class SiteInformation(BaseConfiguration):
                         self.log("VO name %s not found" % vo_name,
                                  section=self.config_section,
                                  option='sponsor',
-                                 level=logging.ERROR)
-                        self.log(valid_vo_names_msg, level=logging.ERROR)
+                                 level=logging.WARNING)
+                        self.log(valid_vo_names_msg, level=logging.WARNING)
                         attributes_ok = False
                     else:
                         self.log("Can't check VOs in sponsor setting because no VO mappings were found."
