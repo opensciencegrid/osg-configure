@@ -102,14 +102,6 @@ class BoscoConfiguration(JobManagerConfiguration):
             self.log('BoscoConfiguration.check_attributes completed')
             return attributes_ok
             
-        #if not validation.valid_domain(self.options['endpoint'].value):
-        #    attributes_ok = False
-        #    self.log("Endpoint is not a valid hostname: %s" % 
-        #             (self.options['endpoint'].value),
-        #             option='endpoint',
-        #             section=self.config_section,
-        #             level=logging.ERROR)
-        
         if self.options['batch'].value not in ['pbs', 'lsf', 'sge', 'condor', 'slurm']:
             attributes_ok = False
             self.log("Batch attribute is not valid: %s" % 
