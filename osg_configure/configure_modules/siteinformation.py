@@ -3,6 +3,7 @@
 import re
 import logging
 
+from osg_configure.modules import reversevomap
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile
 from osg_configure.modules import validation
@@ -44,7 +45,8 @@ class SiteInformation(BaseConfiguration):
                                               mapping='OSG_SITE_NAME'),
                         'sponsor':
                             configfile.Option(name='sponsor',
-                                              required=MANDATORY_ON_CE,
+                                              required=OPTIONAL,
+                                              default_value='',
                                               mapping='OSG_SPONSOR'),
                         'site_policy':
                             configfile.Option(name='site_policy',
@@ -183,59 +185,16 @@ class SiteInformation(BaseConfiguration):
     def check_sponsor(self, sponsor):
         attributes_ok = True
         percentage = 0
-        vo_names = utilities.get_vos(None)
-        if vo_names == []:
-            map_file_present = False
-        else:
-            map_file_present = True
-        vo_names.append('usatlas')  # usatlas is a valid vo name
-        vo_names.append('uscms')  # uscms is a valid vo name
-        vo_names.append('local')  # local is a valid vo name
-
-        cap_vo_names = [vo.upper() for vo in vo_names]
         for vo in re.split(r'\s*,?\s*', sponsor):
-            vo_name = vo.split(':')[0]
-            if vo_name not in vo_names:
-                if vo_name.upper() in cap_vo_names:
-                    self.log("VO name %s has the wrong capitialization" % vo_name,
-                             section=self.config_section,
-                             option='sponsor',
-                             level=logging.WARNING)
-                    vo_mesg = "Valid VO names are as follows:\n"
-                    for name in vo_names:
-                        vo_mesg += name + "\n"
-                    self.log(vo_mesg, level=logging.WARNING)
-                else:
-                    if map_file_present:
-                        self.log("In %s section, problem with sponsor setting" % \
-                                 self.config_section)
-                        self.log("VO name %s not found" % vo_name,
-                                 section=self.config_section,
-                                 option='sponsor',
-                                 level=logging.ERROR)
-                        vo_mesg = "Valid VO names are as follows:\n"
-                        for name in vo_names:
-                            vo_mesg += name + "\n"
-                        self.log(vo_mesg, level=logging.ERROR)
-                        attributes_ok = False
-                    else:
-                        self.log("Can't currently check VOs in sponsor setting because " +
-                                 "the /var/lib/osg/user-vo-map is empty. If you are " +
-                                 "configuring osg components, this may be resolved when " +
-                                 "osg-configure runs the appropriate script to generate " +
-                                 "this file later in the configuration process",
-                                 section=self.config_section,
-                                 option='sponsor',
-                                 level=logging.WARNING)
-
-            if len(vo.split(':')) == 1:
+            vo_split = vo.split(':')
+            if len(vo_split) == 1:
                 percentage += 100
-            elif len(vo.split(':')) == 2:
-                vo_percentage = vo.split(':')[1]
+            elif len(vo_split) == 2:
+                vo_percentage = vo_split[1]
                 try:
                     percentage += int(vo_percentage)
                 except ValueError:
-                    self.log("VO percentage (%s) in sponsor field (%s) not an integer" \
+                    self.log("VO percentage (%s) in sponsor field (%s) not an integer"
                              % (vo_percentage, vo),
                              section=self.config_section,
                              option='sponsor',
@@ -249,9 +208,10 @@ class SiteInformation(BaseConfiguration):
                          level=logging.ERROR)
                 self.log("Sponsors should be given as sponsor:percentage "
                          "separated by a space or comma")
+                attributes_ok = False
 
         if percentage != 100:
-            self.log("VO percentages in sponsor field do not add up to 100, got %s" \
+            self.log("VO percentages in sponsor field do not add up to 100, got %s"
                      % percentage,
                      section=self.config_section,
                      option='sponsor',
