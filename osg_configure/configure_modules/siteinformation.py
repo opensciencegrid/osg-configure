@@ -37,11 +37,6 @@ class SiteInformation(BaseConfiguration):
                                               required=MANDATORY_ON_CE,
                                               default_value='',
                                               mapping='OSG_HOSTNAME'),
-                        'site_name':
-                            configfile.Option(name='site_name',
-                                              required=OPTIONAL,
-                                              default_value='',
-                                              mapping='OSG_SITE_NAME'),
                         'sponsor':
                             configfile.Option(name='sponsor',
                                               required=OPTIONAL,
@@ -80,7 +75,7 @@ class SiteInformation(BaseConfiguration):
                                               mapping='OSG_SITE_LATITUDE'),
                         'resource':
                             configfile.Option(name='resource',
-                                              required=OPTIONAL,
+                                              required=MANDATORY,
                                               default_value='',
                                               mapping='OSG_SITE_NAME'),
                         'resource_group':
@@ -138,13 +133,6 @@ class SiteInformation(BaseConfiguration):
                      section=self.config_section,
                      level=logging.ERROR)
             attributes_ok = False
-
-        if not utilities.blank(self.opt_val("site_name")):
-            self.log("The site_name setting has been deprecated in favor of the"
-                     " resource and resource_group settings and will be removed",
-                     section=self.config_section,
-                     option="site_name",
-                     level=logging.WARNING)
 
         latitude = self.opt_val("latitude")
         if not utilities.blank(latitude) and not -90 <= latitude <= 90:
@@ -226,27 +214,3 @@ class SiteInformation(BaseConfiguration):
     def separately_configurable(self):
         """Return a boolean that indicates whether this module can be configured separately"""
         return True
-
-    def get_attributes(self, converter=str):
-        """
-        Get attributes for the osg attributes file using the dict in self.options
-
-        Returns a dictionary of ATTRIBUTE => value mappings
-
-        Need to override parent class method since two options may map to OSG_SITE_NAME
-        """
-
-        self.log("%s.get_attributes started" % self.__class__)
-
-        attributes = BaseConfiguration.get_attributes(self, converter)
-        if attributes == {}:
-            self.log("%s.get_attributes completed" % self.__class__)
-            return attributes
-
-        if ('OSG_SITE_NAME' in attributes and
-                    self.options['resource'].value is not None and
-                not utilities.blank(self.options['resource'].value)):
-            attributes['OSG_SITE_NAME'] = self.options['resource'].value
-
-        self.log("%s.get_attributes completed" % self.__class__)
-        return attributes
