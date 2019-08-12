@@ -482,7 +482,7 @@ in your config.ini file."""
         """
 
         config_location = GRATIA_CONFIG_FILES['condor']
-        buf = file(config_location).read()
+        buf = open(config_location).read()
         settings = self._probe_config['condor']
         buf = self.replace_setting(buf, 'CondorLocation', settings['condor_location'])
         buf = self.replace_setting(buf, 'CondorConfig', settings['condor_config'])
@@ -506,7 +506,7 @@ in your config.ini file."""
             return True
 
         config_location = GRATIA_CONFIG_FILES['pbs']
-        buf = file(config_location).read()
+        buf = open(config_location).read()
         buf = self.replace_setting(buf, 'pbsAcctLogDir', accounting_dir, xml_file=False)
         buf = self.replace_setting(buf, 'lrmsType', 'pbs', xml_file=False)
         if not utilities.atomic_write(config_location, buf):
@@ -532,7 +532,7 @@ in your config.ini file."""
                      section='LSF')
             return True
         config_location = GRATIA_CONFIG_FILES['lsf']
-        buf = file(config_location).read()
+        buf = open(config_location).read()
         buf = self.replace_setting(buf, 'lsfAcctLogDir', log_directory, xml_file=False)
 
         # setup lsfBinDir
@@ -556,7 +556,7 @@ in your config.ini file."""
         """
         accounting_path = self._probe_config['sge']['sge_accounting_file']
         config_location = GRATIA_CONFIG_FILES['sge']
-        buf = file(config_location).read()
+        buf = open(config_location).read()
         buf = self.replace_setting(buf, 'SGEAccountingFile', accounting_path)
         if not utilities.atomic_write(config_location, buf):
             return False
@@ -567,7 +567,7 @@ in your config.ini file."""
         Do SLURM probe specific configuration
         """
         config_location = GRATIA_CONFIG_FILES['slurm']
-        buf = file(config_location).read()
+        buf = open(config_location).read()
 
         settings = self._probe_config['slurm']
         if not validation.valid_file(settings['db_pass']):
@@ -595,7 +595,7 @@ in your config.ini file."""
         Set to suppress grid local jobs (pre-routed jobs)
         """
         config_location = GRATIA_CONFIG_FILES['htcondor-ce']
-        buf = file(config_location).read()
+        buf = open(config_location).read()
         buf = self.replace_setting(buf, 'SuppressGridLocalRecords', '1')
         
         if not utilities.atomic_write(config_location, buf):
@@ -625,7 +625,7 @@ in your config.ini file."""
             return False
 
         config_location = GRATIA_CONFIG_FILES['condor']
-        contents = file(config_location).read()
+        contents = open(config_location).read()
         re_obj = re.compile(r'(?m)^\s*DataFolder\s*=(.*)\s*$')
         match = re_obj.search(contents)
         if match is not None:
