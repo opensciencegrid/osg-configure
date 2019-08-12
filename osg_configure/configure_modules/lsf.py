@@ -61,7 +61,7 @@ class LSFConfiguration(JobManagerConfiguration):
             self.log('LSFConfiguration.parse_configuration completed')
             return True
 
-        self.get_options(configuration, ignore_options=['enabled', 'job_contact', 'util_contact', 'seg_enabled', 'accept_limited'])
+        self.get_options(configuration, ignore_options=['enabled'])
 
         # set OSG_JOB_MANAGER_HOME
         # set OSG_JOB_MANAGER and OSG_JOB_MANAGER_HOME

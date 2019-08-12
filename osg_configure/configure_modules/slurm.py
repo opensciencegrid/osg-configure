@@ -74,8 +74,7 @@ class SlurmConfiguration(JobManagerConfiguration):
             self.log('SlurmConfiguration.parse_configuration completed')
             return True
 
-        self.get_options(configuration, ignore_options=['enabled', 'job_contact', 'util_contact',
-                                                        'accept_limited', 'log_directory'])
+        self.get_options(configuration, ignore_options=['enabled'])
 
         # set OSG_JOB_MANAGER and OSG_JOB_MANAGER_HOME
         self.options['job_manager'] = configfile.Option(name='job_manager',

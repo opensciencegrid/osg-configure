@@ -71,8 +71,7 @@ class SGEConfiguration(JobManagerConfiguration):
             self.log('SGEConfiguration.parse_configuration completed')
             return True
 
-        self.get_options(configuration, ignore_options=['enabled', 'job_contact', 'util_contact', 'accept_limited',
-                                                        'seg_enabled', 'log_file', 'log_directory'])
+        self.get_options(configuration, ignore_options=['enabled'])
 
         # fill in values for sge_location and home
         self.options['job_manager'] = configfile.Option(name='job_manager',
