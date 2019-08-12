@@ -90,12 +90,7 @@ in your config.ini file."""
 
         self.check_config(configuration)
 
-        if (not configuration.has_section(self.config_section) and requirements_are_installed()):
-            self.log('CE probes installed but no Gratia section, auto-configuring gratia')
-            self._auto_configure(configuration)
-            self.log('GratiaConfiguration.parse_configuration completed')
-            return True
-        elif not configuration.has_section(self.config_section):
+        if not configuration.has_section(self.config_section):
             self.enabled = False
             self.log("%s section not in config file" % self.config_section)
             self.log('Gratia.parse_configuration completed')
@@ -438,43 +433,6 @@ in your config.ini file."""
                 self.enabled_probe_settings[probe_name] = tmp[1]
             else:
                 self.enabled_probe_settings[probe_name] = ':'.join(tmp[1:])
-
-    def _auto_configure(self, configuration):
-        """
-        Configure gratia for a ce which does not have the gratia section
-        """
-        self.enabled = True
-
-        if configuration.has_option('Site Information', 'resource'):
-            resource = configuration.get('Site Information', 'resource')
-            self.options['resource'].value = resource
-        elif configuration.has_option('Site Information', 'site_name'):
-            resource = configuration.get('Site Information', 'site_name')
-            self.options['resource'].value = resource
-        else:
-            self.log('No resource defined in Site Information, this is required on a CE',
-                     level=logging.ERROR)
-            raise exceptions.SettingError('In Site Information, resource needs to be set')
-
-        if configuration.has_option('Site Information', 'group'):
-            group = configuration.get('Site Information', 'group')
-        else:
-            self.log('No group defined in Site Information, this is required on a CE',
-                     level=logging.ERROR)
-            raise exceptions.SettingError('In Site Information, group needs to be set')
-
-        if group == 'OSG':
-            probes = self._production_defaults['probes']
-        elif group == 'OSG-ITB':
-            probes = self._itb_defaults['probes']
-        else:
-            raise exceptions.SettingError('In Site Information, group must be '
-                                          'OSG or OSG-ITB')
-
-        self.options['probes'].value = probes
-        self._parse_probes(probes)
-
-        return True
 
     def _configure_condor_probe(self):
         """
