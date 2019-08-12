@@ -40,10 +40,6 @@ class RsvConfiguration(BaseConfiguration):
                             configfile.Option(name='ce_hosts',
                                               default_value='',
                                               required=configfile.Option.OPTIONAL),
-                        'gram_ce_hosts':
-                            configfile.Option(name='gram_ce_hosts',
-                                              default_value='',
-                                              required=configfile.Option.OPTIONAL),
                         'htcondor_ce_hosts':
                             configfile.Option(name='htcondor_ce_hosts',
                                               default_value='',
@@ -120,7 +116,6 @@ class RsvConfiguration(BaseConfiguration):
 
         self._rsv_user = "rsv"
         self._ce_hosts = []
-        self._gram_ce_hosts = []
         self._htcondor_ce_hosts = []
         self._gridftp_hosts = []
         self._gums_hosts = []
@@ -184,7 +179,6 @@ class RsvConfiguration(BaseConfiguration):
 
         # Parse lists
         self._ce_hosts = split_list_exclude_blank(self.options['ce_hosts'].value)
-        self._gram_ce_hosts = split_list_exclude_blank(self.options['gram_ce_hosts'].value)
         self._htcondor_ce_hosts = split_list_exclude_blank(self.options['htcondor_ce_hosts'].value)
         self._gums_hosts = split_list_exclude_blank(self.options['gums_hosts'].value)
         self._srm_hosts = split_list_exclude_blank(self.options['srm_hosts'].value)
@@ -236,10 +230,6 @@ class RsvConfiguration(BaseConfiguration):
             self.log('RsvConfiguration.check_attributes completed')
             return attributes_ok
 
-        if self._gram_ce_hosts:
-            self.log("GRAM is no longer supported as of Nov. 2016; please unset gram_ce_hosts",
-                     section=self.config_section, option='gram_ce_hosts', level=logging.ERROR)
-            return False
         try:
             (self.uid, self.gid) = pwd.getpwnam(self._rsv_user)[2:4]
         except KeyError:  # no such user
@@ -865,10 +855,8 @@ class RsvConfiguration(BaseConfiguration):
         self._write_rsv_conf(config)
 
     def _configure_default_ce_type(self):
-        """Set the ce-type in rsv.conf.
-        This controls whether Condor-G submits to a GRAM-Gatekeeper or an
-        HTCondor-CE when running remote probes. The setting may be overridden in
-        probe-specific configs (set by _configure_ce_types for example).
+        """Set the ce-type in rsv.conf to htcondor-ce.
+        The setting may be overridden in probe-specific configs (set by _configure_ce_types for example)
 
         """
         config = self._read_rsv_conf()

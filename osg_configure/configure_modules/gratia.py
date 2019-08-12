@@ -27,7 +27,7 @@ GRATIA_CONFIG_FILES = {
     'htcondor-ce': '/etc/gratia/htcondor-ce/ProbeConfig'
 }
 
-CE_PROBE_RPMS = ['gratia-probe-condor', 'gratia-probe-gram', 'gratia-probe-pbs-lsf', 'gratia-probe-sge',
+CE_PROBE_RPMS = ['gratia-probe-condor', 'gratia-probe-pbs-lsf', 'gratia-probe-sge',
                  'gratia-probe-slurm', 'gratia-probe-htcondor-ce']
 
 

@@ -344,18 +344,6 @@ class TestRSV(unittest.TestCase):
         self.assertTrue(settings.check_attributes(attributes),
                         "Correct configuration incorrectly flagged as incorrect")
 
-    def testGram(self):
-        """
-        Test RSV config no longer accepts gram_ce_hosts
-        """
-        config_parser = ConfigParser.SafeConfigParser()
-        config_file = get_test_config("rsv/rsv_gram.ini")
-        config_parser.read(config_file)
-        settings = rsv.RsvConfiguration(logger=global_logger)
-        settings.parse_configuration(config_parser)
-        self.assertFalse(settings.check_attributes(settings.get_attributes()),
-                        "gram_ce_hosts incorrectly flagged as correct")
-
     def testServiceList(self):
         """
         Test to make sure right services get returned
