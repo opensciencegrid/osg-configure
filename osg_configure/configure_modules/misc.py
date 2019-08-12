@@ -14,12 +14,11 @@ from osg_configure.modules.baseconfiguration import BaseConfiguration
 __all__ = ['MiscConfiguration']
 
 GSI_AUTHZ_LOCATION = "/etc/grid-security/gsi-authz.conf"
-GUMS_CLIENT_LOCATION = "/etc/gums/gums-client.properties"
 LCMAPS_DB_LOCATION = "/etc/lcmaps.db"
 LCMAPS_DB_TEMPLATES_LOCATION = "/usr/share/lcmaps/templates"
 HTCONDOR_CE_CONFIG_FILE = '/etc/condor-ce/config.d/50-osg-configure.conf'
 
-VALID_AUTH_METHODS = ['gridmap', 'local-gridmap', 'xacml', 'vomsmap']
+VALID_AUTH_METHODS = ['gridmap', 'local-gridmap', 'vomsmap']
 
 IGNORED_OPTIONS = [
     'enable_cleanup',
@@ -36,13 +35,7 @@ class MiscConfiguration(BaseConfiguration):
         super(MiscConfiguration, self).__init__(*args, **kwargs)
         self.logger = logging.getLogger(__name__)
         self.log('MiscConfiguration.__init__ started')
-        self.options = {'glexec_location':
-                            configfile.Option(name='glexec_location',
-                                              required=configfile.Option.OPTIONAL),
-                        'gums_host':
-                            configfile.Option(name='gums_host',
-                                              required=configfile.Option.OPTIONAL),
-                        'authorization_method':
+        self.options = {'authorization_method':
                             configfile.Option(name='authorization_method',
                                               default_value='vomsmap'),
                         'all_fqans':
@@ -86,7 +79,6 @@ class MiscConfiguration(BaseConfiguration):
         self.htcondor_gateway_enabled = utilities.config_safe_getboolean(configuration, 'Gateway',
                                                                          'htcondor_gateway_enabled', True)
         self.authorization_method = self.options['authorization_method'].value
-        self.using_glexec = not utilities.blank(self.options['glexec_location'].value)
         self.all_fqans = self.options['all_fqans'].value
 
         self.log('MiscConfiguration.parse_configuration completed')
@@ -109,32 +101,6 @@ class MiscConfiguration(BaseConfiguration):
                      level=logging.ERROR)
             attributes_ok = False
 
-        if self.authorization_method == 'xacml':
-            gums_host = self.options['gums_host'].value
-            if utilities.blank(gums_host):
-                self.log("Gums host not given",
-                         section=self.config_section,
-                         option='gums_host',
-                         level=logging.ERROR)
-                attributes_ok = False
-            elif not validation.valid_domain(gums_host, resolve=True):
-                self.log("Gums host not a valid domain name or does not resolve",
-                         section=self.config_section,
-                         option='gums_host',
-                         level=logging.ERROR)
-                attributes_ok = False
-            self.log("Gums is deprecated in OSG 3.4. The replacement is the LCMAPS VOMS plugin; please see"
-                     " installation instructions at"
-                     " https://opensciencegrid.github.io/docs/security/lcmaps-voms-authentication/",
-                     section=self.config_section,
-                     option='authorization_method',
-                     level=logging.WARNING)
-
-        if self.using_glexec:
-            msg = "glExec is not supported in OSG 3.4; unset glexec_location"
-            self.log(msg, options='glexec_location', section=self.config_section, level=logging.ERROR)
-            attributes_ok = False
-
         self.log('MiscConfiguration.check_attributes completed')
         return attributes_ok
 
@@ -152,10 +118,7 @@ class MiscConfiguration(BaseConfiguration):
             self.log("Error while running fetch-crl script", level=logging.ERROR)
             raise exceptions.ConfigureError('fetch-crl returned non-zero exit code')
 
-        if self.authorization_method == 'xacml':
-            self._set_lcmaps_callout(True)
-            self.update_gums_client_location()
-        elif self.authorization_method == 'gridmap':
+        if self.authorization_method == 'gridmap':
             self._set_lcmaps_callout(False)
         elif self.authorization_method == 'local-gridmap':
             self.log("local-gridmap is a deprecated auth method -- use 'gridmap' instead",
@@ -198,25 +161,6 @@ class MiscConfiguration(BaseConfiguration):
             self.log(msg, level=logging.ERROR)
             raise exceptions.ConfigureError(msg)
 
-    def update_gums_client_location(self):
-        self.log("Updating " + GUMS_CLIENT_LOCATION, level=logging.INFO)
-        location_re = re.compile("^gums.location=.*$", re.MULTILINE)
-        authz_re = re.compile("^gums.authz=.*$", re.MULTILINE)
-        if not validation.valid_file(GUMS_CLIENT_LOCATION):
-            gums_properties = "gums.location=https://%s:8443" % (self.options['gums_host'].value)
-            gums_properties += "/gums/services/GUMSAdmin\n"
-            gums_properties += "gums.authz=https://%s:8443" % (self.options['gums_host'].value)
-            gums_properties += "/gums/services/GUMSXACMLAuthorizationServicePort"
-        else:
-            gums_properties = open(GUMS_CLIENT_LOCATION).read()
-            replacement = "gums.location=https://%s:8443" % (self.options['gums_host'].value)
-            replacement += "/gums/services/GUMSAdmin"
-            gums_properties = location_re.sub(replacement, gums_properties)
-            replacement = "gums.authz=https://%s:8443" % (self.options['gums_host'].value)
-            replacement += "/gums/services/GUMSXACMLAuthorizationServicePort"
-            gums_properties = authz_re.sub(replacement, gums_properties)
-        utilities.atomic_write(GUMS_CLIENT_LOCATION, gums_properties)
-
     def _write_lcmaps_file(self):
         old_lcmaps_contents = utilities.read_file(LCMAPS_DB_LOCATION, default='')
         if old_lcmaps_contents and 'THIS FILE WAS WRITTEN BY OSG-CONFIGURE' not in old_lcmaps_contents:
@@ -228,9 +172,7 @@ class MiscConfiguration(BaseConfiguration):
                 raise exceptions.ConfigureError(msg)
 
         self.log("Writing " + LCMAPS_DB_LOCATION, level=logging.INFO)
-        if self.authorization_method == 'xacml':
-            lcmaps_template_fn = 'lcmaps.db.gums'
-        elif self.authorization_method == 'gridmap' or self.authorization_method == 'local-gridmap':
+        if self.authorization_method == 'gridmap' or self.authorization_method == 'local-gridmap':
             lcmaps_template_fn = 'lcmaps.db.gridmap'
         elif self.authorization_method == 'vomsmap':
             if self.all_fqans:
@@ -263,7 +205,7 @@ class MiscConfiguration(BaseConfiguration):
         lcmaps_contents = ("# THIS FILE WAS WRITTEN BY OSG-CONFIGURE AND WILL BE OVERWRITTEN ON FUTURE RUNS\n"
                            "# Set edit_lcmaps_db = False in the [%s] section of your OSG configuration to\n"
                            "# keep your changes.\n" % self.config_section
-                           + lcmaps_contents.replace('@GUMSHOST@', str(self.options['gums_host'].value)))
+                           + lcmaps_contents)
         if not utilities.atomic_write(LCMAPS_DB_LOCATION, lcmaps_contents):
             msg = "Error while writing to " + LCMAPS_DB_LOCATION
             self.log(msg, level=logging.ERROR)
@@ -280,10 +222,6 @@ class MiscConfiguration(BaseConfiguration):
         if utilities.rpm_installed('fetch-crl'):
             services = set(['fetch-crl-cron', 'fetch-crl-boot'])
 
-        if self.authorization_method == 'xacml':
-            services.add('gums-client-cron')
-        elif self.authorization_method == 'gridmap':
-            services.add('edg-mkgridmap')
         return services
 
     def write_gridmap_to_htcondor_ce_config(self):
