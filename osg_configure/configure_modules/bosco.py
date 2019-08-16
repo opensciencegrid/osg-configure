@@ -314,15 +314,15 @@ class BoscoConfiguration(JobManagerConfiguration):
             return False
         return True
 
-    def edit_ssh_config(self, ssh_key_loc, user_home, user_name):
+    def edit_ssh_config(self, ssh_key_loc, local_user_home, local_user_name):
         # Add a section to .ssh/config for this host
-        config_path = os.path.join(user_home, ".ssh", "config")
+        config_path = os.path.join(local_user_home, ".ssh", "config")
         #  Split the entry point by the "@"
-        username, host = self.options["endpoint"].value.split('@')
+        endpoint_user_name, endpoint_host = self.options["endpoint"].value.split('@')
         host_config = """
-Host %(host)s
-    HostName %(host)s
-    User %(user_name)s
+Host %(endpoint_host)s
+    HostName %(endpoint_host)s
+    User %(endpoint_user_name)s
     IdentityFile %(ssh_key_loc)s
 """ % locals()
         text_to_add = "%s%s%s" % (self.SSH_CONFIG_SECTION_BEGIN, host_config, self.SSH_CONFIG_SECTION_END)
@@ -336,13 +336,13 @@ Host %(host)s
 
         section_re = re.compile(r"%s.+?%s" % (re.escape(self.SSH_CONFIG_SECTION_BEGIN), re.escape(self.SSH_CONFIG_SECTION_END)),
                                 re.MULTILINE | re.DOTALL)
-        host_re = re.compile(r"^\s*Host\s+%s\s*$" % re.escape(host), re.MULTILINE)
+        host_re = re.compile(r"^\s*Host\s+%s\s*$" % re.escape(endpoint_host), re.MULTILINE)
 
         if section_re.search(config_contents):
             config_contents = section_re.sub(text_to_add, config_contents)
             self.logger.debug("osg-configure section found in %s", config_path)
         elif host_re.search(config_contents):
-            self.logger.info("Host %s already found in %s but not in an osg-configure section. Not modifying it.", host, config_path)
+            self.logger.info("Host %s already found in %s but not in an osg-configure section. Not modifying it.", endpoint_host, config_path)
             return
         else:
             config_contents += "\n" + text_to_add
