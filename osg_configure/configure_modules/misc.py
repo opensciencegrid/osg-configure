@@ -158,6 +158,8 @@ class MiscConfiguration(BaseConfiguration):
         elif self.authorization_method == 'gridmap':
             self._set_lcmaps_callout(False)
         elif self.authorization_method == 'local-gridmap':
+            self.log("local-gridmap is a deprecated auth method -- use 'gridmap' instead",
+                     level=logging.WARNING)
             self._set_lcmaps_callout(False)
         elif self.authorization_method == 'vomsmap':
             self._set_lcmaps_callout(True)
