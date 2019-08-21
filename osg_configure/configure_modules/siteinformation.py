@@ -19,9 +19,6 @@ class SiteInformation(BaseConfiguration):
     """Class to handle attributes related to site information such as location and
     contact information
     """
-    # The wlcg_* options are read by GIP directly
-    IGNORE_OPTIONS = ['wlcg_tier', 'wlcg_parent', 'wlcg_name', 'wlcg_grid']
-
     def __init__(self, *args, **kwargs):
         # pylint: disable-msg=W0142
         super(SiteInformation, self).__init__(*args, **kwargs)
@@ -101,7 +98,7 @@ class SiteInformation(BaseConfiguration):
             self.log('SiteInformation.parse_configuration completed')
             return
 
-        self.get_options(configuration, ignore_options=self.IGNORE_OPTIONS)
+        self.get_options(configuration)
         self.log('SiteInformation.parse_configuration completed')
 
     # pylint: disable-msg=W0613
