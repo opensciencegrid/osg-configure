@@ -23,7 +23,6 @@ CONFIGURE = 1
 VERIFY = 2
 LIST = 4
 QUERY = 5
-ENABLED_SERVICES = 6
 CONFIG_DIRECTORY = '/etc/osg'
 OUTPUT_DIRECTORY = '/var/lib/osg'
 LOG_FILE = '/var/log/osg/osg-configure.log'
@@ -500,12 +499,6 @@ def main():
                       const=QUERY,
                       dest='mode',
                       help='Query to see where a particular option is defined')
-    parser.add_option('--enabled-services',
-                      action='store_const',
-                      const=ENABLED_SERVICES,
-                      dest='mode',
-                      help='List system services that should be enabled ' +
-                           'given current configuration')
     parser.add_option('-o',
                       '--option',
                       action='store',
@@ -593,8 +586,6 @@ def main():
             list_modules(modules)
         elif options.mode == QUERY:
             query_option(modules, option=options.option)
-        elif options.mode == ENABLED_SERVICES:
-            list_enabled_services(modules)
         else:
             parser.print_usage()
             error_exit("Must specify either -c, -v, or -l")
