@@ -80,7 +80,6 @@ class TestRSV(unittest.TestCase):
                      'ce_hosts': 'my.host.com',
                      'gridftp_hosts': 'my.host.com',
                      'gridftp_dir': '/tmp',
-                     'gums_hosts': 'my.host.com',
                      'srm_hosts': 'test.com:60443',
                      'srm_dir': '/srm/dir',
                      'srm_webservice_path': 'srm/v2/server',
@@ -108,7 +107,6 @@ class TestRSV(unittest.TestCase):
                      'ce_hosts': 'my.host.com, my2.host.com',
                      'gridftp_hosts': 'my.host.com, my2.host.com',
                      'gridftp_dir': '/tmp',
-                     'gums_hosts': 'my.host.com, my2.host.com',
                      'srm_hosts': 'my.host.com, my2.host.com',
                      'srm_dir': '/srm/dir, /srm/dir2',
                      'srm_webservice_path': 'srm/v2/server,',
@@ -135,7 +133,6 @@ class TestRSV(unittest.TestCase):
         variables = {'ce_hosts': 'host1.site.com, host2.site.com',
                      'gridftp_hosts': 'host3.site.com, host4.site.com',
                      'gridftp_dir': '/tmp',
-                     'gums_hosts': 'host8.site.com, host9.site.com',
                      'srm_hosts': 'host5.site.com, host6.site.com, host7.site.com:1234',
                      'srm_dir': '/srm/dir',
                      'srm_webservice_path': 'srm/v2/server',
@@ -284,16 +281,6 @@ class TestRSV(unittest.TestCase):
         attributes = settings.get_attributes()
         self.assertFalse(settings.check_attributes(attributes),
                          "Invalid ce  ignored")
-
-    def testInvalidGumsHost(self):
-        """
-        Test the check_attributes with invalid gums host
-        """
-
-        settings = self.load_settings_from_files("rsv/invalid_gums_host.ini")
-        attributes = settings.get_attributes()
-        self.assertFalse(settings.check_attributes(attributes),
-                         "Invalid gums host ignored")
 
     def testInvalidGridftpHost(self):
         """
