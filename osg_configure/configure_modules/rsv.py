@@ -51,10 +51,6 @@ class RsvConfiguration(BaseConfiguration):
                         'gridftp_dir':
                             configfile.Option(name='gridftp_dir',
                                               default_value='/tmp'),
-                        'gums_hosts':
-                            configfile.Option(name='gums_hosts',
-                                              default_value='',
-                                              required=configfile.Option.OPTIONAL),
                         'srm_hosts':
                             configfile.Option(name='srm_hosts',
                                               default_value='',
@@ -118,7 +114,6 @@ class RsvConfiguration(BaseConfiguration):
         self._ce_hosts = []
         self._htcondor_ce_hosts = []
         self._gridftp_hosts = []
-        self._gums_hosts = []
         self._srm_hosts = []
         self._gratia_probes_2d = []
         self._gratia_metric_map = {}
@@ -180,7 +175,6 @@ class RsvConfiguration(BaseConfiguration):
         # Parse lists
         self._ce_hosts = split_list_exclude_blank(self.options['ce_hosts'].value)
         self._htcondor_ce_hosts = split_list_exclude_blank(self.options['htcondor_ce_hosts'].value)
-        self._gums_hosts = split_list_exclude_blank(self.options['gums_hosts'].value)
         self._srm_hosts = split_list_exclude_blank(self.options['srm_hosts'].value)
 
         # If the gridftp hosts are not defined then they default to the CE hosts
@@ -247,7 +241,6 @@ class RsvConfiguration(BaseConfiguration):
 
         # check hosts
         attributes_ok &= self._validate_host_list(self._ce_hosts, "ce_hosts")
-        attributes_ok &= self._validate_host_list(self._gums_hosts, "gums_hosts")
         attributes_ok &= self._validate_host_list(self._srm_hosts, "srm_hosts")
         if self.htcondor_gateway_enabled:
             attributes_ok &= self._validate_host_list(self._htcondor_ce_hosts, "htcondor_ce_hosts")
@@ -288,7 +281,6 @@ class RsvConfiguration(BaseConfiguration):
             self._configure_consumers()
             # Enable metrics
             self._configure_ce_metrics()
-            self._configure_gums_metrics()
             self._configure_gridftp_metrics()
             self._configure_gratia_metrics()
             self._configure_local_metrics()
@@ -571,23 +563,6 @@ class RsvConfiguration(BaseConfiguration):
             self._enable_metrics(gridftp_host, gridftp_metrics, args)
 
             count += 1
-
-    def _configure_gums_metrics(self):
-        """ Enable GUMS metrics for each GUMS host declared """
-
-        if not self._gums_hosts:
-            self.log("No gums_hosts defined.  Not configuring GUMS metrics")
-            return
-
-        gums_metrics = self._get_metrics_by_type("OSG-GUMS")
-
-        if not gums_metrics:
-            self.log("No current GUMS metrics.  No configuration to do at this time.")
-            return
-
-        for gums_host in self._gums_hosts:
-            self.log("Enabling GUMS metrics for host '%s'" % gums_host)
-            self._enable_metrics(gums_host, gums_metrics)
 
     def _configure_local_metrics(self):
         """ Enable appropriate local metrics """
