@@ -3,7 +3,6 @@
 import re
 import logging
 
-from osg_configure.modules import reversevomap
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile
 from osg_configure.modules import validation
