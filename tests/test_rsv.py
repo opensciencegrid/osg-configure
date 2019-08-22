@@ -6,7 +6,10 @@
 import os
 import sys
 import unittest
-import ConfigParser
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
 import logging
 import pwd
 

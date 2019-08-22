@@ -6,8 +6,10 @@
 import os
 import sys
 import unittest
-import ConfigParser
-import imp
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
 
 # setup system library path
 pathname = os.path.realpath('../')
@@ -154,7 +156,7 @@ class TestValidation(unittest.TestCase):
 
         filename = get_test_config('utilities/newline.ini')
         _stderr = sys.stderr
-        sys.stderr = file(os.devnull, 'wb')
+        sys.stderr = open(os.devnull, 'wb')
         # need to do this instead of putting this in assert so that stderr can
         # be restored after call
         result = validation.valid_ini_file(filename)

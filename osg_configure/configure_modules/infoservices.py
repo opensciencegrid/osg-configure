@@ -3,7 +3,10 @@
 
 import re
 import os
-import ConfigParser
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
 import subprocess
 import sys
 import logging

@@ -4,7 +4,10 @@ import os
 import re
 import shutil
 import logging
-import ConfigParser
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
 import pwd
 
 from osg_configure.modules import exceptions

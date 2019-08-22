@@ -6,8 +6,10 @@
 import os
 import sys
 import unittest
-import ConfigParser
-import imp
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
 
 # setup system library path
 pathname = os.path.realpath('../')

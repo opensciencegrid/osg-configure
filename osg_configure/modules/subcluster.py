@@ -1,6 +1,9 @@
 import logging
 import re
-import ConfigParser
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities

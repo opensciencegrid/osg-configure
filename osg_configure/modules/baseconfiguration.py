@@ -1,6 +1,9 @@
 """ Base class for all configuration classes """
 
-import ConfigParser
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
 import errno
 import logging
 import os

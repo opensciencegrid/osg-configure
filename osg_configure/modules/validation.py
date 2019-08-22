@@ -4,11 +4,14 @@ import re
 import socket
 import os
 import pwd
-import ConfigParser
 import sys
-import cStringIO
+try:
+    from cStringIO import StringIO
+    import ConfigParser
+except ImportError:
+    from io import StringIO
+    import configparser as ConfigParser
 
-from osg_configure.modules import utilities
 
 __all__ = ['valid_domain',
            'valid_email',
@@ -239,7 +242,7 @@ def valid_ini_file(filename):
 
     config_file = os.path.abspath(filename)
     configuration = ConfigParser.ConfigParser()
-    file_buffer = cStringIO.StringIO()
+    file_buffer = StringIO()
     temp = open(config_file).read()
     temp = temp.replace('%(', '-')
     file_buffer.write(temp)

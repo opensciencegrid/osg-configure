@@ -1,7 +1,10 @@
 """ Module to hold various utility functions """
 
 import glob
-import ConfigParser
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
 import os
 import sys
 
