@@ -32,7 +32,6 @@ class SiteInformation(BaseConfiguration):
                         'host_name':
                             configfile.Option(name='host_name',
                                               required=MANDATORY_ON_CE,
-                                              default_value='',
                                               mapping='OSG_HOSTNAME'),
                         'sponsor':
                             configfile.Option(name='sponsor',
