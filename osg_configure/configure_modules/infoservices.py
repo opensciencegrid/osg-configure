@@ -8,14 +8,11 @@ try:
 except ImportError:
     import configparser as ConfigParser
 import subprocess
-import sys
 import logging
 
 from osg_configure.configure_modules.misc import MiscConfiguration
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
-from osg_configure.modules import gums_supported_vos
-from osg_configure.modules import validation
 from osg_configure.modules import configfile
 from osg_configure.modules.baseconfiguration import BaseConfiguration
 from osg_configure.modules import subcluster
@@ -71,7 +68,6 @@ class InfoServicesConfiguration(BaseConfiguration):
         self.resource_catalog = None
         self.authorization_method = None
         self.subcluster_sections = None
-        self.gums_host = None
         self.misc_module = MiscConfiguration(*args, **kwargs)
 
         self.log("InfoServicesConfiguration.__init__ completed")
@@ -142,7 +138,6 @@ class InfoServicesConfiguration(BaseConfiguration):
 
         self.authorization_method = csg('Misc Services', 'authorization_method')
         self.subcluster_sections = ConfigParser.SafeConfigParser()
-        self.gums_host = csg('Misc Services', 'gums_host')
 
         for section in configuration.sections():
             if section.lower().startswith('subcluster') or section.lower().startswith('resource entry'):
@@ -205,12 +200,7 @@ class InfoServicesConfiguration(BaseConfiguration):
 
                     default_allowed_vos = reversevomap.get_allowed_vos()
                 else:
-                    using_gums = self.authorization_method == 'xacml'
-                    # HACK for SOFTWARE-2792
-                    if using_gums:
-                        self.misc_module.update_gums_client_location()
-                    self._ensure_valid_user_vo_file()
-                    default_allowed_vos = utilities.get_vos(USER_VO_MAP_LOCATION)
+                    default_allowed_vos = []
                 if not default_allowed_vos:
                     # UGLY: only issue the warning if the admin has requested autodetection for some of their SCs/REs
                     raise_warning = False
@@ -350,43 +340,3 @@ CONDOR_VIEW_HOST = %s
             return None
         else:
             return match.group(1)
-
-    def _ensure_valid_user_vo_file(self):
-        using_gums = self.authorization_method == 'xacml'
-        if not (validation.valid_user_vo_file(USER_VO_MAP_LOCATION) and utilities.get_vos(USER_VO_MAP_LOCATION)):
-            self.log("Trying to create user-vo-map file", level=logging.INFO)
-            result = False
-            if using_gums:
-                sys.stdout.write("Querying GUMS server. This may take some time\n")
-                sys.stdout.flush()
-                result = utilities.run_script(['/usr/bin/gums-host-cron'])
-                if not result:
-                    # gums-host-cron failed, let's try the json interface
-                    try:
-                        sys.stdout.write("Querying GUMS server via JSON interface. This may take some time\n")
-                        sys.stdout.flush()
-                        user_vo_file_text = gums_supported_vos.gums_json_user_vo_map_file(self.gums_host)
-                        open(USER_VO_MAP_LOCATION, "w").write(user_vo_file_text)
-                        self.log("Wrote %s", USER_VO_MAP_LOCATION, level=logging.DEBUG)
-                        return True
-                    except exceptions.Error as e:
-                        self.log("Could not query GUMS server via JSON interface: %s" % e, level=logging.WARNING)
-            else:
-                sys.stdout.write("Running edg-mkgridmap, this process may take some time to query vo servers\n")
-                sys.stdout.flush()
-                result = utilities.run_script(['/usr/sbin/edg-mkgridmap'])
-
-            temp, invalid_lines = validation.valid_user_vo_file(USER_VO_MAP_LOCATION, True)
-            result = result and temp
-            if not result:
-                if not invalid_lines:
-                    self.log("Empty %s generated, please check the GUMS configuration (if using GUMS), "
-                             "the edg-mkgridmap configuration (if not using GUMS), and/or log messages for the above"
-                             % USER_VO_MAP_LOCATION, level=logging.WARNING)
-                else:
-                    self.log("Invalid lines in user-vo-map file:", level=logging.WARNING)
-                    self.log("\n".join(invalid_lines), level=logging.WARNING)
-                self.log("Error creating user-vo-map file", level=logging.WARNING)
-                return False
-            else:
-                return True
