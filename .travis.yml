@@ -1,8 +1,8 @@
 sudo: required
 env:
   matrix:
-  - OS_TYPE=centos OS_VERSION=6
-  - OS_TYPE=centos OS_VERSION=7
+  - OS_VERSION=6 OSG_VERSION=3.4
+  - OS_VERSION=7 OSG_VERSION=3.4
 
 services:
   - docker
@@ -17,5 +17,5 @@ before_install:
 
 script:
  # Run tests in Container
- - sudo docker run --rm=true -v `pwd`:/osg-configure:rw centos:centos${OS_VERSION} /bin/bash -c "bash -xe /osg-configure/tests/test_inside_docker.sh ${OS_VERSION}"
+ - sudo docker run --rm=true -v `pwd`:/osg-configure:rw centos:centos${OS_VERSION} /bin/bash /osg-configure/tests/test_inside_docker.sh ${OS_VERSION} ${OSG_VERSION}
 
