@@ -183,11 +183,7 @@ def valid_user_vo_file(map_file=None, return_invalid_lines=False):
 
 def valid_vo_name(vo_name):
     """
-    Check to see if a vo_name is valid
-    VO names should follow the guidelines as outlined at
-    https://forge.ggf.org/sf/wiki/do/viewPage/projects.gin/wiki/GINVONaming
-    basically RFC 1034 section 3.5 dictates the formatting (e.g. vo name
-    should be a valid dns name)
+    Check to see if a vo_name is "valid"
 
     returns True / False
     """
