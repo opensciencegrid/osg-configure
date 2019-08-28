@@ -529,11 +529,6 @@ def main():
     # Set the umask so we get the right permissions on files
     os.umask(0o22)
 
-    if 'VDT_LOCATION' in os.environ:
-        error_exit("$VDT_LOCATION exists in the environment, it looks like " +
-                   "the setup.sh from a pacman install exists in the environment " +
-                   "exiting to avoid errors")
-
     if options.debug == True:
         sys.stdout.write("Writing debug information to " +
                          "/var/log/osg/osg-configure.log\n")
