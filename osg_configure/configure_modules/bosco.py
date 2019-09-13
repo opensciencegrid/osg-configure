@@ -55,9 +55,13 @@ class BoscoConfiguration(JobManagerConfiguration):
                             configfile.Option(name='edit_ssh_config',
                                               required=configfile.Option.OPTIONAL,
                                               opt_type=bool,
-                                              default_value=True)}
-                                              
-        
+                                              default_value=True),
+                        'patch_dir':
+                            configfile.Option(name='patch_dir',
+                                              required=configfile.Option.OPTIONAL,
+                                              default_value='')}
+
+
         self.config_section = "BOSCO"
         self.log("BoscoConfiguration.__init__ completed")
         
@@ -290,9 +294,12 @@ class BoscoConfiguration(JobManagerConfiguration):
                     self.log("stderr:\n%s" % stderr, level=logging.ERROR)
                     return False
 
-
             # Run bosco cluster to install the remote cluster
-            install_cmd = ["bosco_cluster", "-a", endpoint, batch]
+            install_cmd = ["bosco_cluster"]
+            patch_dir = self.options['patch_dir'].value
+            if patch_dir:
+                install_cmd += ['-o', patch_dir]
+            install_cmd += ["-a", endpoint, batch]
 
             self.log("Bosco command to execute: %s" % install_cmd, level=logging.DEBUG)
             process = subprocess.Popen(install_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
