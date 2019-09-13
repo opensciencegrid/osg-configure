@@ -296,7 +296,7 @@ class BoscoConfiguration(JobManagerConfiguration):
 
             # Run bosco cluster to install the remote cluster
             install_cmd = ["bosco_cluster"]
-            override_dir = self.options['override_dir'].value
+            override_dir = self.opt_val('override_dir')
             if override_dir:
                 install_cmd += ['-o', override_dir]
             install_cmd += ["-a", endpoint, batch]
