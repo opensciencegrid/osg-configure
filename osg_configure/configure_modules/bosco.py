@@ -56,8 +56,8 @@ class BoscoConfiguration(JobManagerConfiguration):
                                               required=configfile.Option.OPTIONAL,
                                               opt_type=bool,
                                               default_value=True),
-                        'patch_dir':
-                            configfile.Option(name='patch_dir',
+                        'override_dir':
+                            configfile.Option(name='override_dir',
                                               required=configfile.Option.OPTIONAL,
                                               default_value='')}
 
@@ -296,9 +296,9 @@ class BoscoConfiguration(JobManagerConfiguration):
 
             # Run bosco cluster to install the remote cluster
             install_cmd = ["bosco_cluster"]
-            patch_dir = self.options['patch_dir'].value
-            if patch_dir:
-                install_cmd += ['-o', patch_dir]
+            override_dir = self.options['override_dir'].value
+            if override_dir:
+                install_cmd += ['-o', override_dir]
             install_cmd += ["-a", endpoint, batch]
 
             self.log("Bosco command to execute: %s" % install_cmd, level=logging.DEBUG)
