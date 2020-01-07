@@ -75,7 +75,8 @@ class SiteInformation(BaseConfiguration):
                                               mapping='OSG_SITE_NAME'),
                         'resource_group':
                             configfile.Option(name='resource_group',
-                                              required=MANDATORY_ON_CE)}
+                                              default_value='',
+                                              required=OPTIONAL)}
 
         self.config_section = "Site Information"
         self.enabled = True
