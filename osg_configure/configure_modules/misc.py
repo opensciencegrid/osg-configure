@@ -186,7 +186,7 @@ class MiscConfiguration(BaseConfiguration):
         old_lcmaps_contents = utilities.read_file(LCMAPS_DB_LOCATION, default='')
         if old_lcmaps_contents and 'THIS FILE WAS WRITTEN BY OSG-CONFIGURE' not in old_lcmaps_contents:
             backup_path = LCMAPS_DB_LOCATION + '.pre-configure'
-            self.log("Backing up %s to %s" % (LCMAPS_DB_LOCATION, backup_path), level=logging.WARNING)
+            self.log("Backing up %s to %s" % (LCMAPS_DB_LOCATION, backup_path), level=logging.INFO)
             try:
                 shutil.copy2(LCMAPS_DB_LOCATION, backup_path)
             except EnvironmentError as err:
