@@ -95,8 +95,8 @@ def valid_hostname(hostname):
     except ValueError:
         pass
     if hostname[-1] == ".":
-        hostname = hostname[:-1] # strip exactly one dot from the right, if present
-    allowed = re.compile("(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
+        hostname = hostname[:-1]  # strip exactly one dot from the right, if present
+    allowed = re.compile(r"(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
     return all(allowed.match(x) for x in hostname.split("."))
 
 
@@ -173,8 +173,8 @@ def valid_user_vo_file(map_file=None, return_invalid_lines=False):
 
     valid = True
     comment = re.compile(r'^\s*#')
-    java = re.compile('(java|exception)', re.I)
-    account_regex = re.compile('^[a-z0-9-._]+$', re.IGNORECASE)
+    java = re.compile(r'(java|exception)', re.I)
+    account_regex = re.compile(r'^[a-z0-9-._]+$', re.IGNORECASE)
     invalid_lines = []
     for line in [x.strip() for x in open(map_file)]:
         if line == "":
@@ -219,7 +219,7 @@ def valid_vo_name(vo_name):
     if valid_domain(vo_name):
         return True
 
-    name_re = re.compile('[a-z0-9-]+', re.IGNORECASE)
+    name_re = re.compile(r'[a-z0-9-]+', re.IGNORECASE)
     if name_re.match(vo_name):
         return True
 
