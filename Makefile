@@ -8,8 +8,21 @@ DATAROOTDIR := $(PREFIX)/share
 PYTHON_SITELIB := $(shell python -c "from distutils.sysconfig import get_python_lib; import sys; sys.stdout.write(get_python_lib())")
 UPSTREAM_SOFTWARE_DIR = /p/vdt/public/html/upstream/$(NAME)
 
-_default:
-	@echo "Nothing to make. Try 'make install'."
+echo:=@echo
+echotbl:=@printf "%-30s %s\n"
+
+help:
+	$(echo) "Targets:"
+	$(echo)
+	$(echotbl) "install" "Install software onto local disk under DESTDIR"
+	$(echotbl) "install-noconfig" "Install software onto local disk; leave configs in /etc alone"
+	$(echotbl) "dist" "Create source tarball (don't run on AFS)"
+	$(echotbl) "upstream" "Put source tarball in VDT upstream software dir (don't run on AFS)"
+	$(echo)
+	$(echo) "Variables:"
+	$(echo)
+	$(echotbl) "DESTDIR" "Root of where to install [$(DESTDIR)]"
+	$(echotbl) "UPSTREAM_SOFTWARE_DIR" "Where to upload the source tarball [$(UPSTREAM_SOFTWARE_DIR)]"
 
 
 install:
@@ -23,7 +36,7 @@ install-noconfig:
 	mv -f  $(DESTDIR)$(BINDIR)/$(NAME)  $(DESTDIR)$(SBINDIR)/$(NAME)
 
 dist:
-	rm -f MANIFEST
+	-rm -f MANIFEST
 	python setup.py sdist
 
 upstream: dist
@@ -31,4 +44,4 @@ upstream: dist
 	sha1sum  dist/$(NAME)-$(VERSION).tar.gz
 	cp -p  dist/$(NAME)-$(VERSION).tar.gz  $(UPSTREAM_SOFTWARE_DIR)/$(VERSION)
 
-.PHONY: _default  install  install-noconfig  dist  upstream
+.PHONY: help  install  install-noconfig  dist  upstream
