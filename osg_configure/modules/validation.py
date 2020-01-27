@@ -1,5 +1,6 @@
 """ Module to hold various validation functions """
 
+import logging
 import re
 import socket
 import os
@@ -24,38 +25,59 @@ __all__ = ['valid_domain',
            'valid_boolean',
            'valid_executable',
            'valid_ini_file',
-           'valid_integer']
+           'valid_integer',
+           'valid_ipv4_address',
+           'valid_ipv6_address',
+           ]
+
+log = logging.getLogger(__name__)
+
+
+def valid_ipv4_address(addr):
+    """Return True if the address is a valid IPv4 address, False otherwise.
+
+    """
+    try:
+        return bool(socket.inet_pton(socket.AF_INET, addr))
+    except socket.error:
+        return False
+
+
+def valid_ipv6_address(addr):
+    """Return True if the address is a valid IPv6 address, False otherwise.
+
+    """
+    try:
+        return bool(socket.inet_pton(socket.AF_INET6, addr))
+    except socket.error:
+        return False
 
 
 def valid_domain(host, resolve=False):
-    """Return True if the string passed in is a valid domain
+    """Return True if the string passed in is a valid domain or IP address.
 
     If resolve=True, also check that it resolves (according to gethostbyname).
 
     """
     if not host:
         return False
-    is_ipv4_address = False
-    try:
-        is_ipv4_address = bool(socket.inet_pton(socket.AF_INET, host))
-    except socket.error:
-        pass
-    is_ipv6_address = False
-    try:
-        is_ipv6_address = bool(socket.inet_pton(socket.AF_INET6, host))
-    except socket.error:
-        pass
-    is_hostname = valid_hostname(host)
-
-    if not (is_ipv4_address or is_ipv6_address or is_hostname):
+    host = str(host)
+    if valid_ipv4_address(host):
+        log.debug("%s is a v4 address", host)
+        return True
+    if valid_ipv6_address(host):
+        log.debug("%s is a v6 address", host)
+        return True
+    if not valid_hostname(host):
+        log.debug("%s is not a valid hostname", host)
         return False
-
     if not resolve:
         return True
-
     try:
-        socket.gethostbyname(host)
+        ip = socket.gethostbyname(host)
+        log.debug("%s resolves to %s", host, ip)
     except (socket.herror, socket.gaierror):
+        log.debug("%s does not resolve", host)
         return False
     return True
 

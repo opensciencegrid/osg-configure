@@ -131,13 +131,18 @@ class SiteInformation(BaseConfiguration):
             attributes_ok = False
 
         host_name = self.opt_val("host_name")
-        # host_name must be a valid dns name, check this by getting it's ip adddress
-        if not utilities.blank(host_name) and not validation.valid_domain(host_name, True):
-            self.log("hostname %s can't be resolved" % host_name,
-                     option='host_name',
-                     section=self.config_section,
-                     level=logging.ERROR)
-            attributes_ok = False
+        if not utilities.blank(host_name):
+            if not validation.valid_domain(host_name, resolve=False):
+                self.log("%s is not a valid domain", host_name,
+                         option="host_name",
+                         section=self.config_section,
+                         level=logging.ERROR)
+                attributes_ok = False
+            elif not validation.valid_domain(host_name, resolve=True):
+                self.log("%s is a valid domain but can't be resolved", host_name,
+                         option="host_name",
+                         section=self.config_section,
+                         level=logging.WARNING)
 
         if not utilities.blank(self.opt_val("site_name")):
             self.log("The site_name setting has been deprecated in favor of the"
