@@ -90,9 +90,9 @@ def _compose_attribute_file(attributes):
             variable_string += 'unset OSG_APP\n'
         elif islist(value):
             for item in value:
-                variable_string += "%s=\"%s\"\n" % (key, item)
+                variable_string += '%s="%s"\n' % (key, item)
         else:
-            variable_string += "%s=\"%s\"\n" % (key, value)
+            variable_string += '%s="%s"\n' % (key, value)
         if len(key.split('[')) > 1:
             real_key = key.split('[')[0]
             if real_key not in array_vars:
