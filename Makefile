@@ -42,6 +42,6 @@ dist:
 upstream: dist
 	mkdir -p  $(UPSTREAM_SOFTWARE_DIR)/$(VERSION)
 	sha1sum  dist/$(NAME)-$(VERSION).tar.gz
-	cp -p  dist/$(NAME)-$(VERSION).tar.gz  $(UPSTREAM_SOFTWARE_DIR)/$(VERSION)
+	cp -ip  dist/$(NAME)-$(VERSION).tar.gz  $(UPSTREAM_SOFTWARE_DIR)/$(VERSION)
 
 .PHONY: help  install  install-noconfig  dist  upstream
