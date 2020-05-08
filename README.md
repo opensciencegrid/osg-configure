@@ -134,13 +134,12 @@ This is useful, if you have a complex configuration for a given that can't be se
 Configuration sections
 ----------------------
 
-The OSG configuration is divided into sections with each section starting with a section name in square brackets (e.g. `[Section 1]`). The configuration is split in multiple files and options form one section can be in more than one files.
+The OSG configuration is divided into sections with each section starting with a section name in square brackets (e.g. `[Section 1]`).
+The configuration is split in multiple files and options form one section can be in more than one files.
+All of the configuration files listed below are in `/etc/osg/config.d/`.
 
-The following sections give an overview of the options for each of the sections of the configuration files that `osg-configure` uses.
 
-
-
-### Bosco ###
+### 20-bosco.ini / [Bosco] section ###
 
 This section is contained in `/etc/osg/config.d/20-bosco.ini` which is provided by the `osg-configure-bosco` RPM.
 
@@ -153,9 +152,10 @@ This section is contained in `/etc/osg/config.d/20-bosco.ini` which is provided 
 | **ssh\_key** | String                    | The location of the ssh key, as created above.                                                                                                                                                                                                                                                                                |
 
 
-### Condor ###
+### 20-condor.ini / [Condor] section ###
 
-This section describes the parameters for a Condor jobmanager if it's being used in the current CE installation. If Condor is not being used, the `enabled` setting should be set to `False`.
+This section describes the parameters for a Condor jobmanager if it's being used in the current CE installation.
+If Condor is not being used, the `enabled` setting should be set to `False`.
 
 This section is contained in `/etc/osg/config.d/20-condor.ini` which is provided by the `osg-configure-condor` RPM.
 
@@ -166,7 +166,7 @@ This section is contained in `/etc/osg/config.d/20-condor.ini` which is provided
 | condor\_config    | String                    | This should be set to be path where the condor\_config file is located. If this is set to a blank variable, DEFAULT or UNAVAILABLE, the `osg-configure` script will try to get this from the CONDOR\_CONFIG environment variable if available otherwise it will use `/etc/condor/condor_config`, the default for the RPM installation. |
 
 
-### LSF ###
+### 20-lsf.ini / [LSF] section ###
 
 This section describes the parameters for a LSF jobmanager if it's being used in the current CE installation. If LSF is not being used, the `enabled` setting should be set to `False`.
 
@@ -178,7 +178,7 @@ This section is contained in `/etc/osg/config.d/20-lsf.ini` which is provided by
 | lsf\_location      | String                    | This should be set to be directory where lsf is installed       |
 
 
-### PBS ###
+### 20-pbs.ini / [PBS] section ###
 
 This section describes the parameters for a pbs jobmanager if it's being used in the current CE installation. If PBS is not being used, the `enabled` setting should be set to `False`.
 
@@ -192,7 +192,7 @@ This section is contained in `/etc/osg/config.d/20-pbs.ini` which is provided by
 | pbs\_server                    | String                    | This setting is optional and should point to your PBS server node if it is different from your OSG CE                                     |
 
 
-### SGE ###
+### 20-sge.ini / [SGE] section ###
 
 This section describes the parameters for a SGE jobmanager if it's being used in the current CE installation. If SGE is not being used, the `enabled` setting should be set to `False`.
 
@@ -212,7 +212,7 @@ If `available_queues` is set, that list of queues will be used for
 validation, otherwise SGE will be queried for available queues.
 
 
-### Slurm ###
+### 20-slurm.ini / [Slurm] section ###
 
 This section describes the parameters for a Slurm jobmanager if it's being used in the current CE installation. If Slurm is not being used, the `enabled` setting should be set to `False`.
 
@@ -230,7 +230,7 @@ This section is contained in `/etc/osg/config.d/20-slurm.ini` which is provided 
 | slurm\_cluster      | String                    | The name of the Slurm cluster                                                                                                                     |
 
 
-### Gratia ###
+### 30-gratia.ini / [Gratia] section ###
 
 This section configures Gratia. If `probes` is set to `UNAVAILABLE`, then `osg-configure` will use appropriate default values. If you need to specify custom reporting (e.g. a local gratia collector) in addition to the default probes, `%(osg-jobmanager-gratia)s`, `%(osg-gridftp-gratia)s`, `%(osg-metric-gratia)s`, `%(itb-jobmanager-gratia)s`, `%(itb-gridftp-gratia)s`, `%(itb-metric-gratia)s` are defined in the default configuration files to make it easier to specify the standard osg reporting.
 
@@ -250,7 +250,7 @@ Legal values for the `probe_type` part are:
 -   `gridftp` (for the GridFTP transfer probe)
 
 
-### Info Services ###
+### 30-infoservices.ini / [Info Services] section ###
 
 Reporting to the central CE Collectors is configured in this section.  In the majority of cases, this file can be left untouched; you only need to configure this section if you wish to report to your own CE Collector instead of the ones run by OSG Operations.
 
@@ -268,7 +268,7 @@ This section is contained in `/etc/osg/config.d/30-infoservices.ini`, which is p
 -   Otherwise, set this to the `hostname:port` of a host running a `condor-ce-collector` daemon
 
 
-### RSV ###
+### 30-rsv.ini / [RSV] section ###
 
 This section handles the configuration and setup of the RSV services.
 
@@ -302,7 +302,7 @@ value (for example: `srm/v2/server`) for the SRM probes to pass on their
 SE.
 
 
-### Subcluster / Resource Entry ###
+### 30-gip.ini / [Subcluster] and [Resource Entry] sections ###
 
 Subcluster and Resource Entry configuration is for reporting about the worker resources on your site. A **subcluster** is a homogeneous set of worker node hardware; a **resource** is a set of subcluster(s) with common capabilities that will be reported to the ATLAS AGIS system.
 
@@ -366,7 +366,7 @@ The following attributes are optional:
 
 
 
-### Gateway ###
+### 10-gateway.ini / [Gateway] section ###
 
 This section gives information about the options in the Gateway section of the configuration files. These options control the behavior of job gateways on the CE. CEs are based on HTCondor-CE, which uses `condor-ce` as the gateway.
 
@@ -378,7 +378,7 @@ This section is contained in `/etc/osg/config.d/10-gateway.ini` which is provide
 | **job\_envvar\_path**          | String          | The value of the PATH environment variable to put into HTCondor jobs running with HTCondor-CE. This value is ignored if not using that batch system/gateway combination.                 |
 
 
-### Local Settings ###
+### 40-localsettings.ini / [Local Settings] ###
 
 This section differs from other sections in that there are no set options in this section. Rather, the options set in this section will be placed in the `osg-local-job-environment.conf` verbatim. The options in this section are case sensitive and the case will be preserved when they are converted to environment variables. The `osg-local-job-environment.conf` file gets sourced by jobs run on your cluster so any variables set in this section will appear in the environment of jobs run on your system.
 
@@ -393,7 +393,7 @@ MY_PATH = /usr/local/myapp
 This section is contained in `/etc/osg/config.d/40-localsettings.ini` which is provided by the `osg-configure-ce` RPM.
 
 
-### Misc Services ###
+### 10-misc.ini / [Misc Services] section ###
 
 This section handles the configuration of services that do not have a dedicated section for their configuration.
 
@@ -408,7 +408,7 @@ This section primarily deals with authentication/authorization. For information 
 | all\_fqans                            | `True`, `False`                       | (Optional, default False) If true, vomsmap auth will use all VOMS FQANs of a proxy for mapping -- see [documentation](../security/lcmaps-voms-authentication#mapping-using-all-fqans)                                                                                                                                                                                                |
 
 
-### Site Information ###
+### 40-siteinfo.ini / [Site Information] section ###
 
 The settings found in the `Site Information` section are described below. This section is used to give information about a resource such as resource name, site sponsors, administrators, etc.
 
@@ -430,14 +430,13 @@ This section is contained in `/etc/osg/config.d/40-siteinfo.ini` which is provid
 | **latitude**        | Number            | This should be the latitude of the resource. It should be a number between -90 and 90.                                                       |
 
 **Note for sponsor:**<br>
-If your resource has multiple sponsors, you can separate them using commas
-or specify the percentage using the following format 'osg, atlas, cms' or
-'osg:10, atlas:45, cms:45'. The percentages must add up to 100 if multiple
-sponsors are used. If you have a sponsor that is not an OSG VO, you can
-indicate this by using 'local' as the VO.
+If your resource has multiple sponsors, you can separate them using commas or specify the percentage using the following format:
+`osg, atlas, cms` or `osg:10, atlas:45, cms:45`.
+The percentages must add up to 100 if multiple sponsors are used.
+If you have a sponsor that is not an OSG VO, you can indicate this by using 'local' as the VO.
 
 
-### Squid ###
+### 01-squid.ini / [Squid] section ###
 
 This section handles the configuration and setup of the squid web caching and proxy service.
 
@@ -449,7 +448,7 @@ This section is contained in `/etc/osg/config.d/01-squid.ini` which is provided 
 | location    | String                    | This should be set to the `hostname:port` of the squid server. |
 
 
-### Storage ###
+### 10-storage.ini / [Storage] section ###
 
 This section gives information about the options in the Storage section of the configuration file.
 Several of these values are constrained and need to be set in a way that is consistent with one of the OSG storage models.
