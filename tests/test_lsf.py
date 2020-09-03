@@ -6,10 +6,7 @@
 import os
 import sys
 import unittest
-try:
-    import ConfigParser
-except ImportError:
-    import configparser as ConfigParser
+import configparser
 import logging
 
 # setup system library path 
@@ -43,7 +40,7 @@ class TestLSF(unittest.TestCase):
         """
 
         config_file = get_test_config("lsf/lsf1.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = lsf.LSFConfiguration(logger=global_logger)
@@ -58,7 +55,7 @@ class TestLSF(unittest.TestCase):
                    'OSG_JOB_MANAGER': 'LSF'}
         for option in options:
             value = options[option]
-            self.assertTrue(attributes.has_key(option),
+            self.assertTrue(option in attributes,
                             "Attribute %s missing" % option)
             err_msg = "Wrong value obtained for %s, " \
                       "got %s instead of %s" % (option, attributes[option], value)
@@ -70,7 +67,7 @@ class TestLSF(unittest.TestCase):
         """
 
         config_file = get_test_config("lsf/lsf_disabled.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = lsf.LSFConfiguration(logger=global_logger)
@@ -90,7 +87,7 @@ class TestLSF(unittest.TestCase):
         """
 
         config_file = get_test_config("lsf/ignored.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = lsf.LSFConfiguration(logger=global_logger)
@@ -109,7 +106,7 @@ class TestLSF(unittest.TestCase):
         Test the check_attributes function to see if it catches missing LSF location
         """
         config_file = get_test_config("lsf/missing_location.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = lsf.LSFConfiguration(logger=global_logger)
@@ -127,7 +124,7 @@ class TestLSF(unittest.TestCase):
         Test the check_attributes function to see if it catches missing LSF profile
         """
         config_file = get_test_config("lsf/missing_profile.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = lsf.LSFConfiguration(logger=global_logger)
@@ -140,7 +137,7 @@ class TestLSF(unittest.TestCase):
         Test the check_attributes function to see if it works on valid settings
         """
         config_file = get_test_config("lsf/check_ok.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = lsf.LSFConfiguration(logger=global_logger)
@@ -158,7 +155,7 @@ class TestLSF(unittest.TestCase):
         Test the check_attributes function to see if it works on valid settings
         """
         config_file = get_test_config("lsf/check_ok2.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = lsf.LSFConfiguration(logger=global_logger)
@@ -177,7 +174,7 @@ class TestLSF(unittest.TestCase):
         """
 
         config_file = get_test_config("lsf/check_ok.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = lsf.LSFConfiguration(logger=global_logger)
@@ -186,13 +183,13 @@ class TestLSF(unittest.TestCase):
         except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
         services = settings.enabled_services()
-        expected_services = set(['condor-ce', 'globus-gridftp-server'])
+        expected_services = {'condor-ce', 'globus-gridftp-server'}
         self.assertEqual(services, expected_services,
                          "List of enabled services incorrect, " +
                          "got %s but expected %s" % (services, expected_services))
 
         config_file = get_test_config("lsf/lsf_disabled.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = lsf.LSFConfiguration(logger=global_logger)

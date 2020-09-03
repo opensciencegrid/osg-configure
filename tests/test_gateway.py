@@ -3,10 +3,7 @@
 import os
 import sys
 import unittest
-try:
-    import ConfigParser
-except ImportError:
-    import configparser as ConfigParser
+import configparser
 import logging
 
 
@@ -35,7 +32,7 @@ class TestGateway(unittest.TestCase):
         """
 
         config_file = get_test_config("gateway/gateway_default.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = gateway.GatewayConfiguration(logger=global_logger)
@@ -47,7 +44,7 @@ class TestGateway(unittest.TestCase):
         options = settings.options
         variables = {'htcondor_gateway_enabled': True}
         for var in variables:
-            self.assertTrue(options.has_key(var),
+            self.assertTrue(var in options,
                             "Option %s missing" % var)
             self.assertEqual(options[var].value,
                              variables[var],

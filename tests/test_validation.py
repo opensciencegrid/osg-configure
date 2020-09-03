@@ -6,10 +6,7 @@
 import os
 import sys
 import unittest
-try:
-    import ConfigParser
-except ImportError:
-    import configparser as ConfigParser
+import configparser
 
 # setup system library path
 pathname = os.path.realpath('../')
@@ -56,7 +53,7 @@ class TestValidation(unittest.TestCase):
 
         test_email = "a.3a-3bc@t-ea.34.org"
         self.assertTrue(validation.valid_email(test_email),
-                        "a.3a-3bc@t-ea.34.org marked as an invalid email " \
+                        "a.3a-3bc@t-ea.34.org marked as an invalid email "
                         "address")
 
     def test_valid_location(self):
@@ -120,7 +117,7 @@ class TestValidation(unittest.TestCase):
         Test functionality of valid_boolean function
         """
         config_file = get_test_config('utilities/valid_boolean.ini')
-        config = ConfigParser.SafeConfigParser()
+        config = configparser.SafeConfigParser()
         config.read(config_file)
         self.assertFalse(validation.valid_boolean(config, 'Test', 'invalid_bool'),
                          'invalid_bool flagged as valid')
@@ -156,7 +153,7 @@ class TestValidation(unittest.TestCase):
 
         filename = get_test_config('utilities/newline.ini')
         _stderr = sys.stderr
-        sys.stderr = open(os.devnull, 'wb')
+        sys.stderr = open(os.devnull, 'w')
         # need to do this instead of putting this in assert so that stderr can
         # be restored after call
         result = validation.valid_ini_file(filename)

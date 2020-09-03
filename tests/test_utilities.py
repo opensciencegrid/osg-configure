@@ -6,7 +6,6 @@
 import os
 import sys
 import unittest
-import imp
 
 # setup system library path
 pathname = os.path.realpath('../')
