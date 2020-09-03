@@ -1,6 +1,7 @@
+from __future__ import absolute_import
 import classad
 import re
-import utilities
+from . import utilities
 
 
 class RCEntry(object):
@@ -53,11 +54,11 @@ class RCEntry(object):
                 raise ValueError("'max_wall_time' out of range at %s; must be >= 0" % self.max_wall_time)
 
         if self.allowed_vos is not None:
-            if not isinstance(self.allowed_vos, (list, tuple, set, str, unicode)):
+            if not isinstance(self.allowed_vos, (list, tuple, set, str)):
                 raise TypeError("'allowed_vos' is a %s; must be a string or a list/tuple/set" % type(self.allowed_vos))
 
         if self.subclusters is not None:
-            if not isinstance(self.subclusters, (list, tuple, set, str, unicode)):
+            if not isinstance(self.subclusters, (list, tuple, set, str)):
                 raise TypeError("'subclusters' is a %s; must be a string or a list/tuple/set" % type(self.subclusters))
 
         return self

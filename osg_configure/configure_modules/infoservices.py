@@ -198,7 +198,7 @@ class InfoServicesConfiguration(BaseConfiguration):
                     if error:
                         return False
 
-                    default_allowed_vos = reversevomap.get_allowed_vos()
+                    default_allowed_vos = list(reversevomap.get_allowed_vos())
                 else:
                     default_allowed_vos = []
                 if not default_allowed_vos:

@@ -1,5 +1,6 @@
 """ Base class for all configuration classes """
 
+from __future__ import absolute_import
 try:
     import ConfigParser
 except ImportError:
@@ -164,7 +165,7 @@ class BaseConfiguration(object):
                 raise
 
         # check and warn if unknown options found
-        known_options = self.options.keys()
+        known_options = list(self.options.keys())
         known_options.extend(kwargs.get('ignore_options', []))
         temp = utilities.get_set_membership(configuration.options(self.config_section),
                                             known_options,

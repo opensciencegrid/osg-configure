@@ -1,9 +1,9 @@
 """ Module to hold various utility functions """
 
+from __future__ import absolute_import
 import re
 import socket
 import os
-import types
 import sys
 import glob
 import stat
@@ -72,14 +72,13 @@ def _compose_attribute_file(attributes):
     """Make the contents of an osg attributes file"""
 
     def islist(var):
-        return type(var) is types.ListType
+        return type(var) is list
 
     variable_string = ""
     export_string = ""
     # keep a list of array variables
     array_vars = {}
-    keys = attributes.keys()
-    keys.sort()
+    keys = sorted(attributes.keys())
     for key in keys:
         value = attributes[key]
         if value is None:
@@ -471,7 +470,7 @@ def rpm_installed(rpm_name):
     True if rpms are installed, False otherwise
     """
     trans_set = rpm.TransactionSet()
-    if isinstance(rpm_name, types.StringType):
+    if isinstance(rpm_name, str):
         return trans_set.dbMatch('name', rpm_name).count() in (1, 2)
 
     # check with iterable type

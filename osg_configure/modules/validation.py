@@ -1,5 +1,6 @@
 """ Module to hold various validation functions """
 
+from __future__ import absolute_import, print_function
 import logging
 import re
 import socket
@@ -272,8 +273,8 @@ def valid_ini_file(filename):
     try:
         configuration.readfp(file_buffer)
     except ConfigParser.ParsingError as e:
-        sys.stderr.write("Error while parsing: %s\n%s\n" % (filename, e))
-        sys.stderr.write("Lines with options should not start with a space\n")
+        print("Error while parsing: %s\n%s" % (filename, e), file=sys.stderr)
+        print("Lines with options should not start with a space", file=sys.stderr)
         return False
 
     sections = configuration.sections()
@@ -284,12 +285,12 @@ def valid_ini_file(filename):
                 if "\n" in value:
                     # pylint: disable-msg=E1103
                     error_line = value.split('\n')[1]
-                    sys.stderr.write("INI syntax error in section %s: \n" % section)
-                    sys.stderr.write("The following line starts with a space: %s\n" % error_line)
-                    sys.stderr.write("Please removing the leading space\n")
+                    print("INI syntax error in section %s: " % section, file=sys.stderr)
+                    print("The following line starts with a space: %s" % error_line, file=sys.stderr)
+                    print("Please removing the leading space", file=sys.stderr)
                     return False
             except ValueError:
-                sys.stderr.write("syntax error in section %s with option %s\n" % (section, option))
+                print("syntax error in section %s with option %s" % (section, option), file=sys.stderr)
                 return False
 
     return True

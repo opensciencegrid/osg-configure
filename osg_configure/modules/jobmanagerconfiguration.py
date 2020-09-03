@@ -1,5 +1,6 @@
 """ Base class for all job manager configuration classes """
 
+from __future__ import absolute_import
 import os
 import logging
 

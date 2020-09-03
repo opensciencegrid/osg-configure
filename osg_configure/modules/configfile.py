@@ -1,5 +1,6 @@
 """ Module to hold various utility functions """
 
+from __future__ import absolute_import
 import glob
 try:
     import ConfigParser
