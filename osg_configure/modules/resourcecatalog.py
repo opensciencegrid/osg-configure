@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 import classad
 import re
 from . import utilities
@@ -75,9 +74,9 @@ class RCEntry(object):
         if self.max_wall_time is not None:
             self.max_wall_time = int(self.max_wall_time)
         if self.allowed_vos is not None and isinstance(self.allowed_vos, str):
-            self.allowed_vos = filter(None, re.split('[ ,]+', self.allowed_vos))
+            self.allowed_vos = list(filter(None, re.split('[ ,]+', self.allowed_vos)))
         if self.subclusters is not None and isinstance(self.subclusters, str):
-            self.subclusters = filter(None, re.split(r'\s*,\s*', self.subclusters))
+            self.subclusters = list(filter(None, re.split(r'\s*,\s*', self.subclusters)))
 
         return self
 

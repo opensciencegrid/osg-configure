@@ -26,7 +26,7 @@ class BoscoConfiguration(JobManagerConfiguration):
 
     def __init__(self, *args, **kwargs):
         # pylint: disable-msg=W0142
-        super(BoscoConfiguration, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(__name__)
         self.log('BoscoConfiguration.__init__ started')
         
@@ -70,7 +70,7 @@ class BoscoConfiguration(JobManagerConfiguration):
         """Try to get configuration information from ConfigParser or SafeConfigParser object given
         by configuration and write recognized settings to attributes dict
         """
-        super(BoscoConfiguration, self).parse_configuration(configuration)
+        super().parse_configuration(configuration)
 
         self.log('BoscoConfiguration.parse_configuration started')
 
@@ -275,7 +275,8 @@ class BoscoConfiguration(JobManagerConfiguration):
                 # Only install if it's not in the clusterlist
                 cmd = ["bosco_cluster", "-l"]
                 process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                           preexec_fn=demote(user_uid, user_gid), env=env)
+                                           preexec_fn=demote(user_uid, user_gid), env=env,
+                                           encoding="latin-1")
                 stdout, stderr = process.communicate()
                 returncode = process.returncode
                 if returncode == 2:
@@ -303,7 +304,8 @@ class BoscoConfiguration(JobManagerConfiguration):
 
             self.log("Bosco command to execute: %s" % install_cmd, level=logging.DEBUG)
             process = subprocess.Popen(install_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                       preexec_fn=demote(user_uid, user_gid), env=env)
+                                       preexec_fn=demote(user_uid, user_gid), env=env,
+                                       encoding="latin-1")
             stdout, stderr = process.communicate()
             returncode = process.returncode
             if returncode:
@@ -338,7 +340,7 @@ Host %(endpoint_host)s
             return
 
         config_contents = ""
-        with open(config_path) as f:
+        with open(config_path, "r", encoding="latin-1") as f:
             config_contents = f.read()
 
         section_re = re.compile(r"%s.+?%s" % (re.escape(self.SSH_CONFIG_SECTION_BEGIN), re.escape(self.SSH_CONFIG_SECTION_END)),
@@ -383,8 +385,8 @@ Host %(endpoint_host)s
             return False
         
         host_re = re.compile("^\s*Host\s+%s\s*$" % host)
-        
-        with open(config_path, 'r') as f:
+
+        with open(config_path, "r", encoding="latin-1") as f:
             for line in f:
                 if host_re.search(line):
                     return True

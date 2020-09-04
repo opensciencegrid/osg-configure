@@ -3,10 +3,7 @@
 import os
 import sys
 import optparse
-try:
-    import ConfigParser
-except ImportError:
-    import configparser as ConfigParser
+import configparser
 import logging
 import traceback
 
@@ -188,7 +185,7 @@ def configure_system(modules, configure_module=None, force=False):
             error_exit("Error in %s while parsing configuration" % \
                        (module.__class__.__name__),
                        exception)
-        except ConfigParser.ParsingError as exception:
+        except configparser.ParsingError as exception:
             error_exit("Error while parsing configuration: %s" % exception)
 
     attributes = {}
@@ -208,7 +205,7 @@ def configure_system(modules, configure_module=None, force=False):
 
     if not check_configuration(modules, attributes, force):
         if force:
-            logging.warn("Invalid attributes found but forcing configuration.")
+            logging.warning("Invalid attributes found but forcing configuration.")
             sys.stderr.write("Invalid attributes found but forcing configuration.\n")
         else:
             error_exit("Invalid attributes found, exiting")
@@ -355,7 +352,7 @@ def list_enabled_services(modules):
             error_exit("Error in %s while parsing configuration" % \
                        (module.__class__.__name__),
                        exception)
-        except ConfigParser.ParsingError as exception:
+        except configparser.ParsingError as exception:
             error_exit("Error while parsing configuration: %s" % exception)
 
     sys.stdout.write("System services associated with current configuration:\n")
@@ -395,7 +392,7 @@ def verify_system(modules):
         except exceptions.SettingError as exception:
             error_exit("Error in %s while parsing configuration" % (module.__class__.__name__),
                        exception)
-        except ConfigParser.ParsingError as exception:
+        except configparser.ParsingError as exception:
             error_exit("Error while parsing configuration: %s" % exception)
 
     attributes = {}

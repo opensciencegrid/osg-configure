@@ -4,10 +4,7 @@ import os
 import re
 import shutil
 import logging
-try:
-    import ConfigParser
-except ImportError:
-    import configparser as ConfigParser
+import configparser
 import pwd
 
 from osg_configure.modules import exceptions
@@ -118,7 +115,7 @@ class RsvConfiguration(BaseConfiguration):
         self._gratia_probes_2d = []
         self._gratia_metric_map = {}
         self._enable_rsv_downloads = False
-        self._meta = ConfigParser.RawConfigParser()
+        self._meta = configparser.RawConfigParser()
         self.htcondor_gateway_enabled = True
         self.use_service_cert = True
         self.copy_host_cert_for_service_cert = False
@@ -737,7 +734,7 @@ class RsvConfiguration(BaseConfiguration):
 
         # Put the location into the condor-cron-env.sh file so that the condor-cron
         # wrappers and init script have the binaries in their PATH
-        sysconf_file = os.path.join('/', 'etc', 'sysconfig', 'condor-cron')
+        sysconf_file = "/etc/sysconfig/condor-cron"
         try:
             sysconf = open(sysconf_file, 'w')
             if self.options['condor_location'].value:
@@ -751,7 +748,7 @@ class RsvConfiguration(BaseConfiguration):
             raise exceptions.ConfigureError
 
         # Adjust the Condor-Cron configuration
-        conf_file = os.path.join('/', 'etc', 'condor-cron', 'config.d', 'condor_location')
+        conf_file = "/etc/condor-cron/config.d/condor_location"
         try:
             config = open(conf_file, 'w')
             if self.options['condor_location'].value:
@@ -774,7 +771,7 @@ class RsvConfiguration(BaseConfiguration):
                          level=logging.ERROR)
                 ret = False
 
-            if port and re.search('\D', port):
+            if port and re.search('[^0-9]', port):
                 self.log("Invalid port in [%s].%s: %s" % (self.config_section,
                                                           setting, host),
                          level=logging.ERROR)
@@ -784,7 +781,7 @@ class RsvConfiguration(BaseConfiguration):
 
     def _read_rsv_conf(self):
         """Return a ConfigParser with the contents of the rsv.conf file"""
-        config = ConfigParser.RawConfigParser()
+        config = configparser.RawConfigParser()
         config.optionxform = str  # rsv.conf is case-sensitive
 
         if os.path.exists(self.rsv_conf):
@@ -871,7 +868,7 @@ class RsvConfiguration(BaseConfiguration):
         except OSError:
             pass  # Dir already exists.
 
-        config = ConfigParser.RawConfigParser()
+        config = configparser.RawConfigParser()
         config.optionxform = str  # Conf is case-sensitive.
 
         config.read(allmetrics_conf_path)  # Does nothing if the file can't be read.
@@ -938,7 +935,7 @@ class RsvConfiguration(BaseConfiguration):
 
         # Add the configuration file
         nagios_conf_file = os.path.join(self.rsv_conf_dir, 'consumers/nagios-consumer.conf')
-        config = ConfigParser.RawConfigParser()
+        config = configparser.RawConfigParser()
         config.optionxform = str
 
         if os.path.exists(nagios_conf_file):
@@ -965,7 +962,7 @@ class RsvConfiguration(BaseConfiguration):
 
         # Add the configuration file
         zabbix_conf_file = os.path.join(self.rsv_conf_dir, 'consumers/zabbix-consumer.conf')
-        config = ConfigParser.RawConfigParser()
+        config = configparser.RawConfigParser()
         config.optionxform = str
 
         if os.path.exists(zabbix_conf_file):
@@ -1112,7 +1109,7 @@ class RsvConfiguration(BaseConfiguration):
         if not self.enabled or self.ignored:
             return set()
 
-        return set(['rsv', 'condor-cron'])
+        return {'rsv', 'condor-cron'}
 
     def _configure_condor_cron_ids(self):
         """Ensure UID/GID of cndrcron user is valid and is in the condor-cron configs
@@ -1121,7 +1118,7 @@ class RsvConfiguration(BaseConfiguration):
         """
         # check the uid/gid in the condor_ids file
         condor_id_fname = "/etc/condor-cron/config.d/condor_ids"
-        ids = open(condor_id_fname).read()
+        ids = open(condor_id_fname, "r", encoding="latin-1").read()
         id_regex = re.compile(r'^\s*CONDOR_IDS\s+=\s+(\d+)\.(\d+).*', re.MULTILINE)
         condor_ent = pwd.getpwnam('cndrcron')
         match = id_regex.search(ids)
@@ -1137,11 +1134,11 @@ class RsvConfiguration(BaseConfiguration):
             if count == 0:
                 self.log("Can't correct condor-cron uid/gid, please double check",
                          level=logging.ERROR)
-            if not utilities.atomic_write(condor_id_fname, ids):
+            if not utilities.atomic_write(condor_id_fname, ids, encoding="latin-1"):
                 raise exceptions.ConfigureError
         elif match is None:
             ids += "CONDOR_IDS = %d.%d\n" % (condor_ent.pw_uid, condor_ent.pw_gid)
-            if not utilities.atomic_write(condor_id_fname, ids):
+            if not utilities.atomic_write(condor_id_fname, ids, encoding="latin-1"):
                 raise exceptions.ConfigureError
 
 

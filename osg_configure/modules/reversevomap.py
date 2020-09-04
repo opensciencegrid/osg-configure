@@ -1,7 +1,4 @@
 #!/usr/bin/env python
-from __future__ import print_function
-
-from __future__ import absolute_import
 import errno
 import fnmatch
 import pwd
@@ -10,7 +7,6 @@ import sys
 import logging
 
 from collections import namedtuple
-from itertools import ifilter
 
 
 DEFAULT_VOMS_MAPFILE = "/usr/share/osg/voms-mapfile-default"
@@ -37,7 +33,7 @@ def read_mapfiles():
     regex = re.compile(r'^\s*["](/[^"]+)["]\s+([A-Za-z0-9_]+)\s*(?:$|[#])')
     for filepath in [DEFAULT_VOMS_MAPFILE, VOMS_MAPFILE]:
         try:
-            with open(filepath, 'r') as filehandle:
+            with open(filepath, "r", encoding="latin-1") as filehandle:
                 for line in filehandle:
                     match = regex.match(line)
                     if not match:
@@ -65,7 +61,7 @@ def read_banfile():
     bans = []
 
     try:
-        with open(BAN_MAPFILE, 'r') as filehandle:
+        with open(BAN_MAPFILE, "r", encoding="latin-1") as filehandle:
             for line in filehandle:
                 match = regex.match(line)
                 if not match:
@@ -113,7 +109,7 @@ def get_vos(mappings):
     """
     regex = re.compile("^/(\w+)/")
     patterns = (m.pattern for m in mappings)
-    matches = ifilter(None, (regex.match(p) for p in patterns))
+    matches = filter(None, (regex.match(p) for p in patterns))
     vo_groups = set(m.group(1).lower() for m in matches)
 
     return vo_groups

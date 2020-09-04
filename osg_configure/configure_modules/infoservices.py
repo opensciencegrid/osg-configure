@@ -45,8 +45,7 @@ class InfoServicesConfiguration(BaseConfiguration):
     """
 
     def __init__(self, *args, **kwargs):
-        # pylint: disable-msg=W0142
-        super(InfoServicesConfiguration, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(__name__)
         self.log("InfoServicesConfiguration.__init__ started")
         self.config_section = 'Info Services'
@@ -321,7 +320,8 @@ CONDOR_VIEW_HOST = %s
         errlevel = logging.ERROR
         try:
             process = subprocess.Popen(['condor_ce_config_val', '-verbose', 'OSG_ResourceCatalog'],
-                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                       encoding="latin-1")
             output, error = process.communicate()
             if process.returncode != 0:
                 if not (error and error.startswith('Not defined:')):

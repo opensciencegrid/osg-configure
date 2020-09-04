@@ -1,10 +1,6 @@
-from __future__ import absolute_import
 import logging
 import re
-try:
-    import ConfigParser
-except ImportError:
-    import configparser as ConfigParser
+from configparser import NoSectionError, NoOptionError, InterpolationError, ConfigParser
 
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
@@ -72,7 +68,7 @@ def check_entry(config, section, option, status, kind):
     entry = None
     try:
         entry = str(config.get(section, option)).strip()
-    except (ConfigParser.NoSectionError, ConfigParser.NoOptionError, ConfigParser.InterpolationError):
+    except (NoSectionError, NoOptionError, InterpolationError):
         pass
     is_subcluster = section.lower().startswith('subcluster')
     if not entry:
@@ -131,7 +127,7 @@ def check_section(config, section):
     """
     Check attributes related to a subcluster and make sure that they are consistent
     """
-    if section.lower().find('changeme') >= 0:
+    if "changeme" in section.lower():
         msg = "You have a section named '%s', you must change this name.\n" % section
         raise exceptions.SettingError(msg)
 
@@ -175,14 +171,14 @@ def check_config(config):
     return has_sc
 
 
-def resource_catalog_from_config(config, default_allowed_vos=None):
+def resource_catalog_from_config(config: ConfigParser, default_allowed_vos=None):
     """
     Create a ResourceCatalog from the subcluster entries in a config
-    :type config: ConfigParser.ConfigParser
-    :rtype: ResourceCatalog
+    :type config: ConfigParser
+    :rtype: resourcecatalog.ResourceCatalog
     """
     logger = logging.getLogger(__name__)
-    assert isinstance(config, ConfigParser.ConfigParser)
+    assert isinstance(config, ConfigParser)
     from osg_configure.modules import resourcecatalog
 
     rc = resourcecatalog.ResourceCatalog()

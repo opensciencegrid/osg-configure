@@ -20,7 +20,7 @@ class CondorConfiguration(JobManagerConfiguration):
 
     def __init__(self, *args, **kwargs):
         # pylint: disable-msg=W0142
-        super(CondorConfiguration, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(__name__)
         self.log('CondorConfiguration.__init__ started')
         self.config_section = "Condor"
@@ -41,7 +41,7 @@ class CondorConfiguration(JobManagerConfiguration):
         Try to get configuration information from ConfigParser or SafeConfigParser object given
         by configuration and write recognized settings to attributes dict
         """
-        super(CondorConfiguration, self).parse_configuration(configuration)
+        super().parse_configuration(configuration)
 
         self.log('CondorConfiguration.parse_configuration started')
 
@@ -293,4 +293,4 @@ class CondorConfiguration(JobManagerConfiguration):
         if not self.enabled or self.ignored:
             return set()
 
-        return set(['globus-gridftp-server']).union(self.gateway_services())
+        return {'globus-gridftp-server'}.union(self.gateway_services())

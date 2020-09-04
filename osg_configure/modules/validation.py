@@ -1,19 +1,13 @@
 """ Module to hold various validation functions """
 
-from __future__ import absolute_import, print_function
 import logging
 import re
 import socket
 import os
 import pwd
 import sys
-try:
-    from cStringIO import StringIO
-    import ConfigParser
-except ImportError:
-    from io import StringIO
-    import configparser as ConfigParser
-
+from io import StringIO
+from configparser import ConfigParser, ParsingError
 
 __all__ = ['valid_domain',
            'valid_email',
@@ -177,7 +171,7 @@ def valid_user_vo_file(map_file=None, return_invalid_lines=False):
     java = re.compile(r'(java|exception)', re.I)
     account_regex = re.compile(r'^[a-z0-9-._]+$', re.IGNORECASE)
     invalid_lines = []
-    for line in [x.strip() for x in open(map_file)]:
+    for line in [x.strip() for x in open(map_file, "r", encoding="latin-1")]:
         if line == "":
             # skip blank lines
             continue
@@ -264,15 +258,15 @@ def valid_ini_file(filename):
         return False
 
     config_file = os.path.abspath(filename)
-    configuration = ConfigParser.ConfigParser()
+    configuration = ConfigParser()
     file_buffer = StringIO()
-    temp = open(config_file).read()
+    temp = open(config_file, "r", encoding="latin-1").read()
     temp = temp.replace('%(', '-')
     file_buffer.write(temp)
     file_buffer.seek(0)
     try:
-        configuration.readfp(file_buffer)
-    except ConfigParser.ParsingError as e:
+        configuration.readfp(file_buffer)  # TODO readfp is deprecated
+    except ParsingError as e:
         print("Error while parsing: %s\n%s" % (filename, e), file=sys.stderr)
         print("Lines with options should not start with a space", file=sys.stderr)
         return False

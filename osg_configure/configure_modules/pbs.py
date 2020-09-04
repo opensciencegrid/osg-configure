@@ -159,7 +159,7 @@ class PBSConfiguration(JobManagerConfiguration):
         if not self.enabled or self.ignored:
             return set()
 
-        services = set(['globus-gridftp-server'])
+        services = {'globus-gridftp-server'}
         services.update(self.gateway_services())
         return services
 
