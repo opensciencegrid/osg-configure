@@ -15,18 +15,17 @@ rpm -U https://dl.fedoraproject.org/pub/epel/epel-release-latest-${OS_VERSION}.n
 [[ $OS_VERSION -gt 7 ]] || yum -y install yum-plugin-priorities
 rpm -U https://repo.opensciencegrid.org/osg/${OSG_VERSION}/osg-${OSG_VERSION}-el${OS_VERSION}-release-latest.rpm
 
+packages="python3-condor python3 make"
 if [[ $OS_VERSION -gt 7 ]]; then
-    yum -y install --enablerepo=osg-testing --enablerepo=PowerTools python3-condor python3 make
-    PYTHON=python3
+    yum -y install --enablerepo=osg-testing --enablerepo=PowerTools $packages
 else
-    yum -y install python2-condor make
-    PYTHON=python2
+    yum -y install $packages
 fi
 
 # First, install osg-configure
 cd /osg-configure
-make install PYTHON=$PYTHON
+make install PYTHON=python3
 
 # Next, run the tests
-$PYTHON tests/run-osg-configure-tests
+python3 tests/run-osg-configure-tests
 
