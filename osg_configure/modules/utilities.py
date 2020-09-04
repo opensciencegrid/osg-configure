@@ -17,7 +17,6 @@ except ImportError:
 import errno
 import logging
 
-import rpm
 
 __all__ = ['get_elements',
            'write_attribute_file',
@@ -49,7 +48,7 @@ __all__ = ['get_elements',
 CONFIG_DIRECTORY = "/etc/osg"
 
 logger = logging.getLogger(__name__)
-
+devnull = open("/dev/null", "w+b")
 
 def get_elements(element=None, filename=None):
     """Get values for selected element from xml file specified in filename"""
@@ -469,18 +468,14 @@ def rpm_installed(rpm_name):
     Returns:
     True if rpms are installed, False otherwise
     """
-    trans_set = rpm.TransactionSet()
     if isinstance(rpm_name, str):
-        return trans_set.dbMatch('name', rpm_name).count() in (1, 2)
+        return subprocess.call(["rpm", "-q", rpm_name], stdout=devnull, stderr=devnull) == 0
 
     # check with iterable type
-    try:
-        for name in rpm_name:
-            if trans_set.dbMatch('name', name).count() not in (1, 2):
-                return False
-        return True
-    except rpm.error:
-        return False
+    for name in rpm_name:
+        if subprocess.call(["rpm", "-q", name], stdout=devnull, stderr=devnull) != 0:
+            return False
+    return True
 
 
 def get_test_config(config_file=''):
