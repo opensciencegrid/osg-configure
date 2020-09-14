@@ -6,10 +6,7 @@
 import os
 import sys
 import unittest
-try:
-    import ConfigParser
-except ImportError:
-    import configparser as ConfigParser
+import configparser
 import logging
 
 # setup system library path
@@ -43,7 +40,7 @@ class TestSiteAttributes(unittest.TestCase):
         """
 
         config_file = get_test_config("siteattributes/siteattributes1.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = siteinformation.SiteInformation(logger=global_logger)
@@ -65,7 +62,7 @@ class TestSiteAttributes(unittest.TestCase):
                      'OSG_SITE_LONGITUDE': '84.23',
                      'OSG_SITE_LATITUDE': '23.32'}
         for var in variables:
-            self.assertTrue(attributes.has_key(var),
+            self.assertTrue(var in attributes,
                             "Attribute %s missing" % var)
             self.assertEqual(attributes[var],
                              variables[var],
@@ -78,7 +75,7 @@ class TestSiteAttributes(unittest.TestCase):
         """
 
         config_file = get_test_config("siteattributes/siteattributes2.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = siteinformation.SiteInformation(logger=global_logger)
@@ -100,7 +97,7 @@ class TestSiteAttributes(unittest.TestCase):
                      'OSG_SITE_LONGITUDE': '-84.23',
                      'OSG_SITE_LATITUDE': '-23.32'}
         for var in variables:
-            self.assertTrue(attributes.has_key(var),
+            self.assertTrue(var in attributes,
                             "Attribute %s missing" % var)
             self.assertEqual(attributes[var],
                              variables[var],
@@ -113,7 +110,7 @@ class TestSiteAttributes(unittest.TestCase):
         """
 
         config_file = get_test_config("siteattributes/siteattributes3.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = siteinformation.SiteInformation(logger=global_logger)
@@ -135,7 +132,7 @@ class TestSiteAttributes(unittest.TestCase):
                      'OSG_SITE_LONGITUDE': '-84.23',
                      'OSG_SITE_LATITUDE': '-23.32'}
         for var in variables:
-            self.assertTrue(attributes.has_key(var),
+            self.assertTrue(var in attributes,
                             "Attribute %s missing" % var)
             self.assertEqual(attributes[var],
                              variables[var],
@@ -150,7 +147,7 @@ class TestSiteAttributes(unittest.TestCase):
         Test the parsing when attributes are missing, should get exceptions
         """
         config_file = get_test_config("siteattributes/siteattributes2.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = siteinformation.SiteInformation(logger=global_logger)
@@ -173,7 +170,7 @@ class TestSiteAttributes(unittest.TestCase):
             mandatory += mandatory_on_ce
         for option in mandatory:
             config_file = get_test_config("siteattributes/siteattributes1.ini")
-            configuration = ConfigParser.SafeConfigParser()
+            configuration = configparser.SafeConfigParser()
             configuration.read(config_file)
             configuration.remove_option('Site Information', option)
 
@@ -189,7 +186,7 @@ class TestSiteAttributes(unittest.TestCase):
 
         config_file = get_test_config("siteattributes/" \
                                       "invalid_latitude1.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = siteinformation.SiteInformation(logger=global_logger)
@@ -204,7 +201,7 @@ class TestSiteAttributes(unittest.TestCase):
 
         config_file = get_test_config("siteattributes/" \
                                       "invalid_latitude2.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
         settings = siteinformation.SiteInformation(logger=global_logger)
         try:
@@ -223,7 +220,7 @@ class TestSiteAttributes(unittest.TestCase):
 
         config_file = get_test_config("siteattributes/" \
                                       "invalid_longitude1.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = siteinformation.SiteInformation(logger=global_logger)
@@ -238,7 +235,7 @@ class TestSiteAttributes(unittest.TestCase):
 
         config_file = get_test_config("siteattributes/" \
                                       "invalid_longitude2.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
         settings = siteinformation.SiteInformation(logger=global_logger)
         try:
@@ -257,7 +254,7 @@ class TestSiteAttributes(unittest.TestCase):
 
         config_file = get_test_config("siteattributes/" \
                                       "invalid_hostname.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = siteinformation.SiteInformation(logger=global_logger)
@@ -277,7 +274,7 @@ class TestSiteAttributes(unittest.TestCase):
 
         config_file = get_test_config("siteattributes/" \
                                       "invalid_email.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = siteinformation.SiteInformation(logger=global_logger)
@@ -298,7 +295,7 @@ class TestSiteAttributes(unittest.TestCase):
 
         config_file = get_test_config("siteattributes/" \
                                       "invalid_sponsor1.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = siteinformation.SiteInformation(logger=global_logger)
@@ -319,7 +316,7 @@ class TestSiteAttributes(unittest.TestCase):
 
         config_file = get_test_config("siteattributes/" \
                                       "invalid_sponsor2.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = siteinformation.SiteInformation(logger=global_logger)
@@ -338,7 +335,7 @@ class TestSiteAttributes(unittest.TestCase):
         """
 
         config_file = get_test_config("siteattributes/valid_settings.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = siteinformation.SiteInformation(logger=global_logger)
@@ -357,7 +354,7 @@ class TestSiteAttributes(unittest.TestCase):
         """
 
         config_file = get_test_config("siteattributes/siteattributes3.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = siteinformation.SiteInformation(logger=global_logger)

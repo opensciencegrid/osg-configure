@@ -1,23 +1,16 @@
 """ Module to hold various utility functions """
-
+import errno
+import glob
+import logging
+import os
+import platform
 import re
 import socket
-import os
-import types
-import sys
-import glob
 import stat
-import tempfile
 import subprocess
-import platform
-try:
-    import ConfigParser
-except ImportError:
-    import configparser as ConfigParser
-import errno
-import logging
-
-import rpm
+import sys
+import tempfile
+from configparser import ConfigParser, NoOptionError, NoSectionError
 
 __all__ = ['get_elements',
            'write_attribute_file',
@@ -72,14 +65,13 @@ def _compose_attribute_file(attributes):
     """Make the contents of an osg attributes file"""
 
     def islist(var):
-        return type(var) is types.ListType
+        return isinstance(var, list)
 
     variable_string = ""
     export_string = ""
     # keep a list of array variables
     array_vars = {}
-    keys = attributes.keys()
-    keys.sort()
+    keys = sorted(attributes.keys())
     for key in keys:
         value = attributes[key]
         if value is None:
@@ -175,7 +167,7 @@ def get_vos(user_vo_file):
         user_vo_file = '/var/lib/osg/user-vo-map'
     if not os.path.isfile(user_vo_file):
         return []
-    file_buffer = open(user_vo_file, 'r')
+    file_buffer = open(user_vo_file, "r", encoding="latin-1")
     vo_list = []
     for line in file_buffer:
         try:
@@ -201,7 +193,7 @@ def service_enabled(service_name):
     if service_name is None or service_name == "":
         return False
     process = subprocess.Popen(['/sbin/service', '--list', service_name],
-                               stdout=subprocess.PIPE)
+                               stdout=subprocess.PIPE, encoding="latin-1")
     output = process.communicate()[0]
     if process.returncode != 0:
         return False
@@ -243,7 +235,7 @@ def fetch_crl():
                                      ]
         try:
             fetch_crl_process = subprocess.Popen([crl_path, '-p', '10', '-T', '30'], stdout=subprocess.PIPE,
-                                                 stderr=subprocess.STDOUT)
+                                                 stderr=subprocess.STDOUT, encoding="latin-1")
         except OSError as e:
             if e.errno == errno.ENOENT:
                 sys.stdout.write("Can't find fetch-crl script, skipping fetch-crl invocation\n")
@@ -337,7 +329,8 @@ def get_condor_config_val(variable, executable='condor_config_val', quiet_undefi
     """
     try:
         process = subprocess.Popen([executable, variable],
-                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                   encoding="latin-1")
         output, error = process.communicate()
         if error and not (error.startswith('Not defined:') and quiet_undefined):
             sys.stderr.write(error)
@@ -359,7 +352,7 @@ def read_file(filename, default=None):
     """
     contents = default
     try:
-        fh = open(filename, 'r')
+        fh = open(filename, "r", encoding="latin-1")
         try:
             contents = fh.read()
         finally:
@@ -369,7 +362,7 @@ def read_file(filename, default=None):
     return contents
 
 
-def atomic_write(filename=None, contents=None, **kwargs):
+def atomic_write(filename=None, contents=None, encoding="latin-1", errors="strict", mode=None):
     """
     Atomically write contents to a file
 
@@ -391,7 +384,7 @@ def atomic_write(filename=None, contents=None, **kwargs):
 
     try:
         (config_fd, temp_name) = tempfile.mkstemp(dir=os.path.dirname(filename))
-        mode = kwargs.get('mode', None)
+        # Note: config_fd is opened in binary mode
         if mode is None:
             try:
                 mode = stat.S_IMODE(os.stat(filename).st_mode)
@@ -403,6 +396,8 @@ def atomic_write(filename=None, contents=None, **kwargs):
                     raise
         try:
             try:
+                if not isinstance(contents, bytes):
+                    contents = contents.encode(encoding, errors)
                 os.write(config_fd, contents)
                 # need to fsync data to make sure data is written on disk before renames
                 # see ext4 documentation for more information
@@ -456,7 +451,7 @@ def any_rpms_installed(*rpm_names):
     """
     if isinstance(rpm_names[0], list) or isinstance(rpm_names[0], tuple):
         rpm_names = list(rpm_names[0])
-    return (True in (rpm_installed(rpm_name) for rpm_name in rpm_names))
+    return any(map(rpm_installed, rpm_names))
 
 
 def rpm_installed(rpm_name):
@@ -470,18 +465,16 @@ def rpm_installed(rpm_name):
     Returns:
     True if rpms are installed, False otherwise
     """
-    trans_set = rpm.TransactionSet()
-    if isinstance(rpm_name, types.StringType):
-        return trans_set.dbMatch('name', rpm_name).count() in (1, 2)
+    if isinstance(rpm_name, str):
+        return subprocess.call(["rpm", "-q", rpm_name], stdout=subprocess.DEVNULL,
+                               stderr=subprocess.DEVNULL) == 0
 
     # check with iterable type
-    try:
-        for name in rpm_name:
-            if trans_set.dbMatch('name', name).count() not in (1, 2):
-                return False
-        return True
-    except rpm.error:
-        return False
+    for name in rpm_name:
+        if subprocess.call(["rpm", "-q", name], stdout=subprocess.DEVNULL,
+                           stderr=subprocess.DEVNULL) != 0:
+            return False
+    return True
 
 
 def get_test_config(config_file=''):
@@ -542,35 +535,29 @@ def get_os_version():
     return version_list
 
 
-def config_safe_get(configuration, section, option, default=None):
+def config_safe_get(configuration: ConfigParser, section: str, option: str, default=None):
     """
     Return the value of the option `option` from the config section
     `section` or `default` if the section or the option are missing
 
-    :type configuration: ConfigParser.ConfigParser
-    :type section: str
-    :type option: str
     """
     try:
         return configuration.get(section, option)
-    except (ConfigParser.NoOptionError, ConfigParser.NoSectionError):
+    except (NoOptionError, NoSectionError):
         return default
 
 
-def config_safe_getboolean(configuration, section, option, default=None):
+def config_safe_getboolean(configuration: ConfigParser, section: str, option: str, default=None):
     """
     Wrapper around RawConfigParser.getboolean the way config_safe_get is a
     wrapper around RawConfigParser.get. Note that it also returns default
     in case of a ValueError, which is raised if the value is not a valid
     boolean.
 
-    :type configuration: ConfigParser.ConfigParser
-    :type section: str
-    :type option: str
     """
     try:
         return configuration.getboolean(section, option)
-    except (ConfigParser.NoOptionError, ConfigParser.NoSectionError, ValueError):
+    except (NoOptionError, NoSectionError, ValueError):
         return default
 
 
@@ -653,25 +640,4 @@ def reconfig_service(service, reconfig_cmd):
         return True
 
     return False
-
-
-
-class NullLogger(logging.Logger):
-    """A dummy Logger where the logging functions ignore all parameters
-    passed to it.  They are static methods so you don't need to instantiate
-    it.  Useful as a default value for functions which take a logger as an
-    argument.
-
-    """
-    @staticmethod
-    def info(*args, **kwargs): pass
-    @staticmethod
-    def warning(*args, **kwargs): pass
-    @staticmethod
-    def error(*args, **kwargs): pass
-    @staticmethod
-    def critical(*args, **kwargs): pass
-    @staticmethod
-    def debug(*args, **kwargs): pass
-    @staticmethod
-    def log(*args, **kwargs): pass
+    

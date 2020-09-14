@@ -27,12 +27,12 @@ help:
 
 
 install:
-	$(PYTHON) setup.py install --root=$(DESTDIR)/
+	$(PYTHON) setup.py install --root=$(DESTDIR)/ --prefix=$(PREFIX)
 	mkdir -p  $(DESTDIR)$(SBINDIR)
 	mv -f  $(DESTDIR)$(BINDIR)/$(NAME)  $(DESTDIR)$(SBINDIR)/$(NAME)
 
 install-noconfig:
-	$(PYTHON) setup.py install_lib install_scripts
+	$(PYTHON) setup.py install_lib install_scripts --root=$(DESTDIR)/ --prefix=$(PREFIX)
 	mkdir -p  $(DESTDIR)$(SBINDIR)
 	mv -f  $(DESTDIR)$(BINDIR)/$(NAME)  $(DESTDIR)$(SBINDIR)/$(NAME)
 

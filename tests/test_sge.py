@@ -6,10 +6,7 @@
 import os
 import sys
 import unittest
-try:
-    import ConfigParser
-except ImportError:
-    import configparser as ConfigParser
+import configparser
 import logging
 
 # setup system library path
@@ -43,7 +40,7 @@ class TestSGE(unittest.TestCase):
         """
 
         config_file = get_test_config("sge/sge1.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = sge.SGEConfiguration(logger=global_logger)
@@ -60,7 +57,7 @@ class TestSGE(unittest.TestCase):
                    'OSG_JOB_MANAGER': 'SGE'}
         for option in options:
             value = options[option]
-            self.assertTrue(attributes.has_key(option),
+            self.assertTrue(option in attributes,
                             "Attribute %s missing" % option)
             err_msg = "Wrong value obtained for %s, " \
                       "got %s instead of %s" % (option, attributes[option], value)
@@ -72,7 +69,7 @@ class TestSGE(unittest.TestCase):
         """
 
         config_file = get_test_config("sge/sge_disabled.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = sge.SGEConfiguration(logger=global_logger)
@@ -91,7 +88,7 @@ class TestSGE(unittest.TestCase):
         """
 
         config_file = get_test_config("sge/ignored.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = sge.SGEConfiguration(logger=global_logger)
@@ -114,7 +111,7 @@ class TestSGE(unittest.TestCase):
                      'sge_bin_location']
         for option in mandatory:
             config_file = get_test_config("sge/sge1.ini")
-            configuration = ConfigParser.SafeConfigParser()
+            configuration = configparser.SafeConfigParser()
             configuration.read(config_file)
             configuration.remove_option('SGE', option)
 
@@ -129,7 +126,7 @@ class TestSGE(unittest.TestCase):
         """
 
         config_file = get_test_config("sge/missing_root.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = sge.SGEConfiguration(logger=global_logger)
@@ -148,7 +145,7 @@ class TestSGE(unittest.TestCase):
         """
 
         config_file = get_test_config("sge/missing_cell.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = sge.SGEConfiguration(logger=global_logger)
@@ -167,7 +164,7 @@ class TestSGE(unittest.TestCase):
         """
 
         config_file = get_test_config("sge/missing_config.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = sge.SGEConfiguration(logger=global_logger)
@@ -186,7 +183,7 @@ class TestSGE(unittest.TestCase):
         """
 
         config_file = get_test_config("sge/check_ok.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
         root = os.path.join(config_file[:-16], 'test_files')
         configuration.set('SGE', 'sge_root', root)
@@ -207,7 +204,7 @@ class TestSGE(unittest.TestCase):
         """
 
         config_file = get_test_config("sge/check_ok2.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
         root = os.path.join(config_file[:-17], 'test_files')
         configuration.set('SGE', 'sge_root', root)
@@ -228,7 +225,7 @@ class TestSGE(unittest.TestCase):
         """
 
         config_file = get_test_config("sge/check_ok.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = sge.SGEConfiguration(logger=global_logger)
@@ -237,14 +234,13 @@ class TestSGE(unittest.TestCase):
         except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
         services = settings.enabled_services()
-        expected_services = set(['condor-ce',
-                                 'globus-gridftp-server'])
+        expected_services = {'condor-ce', 'globus-gridftp-server'}
         self.assertEqual(services, expected_services,
                          "List of enabled services incorrect, " +
                          "got %s but expected %s" % (services, expected_services))
 
         config_file = get_test_config("sge/sge_disabled.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = sge.SGEConfiguration(logger=global_logger)
@@ -259,7 +255,7 @@ class TestSGE(unittest.TestCase):
                          "got %s but expected %s" % (services, expected_services))
 
         config_file = get_test_config("sge/ignored.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = sge.SGEConfiguration(logger=global_logger)

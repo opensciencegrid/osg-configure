@@ -1,11 +1,6 @@
-from __future__ import print_function
 import unittest, os, sys
-try:
-    from cStringIO import StringIO
-    import ConfigParser
-except ImportError:
-    from io import StringIO
-    import configparser as ConfigParser
+from io import StringIO
+import configparser
 
 # setup system library path
 pathname = os.path.realpath('../')
@@ -131,7 +126,7 @@ class TestResourceCatalog(unittest.TestCase):
 
     def testFull(self):
         if not resourcecatalog: return
-        config = ConfigParser.SafeConfigParser()
+        config = configparser.SafeConfigParser()
         config_io = StringIO(r"""
 [Subcluster Valid]
 name = red.unl.edu
@@ -166,7 +161,7 @@ allowed_vos = osg, atlas
         if not resourcecatalog: return
         # Test using the "Resource Entry" section name instead of "Subcluster"
         # and also using some of the attributes ATLAS requested
-        config = ConfigParser.SafeConfigParser()
+        config = configparser.SafeConfigParser()
         config_io = StringIO(r"""
 [Resource Entry Valid]
 name = red.unl.edu
@@ -193,7 +188,7 @@ allowed_vos = osg, atlas
 
     def testResourceEntryWithSubclusters(self):
         if not resourcecatalog: return
-        config = ConfigParser.SafeConfigParser()
+        config = configparser.SafeConfigParser()
         config_file = get_test_config("subcluster/resourceentry_and_sc.ini")
         config.read(config_file)
         self.assertDoesNotRaise(exceptions.SettingError, subcluster.resource_catalog_from_config, config)
@@ -207,7 +202,7 @@ allowed_vos = osg, atlas
                                 "subcluster/resourceentry_missing_memory.ini",
                                 "subcluster/resourceentry_missing_queue.ini",
                                 "subcluster/resourceentry_missing_sc.ini"]:
-            config = ConfigParser.SafeConfigParser()
+            config = configparser.SafeConfigParser()
             config_file = get_test_config(config_filename)
             config.read(config_file)
             try:
@@ -218,7 +213,7 @@ allowed_vos = osg, atlas
 
     def testFullWithExtraTransforms(self):
         if not resourcecatalog: return
-        config = ConfigParser.SafeConfigParser()
+        config = configparser.SafeConfigParser()
         config_io = StringIO(r"""
 [Subcluster Test]
 name = glow.chtc.wisc.edu
@@ -256,7 +251,7 @@ allowed_vos = osg, atlas
         # Disable this test because the feature is disabled for now
         return
         if not resourcecatalog: return
-        config = ConfigParser.SafeConfigParser()
+        config = configparser.SafeConfigParser()
         config_io = cStringIO.StringIO(r"""
 [Subcluster Test]
 name = glow.chtc.wisc.edu

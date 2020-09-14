@@ -25,7 +25,7 @@ class MiscConfiguration(BaseConfiguration):
 
     def __init__(self, *args, **kwargs):
         # pylint: disable-msg=W0142
-        super(MiscConfiguration, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(__name__)
         self.log('MiscConfiguration.__init__ started')
         self.options = {'authorization_method':
@@ -213,7 +213,7 @@ class MiscConfiguration(BaseConfiguration):
 
         services = set()
         if utilities.rpm_installed('fetch-crl'):
-            services = set(['fetch-crl-cron', 'fetch-crl-boot'])
+            services = {'fetch-crl-cron', 'fetch-crl-boot'}
 
         return services
 

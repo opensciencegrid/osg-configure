@@ -2,7 +2,6 @@
 
 import os
 import logging
-import subprocess
 
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile
@@ -111,9 +110,8 @@ class SGEConfiguration(JobManagerConfiguration):
                      level=logging.ERROR)
 
         settings_file = os.path.join(self.options['sge_root'].value,
-                                     self.options['sge_cell'].value,
-                                     'common',
-                                     'settings.sh')
+                                     self.options['sge_cell'].value.lstrip("/"),
+                                     'common/settings.sh')
 
         if not validation.valid_file(settings_file):
             attributes_ok = False
@@ -195,7 +193,7 @@ class SGEConfiguration(JobManagerConfiguration):
         if not self.enabled or self.ignored:
             return set()
 
-        services = set(['globus-gridftp-server'])
+        services = {'globus-gridftp-server'}
         services.update(self.gateway_services())
         return services
 
@@ -205,6 +203,5 @@ class SGEConfiguration(JobManagerConfiguration):
         """
 
         return os.path.join(self.options['sge_root'].value,
-                            self.options['sge_cell'].value,
-                            'common',
-                            'accounting')
+                            self.options['sge_cell'].value.lstrip("/"),
+                            "common/accounting")

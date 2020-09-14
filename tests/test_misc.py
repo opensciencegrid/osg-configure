@@ -6,10 +6,7 @@
 import os
 import sys
 import unittest
-try:
-    import ConfigParser
-except ImportError:
-    import configparser as ConfigParser
+import configparser
 import logging
 
 # setup system library path
@@ -44,7 +41,7 @@ class TestMisc(unittest.TestCase):
         """
 
         config_file = get_test_config("misc/misc_gridmap.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = misc.MiscConfiguration(logger=global_logger)
@@ -53,7 +50,7 @@ class TestMisc(unittest.TestCase):
         except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        self.assertTrue(settings.options.has_key('authorization_method'),
+        self.assertTrue('authorization_method' in settings.options,
                         "Attribute authorization_method missing")
         self.assertEqual(settings.options['authorization_method'].value,
                          'gridmap',
@@ -63,7 +60,7 @@ class TestMisc(unittest.TestCase):
                                           'gridmap'))
 
         config_file = get_test_config("misc/misc_local_gridmap.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = misc.MiscConfiguration(logger=global_logger)
@@ -72,7 +69,7 @@ class TestMisc(unittest.TestCase):
         except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
 
-        self.assertTrue(settings.options.has_key('authorization_method'),
+        self.assertTrue('authorization_method' in settings.options,
                         "Attribute authorization_method missing")
         self.assertEqual(settings.options['authorization_method'].value,
                          'local-gridmap',
@@ -87,7 +84,7 @@ class TestMisc(unittest.TestCase):
         """
 
         config_file = get_test_config("misc/valid_settings2.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = misc.MiscConfiguration(logger=global_logger)
@@ -106,7 +103,7 @@ class TestMisc(unittest.TestCase):
         """
 
         config_file = get_test_config("misc/invalid_settings1.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = misc.MiscConfiguration(logger=global_logger)

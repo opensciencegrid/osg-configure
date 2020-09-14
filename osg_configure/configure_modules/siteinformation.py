@@ -21,7 +21,7 @@ class SiteInformation(BaseConfiguration):
     """
     def __init__(self, *args, **kwargs):
         # pylint: disable-msg=W0142
-        super(SiteInformation, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(__name__)
         self.log('SiteInformation.__init__ started')
         self.options = {'group':

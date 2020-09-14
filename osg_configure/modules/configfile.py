@@ -1,10 +1,7 @@
 """ Module to hold various utility functions """
 
 import glob
-try:
-    import ConfigParser
-except ImportError:
-    import configparser as ConfigParser
+import configparser
 import os
 import sys
 
@@ -47,12 +44,12 @@ def read_config_files(**kwargs):
             sys.stderr.write("Error found in %s\n" % filename)
             sys.exit(1)
     try:
-        config = ConfigParser.SafeConfigParser()
+        config = configparser.SafeConfigParser()
         if case_sensitive:
             config.optionxform = str
-    except ConfigParser.Error as e:
+    except configparser.Error as e:
         raise IOError("Can't read and parse config files:\n%s" % e)
-    read_files = config.read(file_list)
+    read_files = config.read(file_list, encoding="latin-1")
     read_files.sort()
     if file_list != read_files:
         unread_files = set(file_list).difference(read_files)
@@ -83,11 +80,11 @@ def get_option_location(option, section, **kwargs):
     file_list.reverse()
     for fn in file_list:
         try:
-            config = ConfigParser.SafeConfigParser()
-            config.readfp(open(fn, 'r'))
+            config = configparser.SafeConfigParser()
+            config.readfp(open(fn, "r", encoding="latin-1"))
             if config.has_option(section, option):
                 return fn
-        except ConfigParser.Error as e:
+        except configparser.Error as e:
             raise Exception("Can't parse %s:\n%s" % (fn, e))
 
     return None
@@ -172,7 +169,7 @@ def jobmanager_enabled(configuration):
     return False
 
 
-class Option(object):
+class Option:
     """
     Class to encapsulate options as used by osg_configure
     """

@@ -6,10 +6,7 @@
 import os
 import sys
 import unittest
-try:
-    import ConfigParser
-except ImportError:
-    import configparser as ConfigParser
+import configparser
 import logging
 
 # setup system library path
@@ -43,7 +40,7 @@ class TestLocalSettings(unittest.TestCase):
         """
 
         config_file = get_test_config("localsettings/local_settings1.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.optionxform = str
         configuration.read(config_file)
 
@@ -54,20 +51,20 @@ class TestLocalSettings(unittest.TestCase):
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
-        self.assertTrue(attributes.has_key('test1'),
+        self.assertTrue('test1' in attributes,
                         'Attribute test1 missing')
         self.assertEqual(attributes['test1'], 'Value1',
                          'Wrong value obtained for test1')
 
-        self.assertFalse(attributes.has_key('missing_key'),
+        self.assertFalse('missing_key' in attributes,
                          'Non-existent key (missing_key) found')
 
-        self.assertFalse(attributes.has_key('default_key'),
+        self.assertFalse('default_key' in attributes,
                          'Default key recognized as a local attribute')
 
     def testBogusVarName(self):
         config_file = get_test_config("localsettings/bogusvarname.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.optionxform = str
         configuration.read(config_file)
 
@@ -79,7 +76,7 @@ class TestLocalSettings(unittest.TestCase):
 
     def testBogusQuote(self):
         config_file = get_test_config("localsettings/bogusquote.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.optionxform = str
         configuration.read(config_file)
 

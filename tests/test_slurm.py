@@ -6,10 +6,7 @@
 import os
 import sys
 import unittest
-try:
-    import ConfigParser
-except ImportError:
-    import configparser as ConfigParser
+import configparser
 import logging
 
 # setup system library path 
@@ -42,7 +39,7 @@ class TestSlurm(unittest.TestCase):
         """
 
         config_file = get_test_config("slurm/slurm1.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = slurm.SlurmConfiguration(logger=global_logger)
@@ -57,7 +54,7 @@ class TestSlurm(unittest.TestCase):
                    'OSG_JOB_MANAGER': 'SLURM'}
         for option in options:
             value = options[option]
-            self.assertTrue(attributes.has_key(option),
+            self.assertTrue(option in attributes,
                             "Attribute %s missing" % option)
             err_msg = "Wrong value obtained for %s, " \
                       "got %s instead of %s" % (option, attributes[option], value)
@@ -69,7 +66,7 @@ class TestSlurm(unittest.TestCase):
         """
 
         config_file = get_test_config("slurm/slurm_disabled.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = slurm.SlurmConfiguration(logger=global_logger)
@@ -88,7 +85,7 @@ class TestSlurm(unittest.TestCase):
         """
 
         config_file = get_test_config("slurm/ignored.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = slurm.SlurmConfiguration(logger=global_logger)
@@ -106,7 +103,7 @@ class TestSlurm(unittest.TestCase):
         Test the check_attributes function to see if it catches missing pbs location
         """
         config_file = get_test_config("slurm/missing_location.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = slurm.SlurmConfiguration(logger=global_logger)
@@ -124,7 +121,7 @@ class TestSlurm(unittest.TestCase):
         Test the check_attributes function to see if it works on valid settings
         """
         config_file = get_test_config("slurm/check_ok.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = slurm.SlurmConfiguration(logger=global_logger)
@@ -142,7 +139,7 @@ class TestSlurm(unittest.TestCase):
         Test the check_attributes function to see if it works on valid settings
         """
         config_file = get_test_config("slurm/check_ok2.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = slurm.SlurmConfiguration(logger=global_logger)
@@ -161,7 +158,7 @@ class TestSlurm(unittest.TestCase):
         """
 
         config_file = get_test_config("slurm/check_ok.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = slurm.SlurmConfiguration(logger=global_logger)
@@ -177,7 +174,7 @@ class TestSlurm(unittest.TestCase):
                          "got %s but expected %s" % (services, expected_services))
 
         config_file = get_test_config("slurm/slurm_disabled.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = slurm.SlurmConfiguration(logger=global_logger)
@@ -192,7 +189,7 @@ class TestSlurm(unittest.TestCase):
                          "got %s but expected %s" % (services, expected_services))
 
         config_file = get_test_config("slurm/ignored.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = slurm.SlurmConfiguration(logger=global_logger)

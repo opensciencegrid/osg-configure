@@ -7,14 +7,10 @@
 # pylint: disable=W0703
 # pylint: disable=R0904
 
-from __future__ import print_function
 import os
 import sys
 import unittest
-try:
-    import ConfigParser
-except ImportError:
-    import configparser as ConfigParser
+import configparser
 import logging
 
 # setup system library path
@@ -52,7 +48,7 @@ class TestInfoServices(unittest.TestCase):
 
         if not infoservices: return
         config_file = get_test_config("infoservices/disabled.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
@@ -68,7 +64,7 @@ class TestInfoServices(unittest.TestCase):
 
         if not infoservices: return
         config_file = get_test_config("infoservices/ignored.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
@@ -84,7 +80,7 @@ class TestInfoServices(unittest.TestCase):
 
         if not infoservices: return
         config_file = get_test_config("infoservices/disabled.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
@@ -105,7 +101,7 @@ class TestInfoServices(unittest.TestCase):
 
         if not infoservices: return
         config_file = get_test_config("infoservices/itb_defaults2.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
@@ -126,7 +122,7 @@ class TestInfoServices(unittest.TestCase):
 
         if not infoservices: return
         config_file = get_test_config("infoservices/prod_defaults2.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
@@ -146,7 +142,7 @@ class TestInfoServices(unittest.TestCase):
 
         if not infoservices: return
         config_file = get_test_config("infoservices/infoservices.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)

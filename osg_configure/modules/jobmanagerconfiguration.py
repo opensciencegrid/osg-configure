@@ -16,13 +16,13 @@ class JobManagerConfiguration(BaseConfiguration):
 
     def __init__(self, *args, **kwargs):
         # pylint: disable-msg=W0142
-        super(JobManagerConfiguration, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(__name__)
         self.attributes = {}
         self.htcondor_gateway_enabled = True
 
     def parse_configuration(self, configuration):
-        super(JobManagerConfiguration, self).parse_configuration(configuration)
+        super().parse_configuration(configuration)
         self.log('JobManagerConfiguration.parse_configuration started')
         if configuration.has_section('Gateway'):
             if configuration.has_option('Gateway', 'htcondor_gateway_enabled'):

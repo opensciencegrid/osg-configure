@@ -49,8 +49,7 @@ do then just remove the metric probe specification in the 'probes' option
 in your config.ini file."""
 
     def __init__(self, *args, **kwargs):
-        # pylint: disable-msg=W0142
-        super(GratiaConfiguration, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(__name__)
         self.log("GratiaConfiguration.__init__ started")
 
@@ -358,7 +357,7 @@ in your config.ini file."""
             probe = 'gridftp-transfer'
 
         try:
-            buf = open(probe_file).read()
+            buf = open(probe_file, "r", encoding="latin-1").read()
             buf = self.replace_setting(buf, 'ProbeName', "%s:%s" % (probe, hostname))
             buf = self.replace_setting(buf, 'SiteName', site)
             buf = self.replace_setting(buf, 'Grid', self.grid_group)
@@ -366,12 +365,12 @@ in your config.ini file."""
             for var in ['SSLHost', 'SOAPHost', 'SSLRegistrationHost', 'CollectorHost']:
                 buf = self.replace_setting(buf, var, probe_host)
 
-            if not utilities.atomic_write(probe_file, buf, mode=420):
+            if not utilities.atomic_write(probe_file, buf, mode=0o644):
                 self.log("Error while configuring gratia probes: " +
                          "can't write to %s" % probe_file,
                          level=logging.ERROR)
                 raise exceptions.ConfigureError("Error configuring gratia")
-        except(IOError, OSError):
+        except OSError:
             self.log("Error while configuring gratia probes",
                      exception=True,
                      level=logging.ERROR)
@@ -482,7 +481,7 @@ in your config.ini file."""
         """
 
         config_location = GRATIA_CONFIG_FILES['condor']
-        buf = open(config_location).read()
+        buf = open(config_location, "r", encoding="latin-1").read()
         settings = self._probe_config['condor']
         buf = self.replace_setting(buf, 'CondorLocation', settings['condor_location'])
         buf = self.replace_setting(buf, 'CondorConfig', settings['condor_config'])
@@ -506,7 +505,7 @@ in your config.ini file."""
             return True
 
         config_location = GRATIA_CONFIG_FILES['pbs']
-        buf = open(config_location).read()
+        buf = open(config_location, "r", encoding="latin-1").read()
         buf = self.replace_setting(buf, 'pbsAcctLogDir', accounting_dir, xml_file=False)
         buf = self.replace_setting(buf, 'lrmsType', 'pbs', xml_file=False)
         if not utilities.atomic_write(config_location, buf):
@@ -532,7 +531,7 @@ in your config.ini file."""
                      section='LSF')
             return True
         config_location = GRATIA_CONFIG_FILES['lsf']
-        buf = open(config_location).read()
+        buf = open(config_location, "r", encoding="latin-1").read()
         buf = self.replace_setting(buf, 'lsfAcctLogDir', log_directory, xml_file=False)
 
         # setup lsfBinDir
@@ -556,7 +555,7 @@ in your config.ini file."""
         """
         accounting_path = self._probe_config['sge']['sge_accounting_file']
         config_location = GRATIA_CONFIG_FILES['sge']
-        buf = open(config_location).read()
+        buf = open(config_location, "r", encoding="latin-1").read()
         buf = self.replace_setting(buf, 'SGEAccountingFile', accounting_path)
         if not utilities.atomic_write(config_location, buf):
             return False
@@ -567,7 +566,7 @@ in your config.ini file."""
         Do SLURM probe specific configuration
         """
         config_location = GRATIA_CONFIG_FILES['slurm']
-        buf = open(config_location).read()
+        buf = open(config_location, "r", encoding="latin-1").read()
 
         settings = self._probe_config['slurm']
         if not validation.valid_file(settings['db_pass']):
@@ -595,7 +594,7 @@ in your config.ini file."""
         Set to suppress grid local jobs (pre-routed jobs)
         """
         config_location = GRATIA_CONFIG_FILES['htcondor-ce']
-        buf = open(config_location).read()
+        buf = open(config_location, "r", encoding="latin-1").read()
         buf = self.replace_setting(buf, 'SuppressGridLocalRecords', '1')
         
         if not utilities.atomic_write(config_location, buf):
@@ -625,7 +624,7 @@ in your config.ini file."""
             return False
 
         config_location = GRATIA_CONFIG_FILES['condor']
-        contents = open(config_location).read()
+        contents = open(config_location, "r", encoding="latin-1").read()
         re_obj = re.compile(r'(?m)^\s*DataFolder\s*=(.*)\s*$')
         match = re_obj.search(contents)
         if match is not None:
@@ -675,7 +674,7 @@ in your config.ini file."""
     def _get_history_dir(self, condor_config_val_bin):
         cmd = [condor_config_val_bin, '-schedd', 'PER_JOB_HISTORY_DIR']
         try:
-            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="latin-1")
             (history_dir, errtext) = process.communicate()
             if process.returncode != 0:
                 self.log("While checking gratia parameters: %s failed. Output follows:\n%s" % (condor_config_val_bin,
@@ -729,4 +728,4 @@ in your config.ini file."""
         if not self.enabled or self.ignored:
             return set()
 
-        return set(['gratia-probes-cron'])
+        return {'gratia-probes-cron'}

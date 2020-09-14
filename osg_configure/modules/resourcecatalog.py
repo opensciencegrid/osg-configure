@@ -1,6 +1,6 @@
 import classad
 import re
-import utilities
+from . import utilities
 
 
 class RCEntry(object):
@@ -53,11 +53,11 @@ class RCEntry(object):
                 raise ValueError("'max_wall_time' out of range at %s; must be >= 0" % self.max_wall_time)
 
         if self.allowed_vos is not None:
-            if not isinstance(self.allowed_vos, (list, tuple, set, str, unicode)):
+            if not isinstance(self.allowed_vos, (list, tuple, set, str)):
                 raise TypeError("'allowed_vos' is a %s; must be a string or a list/tuple/set" % type(self.allowed_vos))
 
         if self.subclusters is not None:
-            if not isinstance(self.subclusters, (list, tuple, set, str, unicode)):
+            if not isinstance(self.subclusters, (list, tuple, set, str)):
                 raise TypeError("'subclusters' is a %s; must be a string or a list/tuple/set" % type(self.subclusters))
 
         return self
@@ -74,9 +74,9 @@ class RCEntry(object):
         if self.max_wall_time is not None:
             self.max_wall_time = int(self.max_wall_time)
         if self.allowed_vos is not None and isinstance(self.allowed_vos, str):
-            self.allowed_vos = filter(None, re.split('[ ,]+', self.allowed_vos))
+            self.allowed_vos = list(filter(None, re.split('[ ,]+', self.allowed_vos)))
         if self.subclusters is not None and isinstance(self.subclusters, str):
-            self.subclusters = filter(None, re.split(r'\s*,\s*', self.subclusters))
+            self.subclusters = list(filter(None, re.split(r'\s*,\s*', self.subclusters)))
 
         return self
 

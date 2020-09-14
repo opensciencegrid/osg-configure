@@ -52,9 +52,8 @@ setup(name='osg-configure',
           "Intended Audience :: System Administrators",
           "License :: OSI Approved :: Apache Software License",
           "Operating System :: POSIX :: Linux",
-          "Programming Language :: Python :: 2",
-          "Programming Language :: Python :: 2.6",
-          "Programming Language :: Python :: 2.7"
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.6",
       ],
       platforms=["Linux"],
       license="Apache Software License 2.0"

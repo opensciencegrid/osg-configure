@@ -6,10 +6,7 @@
 import os
 import sys
 import unittest
-try:
-    import ConfigParser
-except ImportError:
-    import configparser as ConfigParser
+import configparser
 import logging
 
 # setup system library path 
@@ -42,7 +39,7 @@ class TestPBS(unittest.TestCase):
         """
 
         config_file = get_test_config("pbs/pbs1.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = pbs.PBSConfiguration(logger=global_logger)
@@ -57,7 +54,7 @@ class TestPBS(unittest.TestCase):
                    'OSG_JOB_MANAGER': 'PBS'}
         for option in options:
             value = options[option]
-            self.assertTrue(attributes.has_key(option),
+            self.assertTrue(option in attributes,
                             "Attribute %s missing" % option)
             err_msg = "Wrong value obtained for %s, " \
                       "got %s instead of %s" % (option, attributes[option], value)
@@ -69,7 +66,7 @@ class TestPBS(unittest.TestCase):
         """
 
         config_file = get_test_config("pbs/pbs_disabled.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = pbs.PBSConfiguration(logger=global_logger)
@@ -88,7 +85,7 @@ class TestPBS(unittest.TestCase):
         """
 
         config_file = get_test_config("pbs/ignored.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = pbs.PBSConfiguration(logger=global_logger)
@@ -106,7 +103,7 @@ class TestPBS(unittest.TestCase):
         Test the check_attributes function to see if it catches missing pbs location
         """
         config_file = get_test_config("pbs/missing_location.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = pbs.PBSConfiguration(logger=global_logger)
@@ -124,7 +121,7 @@ class TestPBS(unittest.TestCase):
         Test the check_attributes function to see if it works on valid settings
         """
         config_file = get_test_config("pbs/check_ok.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = pbs.PBSConfiguration(logger=global_logger)
@@ -142,7 +139,7 @@ class TestPBS(unittest.TestCase):
         Test the check_attributes function to see if it works on valid settings
         """
         config_file = get_test_config("pbs/check_ok2.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = pbs.PBSConfiguration(logger=global_logger)
@@ -161,7 +158,7 @@ class TestPBS(unittest.TestCase):
         """
 
         config_file = get_test_config("pbs/check_ok.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = pbs.PBSConfiguration(logger=global_logger)
@@ -170,14 +167,13 @@ class TestPBS(unittest.TestCase):
         except Exception as e:
             self.fail("Received exception while parsing configuration: %s" % e)
         services = settings.enabled_services()
-        expected_services = set(['condor-ce',
-                                 'globus-gridftp-server'])
+        expected_services = {'condor-ce', 'globus-gridftp-server'}
         self.assertEqual(services, expected_services,
                          "List of enabled services incorrect, " +
                          "got %s but expected %s" % (services, expected_services))
 
         config_file = get_test_config("pbs/pbs_disabled.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = pbs.PBSConfiguration(logger=global_logger)
@@ -192,7 +188,7 @@ class TestPBS(unittest.TestCase):
                          "got %s but expected %s" % (services, expected_services))
 
         config_file = get_test_config("pbs/ignored.ini")
-        configuration = ConfigParser.SafeConfigParser()
+        configuration = configparser.SafeConfigParser()
         configuration.read(config_file)
 
         settings = pbs.PBSConfiguration(logger=global_logger)
