@@ -65,7 +65,7 @@ def _compose_attribute_file(attributes):
     """Make the contents of an osg attributes file"""
 
     def islist(var):
-        return type(var) is list
+        return isinstance(var, list)
 
     variable_string = ""
     export_string = ""
@@ -451,7 +451,7 @@ def any_rpms_installed(*rpm_names):
     """
     if isinstance(rpm_names[0], list) or isinstance(rpm_names[0], tuple):
         rpm_names = list(rpm_names[0])
-    return True in (rpm_installed(rpm_name) for rpm_name in rpm_names)
+    return any(map(rpm_installed, rpm_names))
 
 
 def rpm_installed(rpm_name):
@@ -640,3 +640,4 @@ def reconfig_service(service, reconfig_cmd):
         return True
 
     return False
+    
