@@ -102,7 +102,7 @@ class SquidConfiguration(BaseConfiguration):
             attributes_ok = False
             return attributes_ok
         (hostname, port) = self.options['location'].value.split(':')
-        if not validation.valid_domain(hostname, True):
+        if not validation.valid_domain(hostname, False):
             self.log("Invalid hostname for squid location: %s" % \
                      self.options['location'].value,
                      section=self.config_section,
