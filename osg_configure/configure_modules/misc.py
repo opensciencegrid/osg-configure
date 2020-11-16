@@ -108,8 +108,10 @@ class MiscConfiguration(BaseConfiguration):
 
         # run fetch-crl script
         if not utilities.fetch_crl():
-            self.log("Error while running fetch-crl script", level=logging.ERROR)
-            raise exceptions.ConfigureError('fetch-crl returned non-zero exit code')
+            self.log("Error while running fetch-crl script", level=logging.WARNING)
+
+        if not utilities.crls_exist():
+            self.log("No CRLs exist and Fetch-CRL couldn't download any.  GSI authentication is likely to fail.  To attempt another download, run 'fetch-crl'.", level=logging.WARNING)
 
         if self.authorization_method == 'gridmap':
             self._set_lcmaps_callout(False)
