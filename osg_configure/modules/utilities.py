@@ -19,6 +19,7 @@ __all__ = ['get_elements',
            'blank',
            'get_vos',
            'service_enabled',
+           'crls_exist',
            'fetch_crl',
            'run_script',
            'get_condor_location',
@@ -210,14 +211,23 @@ def service_enabled(service_name):
         return False
 
 
+def crls_exist():
+    try:
+        crl_files = glob.glob('/etc/grid-security/certificates/*.r0')
+        if len(crl_files) > 0:
+            return True
+    except EnvironmentError:
+        pass
+    return False
+
+
 def fetch_crl():
     """
     Run fetch_crl script and return a boolean indicating whether it was successful
     """
 
     try:
-        crl_files = glob.glob('/etc/grid-security/certificates/*.r0')
-        if len(crl_files) > 0:
+        if crls_exist():
             sys.stdout.write("CRLs exist, skipping fetch-crl invocation\n")
             sys.stdout.flush()
             return True
