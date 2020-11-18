@@ -36,7 +36,6 @@ __all__ = ['get_elements',
            'config_safe_getboolean',
            'classad_quote',
            'add_or_replace_setting',
-           'NullLogger',
            'split_host_port',
 ]
 
