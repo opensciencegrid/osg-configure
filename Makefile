@@ -1,4 +1,4 @@
-PYTHON = python
+PYTHON = python3
 VERSION = $(shell $(PYTHON) -c "import sys; sys.path.insert(0, '.'); from osg_configure import version; print(version.__version__)")
 NAME := osg-configure
 PREFIX := /usr
