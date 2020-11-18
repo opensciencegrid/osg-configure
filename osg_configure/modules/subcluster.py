@@ -8,6 +8,7 @@ from osg_configure.modules import utilities
 REQUIRED = "required"
 REQUIRED_FOR_SUBCLUSTER = "required for subcluster"
 REQUIRED_FOR_RESOURCE_ENTRY = "required for resource entry"
+REQUIRED_FOR_PILOT = "required for pilot"
 OPTIONAL = "optional"
 
 STRING = "str"
