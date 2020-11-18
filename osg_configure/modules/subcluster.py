@@ -1,5 +1,6 @@
 import logging
 import re
+from typing import Optional
 from configparser import NoSectionError, NoOptionError, InterpolationError, ConfigParser
 
 from osg_configure.modules import exceptions
@@ -18,7 +19,7 @@ LIST = "list"
 BOOLEAN = "boolean"
 
 ENTRIES = {
-    "name":                (REQUIRED, STRING),
+    "name":                (OPTIONAL, STRING),
     "cores_per_node":      (REQUIRED_FOR_SUBCLUSTER, POSITIVE_INT),  # also used by resource entry
     "ram_mb":              (REQUIRED_FOR_SUBCLUSTER, POSITIVE_INT),  # also used by resource entry and pilot
     "allowed_vos":         (OPTIONAL, STRING),
@@ -187,6 +188,21 @@ def check_config(config):
     return has_sc
 
 
+def rce_section_get_name(config: ConfigParser, section: str) -> Optional[str]:
+    """Return the name of a Subcluster/Resource Entry/Pilot
+
+    If the `name` attribute is present, use that; otherwise, use the section name,
+    so `[Subcluster red.unl.edu]` gives the name `red.unl.edu`.
+
+    Returns None if the section is not a Subcluster/Resource Entry/Pilot section.
+    """
+    m = re.search(r"(?i:subcluster|resource entry|pilot)\s+(.+)", section)
+    if not m:
+        return
+    default_name = m.group(1)
+    return config[section].get("name", default_name).strip()
+
+
 def resource_catalog_from_config(config: ConfigParser, default_allowed_vos=None):
     """
     Create a ResourceCatalog from the subcluster entries in a config
@@ -201,7 +217,7 @@ def resource_catalog_from_config(config: ConfigParser, default_allowed_vos=None)
 
     # list of section names of all subcluster sections
     subcluster_sections = [section for section in config.sections() if section.lower().startswith('subcluster')]
-    subcluster_names = [config.get(section, 'name').strip() for section in subcluster_sections]
+    subcluster_names = [rce_section_get_name(config, section) for section in subcluster_sections]
 
     sections_without_max_wall_time = []
     for section in config.sections():
