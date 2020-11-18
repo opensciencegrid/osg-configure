@@ -17,30 +17,34 @@ LIST = "list"
 BOOLEAN = "boolean"
 
 ENTRIES = {
-    "name": (REQUIRED, STRING),
-    "cpu_vendor": (OPTIONAL, STRING),
-    "cpu_model": (OPTIONAL, STRING),
-    "cores_per_node": (REQUIRED_FOR_SUBCLUSTER, POSITIVE_INT), # also used by resource entry
-    "cpucount": (OPTIONAL, POSITIVE_INT), # alias for cores_per_node
-    "node_count": (OPTIONAL, POSITIVE_INT),
-    "cpus_per_node": (OPTIONAL, POSITIVE_INT),
-    "cpu_speed_mhz": (OPTIONAL, POSITIVE_FLOAT),
-    "ram_mb": (REQUIRED_FOR_SUBCLUSTER, POSITIVE_INT), # also used by resource entry
-    "maxmemory": (OPTIONAL, POSITIVE_INT), # alias for ram_mb
-    "swap_mb": (OPTIONAL, POSITIVE_INT),
-    "SI00": (OPTIONAL, POSITIVE_FLOAT),
-    "HEPSPEC": (OPTIONAL, POSITIVE_FLOAT),
-    "SF00": (OPTIONAL, POSITIVE_FLOAT),
-    "inbound_network": (OPTIONAL, BOOLEAN),
-    "outbound_network": (OPTIONAL, BOOLEAN),
-    "cpu_platform": (OPTIONAL, STRING),
-    "allowed_vos": (OPTIONAL, STRING),
-    "max_wall_time": (OPTIONAL, POSITIVE_INT),
-    "extra_requirements": (OPTIONAL, STRING),
+    "name":             (REQUIRED, STRING),
+    "cores_per_node":   (REQUIRED_FOR_SUBCLUSTER, POSITIVE_INT),  # also used by resource entry
+    "ram_mb":           (REQUIRED_FOR_SUBCLUSTER, POSITIVE_INT),  # also used by resource entry
+    "allowed_vos":      (OPTIONAL, STRING),
+    "max_wall_time":    (OPTIONAL, POSITIVE_INT),
     "extra_transforms": (OPTIONAL, STRING),
-    "queue": (REQUIRED_FOR_RESOURCE_ENTRY, STRING),
-    "subclusters": (OPTIONAL, LIST),
-    "vo_tag": (OPTIONAL, STRING),
+    # added for Resource Entries
+    "cpucount":         (OPTIONAL, POSITIVE_INT),  # alias for cores_per_node
+    "maxmemory":        (OPTIONAL, POSITIVE_INT),  # alias for ram_mb
+    "queue":            (REQUIRED_FOR_RESOURCE_ENTRY, STRING),
+    "subclusters":      (OPTIONAL, LIST),
+    "vo_tag":           (OPTIONAL, STRING),
+    # only used in BDII
+    "cpu_model":        (OPTIONAL, STRING),
+    "cpu_platform":     (OPTIONAL, STRING),
+    "cpu_speed_mhz":    (OPTIONAL, POSITIVE_FLOAT),
+    "cpu_vendor":       (OPTIONAL, STRING),
+    "cpus_per_node":    (OPTIONAL, POSITIVE_INT),
+    "inbound_network":  (OPTIONAL, BOOLEAN),
+    "node_count":       (OPTIONAL, POSITIVE_INT),
+    "outbound_network": (OPTIONAL, BOOLEAN),
+    # other optional attributes
+    "HEPSPEC":          (OPTIONAL, POSITIVE_FLOAT),
+    "SF00":             (OPTIONAL, POSITIVE_FLOAT),
+    "SI00":             (OPTIONAL, POSITIVE_FLOAT),
+    "swap_mb":          (OPTIONAL, POSITIVE_INT),
+    ## uncomment this if somebody really asks for this feature
+    # "extra_requirements": (OPTIONAL, STRING),
 }
 
 BANNED_ENTRIES = {
