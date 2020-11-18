@@ -74,6 +74,18 @@ ENTRY_RANGES = {
 }
 
 
+def is_subcluster(section: str) -> bool:
+    return section.lstrip().lower().startswith("subcluster")
+
+
+def is_resource_entry(section: str) -> bool:
+    return section.lstrip().lower().startswith("resource entry")
+
+
+def is_pilot(section: str) -> bool:
+    return section.lstrip().lower().startswith("pilot")
+
+
 def check_entry(config, section, option, status, kind):
     """
     Check entries to make sure that they conform to the correct range of values
@@ -83,14 +95,11 @@ def check_entry(config, section, option, status, kind):
         entry = str(config.get(section, option)).strip()
     except (NoSectionError, NoOptionError, InterpolationError):
         pass
-    is_subcluster = section.lower().startswith('subcluster')
-    is_resource_entry = section.lower().startswith('resource entry')
-    is_pilot = section.lower().startswith('pilot')
     if not entry:
         if (status == REQUIRED
-                or (status == REQUIRED_FOR_SUBCLUSTER and is_subcluster)
-                or (status == REQUIRED_FOR_RESOURCE_ENTRY and is_resource_entry)
-                or (status == REQUIRED_FOR_PILOT and is_pilot)):
+                or (status == REQUIRED_FOR_SUBCLUSTER and is_subcluster(section))
+                or (status == REQUIRED_FOR_RESOURCE_ENTRY and is_resource_entry(section))
+                or (status == REQUIRED_FOR_PILOT and is_pilot(section))):
 
             raise exceptions.SettingError("Can't get value for mandatory setting %s in section %s." % \
                                           (option, section))
@@ -216,19 +225,18 @@ def resource_catalog_from_config(config: ConfigParser, default_allowed_vos=None)
     rc = resourcecatalog.ResourceCatalog()
 
     # list of section names of all subcluster sections
-    subcluster_sections = [section for section in config.sections() if section.lower().startswith('subcluster')]
+    subcluster_sections = [section for section in config.sections() if is_subcluster(section)]
     subcluster_names = [rce_section_get_name(config, section) for section in subcluster_sections]
 
     sections_without_max_wall_time = []
     for section in config.sections():
-        lsection = section.lower()
-        if not (lsection.startswith('subcluster') or lsection.startswith('resource entry')):
+        if not (is_subcluster(section) or is_resource_entry(section) or is_pilot(section)):
             continue
 
         check_section(config, section)
 
         rcentry = resourcecatalog.RCEntry()
-        rcentry.name = config.get(section, 'name')
+        rcentry.name = rce_section_get_name(config, section)
 
         rcentry.cpus = utilities.config_safe_get(config, section, 'cpucount') or \
                        utilities.config_safe_get(config, section, 'cores_per_node')
