@@ -2,3 +2,4 @@ MANIFEST
 *.pyc
 *.pyo
 dist/*.tar.gz
+/venv
