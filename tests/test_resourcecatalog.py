@@ -247,44 +247,6 @@ allowed_vos = osg, atlas
   ] \
 }""")
 
-    def testFullWithExtras(self):
-        # Disable this test because the feature is disabled for now
-        return
-        if not resourcecatalog: return
-        config = configparser.SafeConfigParser()
-        config_io = cStringIO.StringIO(r"""
-[Subcluster Test]
-name = glow.chtc.wisc.edu
-node_count = 60
-ram_mb = 4000
-cpu_model = Opteron 275
-cpu_vendor = AMD
-cpu_speed_mhz = 2200
-cpu_platform = x86_64
-cpus_per_node = 2
-cores_per_node = 4
-inbound_network = FALSE
-outbound_network = TRUE
-HEPSPEC = 10
-queue = blue
-extra_requirements = WantGPUs =?= 1
-extra_transforms = set_WantRHEL6 = 1
-max_wall_time = 1440
-allowed_vos = osg, atlas
-""")
-        config.readfp(config_io)
-        self.assertEqual(subcluster.resource_catalog_from_config(config).compose_text(),
-                         r"""OSG_ResourceCatalog = { \
-  [ \
-    AllowedVOs = { "osg", "atlas" }; \
-    CPUs = 4; \
-    MaxWallTime = 1440; \
-    Memory = 4000; \
-    Name = "glow.chtc.wisc.edu"; \
-    Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory && member(TARGET.VO, AllowedVOs) && WantGPUs =?= 1; \
-    Transform = [ set_MaxMemory = RequestMemory; set_WantRHEL6 = 1; set_remote_queue = "blue"; set_xcount = RequestCPUs; ]; \
-  ] \
-}""")
 
 
 if __name__ == '__main__':
