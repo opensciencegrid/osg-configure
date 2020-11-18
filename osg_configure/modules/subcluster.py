@@ -18,27 +18,34 @@ LIST = "list"
 BOOLEAN = "boolean"
 
 ENTRIES = {
-    "name":             (REQUIRED, STRING),
-    "cores_per_node":   (REQUIRED_FOR_SUBCLUSTER, POSITIVE_INT),  # also used by resource entry
-    "ram_mb":           (REQUIRED_FOR_SUBCLUSTER, POSITIVE_INT),  # also used by resource entry
-    "allowed_vos":      (OPTIONAL, STRING),
-    "max_wall_time":    (OPTIONAL, POSITIVE_INT),
-    "extra_transforms": (OPTIONAL, STRING),
+    "name":                (REQUIRED, STRING),
+    "cores_per_node":      (REQUIRED_FOR_SUBCLUSTER, POSITIVE_INT),  # also used by resource entry
+    "ram_mb":              (REQUIRED_FOR_SUBCLUSTER, POSITIVE_INT),  # also used by resource entry and pilot
+    "allowed_vos":         (OPTIONAL, STRING),
+    "max_wall_time":       (OPTIONAL, POSITIVE_INT),
+    "extra_transforms":    (OPTIONAL, STRING),
     # added for Resource Entries
-    "cpucount":         (OPTIONAL, POSITIVE_INT),  # alias for cores_per_node
-    "maxmemory":        (OPTIONAL, POSITIVE_INT),  # alias for ram_mb
-    "queue":            (REQUIRED_FOR_RESOURCE_ENTRY, STRING),
-    "subclusters":      (OPTIONAL, LIST),
-    "vo_tag":           (OPTIONAL, STRING),
+    "cpucount":            (OPTIONAL, POSITIVE_INT),  # alias for cores_per_node, also used by pilots
+    "maxmemory":           (OPTIONAL, POSITIVE_INT),  # alias for ram_mb
+    "queue":               (REQUIRED_FOR_RESOURCE_ENTRY, STRING),  # also used by pilots
+    "subclusters":         (OPTIONAL, LIST),
+    "vo_tag":              (OPTIONAL, STRING),
+    # added for Pilots
+    "gpucount":            (OPTIONAL, POSITIVE_INT),
+    "max_pilots":          (REQUIRED_FOR_PILOT, POSITIVE_INT),
+    "os":                  (OPTIONAL, STRING),
+    "require_singularity": (OPTIONAL, BOOLEAN),
+    "send_tests":          (OPTIONAL, BOOLEAN),
+    "whole_node":          (OPTIONAL, BOOLEAN),
     # only used in BDII
-    "cpu_model":        (OPTIONAL, STRING),
-    "cpu_platform":     (OPTIONAL, STRING),
-    "cpu_speed_mhz":    (OPTIONAL, POSITIVE_FLOAT),
-    "cpu_vendor":       (OPTIONAL, STRING),
-    "cpus_per_node":    (OPTIONAL, POSITIVE_INT),
-    "inbound_network":  (OPTIONAL, BOOLEAN),
-    "node_count":       (OPTIONAL, POSITIVE_INT),
-    "outbound_network": (OPTIONAL, BOOLEAN),
+    "cpu_model":           (OPTIONAL, STRING),
+    "cpu_platform":        (OPTIONAL, STRING),
+    "cpu_speed_mhz":       (OPTIONAL, POSITIVE_FLOAT),
+    "cpu_vendor":          (OPTIONAL, STRING),
+    "cpus_per_node":       (OPTIONAL, POSITIVE_INT),
+    "inbound_network":     (OPTIONAL, BOOLEAN),
+    "node_count":          (OPTIONAL, POSITIVE_INT),
+    "outbound_network":    (OPTIONAL, BOOLEAN),
     # other optional attributes
     "HEPSPEC":          (OPTIONAL, POSITIVE_FLOAT),
     "SF00":             (OPTIONAL, POSITIVE_FLOAT),
@@ -76,10 +83,14 @@ def check_entry(config, section, option, status, kind):
     except (NoSectionError, NoOptionError, InterpolationError):
         pass
     is_subcluster = section.lower().startswith('subcluster')
+    is_resource_entry = section.lower().startswith('resource entry')
+    is_pilot = section.lower().startswith('pilot')
     if not entry:
         if (status == REQUIRED
-            or (status == REQUIRED_FOR_SUBCLUSTER and is_subcluster)
-            or (status == REQUIRED_FOR_RESOURCE_ENTRY and not is_subcluster)):
+                or (status == REQUIRED_FOR_SUBCLUSTER and is_subcluster)
+                or (status == REQUIRED_FOR_RESOURCE_ENTRY and is_resource_entry)
+                or (status == REQUIRED_FOR_PILOT and is_pilot)):
+
             raise exceptions.SettingError("Can't get value for mandatory setting %s in section %s." % \
                                           (option, section))
         else:
