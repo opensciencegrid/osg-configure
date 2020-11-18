@@ -20,8 +20,8 @@ BOOLEAN = "boolean"
 
 ENTRIES = {
     "name":                (OPTIONAL, STRING),
-    "cores_per_node":      (REQUIRED_FOR_SUBCLUSTER, POSITIVE_INT),  # also used by resource entry
-    "ram_mb":              (REQUIRED_FOR_SUBCLUSTER, POSITIVE_INT),  # also used by resource entry and pilot
+    "cores_per_node":      (OPTIONAL, POSITIVE_INT),  # also used by resource entry
+    "ram_mb":              (OPTIONAL, POSITIVE_INT),  # also used by resource entry and pilot
     "allowed_vos":         (OPTIONAL, STRING),
     "max_wall_time":       (OPTIONAL, POSITIVE_INT),
     "extra_transforms":    (OPTIONAL, STRING),
@@ -73,6 +73,8 @@ ENTRY_RANGES = {
     'cpucount': (1, 8192),
 }
 
+CPUCOUNT_DEFAULT = 1
+RAM_MB_DEFAULT = 2500
 
 def is_subcluster(section: str) -> bool:
     return section.lstrip().lower().startswith("subcluster")
@@ -238,16 +240,18 @@ def resource_catalog_from_config(config: ConfigParser, default_allowed_vos=None)
         rcentry = resourcecatalog.RCEntry()
         rcentry.name = rce_section_get_name(config, section)
 
-        rcentry.cpus = utilities.config_safe_get(config, section, 'cpucount') or \
-                       utilities.config_safe_get(config, section, 'cores_per_node')
-        if not rcentry.cpus:
-            raise exceptions.SettingError("cpucount / cores_per_node not found in section %s" % section)
+        rcentry.cpus = (
+                utilities.config_safe_get(config, section, 'cpucount') or
+                utilities.config_safe_get(config, section, 'cores_per_node') or
+                CPUCOUNT_DEFAULT
+        )
         rcentry.cpus = int(rcentry.cpus)
 
-        rcentry.memory = utilities.config_safe_get(config, section, 'maxmemory') or \
-                         utilities.config_safe_get(config, section, 'ram_mb')
-        if not rcentry.memory:
-            raise exceptions.SettingError("maxmemory / ram_mb not found in section %s" % section)
+        rcentry.memory = (
+                utilities.config_safe_get(config, section, 'maxmemory') or
+                utilities.config_safe_get(config, section, 'ram_mb') or
+                RAM_MB_DEFAULT
+        )
         rcentry.memory = int(rcentry.memory)
 
         rcentry.allowed_vos = utilities.config_safe_get(config, section, 'allowed_vos', default="").strip()
