@@ -233,6 +233,12 @@ def resource_catalog_from_config(config: ConfigParser, default_allowed_vos: str 
     assert isinstance(config, ConfigParser)
     from osg_configure.modules.resourcecatalog import ResourceCatalog, RCEntry
 
+    def safeget(option: str, default=None) -> str:
+        return utilities.config_safe_get(config, section, option, default)
+
+    def safegetbool(option: str, default=None) -> bool:
+        return utilities.config_safe_getboolean(config, section, option, default)
+
     rc = ResourceCatalog()
 
     # list of section names of all subcluster sections
@@ -250,20 +256,20 @@ def resource_catalog_from_config(config: ConfigParser, default_allowed_vos: str 
         rcentry.name = rce_section_get_name(config, section)
 
         rcentry.cpus = (
-                utilities.config_safe_get(config, section, 'cpucount') or
-                utilities.config_safe_get(config, section, 'cores_per_node') or
+                safeget("cpucount") or
+                safeget("cores_per_node") or
                 CPUCOUNT_DEFAULT
         )
         rcentry.cpus = int(rcentry.cpus)
 
         rcentry.memory = (
-                utilities.config_safe_get(config, section, 'maxmemory') or
-                utilities.config_safe_get(config, section, 'ram_mb') or
+                safeget("maxmemory") or
+                safeget("ram_mb") or
                 RAM_MB_DEFAULT
         )
         rcentry.memory = int(rcentry.memory)
 
-        rcentry.allowed_vos = utilities.config_safe_get(config, section, 'allowed_vos', default="").strip()
+        rcentry.allowed_vos = safeget("allowed_vos", default="").strip()
         if not rcentry.allowed_vos:
             logger.error("No allowed_vos specified for section '%s'."
                          "\nThe factory will not send jobs to these subclusters/resources. Specify the allowed_vos"
@@ -276,27 +282,35 @@ def resource_catalog_from_config(config: ConfigParser, default_allowed_vos: str 
             else:
                 rcentry.allowed_vos = None
 
-        max_wall_time = utilities.config_safe_get(config, section, 'max_wall_time')
+        max_wall_time = safeget("max_wall_time")
         if not max_wall_time:
             rcentry.max_wall_time = 1440
             sections_without_max_wall_time.append(section)
         else:
             rcentry.max_wall_time = max_wall_time.strip()
-        rcentry.queue = utilities.config_safe_get(config, section, 'queue')
+        rcentry.queue = safeget("queue")
 
-        scs = utilities.config_safe_get(config, section, 'subclusters')
+        scs = safeget("subclusters")
         if scs:
             for sc in utilities.split_comma_separated_list(scs):
                 if sc not in subcluster_names:
                     raise exceptions.SettingError("Undefined subcluster '%s' mentioned in section '%s'" % (sc, section))
         rcentry.subclusters = scs
 
-        rcentry.vo_tag = utilities.config_safe_get(config, section, 'vo_tag')
+        rcentry.vo_tag = safeget("vo_tag")
 
         # The ability to specify extra requirements is disabled until admins demand it
         # rcentry.extra_requirements = utilities.config_safe_get(config, section, 'extra_requirements')
         rcentry.extra_requirements = None
-        rcentry.extra_transforms = utilities.config_safe_get(config, section, 'extra_transforms')
+        rcentry.extra_transforms = safeget("extra_transforms")
+
+        rcentry.gpus = safeget("gpucount")
+        if is_pilot(section):
+            rcentry.max_pilots = safeget("max_pilots")
+            rcentry.whole_node = safegetbool("whole_node", False)
+            rcentry.require_singularity = safegetbool("require_singularity", True)
+            rcentry.os = safeget("os")
+            rcentry.send_tests = safegetbool("send_tests", True)
 
         rc.add_rcentry(rcentry)
     # end for section in config.sections()
