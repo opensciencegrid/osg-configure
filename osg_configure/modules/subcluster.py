@@ -76,6 +76,9 @@ ENTRY_RANGES = {
 CPUCOUNT_DEFAULT = 1
 RAM_MB_DEFAULT = 2500
 
+log = logging.getLogger(__name__)
+
+
 def is_subcluster(section: str) -> bool:
     return section.lstrip().lower().startswith("subcluster")
 
@@ -177,6 +180,15 @@ def check_section(config, section):
                 raise exceptions.SettingError(msg)
         except KeyError:
             pass
+
+    # Special case: Pilot sections either need "os" specified or "require_singularity=true"
+    if is_pilot(section):
+        require_singularity = utilities.config_safe_getboolean(config, section, "require_singularity", True)
+        os = utilities.config_safe_get(config, section, "os", None)
+
+        if not require_singularity and not os:
+            msg = "'os' must be specified in section %s if 'require_singularity' is false" % section
+            raise exceptions.SettingError(msg)
 
 
 def check_config(config: ConfigParser) -> bool:
