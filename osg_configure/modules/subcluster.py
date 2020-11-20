@@ -117,7 +117,7 @@ def check_entry(config, section, option, status, kind):
                 raise ValueError()
         except (TypeError, ValueError):
             raise exceptions.SettingError("Value of option `%s` in section " \
-                                          "`%s` should be a positive integer, but it is `%s`" % \
+                                          "`%s` should be a non-negative integer, but it is `%s`" % \
                                           (option, section, entry))
         return entry
     elif kind == POSITIVE_FLOAT:
@@ -127,7 +127,7 @@ def check_entry(config, section, option, status, kind):
                 raise ValueError()
         except (TypeError, ValueError):
             raise exceptions.SettingError("Value of option `%s` in section " \
-                                          "`%s` should be a positive float, but it is `%s`" % \
+                                          "`%s` should be a non-negative float, but it is `%s`" % \
                                           (option, section, entry))
         return entry
     elif kind == BOOLEAN:
@@ -142,9 +142,7 @@ def check_entry(config, section, option, status, kind):
                                                                                         entry))
         return entry in positive_vals
     elif kind == LIST:
-        regex = re.compile(r'\s*,*\s*')
-        entry = regex.split(entry)
-        return entry
+        return utilities.split_comma_separated_list(entry)
 
     else:
         # Kind of entry isn't known... OK for now.
@@ -176,26 +174,21 @@ def check_section(config, section):
             if not (range_min <= entry <= range_max):
                 msg = ("Value for %(option)s in section %(section)s is outside allowed range"
                        ", %(range_min)d-%(range_max)d" % locals())
-                if option == 'HEPSPEC':
-                    msg += '.  The conversion factor from HEPSPEC to SI2K is 250'
                 raise exceptions.SettingError(msg)
         except KeyError:
             pass
 
 
-def check_config(config):
+def check_config(config: ConfigParser) -> bool:
     """
     Check all subcluster definitions in an entire config
-    :type config: ConfigParser.ConfigParser
     :return: True if there are any subcluster definitions, False otherwise
     """
     has_sc = False
     for section in config.sections():
-        lsection = section.lower()
-        if not (lsection.startswith('subcluster') or lsection.startswith('resource entry')):
-            continue
-        has_sc = True
-        check_section(config, section)
+        if is_pilot(section) or is_subcluster(section) or is_resource_entry(section):
+            has_sc = True
+            check_section(config, section)
     return has_sc
 
 
@@ -214,17 +207,21 @@ def rce_section_get_name(config: ConfigParser, section: str) -> Optional[str]:
     return config[section].get("name", default_name).strip()
 
 
-def resource_catalog_from_config(config: ConfigParser, default_allowed_vos=None):
+class ResourceCatalog:  # forward declaration for type checking
+    def compose_text(self) -> str:
+        pass
+
+
+def resource_catalog_from_config(config: ConfigParser, default_allowed_vos: str = None) -> ResourceCatalog:
     """
     Create a ResourceCatalog from the subcluster entries in a config
-    :type config: ConfigParser
-    :rtype: resourcecatalog.ResourceCatalog
+    :param default_allowed_vos: The allowed_vos to use if the user specified "*"
     """
     logger = logging.getLogger(__name__)
     assert isinstance(config, ConfigParser)
-    from osg_configure.modules import resourcecatalog
+    from osg_configure.modules.resourcecatalog import ResourceCatalog, RCEntry
 
-    rc = resourcecatalog.ResourceCatalog()
+    rc = ResourceCatalog()
 
     # list of section names of all subcluster sections
     subcluster_sections = [section for section in config.sections() if is_subcluster(section)]
@@ -237,7 +234,7 @@ def resource_catalog_from_config(config: ConfigParser, default_allowed_vos=None)
 
         check_section(config, section)
 
-        rcentry = resourcecatalog.RCEntry()
+        rcentry = RCEntry()
         rcentry.name = rce_section_get_name(config, section)
 
         rcentry.cpus = (
@@ -277,8 +274,7 @@ def resource_catalog_from_config(config: ConfigParser, default_allowed_vos=None)
 
         scs = utilities.config_safe_get(config, section, 'subclusters')
         if scs:
-            scs = re.split(r'\s*,\s*', scs)
-            for sc in scs:
+            for sc in utilities.split_comma_separated_list(scs):
                 if sc not in subcluster_names:
                     raise exceptions.SettingError("Undefined subcluster '%s' mentioned in section '%s'" % (sc, section))
         rcentry.subclusters = scs
