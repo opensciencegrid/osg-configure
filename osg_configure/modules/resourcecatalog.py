@@ -30,6 +30,12 @@ class RCEntry(object):
         self.vo_tag = kwargs.get('vo_tag', None)
         self.extra_requirements = kwargs.get('extra_requirements', '')
         self.extra_transforms = kwargs.get('extra_transforms', '')
+        self.gpus = kwargs.get('gpus', None)
+        self.max_pilots = kwargs.get('max_pilots', None)
+        self.whole_node = kwargs.get('whole_node', None)
+        self.require_singularity = kwargs.get('require_singularity', None)
+        self.os = kwargs.get('os', None)
+        self.send_tests = kwargs.get('send_tests', None)
 
     def validate(self):
         """Check that the values of the RCEntry fields match the requirements for a resource catalog entry.
@@ -82,14 +88,33 @@ class RCEntry(object):
 
     def as_attributes(self):
         """Return this entry as a list of classad attributes"""
-        attributes = {'Name': utilities.classad_quote(self.name),
-                      'CPUs': self.cpus,
+        attributes = {'Name':   utilities.classad_quote(self.name),
+                      'CPUs':   self.cpus,
                       'Memory': self.memory}
 
         if self.max_wall_time is not None:
             attributes['MaxWallTime'] = self.max_wall_time
 
         requirements_clauses = ['TARGET.RequestCPUs <= CPUs', 'TARGET.RequestMemory <= Memory']
+        if self.gpus is not None:
+            attributes['GPUs'] = self.gpus
+            requirements_clauses.append('(TARGET.RequestGPUs ?: 0) <= GPUs')
+
+        if self.max_pilots is not None:
+            attributes['MaxPilots'] = self.max_pilots
+
+        if self.whole_node is not None:
+            attributes['WholeNode'] = self.whole_node
+
+        if self.require_singularity is not None:
+            attributes['RequireSingularity'] = self.require_singularity
+
+        if self.os is not None:
+            attributes['OS'] = '"' + self.os + '"'
+
+        if self.send_tests is not None:
+            attributes['SendTests'] = self.send_tests
+
         if self.extra_requirements:
             requirements_clauses.append(self.extra_requirements)
 
