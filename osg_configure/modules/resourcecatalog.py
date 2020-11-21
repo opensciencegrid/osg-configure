@@ -83,7 +83,9 @@ class RCEntry(object):
         if self.extra_requirements:
             requirements_clauses.append(self.extra_requirements)
 
-        return ' && '.join(requirements_clauses)
+        if requirements_clauses:
+            return ' && '.join(requirements_clauses)
+        return None
 
     def get_transform(self, attributes):
         transform_classad = classad.ClassAd()
@@ -101,12 +103,14 @@ class RCEntry(object):
             except SyntaxError as e:
                 raise ValueError("Unable to parse 'extra_transforms': %s" % e)
 
-        transform = "["
-        for key in sorted(transform_classad.keys()):
-            transform += f" {key} = {transform_classad[key]};"
-        transform += " ]"
+        if transform_classad:
+            transform = "["
+            for key in sorted(transform_classad.keys()):
+                transform += f" {key} = {transform_classad[key]};"
+            transform += " ]"
 
-        return transform
+            return transform
+        return None
 
     def as_attributes(self):
         """Return this entry as a list of classad attributes"""
@@ -120,8 +124,12 @@ class RCEntry(object):
             except AttributeError:
                 continue
 
-        attributes['Requirements'] = self.get_requirements(attributes)
-        attributes['Transform'] = self.get_transform(attributes)
+        requirements = self.get_requirements(attributes)
+        if requirements:
+            attributes['Requirements'] = requirements
+        transform = self.get_transform(attributes)
+        if transform:
+            attributes['Transform'] = transform
 
         return attributes
 
