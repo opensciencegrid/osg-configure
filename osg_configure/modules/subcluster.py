@@ -269,18 +269,18 @@ def resource_catalog_from_config(config: ConfigParser, default_allowed_vos: str 
         )
         rcentry.memory = int(rcentry.memory)
 
-        rcentry.allowed_vos = safeget("allowed_vos", default="").strip()
-        if not rcentry.allowed_vos:
+        rcentry.allowed_vos = utilities.split_comma_separated_list(safeget("allowed_vos", default="").strip())
+        if not rcentry.allowed_vos or not rcentry.allowed_vos[0]:
             logger.error("No allowed_vos specified for section '%s'."
                          "\nThe factory will not send jobs to these subclusters/resources. Specify the allowed_vos"
                          "\nattribute as either a list of VOs, or a '*' to use an autodetected VO list based on"
                          "\nthe user accounts available on your CE." % section)
             raise exceptions.SettingError("No allowed_vos for %s" % section)
-        if rcentry.allowed_vos == "*":
+        if rcentry.allowed_vos == ["*"]:
             if default_allowed_vos:
                 rcentry.allowed_vos = default_allowed_vos
             else:
-                rcentry.allowed_vos = None
+                rcentry.allowed_vos = []
 
         max_wall_time = safeget("max_wall_time")
         if not max_wall_time:
@@ -290,12 +290,14 @@ def resource_catalog_from_config(config: ConfigParser, default_allowed_vos: str 
             rcentry.max_wall_time = max_wall_time.strip()
         rcentry.queue = safeget("queue")
 
-        scs = safeget("subclusters")
+        scs = utilities.split_comma_separated_list(safeget("subclusters", ""))
         if scs:
-            for sc in utilities.split_comma_separated_list(scs):
+            for sc in scs:
                 if sc not in subcluster_names:
                     raise exceptions.SettingError("Undefined subcluster '%s' mentioned in section '%s'" % (sc, section))
-        rcentry.subclusters = scs
+            rcentry.subclusters = scs
+        else:
+            rcentry.subclusters = None
 
         rcentry.vo_tag = safeget("vo_tag")
 
