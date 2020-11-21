@@ -1,18 +1,20 @@
 import classad
-import re
+import logging
 from collections import namedtuple
 from . import utilities
+
+log = logging.getLogger(__name__)
 
 
 def _noop(x):
     return x
 
 
-def _munge_extra_transforms(extra_transforms):
+def _extra_transforms_to_classad(extra_transforms):
     """Ensure extra_transforms is surrounded by exactly one pair of brackets
     so it can be parsed as a classad
     """
-    return '[' + extra_transforms.lstrip('[ \t').rstrip('] \t') + ']'
+    return classad.parseOne('[' + extra_transforms.lstrip('[ \t').rstrip('] \t') + ']')
 
 
 def _to_classad_list(a_list):
@@ -23,8 +25,8 @@ def _str_to_classad_list(a_str):
     return _to_classad_list(utilities.split_comma_separated_list(a_str))
 
 
-class RCAttribute(namedtuple("RCAttribute", "rce_field classad_attr transform")):
-    """The mapping of an RCEntry field to a classad attribute, with a transform function"""
+class RCAttribute(namedtuple("RCAttribute", "rce_field classad_attr format_fn")):
+    """The mapping of an RCEntry field to a classad attribute, with a format function"""
 
 
 ATTRIBUTE_MAPPINGS = [
@@ -66,48 +68,60 @@ class RCEntry(object):
         self.os = kwargs.get('os', None)
         self.send_tests = kwargs.get('send_tests', None)
 
-    def as_attributes(self):
-        """Return this entry as a list of classad attributes"""
-        attributes = {}
-
-        for rce_field, classad_attr, transform in ATTRIBUTE_MAPPINGS:
-            try:
-                val = self.__getattribute__(rce_field)
-                if val is not None:
-                    attributes[classad_attr] = transform(val)
-            except AttributeError:
-                continue
-
-        requirements_clauses = ['TARGET.RequestCPUs <= CPUs', 'TARGET.RequestMemory <= Memory']
-        if self.gpus is not None:
+    def get_requirements(self, attributes):
+        requirements_clauses = []
+        if "CPUs" in attributes:
+            requirements_clauses.append("TARGET.RequestCPUs <= CPUs")
+        if "Memory" in attributes:
+            requirements_clauses.append("TARGET.RequestMemory <= Memory")
+        if "GPUs" in attributes:
             requirements_clauses.append('(TARGET.RequestGPUs ?: 0) <= GPUs')
-
+        if "AllowedVOs" in attributes:
+            requirements_clauses.append("member(TARGET.VO, AllowedVOs)")
+        if "VOTag" in attributes:
+            requirements_clauses.append(f"TARGET.VOTag == {attributes['VOTag']}")
         if self.extra_requirements:
             requirements_clauses.append(self.extra_requirements)
 
-        if self.allowed_vos:
-            requirements_clauses.append("member(TARGET.VO, AllowedVOs)")
+        return ' && '.join(requirements_clauses)
 
-        transform_classad = classad.parseOne('[set_xcount = RequestCPUs; set_MaxMemory = RequestMemory]')
-
-        if attributes.get("VOTag"):
-            requirements_clauses.append("TARGET.VOTag == " + attributes["VOTag"])
-            transform_classad['set_VOTag'] = attributes["VOTag"]
-
+    def get_transform(self, attributes):
+        transform_classad = classad.ClassAd()
+        if "CPUs" in attributes:
+            transform_classad["set_xcount"] = "RequestCPUs"
+        if "Memory" in attributes:
+            transform_classad["set_MaxMemory"] = "RequestMemory"
+        if "VOTag" in attributes:
+            transform_classad["set_VOTag"] = attributes["VOTag"]
         if self.queue:
             transform_classad['set_remote_queue'] = utilities.classad_quote(self.queue)
         if self.extra_transforms:
             try:
-                extra_transforms_classad = classad.parseOne(_munge_extra_transforms(self.extra_transforms))
+                transform_classad.update(_extra_transforms_to_classad(self.extra_transforms))
             except SyntaxError as e:
                 raise ValueError("Unable to parse 'extra_transforms': %s" % e)
-            transform_classad.update(extra_transforms_classad)
-        attributes['Transform'] = '['
-        for key in sorted(transform_classad.keys()):
-            attributes['Transform'] += " %s = %s;" % (key, transform_classad[key])
-        attributes['Transform'] += ' ]'
 
-        attributes['Requirements'] = ' && '.join(requirements_clauses)
+        transform = "["
+        for key in sorted(transform_classad.keys()):
+            transform += f" {key} = {transform_classad[key]};"
+        transform += " ]"
+
+        return transform
+
+    def as_attributes(self):
+        """Return this entry as a list of classad attributes"""
+        attributes = {}
+
+        for rce_field, classad_attr, format_fn in ATTRIBUTE_MAPPINGS:
+            try:
+                val = self.__getattribute__(rce_field)
+                if val is not None:
+                    attributes[classad_attr] = format_fn(val)
+            except AttributeError:
+                continue
+
+        attributes['Requirements'] = self.get_requirements(attributes)
+        attributes['Transform'] = self.get_transform(attributes)
 
         return attributes
 
