@@ -310,6 +310,9 @@ def resource_catalog_from_config(config: ConfigParser, default_allowed_vos: str 
         if is_pilot(section):
             rcentry.max_pilots = safeget("max_pilots")
             rcentry.whole_node = safegetbool("whole_node", False)
+            if rcentry.whole_node:
+                rcentry.cpus = None
+                rcentry.memory = None
             rcentry.require_singularity = safegetbool("require_singularity", True)
             rcentry.os = safeget("os")
             rcentry.send_tests = safegetbool("send_tests", True)
