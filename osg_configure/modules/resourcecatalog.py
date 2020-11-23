@@ -46,6 +46,7 @@ ATTRIBUTE_MAPPINGS = [
     RCAttribute("require_singularity", "RequireSingularity", bool),
     RCAttribute("os", "OS", utilities.classad_quote),
     RCAttribute("send_tests", "SendTests", bool),
+    RCAttribute("is_pilot", "IsPilotEntry", bool),
 ]
 
 
@@ -67,8 +68,11 @@ class RCEntry(object):
         self.require_singularity = kwargs.get('require_singularity', None)
         self.os = kwargs.get('os', None)
         self.send_tests = kwargs.get('send_tests', None)
+        self.is_pilot = kwargs.get('is_pilot', None)
 
     def get_requirements(self, attributes):
+        if self.is_pilot:
+            return None
         requirements_clauses = []
         if "CPUs" in attributes:
             requirements_clauses.append("TARGET.RequestCPUs <= CPUs")
@@ -88,6 +92,8 @@ class RCEntry(object):
         return None
 
     def get_transform(self, attributes):
+        if self.is_pilot:
+            return None
         transform_classad = classad.ClassAd()
         if "CPUs" in attributes:
             transform_classad["set_xcount"] = "RequestCPUs"

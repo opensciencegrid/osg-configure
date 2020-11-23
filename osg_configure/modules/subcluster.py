@@ -316,6 +316,7 @@ def resource_catalog_from_config(config: ConfigParser, default_allowed_vos: str 
             rcentry.require_singularity = safegetbool("require_singularity", True)
             rcentry.os = safeget("os")
             rcentry.send_tests = safegetbool("send_tests", True)
+            rcentry.is_pilot = True
 
         rc.add_rcentry(rcentry)
     # end for section in config.sections()
