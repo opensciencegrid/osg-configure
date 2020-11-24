@@ -31,11 +31,14 @@ from osg_configure.modules.utilities import get_test_config
 class TestSubcluster(unittest.TestCase):
     """Class for unit testing subcluster / resource entry configuration code"""
 
+    def setUp(self):
+        if not subcluster:
+            self.skipTest("no subcluster module available")
+
     def test_missing_sc(self):
         """
         Make sure that we have failures when there is no configured SC.
         """
-        if not subcluster: return
         config_parser = configparser.SafeConfigParser()
         config_file = get_test_config("subcluster/red-missing-sc.ini")
         config_parser.read(config_file)
@@ -45,7 +48,6 @@ class TestSubcluster(unittest.TestCase):
         """
         Make sure that we have failures because SC CHANGEME section is present.
         """
-        if not subcluster: return
         config_parser = configparser.SafeConfigParser()
         config_file = get_test_config("subcluster/changeme_section_sc.ini")
         config_parser.read(config_file)
@@ -65,7 +67,6 @@ class TestSubcluster(unittest.TestCase):
         """
         Make sure that we can correctly parse a correct new-style GIP config.
         """
-        if not subcluster: return
         config_parser = configparser.SafeConfigParser()
         config_file = get_test_config("subcluster/red-new-gip-config.ini")
         config_parser.read(config_file)
@@ -75,7 +76,6 @@ class TestSubcluster(unittest.TestCase):
         """
         Test to see if the local settings parsing works.
         """
-        if not subcluster: return
         config_parser = configparser.SafeConfigParser()
         config_parser.optionxform = str
         config_file = get_test_config("subcluster/local_settings.ini")
@@ -105,7 +105,6 @@ class TestSubcluster(unittest.TestCase):
         """
         Make sure a valid HEPSPEC value is accepted.
         """
-        if not subcluster: return
         did_fail = False
         config_parser = configparser.SafeConfigParser()
         config_file = get_test_config("subcluster/sc_samples.ini")
@@ -120,7 +119,6 @@ class TestSubcluster(unittest.TestCase):
         """
         Make sure a invalid HEPSPEC value no longer causes an error..
         """
-        if not subcluster: return
         config_parser = configparser.SafeConfigParser()
         config_file = get_test_config("subcluster/sc_samples.ini")
         config_parser.read(config_file)
@@ -147,7 +145,6 @@ class TestSubcluster(unittest.TestCase):
         """
         Make sure a Resource Entry section is detected
         """
-        if not subcluster: return
         config_parser = configparser.SafeConfigParser()
         config_file = get_test_config("subcluster/resourceentry.ini")
         config_parser.read(config_file)
@@ -159,7 +156,6 @@ class TestSubcluster(unittest.TestCase):
         Make sure most subcluster attributes are optional for a
         Resource Entry section
         """
-        if not subcluster: return
         config_parser = configparser.SafeConfigParser()
         config_file = get_test_config("subcluster/resourceentry.ini")
         config_parser.read(config_file)
