@@ -188,9 +188,8 @@ allowed_vos = osg, atlas
                 raise
 
     def testFullWithExtraTransforms(self):
-        if not resourcecatalog: return
         config = configparser.SafeConfigParser()
-        config_io = StringIO(r"""
+        config_string = r"""
 [Subcluster Test]
 name = glow.chtc.wisc.edu
 node_count = 60
@@ -208,10 +207,10 @@ queue = blue
 extra_transforms = set_WantRHEL6 = 1
 max_wall_time = 1440
 allowed_vos = osg, atlas
-""")
-        config.readfp(config_io)
-        self.assertEqual(subcluster.resource_catalog_from_config(config).compose_text(),
-                         r"""OSG_ResourceCatalog = { \
+"""
+        config.read_string(config_string)
+        self.assertLongStringEqual(subcluster.resource_catalog_from_config(config).compose_text(),
+                                   r"""OSG_ResourceCatalog = { \
   [ \
     AllowedVOs = { "osg", "atlas" }; \
     CPUs = 4; \
@@ -223,6 +222,123 @@ allowed_vos = osg, atlas
   ] \
 }""")
 
+    def testResourceEntryWithPilot(self):
+        rce = RCEntry(name='glow.chtc.wisc.edu',
+                      cpus=1,
+                      memory=2500,
+                      max_wall_time=1440,
+                      allowed_vos=["glow"],
+                      gpus=1,
+                      max_pilots=1000,
+                      whole_node=False,
+                      queue="",
+                      require_singularity=True,
+                      os="rhel8",
+                      send_tests=True,
+                      is_pilot=True)
+        expected_string = r"""OSG_ResourceCatalog = { \
+  [ \
+    AllowedVOs = { "glow" }; \
+    CPUs = 1; \
+    GPUs = 1; \
+    IsPilotEntry = True; \
+    MaxPilots = 1000; \
+    MaxWallTime = 1440; \
+    Memory = 2500; \
+    Name = "glow.chtc.wisc.edu"; \
+    OS = "rhel8"; \
+    RequireSingularity = True; \
+    SendTests = True; \
+    WholeNode = False; \
+  ] \
+}"""
+        rc = ResourceCatalog()
+        rc.add_rcentry(rce)
+        actual_string = rc.compose_text()
+        self.assertLongStringEqual(actual_string, expected_string)
+
+    def testPilot(self):
+        config = configparser.SafeConfigParser()
+        config_string = r"""
+[Pilot glow.chtc.wisc.edu]
+name = glow.chtc.wisc.edu
+#ram_mb = 2500
+#cpucount = 1
+#max_wall_time = 1440
+allowed_vos = glow
+gpucount = 1
+max_pilots = 1000
+#whole_node = false
+#queue =
+#require_singularity = true
+os = rhel8
+#send_tests = true
+"""
+        config.read_string(config_string)
+        expected_string = r"""OSG_ResourceCatalog = { \
+  [ \
+    AllowedVOs = { "glow" }; \
+    CPUs = 1; \
+    GPUs = 1; \
+    IsPilotEntry = True; \
+    MaxPilots = 1000; \
+    MaxWallTime = 1440; \
+    Memory = 2500; \
+    Name = "glow.chtc.wisc.edu"; \
+    OS = "rhel8"; \
+    RequireSingularity = True; \
+    SendTests = True; \
+    WholeNode = False; \
+  ] \
+}"""
+        actual_string = subcluster.resource_catalog_from_config(config).compose_text()
+        self.assertLongStringEqual(actual_string, expected_string)
+
+    def testPilotExample(self):
+        config_parser = configparser.SafeConfigParser()
+        config_file = get_test_config("subcluster/pilots_example.ini")
+        config_parser.read(config_file)
+        expected_string = r"""OSG_ResourceCatalog = { \
+  [ \
+    AllowedVOs = { "icecube" }; \
+    CPUs = 1; \
+    GPUs = 2; \
+    IsPilotEntry = True; \
+    MaxPilots = 1000; \
+    MaxWallTime = 2880; \
+    Memory = 8192; \
+    Name = "GPU"; \
+    RequireSingularity = True; \
+    SendTests = True; \
+    WholeNode = False; \
+  ], \
+  [ \
+    AllowedVOs = { "atlas" }; \
+    IsPilotEntry = True; \
+    MaxPilots = 1000; \
+    MaxWallTime = 1440; \
+    Name = "WholeNode"; \
+    RequireSingularity = True; \
+    SendTests = True; \
+    WholeNode = True; \
+  ], \
+  [ \
+    AllowedVOs = { "osg", "cms" }; \
+    CPUs = 8; \
+    IsPilotEntry = True; \
+    MaxPilots = 1000; \
+    MaxWallTime = 1440; \
+    Memory = 32768; \
+    Name = "default"; \
+    OS = "rhel6"; \
+    RequireSingularity = False; \
+    SendTests = True; \
+    WholeNode = False; \
+  ] \
+}
+"""
+        actual_string = subcluster.resource_catalog_from_config(config_parser).compose_text()
+        self.assertLongStringEqual(actual_string, expected_string)
 
 
 if __name__ == '__main__':

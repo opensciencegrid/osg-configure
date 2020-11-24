@@ -148,6 +148,37 @@ class TestSubcluster(unittest.TestCase):
                 did_fail = True
             self.assertFalse(did_fail, msg="Section %s threw an exception." % section)
 
+    def test_pilot(self):
+        """
+        Make sure a Pilot section is detected
+        """
+        config_parser = configparser.SafeConfigParser()
+        config_file = get_test_config("subcluster/pilot.ini")
+        config_parser.read(config_file)
+        found_scs = subcluster.check_config(config_parser)
+        self.assertTrue(found_scs, msg="Pilot red.unl.edu not found.")
+
+    def test_pilot_no_name(self):
+        """
+        Make sure a Pilot section with no name is still OK
+        """
+        config_parser = configparser.SafeConfigParser()
+        config_file = get_test_config("subcluster/pilot_no_name.ini")
+        config_parser.read(config_file)
+        found_scs = subcluster.check_config(config_parser)
+        self.assertTrue(found_scs, msg="Pilot red.unl.edu not found.")
+
+    def test_pilot_no_singularity(self):
+        """
+        Make sure that if "require_singularity=false", then "os" is required.
+        """
+        config_parser = configparser.SafeConfigParser()
+        config_file = get_test_config("subcluster/pilot_no_singularity.ini")
+        config_parser.read(config_file)
+        self.assertRaises(exceptions.SettingError, subcluster.check_config, config_parser)  # Pilot w/ no singularity and no os should fail
+        config_parser.set("Pilot chtc.cs.wisc.edu", "os", "rhel7")
+        self.assertTrue(subcluster.check_config(config_parser), msg="Pilot w/ no singularity but with os failed")
+
 
 if __name__ == '__main__':
     console = logging.StreamHandler()
