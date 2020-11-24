@@ -11,33 +11,7 @@ import subprocess
 import sys
 import tempfile
 from configparser import ConfigParser, NoOptionError, NoSectionError
-
-__all__ = ['get_elements',
-           'write_attribute_file',
-           'get_set_membership',
-           'get_hostname',
-           'blank',
-           'get_vos',
-           'service_enabled',
-           'crls_exist',
-           'fetch_crl',
-           'run_script',
-           'get_condor_location',
-           'get_condor_config',
-           'get_condor_config_val',
-           'atomic_write',
-           'ce_installed',
-           'any_rpms_installed',
-           'rpm_installed',
-           'get_test_config',
-           'make_directory',
-           'get_os_version',
-           'config_safe_get',
-           'config_safe_getboolean',
-           'classad_quote',
-           'add_or_replace_setting',
-           'split_host_port',
-]
+from typing import List
 
 CONFIG_DIRECTORY = "/etc/osg"
 
@@ -544,7 +518,7 @@ def get_os_version():
     return version_list
 
 
-def config_safe_get(configuration: ConfigParser, section: str, option: str, default=None):
+def config_safe_get(configuration: ConfigParser, section: str, option: str, default=None) -> str:
     """
     Return the value of the option `option` from the config section
     `section` or `default` if the section or the option are missing
@@ -556,7 +530,7 @@ def config_safe_get(configuration: ConfigParser, section: str, option: str, defa
         return default
 
 
-def config_safe_getboolean(configuration: ConfigParser, section: str, option: str, default=None):
+def config_safe_getboolean(configuration: ConfigParser, section: str, option: str, default=None) -> bool:
     """
     Wrapper around RawConfigParser.getboolean the way config_safe_get is a
     wrapper around RawConfigParser.get. Note that it also returns default
@@ -649,4 +623,10 @@ def reconfig_service(service, reconfig_cmd):
         return True
 
     return False
-    
+
+
+def split_comma_separated_list(a_str: str) -> List[str]:
+    a_str = a_str.strip()
+    if not a_str:
+        return []
+    return re.split(r"\s*,\s*", a_str)
