@@ -53,16 +53,6 @@ class TestSubcluster(unittest.TestCase):
         config_parser.read(config_file)
         self.assertRaises(exceptions.SettingError, subcluster.check_config, config_parser) # detect enabled CHANGEME section.
 
-    def test_missing_attributes(self):
-        """
-        Make sure that we have failures when there are missing attributes.
-        """
-        if not subcluster: return
-        config_parser = configparser.SafeConfigParser()
-        config_file = get_test_config("subcluster/red-missing-attributes.ini")
-        config_parser.read(config_file)
-        self.assertRaises(exceptions.SettingError, subcluster.check_config, config_parser) # detect missing attrs.
-
     def test_new_config(self):
         """
         Make sure that we can correctly parse a correct new-style GIP config.
@@ -130,16 +120,6 @@ class TestSubcluster(unittest.TestCase):
             subcluster.check_section(config_parser, "Subcluster Formerly Bad Cores")
         except exceptions.SettingError:
             self.fail(msg="Formerly Bad Cores entry threw an exception")
-
-    def test_no_name(self):
-        """
-        Make sure a missing name causes an error
-        """
-        if not subcluster: return
-        config_parser = configparser.SafeConfigParser()
-        config_file = get_test_config("subcluster/sc_samples.ini")
-        config_parser.read(config_file)
-        self.assertRaises(exceptions.SettingError, subcluster.check_section, config_parser, "Subcluster No Name")
 
     def test_resource_entry(self):
         """

@@ -78,24 +78,6 @@ class TestResourceCatalog(unittest.TestCase):
   ] \
 }""")
 
-    def testNoName(self):
-        if not resourcecatalog: return
-        rce = RCEntry(name='', cpus=1, memory=1)
-        self.assertRaises(ValueError, self.rc.add_rcentry, rce)
-
-    def testOutOfRange(self):
-        if not resourcecatalog: return
-        rce = RCEntry(name='sc', cpus=-1, memory=1)
-        self.assertRaises(ValueError, self.rc.add_rcentry, rce)
-        rce.cpus = 1
-        rce.memory = 0
-        self.assertRaises(ValueError, self.rc.add_rcentry, rce)
-
-    def testZeroMaxWallTime(self):
-        if not resourcecatalog: return
-        rce = RCEntry(name='sc', cpus=1, memory=1, max_wall_time=0)
-        self.assertDoesNotRaise(ValueError, self.rc.add_rcentry, rce)
-
     def testExtraRequirements(self):
         rce = RCEntry(name='sc', cpus=1, memory=2000, extra_requirements='TARGET.WantGPUs =?= 1')
         self.rc.add_rcentry(rce)
