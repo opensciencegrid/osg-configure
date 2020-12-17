@@ -91,6 +91,10 @@ def is_pilot(section: str) -> bool:
     return section.lstrip().lower().startswith("pilot")
 
 
+def is_subcluster_like(section: str) -> bool:
+    return is_pilot(section) or is_subcluster(section) or is_resource_entry(section)
+
+
 def check_entry(config, section, option, status, kind):
     """
     Check entries to make sure that they conform to the correct range of values

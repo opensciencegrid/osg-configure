@@ -139,17 +139,17 @@ class InfoServicesConfiguration(BaseConfiguration):
         self.subcluster_sections = ConfigParser.SafeConfigParser()
 
         for section in configuration.sections():
-            if section.lower().startswith('subcluster') or section.lower().startswith('resource entry'):
+            if subcluster.is_subcluster_like(section):
                 self.subcluster_sections.add_section(section)
                 for key, value in configuration.items(section):
                     self.subcluster_sections.set(section, key, value)
 
         if utilities.ce_installed() and not subcluster.check_config(configuration):
-            self.log("On a CE but no valid 'Subcluster' or 'Resource Entry' sections defined."
+            self.log("On a CE but no valid 'Subcluster', 'Resource Entry', or 'Pilot' sections defined."
                      " This is required to advertise the capabilities of your cluster to the central collector."
                      " Jobs may not be sent to this CE.",
                      level=logging.ERROR)
-            raise exceptions.SettingError("No Subcluster or Resource Entry sections")
+            raise exceptions.SettingError("No Subcluster, Resource Entry, or Pilot sections")
 
         # Check resource catalog
         # This is a bit clunky to parse it here and not use the result in
