@@ -31,11 +31,14 @@ from osg_configure.modules.utilities import get_test_config
 class TestSubcluster(unittest.TestCase):
     """Class for unit testing subcluster / resource entry configuration code"""
 
+    def setUp(self):
+        if not subcluster:
+            self.skipTest("no subcluster module available")
+
     def test_missing_sc(self):
         """
         Make sure that we have failures when there is no configured SC.
         """
-        if not subcluster: return
         config_parser = configparser.SafeConfigParser()
         config_file = get_test_config("subcluster/red-missing-sc.ini")
         config_parser.read(config_file)
@@ -45,27 +48,15 @@ class TestSubcluster(unittest.TestCase):
         """
         Make sure that we have failures because SC CHANGEME section is present.
         """
-        if not subcluster: return
         config_parser = configparser.SafeConfigParser()
         config_file = get_test_config("subcluster/changeme_section_sc.ini")
         config_parser.read(config_file)
         self.assertRaises(exceptions.SettingError, subcluster.check_config, config_parser) # detect enabled CHANGEME section.
 
-    def test_missing_attributes(self):
-        """
-        Make sure that we have failures when there are missing attributes.
-        """
-        if not subcluster: return
-        config_parser = configparser.SafeConfigParser()
-        config_file = get_test_config("subcluster/red-missing-attributes.ini")
-        config_parser.read(config_file)
-        self.assertRaises(exceptions.SettingError, subcluster.check_config, config_parser) # detect missing attrs.
-
     def test_new_config(self):
         """
         Make sure that we can correctly parse a correct new-style GIP config.
         """
-        if not subcluster: return
         config_parser = configparser.SafeConfigParser()
         config_file = get_test_config("subcluster/red-new-gip-config.ini")
         config_parser.read(config_file)
@@ -75,7 +66,6 @@ class TestSubcluster(unittest.TestCase):
         """
         Test to see if the local settings parsing works.
         """
-        if not subcluster: return
         config_parser = configparser.SafeConfigParser()
         config_parser.optionxform = str
         config_file = get_test_config("subcluster/local_settings.ini")
@@ -105,7 +95,6 @@ class TestSubcluster(unittest.TestCase):
         """
         Make sure a valid HEPSPEC value is accepted.
         """
-        if not subcluster: return
         did_fail = False
         config_parser = configparser.SafeConfigParser()
         config_file = get_test_config("subcluster/sc_samples.ini")
@@ -120,7 +109,6 @@ class TestSubcluster(unittest.TestCase):
         """
         Make sure a invalid HEPSPEC value no longer causes an error..
         """
-        if not subcluster: return
         config_parser = configparser.SafeConfigParser()
         config_file = get_test_config("subcluster/sc_samples.ini")
         config_parser.read(config_file)
@@ -133,21 +121,10 @@ class TestSubcluster(unittest.TestCase):
         except exceptions.SettingError:
             self.fail(msg="Formerly Bad Cores entry threw an exception")
 
-    def test_no_name(self):
-        """
-        Make sure a missing name causes an error
-        """
-        if not subcluster: return
-        config_parser = configparser.SafeConfigParser()
-        config_file = get_test_config("subcluster/sc_samples.ini")
-        config_parser.read(config_file)
-        self.assertRaises(exceptions.SettingError, subcluster.check_section, config_parser, "Subcluster No Name")
-
     def test_resource_entry(self):
         """
         Make sure a Resource Entry section is detected
         """
-        if not subcluster: return
         config_parser = configparser.SafeConfigParser()
         config_file = get_test_config("subcluster/resourceentry.ini")
         config_parser.read(config_file)
@@ -159,7 +136,6 @@ class TestSubcluster(unittest.TestCase):
         Make sure most subcluster attributes are optional for a
         Resource Entry section
         """
-        if not subcluster: return
         config_parser = configparser.SafeConfigParser()
         config_file = get_test_config("subcluster/resourceentry.ini")
         config_parser.read(config_file)
@@ -171,6 +147,37 @@ class TestSubcluster(unittest.TestCase):
             except exceptions.SettingError:
                 did_fail = True
             self.assertFalse(did_fail, msg="Section %s threw an exception." % section)
+
+    def test_pilot(self):
+        """
+        Make sure a Pilot section is detected
+        """
+        config_parser = configparser.SafeConfigParser()
+        config_file = get_test_config("subcluster/pilot.ini")
+        config_parser.read(config_file)
+        found_scs = subcluster.check_config(config_parser)
+        self.assertTrue(found_scs, msg="Pilot red.unl.edu not found.")
+
+    def test_pilot_no_name(self):
+        """
+        Make sure a Pilot section with no name is still OK
+        """
+        config_parser = configparser.SafeConfigParser()
+        config_file = get_test_config("subcluster/pilot_no_name.ini")
+        config_parser.read(config_file)
+        found_scs = subcluster.check_config(config_parser)
+        self.assertTrue(found_scs, msg="Pilot red.unl.edu not found.")
+
+    def test_pilot_no_singularity(self):
+        """
+        Make sure that if "require_singularity=false", then "os" is required.
+        """
+        config_parser = configparser.SafeConfigParser()
+        config_file = get_test_config("subcluster/pilot_no_singularity.ini")
+        config_parser.read(config_file)
+        self.assertRaises(exceptions.SettingError, subcluster.check_config, config_parser)  # Pilot w/ no singularity and no os should fail
+        config_parser.set("Pilot chtc.cs.wisc.edu", "os", "rhel7")
+        self.assertTrue(subcluster.check_config(config_parser), msg="Pilot w/ no singularity but with os failed")
 
 
 if __name__ == '__main__':
