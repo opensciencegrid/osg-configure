@@ -139,6 +139,102 @@ The configuration is split in multiple files and options form one section can be
 All of the configuration files listed below are in `/etc/osg/config.d/`.
 
 
+### 01-squid.ini / [Squid] section ###
+
+This section handles the configuration and setup of the squid web caching and proxy service.
+
+This section is contained in `/etc/osg/config.d/01-squid.ini` which is provided by the `osg-configure-squid` RPM.
+
+| Option      | Values Accepted           | Explanation                                                    |
+|-------------|---------------------------|----------------------------------------------------------------|
+| **enabled** | `True`, `False`, `Ignore` | This indicates whether the squid service is being used or not. |
+| location    | String                    | This should be set to the `hostname:port` of the squid server. |
+
+
+### 10-gateway.ini / [Gateway] section ###
+
+This section gives information about the options in the Gateway section of the configuration files. These options control the behavior of job gateways on the CE. CEs are based on HTCondor-CE, which uses `condor-ce` as the gateway.
+
+This section is contained in `/etc/osg/config.d/10-gateway.ini` which is provided by the `osg-configure-gateway` RPM.
+
+| Option                         | Values Accepted | Explanation                                                                                                                                                                              |
+|--------------------------------|-----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **htcondor\_gateway\_enabled** | `True`, `False` | (default True). True if the CE is using HTCondor-CE, False otherwise. HTCondor-CE will be configured to support enabled batch systems. RSV will use HTCondor-CE to launch remote probes. |
+| **job\_envvar\_path**          | String          | The value of the PATH environment variable to put into HTCondor jobs running with HTCondor-CE. This value is ignored if not using that batch system/gateway combination.                 |
+
+
+### 10-misc.ini / [Misc Services] section ###
+
+This section handles the configuration of services that do not have a dedicated section for their configuration.
+
+This section is contained in `/etc/osg/config.d/10-misc.ini` which is provided by the `osg-configure-misc` RPM.
+
+This section primarily deals with authentication/authorization. For information on suggested settings for your CE, see the [authentication section of the HTCondor-CE install documents](../compute-element/install-htcondor-ce#configuring-authentication).
+
+| Option                                | Values Accepted                       | Explanation                                                                                                                                                                                                                                                                                                                                                                          |
+|---------------------------------------|---------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **authorization\_method**             | `gridmap`, `local-gridmap`, `vomsmap` | This indicates which authorization method your site uses.                                                                                                                                                                                                                                                                                    |
+| edit\_lcmaps\_db                      | `True`, `False`                       | (Optional, default True) If true, osg-configure will overwrite `/etc/lcmaps.db` to set your authorization method. The previous version will be backed up to `/etc/lcmaps.db.pre-configure`                                                                                                                                                                                           |
+| all\_fqans                            | `True`, `False`                       | (Optional, default False) If true, vomsmap auth will use all VOMS FQANs of a proxy for mapping -- see [documentation](../security/lcmaps-voms-authentication#mapping-using-all-fqans)                                                                                                                                                                                                |
+
+
+### 10-storage.ini / [Storage] section ###
+
+This section gives information about the options in the Storage section of the configuration file.
+Several of these values are constrained and need to be set in a way that is consistent with one of the OSG storage models.
+Please review the OSG documentation on the [Worker Node Environment](https://opensciencegrid.org/docs/worker-node/using-wn/#the-worker-node-environment),
+and [Site Planning](https://opensciencegrid.org/docs/site-planning/).
+
+This section is contained in `/etc/osg/config.d/10-storage.ini` which is provided by the `osg-configure-ce` RPM.
+
+| Option           | Values Accepted | Explanation                                                                                                                                                                                                    |
+|------------------|-----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **se_available** | `True`, `False` | This indicates whether there is an associated SE available.                                                                                                                                                    |
+| default_se       | String          | If an SE is available at your cluster, set default_se to the hostname of this SE, otherwise set default_se to UNAVAILABLE.                                                                                     |
+| **grid_dir**     | String          | This setting should point to the directory which holds the files from the OSG worker node package. See note                                                                                                    |
+| **app_dir**      | String          | This setting should point to the directory which contains the VO specific applications. See note                                                                                                               |
+| data_dir         | String          | This setting should point to a directory that can be used to store and stage data in and out of the cluster. See note                                                                                          |
+| worker_node_temp | String          | This directory should point to a directory that can be used as scratch space on compute nodes. If not set, the default is UNAVAILABLE. See note                                                                |
+| site_read        | String          | This setting should be the location or url to a directory that can be read to stage in data via the variable `$OSG_SITE_READ`. This is an url if you are using a SE. If not set, the default is UNAVAILABLE    |
+| site_write       | String          | This setting should be the location or url to a directory that can be write to stage out data via the variable `$OSG_SITE_WRITE`. This is an url if you are using a SE. If not set, the default is UNAVAILABLE |
+
+
+**Note:**<br>
+The above variables may be set to an environment variable that is set on your site's worker nodes.
+For example, if each of your worker nodes has a different location for its scratch directory specified by
+`LOCAL_SCRATCH_DIR`, set the following configuration:
+
+    [Storage]
+    worker_node_temp = $LOCAL_SCRATCH_DIR
+
+**Note for grid_dir:**<br>
+If you have installed the worker node client via RPM (the normal case) it should be `/etc/osg/wn-client`.
+If you have installed the worker node in a special location (perhaps via the worker node client tarball or via OASIS),
+it should be the location of that directory.
+
+This directory will be accessed via the `$OSG_GRID` environment variable.
+It should be visible on all of the compute nodes. Read access is required,
+though worker nodes don't need write access.
+
+**Note for app_dir:**<br>
+This directory will be accesed via the `$OSG_APP` environment variable. It
+should be visible on both the CE and worker nodes. Only the CE needs to
+have write access to this directory. This directory must also contain a
+sub-directory `etc/` with 1777 permissions.
+
+This directory may also be in OASIS, in which case set `app_dir` to
+`/cvmfs/oasis.opensciencegrid.org`. (The CE does not need write access in
+that case.)
+
+**Note for data_dir:**<br>
+This directory can be accessed via the `$OSG_DATA` environment variable. It
+should be readable and writable on both the CE and worker nodes.
+
+**Note for worker_node_temp:**<br>
+This directory will be accessed via the `$OSG_WN_TMP` environment variable.
+It should allow read and write access on a worker node and can be visible
+to just that worker node.
+
 ### 20-bosco.ini / [Bosco] section ###
 
 This section is contained in `/etc/osg/config.d/20-bosco.ini` which is provided by the `osg-configure-bosco` RPM.
@@ -366,18 +462,6 @@ The following attributes are optional:
 
 
 
-### 10-gateway.ini / [Gateway] section ###
-
-This section gives information about the options in the Gateway section of the configuration files. These options control the behavior of job gateways on the CE. CEs are based on HTCondor-CE, which uses `condor-ce` as the gateway.
-
-This section is contained in `/etc/osg/config.d/10-gateway.ini` which is provided by the `osg-configure-gateway` RPM.
-
-| Option                         | Values Accepted | Explanation                                                                                                                                                                              |
-|--------------------------------|-----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **htcondor\_gateway\_enabled** | `True`, `False` | (default True). True if the CE is using HTCondor-CE, False otherwise. HTCondor-CE will be configured to support enabled batch systems. RSV will use HTCondor-CE to launch remote probes. |
-| **job\_envvar\_path**          | String          | The value of the PATH environment variable to put into HTCondor jobs running with HTCondor-CE. This value is ignored if not using that batch system/gateway combination.                 |
-
-
 ### 40-localsettings.ini / [Local Settings] ###
 
 This section differs from other sections in that there are no set options in this section. Rather, the options set in this section will be placed in the `osg-local-job-environment.conf` verbatim. The options in this section are case sensitive and the case will be preserved when they are converted to environment variables. The `osg-local-job-environment.conf` file gets sourced by jobs run on your cluster so any variables set in this section will appear in the environment of jobs run on your system.
@@ -391,21 +475,6 @@ MY_PATH = /usr/local/myapp
 ```
 
 This section is contained in `/etc/osg/config.d/40-localsettings.ini` which is provided by the `osg-configure-ce` RPM.
-
-
-### 10-misc.ini / [Misc Services] section ###
-
-This section handles the configuration of services that do not have a dedicated section for their configuration.
-
-This section is contained in `/etc/osg/config.d/10-misc.ini` which is provided by the `osg-configure-misc` RPM.
-
-This section primarily deals with authentication/authorization. For information on suggested settings for your CE, see the [authentication section of the HTCondor-CE install documents](../compute-element/install-htcondor-ce#configuring-authentication).
-
-| Option                                | Values Accepted                       | Explanation                                                                                                                                                                                                                                                                                                                                                                          |
-|---------------------------------------|---------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **authorization\_method**             | `gridmap`, `local-gridmap`, `vomsmap` | This indicates which authorization method your site uses.                                                                                                                                                                                                                                                                                    |
-| edit\_lcmaps\_db                      | `True`, `False`                       | (Optional, default True) If true, osg-configure will overwrite `/etc/lcmaps.db` to set your authorization method. The previous version will be backed up to `/etc/lcmaps.db.pre-configure`                                                                                                                                                                                           |
-| all\_fqans                            | `True`, `False`                       | (Optional, default False) If true, vomsmap auth will use all VOMS FQANs of a proxy for mapping -- see [documentation](../security/lcmaps-voms-authentication#mapping-using-all-fqans)                                                                                                                                                                                                |
 
 
 ### 40-siteinfo.ini / [Site Information] section ###
@@ -435,73 +504,4 @@ If your resource has multiple sponsors, you can separate them using commas or sp
 The percentages must add up to 100 if multiple sponsors are used.
 If you have a sponsor that is not an OSG VO, you can indicate this by using 'local' as the VO.
 
-
-### 01-squid.ini / [Squid] section ###
-
-This section handles the configuration and setup of the squid web caching and proxy service.
-
-This section is contained in `/etc/osg/config.d/01-squid.ini` which is provided by the `osg-configure-squid` RPM.
-
-| Option      | Values Accepted           | Explanation                                                    |
-|-------------|---------------------------|----------------------------------------------------------------|
-| **enabled** | `True`, `False`, `Ignore` | This indicates whether the squid service is being used or not. |
-| location    | String                    | This should be set to the `hostname:port` of the squid server. |
-
-
-### 10-storage.ini / [Storage] section ###
-
-This section gives information about the options in the Storage section of the configuration file.
-Several of these values are constrained and need to be set in a way that is consistent with one of the OSG storage models.
-Please review the OSG documentation on the [Worker Node Environment](https://opensciencegrid.org/docs/worker-node/using-wn/#the-worker-node-environment),
-and [Site Planning](https://opensciencegrid.org/docs/site-planning/).
-
-This section is contained in `/etc/osg/config.d/10-storage.ini` which is provided by the `osg-configure-ce` RPM.
-
-| Option           | Values Accepted | Explanation                                                                                                                                                                                                    |
-|------------------|-----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **se_available** | `True`, `False` | This indicates whether there is an associated SE available.                                                                                                                                                    |
-| default_se       | String          | If an SE is available at your cluster, set default_se to the hostname of this SE, otherwise set default_se to UNAVAILABLE.                                                                                     |
-| **grid_dir**     | String          | This setting should point to the directory which holds the files from the OSG worker node package. See note                                                                                                    |
-| **app_dir**      | String          | This setting should point to the directory which contains the VO specific applications. See note                                                                                                               |
-| data_dir         | String          | This setting should point to a directory that can be used to store and stage data in and out of the cluster. See note                                                                                          |
-| worker_node_temp | String          | This directory should point to a directory that can be used as scratch space on compute nodes. If not set, the default is UNAVAILABLE. See note                                                                |
-| site_read        | String          | This setting should be the location or url to a directory that can be read to stage in data via the variable `$OSG_SITE_READ`. This is an url if you are using a SE. If not set, the default is UNAVAILABLE    |
-| site_write       | String          | This setting should be the location or url to a directory that can be write to stage out data via the variable `$OSG_SITE_WRITE`. This is an url if you are using a SE. If not set, the default is UNAVAILABLE |
-
-
-**Note:**<br>
-The above variables may be set to an environment variable that is set on your site's worker nodes.
-For example, if each of your worker nodes has a different location for its scratch directory specified by
-`LOCAL_SCRATCH_DIR`, set the following configuration:
-
-    [Storage]
-    worker_node_temp = $LOCAL_SCRATCH_DIR
-
-**Note for grid_dir:**<br>
-If you have installed the worker node client via RPM (the normal case) it should be `/etc/osg/wn-client`.
-If you have installed the worker node in a special location (perhaps via the worker node client tarball or via OASIS),
-it should be the location of that directory.
-
-This directory will be accessed via the `$OSG_GRID` environment variable.
-It should be visible on all of the compute nodes. Read access is required,
-though worker nodes don't need write access.
-
-**Note for app_dir:**<br>
-This directory will be accesed via the `$OSG_APP` environment variable. It
-should be visible on both the CE and worker nodes. Only the CE needs to
-have write access to this directory. This directory must also contain a
-sub-directory `etc/` with 1777 permissions.
-
-This directory may also be in OASIS, in which case set `app_dir` to
-`/cvmfs/oasis.opensciencegrid.org`. (The CE does not need write access in
-that case.)
-
-**Note for data_dir:**<br>
-This directory can be accessed via the `$OSG_DATA` environment variable. It
-should be readable and writable on both the CE and worker nodes.
-
-**Note for worker_node_temp:**<br>
-This directory will be accessed via the `$OSG_WN_TMP` environment variable.
-It should allow read and write access on a worker node and can be visible
-to just that worker node.
 
