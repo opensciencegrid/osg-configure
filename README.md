@@ -17,7 +17,7 @@ once the repos are enabled, install by running
 OSG-Configure can also be installed from a checkout.
 Run
 
-    git clone https://github.com/opensciencegrid/org-configure
+    git clone https://github.com/opensciencegrid/osg-configure
     cd osg-configure
     make install
 
@@ -93,12 +93,12 @@ In the tables below:
 Syntax and layout
 -----------------
 
-The configuration files used by `osg-configure` are the one supported by Python's [SafeConfigParser](http://docs.python.org/library/configparser.html), similar in format to the [INI configuration file](http://en.wikipedia.org/wiki/INI_file) used by MS Windows:
+The configuration files used by `osg-configure` are the one supported by Python's [SafeConfigParser](https://docs.python.org/library/configparser.html), similar in format to the [INI configuration file](https://en.wikipedia.org/wiki/INI_file) used by MS Windows:
 
 -   Config files are separated into sections, specified by a section name in square brackets (e.g. `[Section 1]`)
 -   Options should be set using `name = value` pairs
 -   Lines that begin with `;` or `#` are comments
--   Long lines can be split up using continutations: each white space character can be preceded by a newline to fold/continue the field on a new line (same syntax as specified in [email RFC 822](http://tools.ietf.org/html/rfc822.html))
+-   Long lines can be split up using continutations: each white space character can be preceded by a newline to fold/continue the field on a new line (same syntax as specified in [email RFC 822](https://tools.ietf.org/html/rfc822.html))
 -   Variable substitutions are supported -- [see below](#variable-substitution)
 
 `osg-configure` reads and uses all of the files in `/etc/osg/config.d` that have a ".ini" suffix. The files in this directory are ordered with a numeric prefix with higher numbers being applied later and thus having higher precedence (e.g. `00-foo.ini` has a lower precedence than `99-local-site-settings.ini`). Configuration sections and options can be specified multiple times in different files. E.g. a section called `[PBS]` can be given in `20-pbs.ini` as well as `99-local-site-settings.ini`.
@@ -455,6 +455,39 @@ The following attributes are optional:
 |-------------|----------------------|---------------------------------------------------------------------------------------------------------------------|
 | subclusters | Comma-separated List | The physical subclusters the resource entry refers to; must be defined as Subcluster sections elsewhere in the file |
 | vo\_tag     | String               | An arbitrary label that is added to jobs routed through this resource                                               |
+
+
+
+### 35-pilot.ini / [Pilot] ###
+
+These sections describe the types of glideinWMS pilots that your site is willing to accept.
+This file contains multiple sections of the form `[Pilot <PILOT_TYPE>]`,
+where `<PILOT_TYPE>` is a free-form name of a type of pilot.
+The name must be globally unique; we recommend including the resource name of your CE in the PILOT_TYPE.
+For example, if your CE is registered in topology as `UW-ITB-CE1` and you are describing a type of pilot with 4 cores,
+then use `UW-ITB-CE1_4CORE`.
+
+The following attributes are required:
+| Option                                    | Values Accepted             | Explanation                                                                         |
+|-------------------------------------------|-----------------------------|-------------------------------------------------------------------------------------|
+| **allowed\_vos**                          | Comma-separated List or `*` | The VOs that are allowed to run jobs on this resource (autodetected if `*`)         |
+| **max\_pilots**                           | Positive Integer            | The maximum number of pilots of this type that the factory can send to this CE      |
+
+The following attributes are optional:
+| Option                                      | Values Accepted               | Explanation                                                                                                                                                                                |
+|---------------------------------------------|-------------------------------|--------------------------------------------------------------------------------------                                                                                                      |
+| **cpucount**                                | Positive Integer              | Number of cores that a job using this type of pilot can get.  Default 1; ignored if **whole\_node** is True                                                                                |
+| **ram\_mb**                                 | Positive Integer              | Maximum amount of memory (in MB) that a job using this type of pilot can get.  Default 2500; ignored if **whole\_node** is True                                                            |
+| **whole\_node**                             | `True`, `False`               | Whether this type of pilot can use all the resources on a node.  Default False; **cpucount** and **ram\_mb** are ignored if this is True                                                   |
+| **gpucount**                                | Non-negative Integer          | The number of GPUs to request.  Default 0                                                                                                                                                  |
+| **max\_wall\_time**                         | Positive Integer              | Maximum wall-clock time, in minutes, that a job is allowed to run on this resource.  Default 1440 i.e. 24 hours                                                                            |
+| **queue**                                   | String                        | The queue or partition which jobs should be submitted to in order to run on this resource.  Equivalent to the HTCondor grid universe classad attribute "remote_queue".  Not set by default |
+| **send\_tests**                             | `True`, `False`               | Send test pilots.  Default False; turn it on for testing job routes or pilot types                                                                                                         |
+| **os**                                      | Choice (see below)            | The OS on the workers the pilot should request.  Not set by default.  Required if **require\_singularity** is False                                                                        |
+| **require\_singularity**                    | `True`, `False`               | True if the pilot should require Singularity support on any worker it lands on.  Default False; **os** must be specified is if this is False                                               |
+
+Valid values for the **os** option are: `rhel6`, `rhel7`, `rhel8`, or `ubuntu18`.
+
 
 
 
