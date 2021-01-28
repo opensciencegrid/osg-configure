@@ -3,10 +3,6 @@ OSG-Configure
 
 OSG-Configure is a tool to configure multiple pieces of Grid software from a single set of configuration files.
 
-Build Status:
-[![Build Status](https://travis-ci.org/opensciencegrid/osg-configure.svg?branch=master)](https://travis-ci.org/opensciencegrid/osg-configure)
-
-
 
 Installation
 ------------
