@@ -468,25 +468,27 @@ For example, if your CE is registered in topology as `UW-ITB-CE1` and you are de
 then use `UW-ITB-CE1_4CORE`.
 
 The following attributes are required:
-| Option                                    | Values Accepted             | Explanation                                                                         |
-|-------------------------------------------|-----------------------------|-------------------------------------------------------------------------------------|
-| **allowed\_vos**                          | Comma-separated List or `*` | The VOs that are allowed to run jobs on this resource (autodetected if `*`)         |
-| **max\_pilots**                           | Positive Integer            | The maximum number of pilots of this type that the factory can send to this CE      |
-
-The following attributes are optional:
-| Option                                      | Values Accepted               | Explanation                                                                                                                                                                                |
-|---------------------------------------------|-------------------------------|--------------------------------------------------------------------------------------                                                                                                      |
-| **cpucount**                                | Positive Integer              | Number of cores that a job using this type of pilot can get.  Default 1; ignored if **whole\_node** is True                                                                                |
-| **ram\_mb**                                 | Positive Integer              | Maximum amount of memory (in MB) that a job using this type of pilot can get.  Default 2500; ignored if **whole\_node** is True                                                            |
-| **whole\_node**                             | `True`, `False`               | Whether this type of pilot can use all the resources on a node.  Default False; **cpucount** and **ram\_mb** are ignored if this is True                                                   |
-| **gpucount**                                | Non-negative Integer          | The number of GPUs to request.  Default 0                                                                                                                                                  |
-| **max\_wall\_time**                         | Positive Integer              | Maximum wall-clock time, in minutes, that a job is allowed to run on this resource.  Default 1440 i.e. 24 hours                                                                            |
-| **queue**                                   | String                        | The queue or partition which jobs should be submitted to in order to run on this resource.  Equivalent to the HTCondor grid universe classad attribute "remote_queue".  Not set by default |
-| **send\_tests**                             | `True`, `False`               | Send test pilots.  Default False; turn it on for testing job routes or pilot types                                                                                                         |
-| **os**                                      | Choice (see below)            | The OS on the workers the pilot should request.  Not set by default.  Required if **require\_singularity** is False                                                                        |
-| **require\_singularity**                    | `True`, `False`               | True if the pilot should require Singularity support on any worker it lands on.  Default False; **os** must be specified is if this is False                                               |
+| Option                   | Values Accepted             | Explanation                                                                                                                        |
+|--------------------------|-----------------------------|------------------------------------------------------------------------------------------------------------------------------------|
+| **allowed\_vos**         | Comma-separated List or `*` | The VOs that are allowed to run jobs on this resource (autodetected if `*`)                                                        |
+| **max\_pilots**          | Positive Integer            | The maximum number of pilots of this type that the factory can send to this CE                                                     |
+| **os**                   | Choice (see below)          | The OS on the workers the pilot should request.  Not set by default.  Only required if **require\_singularity** is `False`               |
+| **require\_singularity** | `True`, `False`             | `True` if the pilot should require Singularity support on any worker it lands on.  Default `False`; **os** is optional if this is `True` |
 
 Valid values for the **os** option are: `rhel6`, `rhel7`, `rhel8`, or `ubuntu18`.
+
+The following attributes are optional:
+| Option              | Values Accepted      | Explanation                                                                                                                              |
+|---------------------|----------------------|------------------------------------------------------------------------------------------------------------------------------------------|
+| **cpucount**        | Positive Integer     | Number of cores that a job using this type of pilot can get.  Default `1`; ignored if **whole\_node** is `True`                          |
+| **ram\_mb**         | Positive Integer     | Maximum amount of memory (in MB) that a job using this type of pilot can get.  Default `2500`; ignored if **whole\_node** is `True`      |
+| **whole\_node**     | `True`, `False`      | Whether this type of pilot can use all the resources on a node.  Default `False`; **cpucount** and **ram\_mb** are ignored if this is `True` |
+| **gpucount**        | Non-negative Integer | The number of GPUs to request.  Default `0`                                                                                              |
+| **max\_wall\_time** | Positive Integer     | Maximum wall-clock time, in minutes, that a job is allowed to run on this resource.  Default `1440`, i.e. 24 hours                       |
+| **queue**           | String               | The queue or partition which jobs should be submitted to in order to run on this resource (see note).  Not set by default                |
+| **send\_tests**     | `True`, `False`      | Send test pilots.  Default `False`; set it to `True` for testing job routes or pilot types                                               |
+
+**Note:** **queue** is equivalent to the HTCondor grid universe classad attribute **remote\_queue**.
 
 
 
