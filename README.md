@@ -460,7 +460,7 @@ The following attributes are optional:
 
 ### 35-pilot.ini / [Pilot] ###
 
-These sections describe the types of glideinWMS pilots that your site is willing to accept.
+These sections describe the size and scale of GlideinWMS pilots that your site is willing to accept.
 This file contains multiple sections of the form `[Pilot <PILOT_TYPE>]`,
 where `<PILOT_TYPE>` is a free-form name of a type of pilot.
 The name must be globally unique; we recommend including the resource name of your CE in the PILOT_TYPE.
@@ -534,4 +534,3 @@ If your resource has multiple sponsors, you can separate them using commas or sp
 `osg, atlas, cms` or `osg:10, atlas:45, cms:45`.
 The percentages must add up to 100 if multiple sponsors are used.
 If you have a sponsor that is not an OSG VO, you can indicate this by using 'local' as the VO.
-
