@@ -472,7 +472,7 @@ The following attributes are required:
 |--------------------------|-----------------------------|------------------------------------------------------------------------------------------------------------------------------------|
 | **allowed\_vos**         | Comma-separated List or `*` | The VOs that are allowed to run jobs on this resource (autodetected if `*`)                                                        |
 | **max\_pilots**          | Positive Integer            | The maximum number of pilots of this type that the factory can send to this CE                                                     |
-| **os**                   | Choice (see below)          | The OS on the workers the pilot should request.  Not set by default.  Only required if **require\_singularity** is `False`               |
+| **os**                   | Choice (see below)          | The operating system on the workers the pilot should request.  Not set by default.  Only required if **require\_singularity** is `False`               |
 | **require\_singularity** | `True`, `False`             | `True` if the pilot should require Singularity support on any worker it lands on.  Default `False`; **os** is optional if this is `True` |
 
 Valid values for the **os** option are: `rhel6`, `rhel7`, `rhel8`, or `ubuntu18`.
@@ -534,5 +534,4 @@ If your resource has multiple sponsors, you can separate them using commas or sp
 `osg, atlas, cms` or `osg:10, atlas:45, cms:45`.
 The percentages must add up to 100 if multiple sponsors are used.
 If you have a sponsor that is not an OSG VO, you can indicate this by using 'local' as the VO.
-
 
