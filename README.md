@@ -417,11 +417,14 @@ If you would like to properly advertise multiple CEs per cluster, make sure that
 
 #### Subcluster Configuration ####
 
-Each homogeneous set of worker node hardware is called a **subcluster**. For each subcluster in your cluster, fill in the information about the worker node hardware by creating a new Subcluster section with a unique name in the following format: `[Subcluster CHANGEME]`, where CHANGEME is the globally unique subcluster name (yes, it must be a **globally** unique name for the whole grid, not just unique to your site. Get creative.)
+Each homogeneous set of worker node hardware is called a **subcluster**.
+For each subcluster in your cluster, fill in the information about the worker node hardware by creating a new Subcluster section in the following format:
+`[Subcluster CHANGEME]`, where CHANGEME is the subcluster name.
+If you have multiple subclusters, they must have different names.
 
 | Option               | Values Accepted             | Explanation                                                                   |
 |----------------------|-----------------------------|-------------------------------------------------------------------------------|
-| **name**             | String                      | The same name that is in the Section label; it should be **globally unique**  |
+| **name**             | String                      | The same name that is in the Section label                                    |
 | **ram\_mb**          | Positive Integer            | Megabytes of RAM per node                                                     |
 | **cores\_per\_node** | Positive Integer            | Number of cores per node                                                      |
 | **allowed\_vos**     | Comma-separated List or `*` | The VOs that are allowed to run jobs on this subcluster (autodetected if `*`) |
@@ -463,9 +466,10 @@ The following attributes are optional:
 These sections describe the size and scale of GlideinWMS pilots that your site is willing to accept.
 This file contains multiple sections of the form `[Pilot <PILOT_TYPE>]`,
 where `<PILOT_TYPE>` is a free-form name of a type of pilot.
-The name must be globally unique; we recommend including the resource name of your CE in the PILOT_TYPE.
-For example, if your CE is registered in topology as `UW-ITB-CE1` and you are describing a type of pilot with 4 cores,
-then use `UW-ITB-CE1_4CORE`.
+The name should only have lower-case letters, numbers, and `-` or `_` characters.
+In addition, it must be unique within your cluster.
+We recommend a name that describes the capabilities of the pilots you accept.
+Good names are `singularity_8core`, `gpu`, `bigmem`, `main`.
 
 The following attributes are required:
 | Option                   | Values Accepted             | Explanation                                                                                                                        |
