@@ -19,16 +19,10 @@ from osg_configure.configure_modules.slurm import SlurmConfiguration
 __all__ = ['GratiaConfiguration']
 
 GRATIA_CONFIG_FILES = {
-    'condor': '/etc/gratia/condor/ProbeConfig',
-    'sge': '/etc/gratia/sge/ProbeConfig',
-    'lsf': '/etc/gratia/pbs-lsf/urCollector.conf',
-    'pbs': '/etc/gratia/pbs-lsf/urCollector.conf',
-    'slurm': '/etc/gratia/slurm/ProbeConfig',
     'htcondor-ce': '/etc/gratia/htcondor-ce/ProbeConfig'
 }
 
-CE_PROBE_RPMS = ['gratia-probe-condor', 'gratia-probe-pbs-lsf', 'gratia-probe-sge',
-                 'gratia-probe-slurm', 'gratia-probe-htcondor-ce']
+CE_PROBE_RPMS = ['gratia-probe-htcondor-ce']
 
 
 def requirements_are_installed():
@@ -71,7 +65,8 @@ in your config.ini file."""
         self._production_defaults = {'probes':
                                           'jobmanager:gratia-osg-prod.opensciencegrid.org:80'}
 
-        self._job_managers = ['pbs', 'sge', 'lsf', 'condor', 'slurm', 'htcondor-ce']
+        self._job_managers = ['htcondor-ce']
+        self._old_job_managers = ['pbs', 'sge', 'lsf', 'condor', 'slurm']
         self._probe_config = {}
         self.grid_group = 'OSG'
 
@@ -118,71 +113,7 @@ in your config.ini file."""
             # grab configuration information for various jobmanagers
             probes_iter = self.get_installed_probe_config_files().keys()
             for probe in probes_iter:
-                if probe == 'condor':
-                    self._probe_config['condor'] = {'condor_location':
-                                                         CondorConfiguration.get_condor_location(configuration),
-                                                     'condor_config':
-                                                         CondorConfiguration.get_condor_config(configuration)}
-                elif probe == 'pbs':
-                    if BaseConfiguration.section_disabled(configuration, 'PBS'):
-                        # if the PBS jobmanager is disabled, the CE is probably using LSF
-                        # in any case, setting up the pbs gratia probe is not useful
-                        continue
-                    log_option = configfile.Option(name='log_directory',
-                                                   required=configfile.Option.OPTIONAL,
-                                                   default_value='')
-                    configfile.get_option(configuration, 'PBS', log_option)
-                    self._probe_config['pbs'] = {'log_directory': log_option.value}
-
-                    accounting_log_option = configfile.Option(name='accounting_log_directory',
-                                                              required=configfile.Option.OPTIONAL,
-                                                              default_value='')
-                    configfile.get_option(configuration, 'PBS', accounting_log_option)
-                    self._probe_config['pbs'] = {'accounting_log_directory': accounting_log_option.value}
-                elif probe == 'lsf':
-                    if BaseConfiguration.section_disabled(configuration, 'LSF'):
-                        # if the LSF jobmanager is disabled, the CE is probably using PBS
-                        # in any case, setting up the pbs gratia probe is not useful
-                        continue
-                    lsf_location = configfile.Option(name='lsf_location',
-                                                     default_value='/usr/bin')
-                    configfile.get_option(configuration, 'LSF', lsf_location)
-                    self._probe_config['lsf'] = {'lsf_location': lsf_location.value}
-
-                    log_option = configfile.Option(name='log_directory',
-                                                   required=configfile.Option.OPTIONAL,
-                                                   default_value='')
-                    configfile.get_option(configuration, 'LSF', log_option)
-                    self._probe_config['lsf']['log_directory'] = log_option.value
-                elif probe == 'sge':
-                    if BaseConfiguration.section_disabled(configuration, 'SGE'):
-                        # if section is disabled then the following code won't work
-                        # since the parse_configuration will short circuit, so
-                        # give a warning and then move on
-                        self.log("Skipping SGE gratia probe configuration since SGE is disabled",
-                                 level=logging.WARNING)
-                        continue
-                    sge_config = SGEConfiguration(logger=self.logger)
-                    sge_config.parse_configuration(configuration)
-                    self._probe_config['sge'] = {'sge_accounting_file': sge_config.get_accounting_file()}
-                elif probe == 'slurm':
-                    if BaseConfiguration.section_disabled(configuration, 'SLURM'):
-                        # if section is disabled then the following code won't work
-                        # since the parse_configuration will short circuit, so
-                        # give a warning and then move on
-                        self.log("Skipping Slurm gratia probe configuration since Slurm is disabled",
-                                 level=logging.WARNING)
-                        continue
-                    slurm_config = SlurmConfiguration(logger=self.logger)
-                    slurm_config.parse_configuration(configuration)
-                    self._probe_config['slurm'] = {'db_host': slurm_config.get_db_host(),
-                                                    'db_port': slurm_config.get_db_port(),
-                                                    'db_user': slurm_config.get_db_user(),
-                                                    'db_pass': slurm_config.get_db_pass(),
-                                                    'db_name': slurm_config.get_db_name(),
-                                                    'cluster': slurm_config.get_slurm_cluster(),
-                                                    'location': slurm_config.get_location()}
-                elif probe == 'htcondor-ce':
+                if probe == 'htcondor-ce':
                     self._probe_config['htcondor-ce'] = {}
 
         self.get_options(configuration,
@@ -238,7 +169,9 @@ in your config.ini file."""
         probe_config_files = self.get_installed_probe_config_files()
         probes_iter = probe_config_files.keys()
         for probe in probes_iter:
-            if probe in self._job_managers:
+            if probe in self._old_job_managers:
+                continue
+            elif probe in self._job_managers:
                 if probe not in self._probe_config:
                     # Probe is installed but we don't have configuration for it
                     # might be due to pbs-lsf probe sharing or relevant job
@@ -262,17 +195,7 @@ in your config.ini file."""
                 local_resource=self.options['resource'].value,
                 local_host=hostname
             )
-            if probe == 'condor':
-                self._configure_condor_probe()
-            elif probe == 'pbs':
-                self._configure_pbs_probe()
-            elif probe == 'lsf':
-                self._configure_lsf_probe()
-            elif probe == 'sge':
-                self._configure_sge_probe()
-            elif probe == 'slurm':
-                self._configure_slurm_probe()
-            elif probe == 'htcondor-ce':
+            if probe == 'htcondor-ce':
                 self._configure_htcondor_ce_probe()
 
         self.log("GratiaConfiguration.configure completed")
