@@ -185,7 +185,6 @@ This section is contained in `/etc/osg/config.d/10-storage.ini` which is provide
 
 | Option           | Values Accepted | Explanation                                                                                                                                                                                                    |
 |------------------|-----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **se_available** | `True`, `False` | This indicates whether there is an associated SE available.                                                                                                                                                    |
 | **grid_dir**     | String          | This setting should point to the directory which holds the files from the OSG worker node package. See note                                                                                                    |
 | **app_dir**      | String          | This setting should point to the directory which contains the VO specific applications. See note                                                                                                               |
 | data_dir         | String          | This setting should point to a directory that can be used to store and stage data in and out of the cluster. See note                                                                                          |
