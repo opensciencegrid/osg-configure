@@ -123,12 +123,13 @@ class StorageConfiguration(BaseConfiguration):
             self.log("StorageConfiguration.configure completed")
             return True
 
-        if self.options['app_dir'].value in ('UNSET', 'UNAVAILABLE'):
+        app_dir = self.options['app_dir'].value
+        if utilities.blank(app_dir) or app_dir == "UNSET":
             self.log('OSG_APP unset or unavailable, exiting')
             self.log('StorageConfiguration.configure completed')
             return True
 
-        if self._app_dir_in_oasis(self.options['app_dir'].value):
+        if self._app_dir_in_oasis(app_dir):
             self.log('OSG_APP is in OASIS, exiting')
             self.log('StorageConfiguration.configure completed')
             return True
@@ -190,20 +191,13 @@ class StorageConfiguration(BaseConfiguration):
         try:
             if self._app_dir_in_oasis(app_dir):
                 self.log('OSG_APP is an OASIS repository, skipping tests',
-                         level=logging.INFO)
+                         level=logging.DEBUG)
                 return True
 
             # Added for SOFTWARE-1567
-            if app_dir == 'UNSET':
-                self.log('OSG_APP is UNSET, skipping tests',
-                         level=logging.INFO)
-                return True
-
-            if app_dir == 'UNAVAILABLE':
-                self.log('OSG_APP ("app_dir" in the [Storage]) section is not configured.'
-                         ' If it is not available, explicitly set it to UNSET.'
-                         ' Otherwise, point it to the directory VO software can be obtained from.'
-                         , level=logging.WARNING)
+            if utilities.blank(app_dir) or app_dir == 'UNSET':
+                self.log('OSG_APP is UNSET or unavailable, skipping tests',
+                         level=logging.DEBUG)
                 return True
 
             if not validation.valid_location(app_dir) or not os.path.isdir(app_dir):
