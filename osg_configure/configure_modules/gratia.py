@@ -4,7 +4,6 @@ import os
 import re
 import sys
 import logging
-import subprocess
 from xml.sax import saxutils
 
 from osg_configure.modules import exceptions
@@ -12,9 +11,6 @@ from osg_configure.modules import utilities
 from osg_configure.modules import validation
 from osg_configure.modules import configfile
 from osg_configure.modules.baseconfiguration import BaseConfiguration
-from osg_configure.configure_modules.condor import CondorConfiguration
-from osg_configure.configure_modules.sge import SGEConfiguration
-from osg_configure.configure_modules.slurm import SlurmConfiguration
 
 __all__ = ['GratiaConfiguration']
 
@@ -244,7 +240,6 @@ in your config.ini file."""
             self.log("GratiaConfiguration.check_attributes completed")
             return True
         status = self._check_servers()
-        status &= self._verify_gratia_dirs_for_condor_probe()
         self.log("GratiaConfiguration.check_attributes completed")
         return status
 
@@ -415,119 +410,6 @@ in your config.ini file."""
 
         return True
 
-    def _configure_condor_probe(self):
-        """
-        Do condor probe specific configuration
-        """
-
-        config_location = GRATIA_CONFIG_FILES['condor']
-        buf = open(config_location, "r", encoding="latin-1").read()
-        settings = self._probe_config['condor']
-        buf = self.replace_setting(buf, 'CondorLocation', settings['condor_location'])
-        buf = self.replace_setting(buf, 'CondorConfig', settings['condor_config'])
-        if not utilities.atomic_write(config_location, buf):
-            return False
-        return True
-
-    def _configure_pbs_probe(self):
-        """
-        Do pbs probe specific configuration
-        """
-        if (self._probe_config['pbs']['accounting_log_directory'] is None or
-                    self._probe_config['pbs']['accounting_log_directory'] == ''):
-            return True
-        accounting_dir = self._probe_config['pbs']['accounting_log_directory']
-        if not validation.valid_directory(accounting_dir):
-            self.log("PBS accounting log not present, PBS gratia probe not configured",
-                     level=logging.ERROR,
-                     option='accounting_log_directory',
-                     section='PBS')
-            return True
-
-        config_location = GRATIA_CONFIG_FILES['pbs']
-        buf = open(config_location, "r", encoding="latin-1").read()
-        buf = self.replace_setting(buf, 'pbsAcctLogDir', accounting_dir, xml_file=False)
-        buf = self.replace_setting(buf, 'lrmsType', 'pbs', xml_file=False)
-        if not utilities.atomic_write(config_location, buf):
-            return False
-        return True
-
-    def _configure_lsf_probe(self):
-        """
-        Do lsf probe specific configuration
-        """
-        if (self._probe_config['lsf']['log_directory'] is None or
-                    self._probe_config['lsf']['log_directory'] == ''):
-            self.log("LSF accounting log directory not given, LSF gratia probe not configured",
-                     level=logging.ERROR,
-                     option='log_directory',
-                     section='LSF')
-            return True
-        log_directory = self._probe_config['lsf']['log_directory']
-        if not validation.valid_directory(log_directory):
-            self.log("LSF accounting log not present, LSF gratia probe not configured",
-                     level=logging.ERROR,
-                     option='log_directory',
-                     section='LSF')
-            return True
-        config_location = GRATIA_CONFIG_FILES['lsf']
-        buf = open(config_location, "r", encoding="latin-1").read()
-        buf = self.replace_setting(buf, 'lsfAcctLogDir', log_directory, xml_file=False)
-
-        # setup lsfBinDir
-        if (self._probe_config['lsf']['lsf_location'] is None or
-                    self._probe_config['lsf']['lsf_location'] == ''):
-            self.log("LSF location not given, lsf gratia probe not configured",
-                     level=logging.ERROR,
-                     option='lsf_location',
-                     section='LSF')
-            return True
-        lsf_bin_dir = os.path.join(self._probe_config['lsf']['lsf_location'], 'bin')
-        buf = self.replace_setting(buf, 'lsfBinDir', lsf_bin_dir, xml_file=False)
-        buf = self.replace_setting(buf, 'lrmsType', 'lsf', xml_file=False)
-        if not utilities.atomic_write(config_location, buf):
-            return False
-        return True
-
-    def _configure_sge_probe(self):
-        """
-        Do SGE probe specific configuration
-        """
-        accounting_path = self._probe_config['sge']['sge_accounting_file']
-        config_location = GRATIA_CONFIG_FILES['sge']
-        buf = open(config_location, "r", encoding="latin-1").read()
-        buf = self.replace_setting(buf, 'SGEAccountingFile', accounting_path)
-        if not utilities.atomic_write(config_location, buf):
-            return False
-        return True
-
-    def _configure_slurm_probe(self):
-        """
-        Do SLURM probe specific configuration
-        """
-        config_location = GRATIA_CONFIG_FILES['slurm']
-        buf = open(config_location, "r", encoding="latin-1").read()
-
-        settings = self._probe_config['slurm']
-        if not validation.valid_file(settings['db_pass']):
-            self.log("Slurm DB password file not present",
-                     level=logging.ERROR,
-                     option='db_pass',
-                     section='SLURM')
-            return True
-
-        buf = self.replace_setting(buf, 'SlurmDbHost', settings['db_host'])
-        buf = self.replace_setting(buf, 'SlurmDbPort', settings['db_port'])
-        buf = self.replace_setting(buf, 'SlurmDbUser', settings['db_user'])
-        buf = self.replace_setting(buf, 'SlurmDbPasswordFile', settings['db_pass'])
-        buf = self.replace_setting(buf, 'SlurmDbName', settings['db_name'])
-        buf = self.replace_setting(buf, 'SlurmCluster', settings['cluster'])
-        buf = self.replace_setting(buf, 'SlurmLocation', settings['location'])
-
-        if not utilities.atomic_write(config_location, buf):
-            return False
-        return True
-        
     def _configure_htcondor_ce_probe(self):
         """
         Do HTCondor-CE probe specific configuration
@@ -540,95 +422,6 @@ in your config.ini file."""
         if not utilities.atomic_write(config_location, buf):
             return False
         return True
-        
-
-    def _verify_gratia_dirs_for_condor_probe(self):
-        """
-        Verify that the condor per_job_history directory and the DataFolder
-        directory are the same and warn if admin if the two don't match
-        """
-
-        valid = True
-        if 'condor' not in self._probe_config:
-            # Don't need this for non-condor probes
-            return valid
-        condor_config_val_bin = os.path.join(self._probe_config['condor']['condor_location'],
-                                             "bin",
-                                             "condor_config_val")
-        if not os.path.exists(condor_config_val_bin):
-            self.log("While checking gratia parameters: Unable to find condor_config_val binary (looked for %s).\n"
-                     "In the [Condor] section of your configuration, set condor_location such that "
-                     "(condor_location)/bin/condor_config_val is the location of the condor_config_val binary."
-                     % condor_config_val_bin,
-                     level=logging.ERROR)
-            return False
-
-        config_location = GRATIA_CONFIG_FILES['condor']
-        contents = open(config_location, "r", encoding="latin-1").read()
-        re_obj = re.compile(r'(?m)^\s*DataFolder\s*=(.*)\s*$')
-        match = re_obj.search(contents)
-        if match is not None:
-            data_folder = match.group(1)
-            data_folder = data_folder.strip('" \t')
-            # PER_JOB_HISTORY_DIR comes from the schedd, so if condor's not
-            # running, we can't get a value (SOFTWARE-1564)
-            history_dir = self._get_condor_history_dir(condor_config_val_bin)
-            if not history_dir:
-                self.log("Could not verify DataFolder correctness: unable to get PER_JOB_HISTORY_DIR. "
-                         "This may be caused by the condor schedd not running, or by PER_JOB_HISTORY_DIR "
-                         "not being defined.", level=logging.WARNING)
-            else:
-                # os.path.samefile will die if the paths don't exist so check that explicitly (SOFTWARE-1735)
-                if not os.path.exists(data_folder):
-                    self.log("DataFolder setting in %s (%s) points to a nonexistant location" % (
-                    config_location, data_folder),
-                             level=logging.ERROR)
-                    valid = False
-                elif not os.path.exists(history_dir):
-                    self.log("Condor PER_JOB_HISTORY_DIR %s points to a nonexistant location" % history_dir,
-                             level=logging.ERROR)
-                    valid = False
-                else:
-                    try:
-                        if not os.path.samefile(data_folder, history_dir):
-                            self.log("DataFolder setting in %s (%s) and condor PER_JOB_HISTORY_DIR %s "
-                                     "do not match, these settings must match!" % (config_location,
-                                                                                   data_folder,
-                                                                                   history_dir),
-                                     level=logging.ERROR)
-                            valid = False
-                    except OSError as e:
-                        self.log("Error comparing DataFolder setting in %s (%s) and condor PER_JOB_HISTORY_DIR %s:\n%s"
-                                 % (config_location, data_folder, history_dir, e),
-                                 level=logging.ERROR)
-                        valid = False
-
-            # Per Gratia-126 DataFolder must end in / otherwise gratia won't find certinfo files
-            if not data_folder.endswith('/'):
-                self.log("DataFolder setting in %s must end in a /" % config_location,
-                         level=logging.ERROR)
-                valid = False
-
-        return valid
-
-    def _get_condor_history_dir(self, condor_config_val_bin):
-        cmd = [condor_config_val_bin, '-schedd', 'PER_JOB_HISTORY_DIR']
-        try:
-            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="latin-1")
-            (history_dir, errtext) = process.communicate()
-            if process.returncode != 0:
-                self.log("While checking gratia parameters: %s failed. Output follows:\n%s" % (condor_config_val_bin,
-                                                                                               errtext),
-                         level=logging.INFO)
-                return None
-        except OSError as err:
-            self.log("While checking gratia parameters: Error running %s: %s" % (condor_config_val_bin, str(err)),
-                     level=logging.INFO)
-            return None
-        history_dir = history_dir.strip()
-        if history_dir.startswith('Not defined'):
-            return None
-        return history_dir
 
     @staticmethod
     def replace_setting(buf, setting, value, xml_file=True):
