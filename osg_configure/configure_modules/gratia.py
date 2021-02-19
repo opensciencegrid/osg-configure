@@ -255,11 +255,13 @@ in your config.ini file."""
                 else:
                     continue
 
-            self._make_subscription(probe,
-                                    probe_config_files[probe],
-                                    probe_host,
-                                    self.options['resource'].value,
-                                    hostname)
+            self._subscribe_probe_to_remote_host(
+                probe,
+                probe_config_files[probe],
+                remote_host=probe_host,
+                local_resource=self.options['resource'].value,
+                local_host=hostname
+            )
             if probe == 'condor':
                 self._configure_condor_probe()
             elif probe == 'pbs':
@@ -320,7 +322,7 @@ in your config.ini file."""
         self.log("GratiaConfiguration.check_attributes completed")
         return status
 
-    def _subscription_present(self, probe_file, probe_host):
+    def _subscription_present(self, probe_file, remote_host):
         """
         Check probe file to see if subscription to the host is present
         """
@@ -330,8 +332,8 @@ in your config.ini file."""
         for element in elements:
             try:
                 if (element.getAttribute('EnableProbe') == 1 and
-                            element.getAttribute('SOAPHost') == probe_host):
-                    self.log("Subscription for %s in %s found" % (probe_host, probe_file))
+                            element.getAttribute('SOAPHost') == remote_host):
+                    self.log("Subscription for %s in %s found" % (remote_host, probe_file))
                     return True
             # pylint: disable-msg=W0703
             except Exception as e:
@@ -340,17 +342,28 @@ in your config.ini file."""
         self.log("GratiaConfiguration._subscription_present completed")
         return False
 
-    def _make_subscription(self, probe, probe_file, probe_host, site, hostname):
-        """
+    def _subscribe_probe_to_remote_host(
+            self, probe, probe_file, remote_host, local_resource, local_host):
+        """Subscribe the given probe to the given remote host if necessary --
+        this means:
+        - Enable the probe
+        - Set the local host name in the probe config (in ProbeName)
+        - Set the local resource name (in SiteName)
+        - Set the grid group (in Grid)
+        - Set the *Host settings to the the remote host
+
         Check to see if a given probe has the correct subscription and if not
         make it.
         """
 
-        self.log("GratiaConfiguration._make_subscription started")
+        self.log("GratiaConfiguration._subscribe_probe_to_remote_host started")
 
-        if self._subscription_present(probe_file, probe_host):
+        # XXX This just checks EnableProbe and SOAPHost; should we check the other *Host
+        # settings or are we using SOAPHost as a "don't configure me" sentinel?
+        # -mat 2/19/21
+        if self._subscription_present(probe_file, remote_host):
             self.log("Subscription found %s probe, returning" % probe)
-            self.log("GratiaConfiguration._make_subscription completed")
+            self.log("GratiaConfiguration._subscribe_probe_to_remote_host completed")
             return True
 
         if probe == 'gridftp':
@@ -358,12 +371,12 @@ in your config.ini file."""
 
         try:
             buf = open(probe_file, "r", encoding="latin-1").read()
-            buf = self.replace_setting(buf, 'ProbeName', "%s:%s" % (probe, hostname))
-            buf = self.replace_setting(buf, 'SiteName', site)
+            buf = self.replace_setting(buf, 'ProbeName', "%s:%s" % (probe, local_host))
+            buf = self.replace_setting(buf, 'SiteName', local_resource)
             buf = self.replace_setting(buf, 'Grid', self.grid_group)
             buf = self.replace_setting(buf, 'EnableProbe', '1')
             for var in ['SSLHost', 'SOAPHost', 'SSLRegistrationHost', 'CollectorHost']:
-                buf = self.replace_setting(buf, var, probe_host)
+                buf = self.replace_setting(buf, var, remote_host)
 
             if not utilities.atomic_write(probe_file, buf, mode=0o644):
                 self.log("Error while configuring gratia probes: " +
@@ -376,7 +389,7 @@ in your config.ini file."""
                      level=logging.ERROR)
             raise exceptions.ConfigureError("Error configuring gratia")
 
-        self.log("GratiaConfiguration._make_subscription completed")
+        self.log("GratiaConfiguration._subscribe_probe_to_remote_host completed")
         return True
 
     def module_name(self):
