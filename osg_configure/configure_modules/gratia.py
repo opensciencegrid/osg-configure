@@ -90,7 +90,7 @@ in your config.ini file."""
 
         if (not configuration.has_section(self.config_section) and requirements_are_installed()):
             self.log('CE probes installed but no Gratia section, auto-configuring gratia')
-            self._auto_configure(configuration)
+            self._configure_default_ce(configuration)
             self.log('GratiaConfiguration.parse_configuration completed')
             return True
         elif not configuration.has_section(self.config_section):
@@ -439,7 +439,7 @@ in your config.ini file."""
             else:
                 self.enabled_probe_hosts[probe_name] = ':'.join(tmp[1:])
 
-    def _auto_configure(self, configuration):
+    def _configure_default_ce(self, configuration):
         """
         Configure gratia for a ce which does not have the gratia section
         """
