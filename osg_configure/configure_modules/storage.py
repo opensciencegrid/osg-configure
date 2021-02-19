@@ -26,10 +26,6 @@ class StorageConfiguration(BaseConfiguration):
                                               opt_type=bool,
                                               default_value=False,
                                               mapping='OSG_STORAGE_ELEMENT'),
-                        'default_se':
-                            configfile.Option(name='default_se',
-                                              required=configfile.Option.OPTIONAL,
-                                              mapping='OSG_DEFAULT_SE'),
                         'grid_dir':
                             configfile.Option(name='grid_dir',
                                               default_value='/etc/osg/wn-client',
@@ -86,7 +82,9 @@ class StorageConfiguration(BaseConfiguration):
         else:
             self.enabled = True
 
-        self.get_options(configuration)
+        self.get_options(configuration, ignore_options=[
+            "default_se",
+        ])
         self.log('StorageConfiguration.parse_configuration completed')
 
     # pylint: disable-msg=W0613

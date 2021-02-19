@@ -49,7 +49,6 @@ class TestStorage(unittest.TestCase):
 
         attributes = settings.get_attributes()
         variables = {'OSG_STORAGE_ELEMENT': 'True',
-                     'OSG_DEFAULT_SE': 'test.domain.org',
                      'OSG_GRID': '/tmp',
                      'OSG_APP': '/tmp',
                      'OSG_DATA': '/var',
@@ -92,7 +91,6 @@ class TestStorage(unittest.TestCase):
 
         attributes = settings.get_attributes()
         variables = {'OSG_STORAGE_ELEMENT': 'False',
-                     'OSG_DEFAULT_SE': 'test.domain.org',
                      'OSG_GRID': '/usr',
                      'OSG_APP': '/tmp',
                      'OSG_DATA': '/usr/bin',
@@ -135,7 +133,6 @@ class TestStorage(unittest.TestCase):
 
         attributes = settings.get_attributes()
         variables = {'OSG_STORAGE_ELEMENT': 'False',
-                     'OSG_DEFAULT_SE': 'test.domain.org',
                      'OSG_GRID': '/etc',
                      'OSG_APP': '/tmp',
                      'OSG_DATA': 'UNAVAILABLE',
@@ -177,7 +174,6 @@ class TestStorage(unittest.TestCase):
 
         attributes = settings.get_attributes()
         variables = {'OSG_STORAGE_ELEMENT': 'False',
-                     'OSG_DEFAULT_SE': 'test.domain.org',
                      'OSG_GRID': '/etc',
                      'OSG_APP': '/cvmfs/oasis.opensciencegrid.org',
                      'OSG_DATA': 'UNAVAILABLE',
