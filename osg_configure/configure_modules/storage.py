@@ -21,12 +21,7 @@ class StorageConfiguration(BaseConfiguration):
         super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(__name__)
         self.log('StorageConfiguration.__init__ started')
-        self.options = {'se_available':
-                            configfile.Option(name='se_available',
-                                              opt_type=bool,
-                                              default_value=False,
-                                              mapping='OSG_STORAGE_ELEMENT'),
-                        'grid_dir':
+        self.options = {'grid_dir':
                             configfile.Option(name='grid_dir',
                                               default_value='/etc/osg/wn-client',
                                               required=configfile.Option.OPTIONAL,
@@ -84,6 +79,7 @@ class StorageConfiguration(BaseConfiguration):
 
         self.get_options(configuration, ignore_options=[
             "default_se",
+            "se_available",
         ])
         self.log('StorageConfiguration.parse_configuration completed')
 
