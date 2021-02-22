@@ -62,9 +62,8 @@ in your config.ini file."""
                                               default_value='',
                                               required=configfile.Option.OPTIONAL)}
 
-        # Dictionary holding probe settings, the probe's name is used as the key and the
-        # server the probe should report to is the value.
-        self.enabled_probe_settings = {}
+        # Dictionary of which host[:port] to send probe data to, keyed by probe.
+        self.enabled_probe_hosts = {}
 
         # defaults for itb and production use
         self._itb_defaults = {'probes':
@@ -91,7 +90,7 @@ in your config.ini file."""
 
         if (not configuration.has_section(self.config_section) and requirements_are_installed()):
             self.log('CE probes installed but no Gratia section, auto-configuring gratia')
-            self._auto_configure(configuration)
+            self._configure_default_ce(configuration)
             self.log('GratiaConfiguration.parse_configuration completed')
             return True
         elif not configuration.has_section(self.config_section):
@@ -117,8 +116,8 @@ in your config.ini file."""
                     self._itb_defaults['probes']
 
             # grab configuration information for various jobmanagers
-            probes = self.get_installed_probes()
-            for probe in probes:
+            probes_iter = self.get_installed_probe_config_files().keys()
+            for probe in probes_iter:
                 if probe == 'condor':
                     self._probe_config['condor'] = {'condor_location':
                                                          CondorConfiguration.get_condor_location(configuration),
@@ -197,7 +196,7 @@ in your config.ini file."""
             self.log('GratiaConfiguration.parse_configuration completed')
             return
 
-        self._parse_probes(self.options['probes'].value)
+        self._set_enabled_probe_host(self.options['probes'].value)
         self.log('GratiaConfiguration.parse_configuration completed')
 
     def configure(self, attributes):
@@ -236,8 +235,9 @@ in your config.ini file."""
             return False
 
         hostname = attributes['OSG_HOSTNAME']
-        probe_list = self.get_installed_probes()
-        for probe in probe_list:
+        probe_config_files = self.get_installed_probe_config_files()
+        probes_iter = probe_config_files.keys()
+        for probe in probes_iter:
             if probe in self._job_managers:
                 if probe not in self._probe_config:
                     # Probe is installed but we don't have configuration for it
@@ -245,21 +245,23 @@ in your config.ini file."""
                     # manager is not shared
                     continue
 
-                if 'jobmanager' in self.enabled_probe_settings:
-                    probe_host = self.enabled_probe_settings['jobmanager']
+                if 'jobmanager' in self.enabled_probe_hosts:
+                    probe_host = self.enabled_probe_hosts['jobmanager']
                 else:
                     continue
             else:
-                if probe in self.enabled_probe_settings:
-                    probe_host = self.enabled_probe_settings[probe]
+                if probe in self.enabled_probe_hosts:
+                    probe_host = self.enabled_probe_hosts[probe]
                 else:
                     continue
 
-            self._make_subscription(probe,
-                                    probe_list[probe],
-                                    probe_host,
-                                    self.options['resource'].value,
-                                    hostname)
+            self._subscribe_probe_to_remote_host(
+                probe,
+                probe_config_files[probe],
+                remote_host=probe_host,
+                local_resource=self.options['resource'].value,
+                local_host=hostname
+            )
             if probe == 'condor':
                 self._configure_condor_probe()
             elif probe == 'pbs':
@@ -278,9 +280,9 @@ in your config.ini file."""
 
     # pylint: disable-msg=R0201
     @staticmethod
-    def get_installed_probes():
-        """
-        Check for probes that have been installed and return a list of these probes installed
+    def get_installed_probe_config_files():
+        """Return a mapping of probe name -> ProbeConfig file.
+        Note that "pbs" and "lsf" have the same probe.
         """
 
         probes = {}
@@ -316,11 +318,11 @@ in your config.ini file."""
             self.log("GratiaConfiguration.check_attributes completed")
             return True
         status = self._check_servers()
-        status &= self._verify_gratia_dirs()
+        status &= self._verify_gratia_dirs_for_condor_probe()
         self.log("GratiaConfiguration.check_attributes completed")
         return status
 
-    def _subscription_present(self, probe_file, probe_host):
+    def _subscription_present(self, probe_file, remote_host):
         """
         Check probe file to see if subscription to the host is present
         """
@@ -330,8 +332,8 @@ in your config.ini file."""
         for element in elements:
             try:
                 if (element.getAttribute('EnableProbe') == 1 and
-                            element.getAttribute('SOAPHost') == probe_host):
-                    self.log("Subscription for %s in %s found" % (probe_host, probe_file))
+                            element.getAttribute('SOAPHost') == remote_host):
+                    self.log("Subscription for %s in %s found" % (remote_host, probe_file))
                     return True
             # pylint: disable-msg=W0703
             except Exception as e:
@@ -340,17 +342,28 @@ in your config.ini file."""
         self.log("GratiaConfiguration._subscription_present completed")
         return False
 
-    def _make_subscription(self, probe, probe_file, probe_host, site, hostname):
-        """
+    def _subscribe_probe_to_remote_host(
+            self, probe, probe_file, remote_host, local_resource, local_host):
+        """Subscribe the given probe to the given remote host if necessary --
+        this means:
+        - Enable the probe
+        - Set the local host name in the probe config (in ProbeName)
+        - Set the local resource name (in SiteName)
+        - Set the grid group (in Grid)
+        - Set the *Host settings to the the remote host
+
         Check to see if a given probe has the correct subscription and if not
         make it.
         """
 
-        self.log("GratiaConfiguration._make_subscription started")
+        self.log("GratiaConfiguration._subscribe_probe_to_remote_host started")
 
-        if self._subscription_present(probe_file, probe_host):
+        # XXX This just checks EnableProbe and SOAPHost; should we check the other *Host
+        # settings or are we using SOAPHost as a "don't configure me" sentinel?
+        # -mat 2/19/21
+        if self._subscription_present(probe_file, remote_host):
             self.log("Subscription found %s probe, returning" % probe)
-            self.log("GratiaConfiguration._make_subscription completed")
+            self.log("GratiaConfiguration._subscribe_probe_to_remote_host completed")
             return True
 
         if probe == 'gridftp':
@@ -358,12 +371,12 @@ in your config.ini file."""
 
         try:
             buf = open(probe_file, "r", encoding="latin-1").read()
-            buf = self.replace_setting(buf, 'ProbeName', "%s:%s" % (probe, hostname))
-            buf = self.replace_setting(buf, 'SiteName', site)
+            buf = self.replace_setting(buf, 'ProbeName', "%s:%s" % (probe, local_host))
+            buf = self.replace_setting(buf, 'SiteName', local_resource)
             buf = self.replace_setting(buf, 'Grid', self.grid_group)
             buf = self.replace_setting(buf, 'EnableProbe', '1')
             for var in ['SSLHost', 'SOAPHost', 'SSLRegistrationHost', 'CollectorHost']:
-                buf = self.replace_setting(buf, var, probe_host)
+                buf = self.replace_setting(buf, var, remote_host)
 
             if not utilities.atomic_write(probe_file, buf, mode=0o644):
                 self.log("Error while configuring gratia probes: " +
@@ -376,7 +389,7 @@ in your config.ini file."""
                      level=logging.ERROR)
             raise exceptions.ConfigureError("Error configuring gratia")
 
-        self.log("GratiaConfiguration._make_subscription completed")
+        self.log("GratiaConfiguration._subscribe_probe_to_remote_host completed")
         return True
 
     def module_name(self):
@@ -395,11 +408,11 @@ in your config.ini file."""
         e.g. server1.example.com,server2.example.com:2188
         """
         valid = True
-        for probe in self.enabled_probe_settings:
+        for probe in self.enabled_probe_hosts:
             if probe == 'metric':
                 sys.stdout.write(self.metric_probe_deprecation + "\n")
                 self.log(self.metric_probe_deprecation, level=logging.WARNING)
-            server = self.enabled_probe_settings[probe].split(':')[0]
+            server = self.enabled_probe_hosts[probe].split(':')[0]
             if not validation.valid_domain(server, False):
                 err_mesg = "The server specified for probe %s is not " % probe
                 err_mesg += "a valid domain: %s" % server
@@ -409,8 +422,8 @@ in your config.ini file."""
                 err_mesg = "The server specified for probe %s does not " % probe
                 err_mesg += "resolve: %s" % server
                 self.log(err_mesg, level=logging.WARNING)
-            if server != self.enabled_probe_settings[probe]:
-                port = self.enabled_probe_settings[probe].split(':')[1]
+            if server != self.enabled_probe_hosts[probe]:
+                port = self.enabled_probe_hosts[probe].split(':')[1]
                 try:
                     temp = int(port)
                     if temp < 0:
@@ -422,10 +435,11 @@ in your config.ini file."""
                              level=logging.ERROR)
         return valid
 
-    def _parse_probes(self, probes):
-        """
-        Parse a list of probes and set the list of enabled probes for this
-        configuration
+    def _set_enabled_probe_host(self, probes):
+        """Parse a list of probes (taken from the Gratia.probes option)
+        and set the `enabled_probe_hosts`, which is a probe name -> upload host
+        mapping (with an optional port).
+        Treat "gridftp" as an alias for "gridftp-transfer".
         """
 
         for probe_entry in probes.split(','):
@@ -434,11 +448,11 @@ in your config.ini file."""
             if probe_name == 'gridftp':
                 probe_name = 'gridftp-transfer'
             if len(tmp[1:]) == 1:
-                self.enabled_probe_settings[probe_name] = tmp[1]
+                self.enabled_probe_hosts[probe_name] = tmp[1]
             else:
-                self.enabled_probe_settings[probe_name] = ':'.join(tmp[1:])
+                self.enabled_probe_hosts[probe_name] = ':'.join(tmp[1:])
 
-    def _auto_configure(self, configuration):
+    def _configure_default_ce(self, configuration):
         """
         Configure gratia for a ce which does not have the gratia section
         """
@@ -471,7 +485,7 @@ in your config.ini file."""
                                           'OSG or OSG-ITB')
 
         self.options['probes'].value = probes
-        self._parse_probes(probes)
+        self._set_enabled_probe_host(probes)
 
         return True
 
@@ -602,7 +616,7 @@ in your config.ini file."""
         return True
         
 
-    def _verify_gratia_dirs(self):
+    def _verify_gratia_dirs_for_condor_probe(self):
         """
         Verify that the condor per_job_history directory and the DataFolder
         directory are the same and warn if admin if the two don't match
@@ -632,7 +646,7 @@ in your config.ini file."""
             data_folder = data_folder.strip('" \t')
             # PER_JOB_HISTORY_DIR comes from the schedd, so if condor's not
             # running, we can't get a value (SOFTWARE-1564)
-            history_dir = self._get_history_dir(condor_config_val_bin)
+            history_dir = self._get_condor_history_dir(condor_config_val_bin)
             if not history_dir:
                 self.log("Could not verify DataFolder correctness: unable to get PER_JOB_HISTORY_DIR. "
                          "This may be caused by the condor schedd not running, or by PER_JOB_HISTORY_DIR "
@@ -671,7 +685,7 @@ in your config.ini file."""
 
         return valid
 
-    def _get_history_dir(self, condor_config_val_bin):
+    def _get_condor_history_dir(self, condor_config_val_bin):
         cmd = [condor_config_val_bin, '-schedd', 'PER_JOB_HISTORY_DIR']
         try:
             process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="latin-1")
