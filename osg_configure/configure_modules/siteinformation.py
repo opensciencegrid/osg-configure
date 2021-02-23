@@ -43,10 +43,6 @@ class SiteInformation(BaseConfiguration):
                                               required=OPTIONAL,
                                               default_value='',
                                               mapping='OSG_SITE_INFO'),
-                        'contact':
-                            configfile.Option(name='contact',
-                                              required=MANDATORY_ON_CE,
-                                              mapping='OSG_CONTACT_NAME'),
                         'city':
                             configfile.Option(name='city',
                                               required=MANDATORY_ON_CE,
@@ -94,6 +90,7 @@ class SiteInformation(BaseConfiguration):
 
         self.get_options(configuration,
                          ignore_options=[
+                             "contact",
                              "email",
                          ])
         self.log('SiteInformation.parse_configuration completed')
