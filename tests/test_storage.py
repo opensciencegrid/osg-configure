@@ -48,9 +48,7 @@ class TestStorage(unittest.TestCase):
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
-        variables = {'OSG_STORAGE_ELEMENT': 'True',
-                     'OSG_DEFAULT_SE': 'test.domain.org',
-                     'OSG_GRID': '/tmp',
+        variables = {'OSG_GRID': '/tmp',
                      'OSG_APP': '/tmp',
                      'OSG_DATA': '/var',
                      'OSG_WN_TMP': '/usr',
@@ -91,9 +89,7 @@ class TestStorage(unittest.TestCase):
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
-        variables = {'OSG_STORAGE_ELEMENT': 'False',
-                     'OSG_DEFAULT_SE': 'test.domain.org',
-                     'OSG_GRID': '/usr',
+        variables = {'OSG_GRID': '/usr',
                      'OSG_APP': '/tmp',
                      'OSG_DATA': '/usr/bin',
                      'OSG_WN_TMP': '/usr/sbin',
@@ -134,9 +130,7 @@ class TestStorage(unittest.TestCase):
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
-        variables = {'OSG_STORAGE_ELEMENT': 'False',
-                     'OSG_DEFAULT_SE': 'test.domain.org',
-                     'OSG_GRID': '/etc',
+        variables = {'OSG_GRID': '/etc',
                      'OSG_APP': '/tmp',
                      'OSG_DATA': 'UNAVAILABLE',
                      'OSG_SITE_READ': '/var',
@@ -176,9 +170,7 @@ class TestStorage(unittest.TestCase):
             self.fail("Received exception while parsing configuration: %s" % e)
 
         attributes = settings.get_attributes()
-        variables = {'OSG_STORAGE_ELEMENT': 'False',
-                     'OSG_DEFAULT_SE': 'test.domain.org',
-                     'OSG_GRID': '/etc',
+        variables = {'OSG_GRID': '/etc',
                      'OSG_APP': '/cvmfs/oasis.opensciencegrid.org',
                      'OSG_DATA': 'UNAVAILABLE',
                      'OSG_SITE_READ': '/var',
@@ -191,27 +183,6 @@ class TestStorage(unittest.TestCase):
                              "Wrong value obtained for %s, got %s but " \
                              "expected %s" % (var, attributes[var], variables[var]))
             self.assertTrue(settings.check_attributes(attributes))
-
-    def testMissingAttribute(self):
-        """
-        Test the check_attributes function
-        """
-
-
-        # StorageConfiguration is not enabled on non-ce installs
-        if not utilities.ce_installed():
-            return
-        mandatory = ['se_available']
-        for option in mandatory:
-            config_file = get_test_config("storage/storage1.ini")
-            configuration = configparser.SafeConfigParser()
-            configuration.read(config_file)
-            configuration.remove_option('Storage', option)
-
-            settings = storage.StorageConfiguration(logger=global_logger)
-            self.assertRaises(exceptions.SettingError,
-                              settings.parse_configuration,
-                              configuration)
 
 
 if __name__ == '__main__':

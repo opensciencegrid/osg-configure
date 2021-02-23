@@ -21,16 +21,7 @@ class StorageConfiguration(BaseConfiguration):
         super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(__name__)
         self.log('StorageConfiguration.__init__ started')
-        self.options = {'se_available':
-                            configfile.Option(name='se_available',
-                                              opt_type=bool,
-                                              default_value=False,
-                                              mapping='OSG_STORAGE_ELEMENT'),
-                        'default_se':
-                            configfile.Option(name='default_se',
-                                              required=configfile.Option.OPTIONAL,
-                                              mapping='OSG_DEFAULT_SE'),
-                        'grid_dir':
+        self.options = {'grid_dir':
                             configfile.Option(name='grid_dir',
                                               default_value='/etc/osg/wn-client',
                                               required=configfile.Option.OPTIONAL,
@@ -86,7 +77,10 @@ class StorageConfiguration(BaseConfiguration):
         else:
             self.enabled = True
 
-        self.get_options(configuration)
+        self.get_options(configuration, ignore_options=[
+            "default_se",
+            "se_available",
+        ])
         self.log('StorageConfiguration.parse_configuration completed')
 
     # pylint: disable-msg=W0613
@@ -129,12 +123,13 @@ class StorageConfiguration(BaseConfiguration):
             self.log("StorageConfiguration.configure completed")
             return True
 
-        if self.options['app_dir'].value in ('UNSET', 'UNAVAILABLE'):
+        app_dir = self.options['app_dir'].value
+        if utilities.blank(app_dir) or app_dir == "UNSET":
             self.log('OSG_APP unset or unavailable, exiting')
             self.log('StorageConfiguration.configure completed')
             return True
 
-        if self._app_dir_in_oasis(self.options['app_dir'].value):
+        if self._app_dir_in_oasis(app_dir):
             self.log('OSG_APP is in OASIS, exiting')
             self.log('StorageConfiguration.configure completed')
             return True
@@ -196,20 +191,13 @@ class StorageConfiguration(BaseConfiguration):
         try:
             if self._app_dir_in_oasis(app_dir):
                 self.log('OSG_APP is an OASIS repository, skipping tests',
-                         level=logging.INFO)
+                         level=logging.DEBUG)
                 return True
 
             # Added for SOFTWARE-1567
-            if app_dir == 'UNSET':
-                self.log('OSG_APP is UNSET, skipping tests',
-                         level=logging.INFO)
-                return True
-
-            if app_dir == 'UNAVAILABLE':
-                self.log('OSG_APP ("app_dir" in the [Storage]) section is not configured.'
-                         ' If it is not available, explicitly set it to UNSET.'
-                         ' Otherwise, point it to the directory VO software can be obtained from.'
-                         , level=logging.WARNING)
+            if utilities.blank(app_dir) or app_dir == 'UNSET':
+                self.log('OSG_APP is UNSET or unavailable, skipping tests',
+                         level=logging.DEBUG)
                 return True
 
             if not validation.valid_location(app_dir) or not os.path.isdir(app_dir):

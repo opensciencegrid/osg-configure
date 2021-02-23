@@ -61,7 +61,7 @@ class TestValidation(unittest.TestCase):
         Check the valid_location functionality
         """
 
-        test_location = get_test_config("misc/misc1.ini")
+        test_location = get_test_config("subcluster/pilot.ini")
         self.assertTrue(validation.valid_location(test_location),
                         "%s not marked as a valid location" % test_location)
 

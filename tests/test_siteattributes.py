@@ -51,16 +51,8 @@ class TestSiteAttributes(unittest.TestCase):
 
         attributes = settings.get_attributes()
         variables = {'OSG_GROUP': 'OSG-ITB',
-                     'OSG_HOSTNAME': 'example.com',
                      'OSG_SITE_NAME': 'MY_SITE',
-                     'OSG_SPONSOR': 'osg:100',
-                     'OSG_SITE_INFO': 'http://example/com/policy.html',
-                     'OSG_CONTACT_NAME': 'Admin Name',
-                     'OSG_CONTACT_EMAIL': 'myemail@example.com',
-                     'OSG_SITE_CITY': 'Chicago',
-                     'OSG_SITE_COUNTRY': 'US',
-                     'OSG_SITE_LONGITUDE': '84.23',
-                     'OSG_SITE_LATITUDE': '23.32'}
+                    }
         for var in variables:
             self.assertTrue(var in attributes,
                             "Attribute %s missing" % var)
@@ -86,16 +78,8 @@ class TestSiteAttributes(unittest.TestCase):
 
         attributes = settings.get_attributes()
         variables = {'OSG_GROUP': 'OSG',
-                     'OSG_HOSTNAME': 'example.com',
                      'OSG_SITE_NAME': 'MY_SITE',
-                     'OSG_SPONSOR': 'osg:50 usatlas:50',
-                     'OSG_SITE_INFO': 'http://example/com/policy.html',
-                     'OSG_CONTACT_NAME': 'Admin Name',
-                     'OSG_CONTACT_EMAIL': 'myemail@example.com',
-                     'OSG_SITE_CITY': 'Chicago',
-                     'OSG_SITE_COUNTRY': 'US',
-                     'OSG_SITE_LONGITUDE': '-84.23',
-                     'OSG_SITE_LATITUDE': '-23.32'}
+                    }
         for var in variables:
             self.assertTrue(var in attributes,
                             "Attribute %s missing" % var)
@@ -121,16 +105,8 @@ class TestSiteAttributes(unittest.TestCase):
 
         attributes = settings.get_attributes()
         variables = {'OSG_GROUP': 'OSG',
-                     'OSG_HOSTNAME': 'example.com',
                      'OSG_SITE_NAME': 'MY_SITE',
-                     'OSG_SPONSOR': 'osg:50 usatlas:50',
-                     'OSG_SITE_INFO': 'http://example/com/policy.html',
-                     'OSG_CONTACT_NAME': 'Admin Name',
-                     'OSG_CONTACT_EMAIL': 'myemail@example.com',
-                     'OSG_SITE_CITY': 'Chicago',
-                     'OSG_SITE_COUNTRY': 'US',
-                     'OSG_SITE_LONGITUDE': '-84.23',
-                     'OSG_SITE_LATITUDE': '-23.32'}
+                    }
         for var in variables:
             self.assertTrue(var in attributes,
                             "Attribute %s missing" % var)
@@ -158,13 +134,7 @@ class TestSiteAttributes(unittest.TestCase):
 
         mandatory_on_all = ['group']
         # ^ TODO OSG 3.5: add "resource" to this list
-        mandatory_on_ce = ['host_name',
-                           'contact',
-                           'email',
-                           'city',
-                           'country',
-                           'longitude',
-                           'latitude']
+        mandatory_on_ce = ['host_name']
         mandatory = list(mandatory_on_all)
         if ce_installed():
             mandatory += mandatory_on_ce
@@ -178,74 +148,6 @@ class TestSiteAttributes(unittest.TestCase):
             self.assertRaises(exceptions.SettingError,
                               settings.parse_configuration,
                               configuration)
-
-    def testInvalidLatitude(self):
-        """
-        Test the check_attributes with invalid latitude values
-        """
-
-        config_file = get_test_config("siteattributes/" \
-                                      "invalid_latitude1.ini")
-        configuration = configparser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = siteinformation.SiteInformation(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception as e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        attributes = settings.get_attributes()
-        self.assertFalse(settings.check_attributes(attributes),
-                         "Invalid latitude ignored")
-
-        config_file = get_test_config("siteattributes/" \
-                                      "invalid_latitude2.ini")
-        configuration = configparser.SafeConfigParser()
-        configuration.read(config_file)
-        settings = siteinformation.SiteInformation(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception as e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        attributes = settings.get_attributes()
-        self.assertFalse(settings.check_attributes(attributes),
-                         "Invalid latitude ignored")
-
-    def testInvalidLongitude(self):
-        """
-        Test the check_attributes with invalid longitude values
-        """
-
-        config_file = get_test_config("siteattributes/" \
-                                      "invalid_longitude1.ini")
-        configuration = configparser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = siteinformation.SiteInformation(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception as e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        attributes = settings.get_attributes()
-        self.assertFalse(settings.check_attributes(attributes),
-                         "Invalid latitude ignored")
-
-        config_file = get_test_config("siteattributes/" \
-                                      "invalid_longitude2.ini")
-        configuration = configparser.SafeConfigParser()
-        configuration.read(config_file)
-        settings = siteinformation.SiteInformation(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception as e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        attributes = settings.get_attributes()
-        self.assertFalse(settings.check_attributes(attributes),
-                         "Invalid latitude ignored")
 
     def testInvalidHostname(self):
         """
@@ -266,68 +168,6 @@ class TestSiteAttributes(unittest.TestCase):
         attributes = settings.get_attributes()
         self.assertFalse(settings.check_attributes(attributes),
                          "Invalid hostname ignored")
-
-    def testInvalidEmail(self):
-        """
-        Test the check_attributes with invalid email
-        """
-
-        config_file = get_test_config("siteattributes/" \
-                                      "invalid_email.ini")
-        configuration = configparser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = siteinformation.SiteInformation(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception as e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        attributes = settings.get_attributes()
-        self.assertFalse(settings.check_attributes(attributes),
-                         "Invalid email ignored")
-
-    def testInvalidSponsor1(self):
-        """
-        Test the check_attributes where the sponsor percentages
-        add up to more than 100
-        """
-
-        config_file = get_test_config("siteattributes/" \
-                                      "invalid_sponsor1.ini")
-        configuration = configparser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = siteinformation.SiteInformation(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception as e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        attributes = settings.get_attributes()
-        self.assertFalse(settings.check_attributes(attributes),
-                         "Invalid sponsor ignored")
-
-    def testInvalidSponsor2(self):
-        """
-        Test the check_attributes where the sponsor percentages
-        add up to less than 100
-        """
-
-        config_file = get_test_config("siteattributes/" \
-                                      "invalid_sponsor2.ini")
-        configuration = configparser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = siteinformation.SiteInformation(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception as e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        attributes = settings.get_attributes()
-        self.assertFalse(settings.check_attributes(attributes),
-                         "Invalid sponsor ignored")
 
     def testValidSettings(self):
         """

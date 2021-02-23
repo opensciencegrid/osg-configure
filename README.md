@@ -185,10 +185,8 @@ This section is contained in `/etc/osg/config.d/10-storage.ini` which is provide
 
 | Option           | Values Accepted | Explanation                                                                                                                                                                                                    |
 |------------------|-----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **se_available** | `True`, `False` | This indicates whether there is an associated SE available.                                                                                                                                                    |
-| default_se       | String          | If an SE is available at your cluster, set default_se to the hostname of this SE, otherwise set default_se to UNAVAILABLE.                                                                                     |
 | **grid_dir**     | String          | This setting should point to the directory which holds the files from the OSG worker node package. See note                                                                                                    |
-| **app_dir**      | String          | This setting should point to the directory which contains the VO specific applications. See note                                                                                                               |
+| app_dir          | String          | This setting should point to the directory which contains the VO specific applications. See note                                                                                                               |
 | data_dir         | String          | This setting should point to a directory that can be used to store and stage data in and out of the cluster. See note                                                                                          |
 | worker_node_temp | String          | This directory should point to a directory that can be used as scratch space on compute nodes. If not set, the default is UNAVAILABLE. See note                                                                |
 | site_read        | String          | This setting should be the location or url to a directory that can be read to stage in data via the variable `$OSG_SITE_READ`. This is an url if you are using a SE. If not set, the default is UNAVAILABLE    |
@@ -524,17 +522,3 @@ This section is contained in `/etc/osg/config.d/40-siteinfo.ini` which is provid
 | **host\_name**      | String            | This should be set to be hostname of the CE that is being configured                                                                         |
 | **resource**        | String            | The resource name of this CE endpoint as registered in Topology.                                                                                  |
 | **resource\_group** | String            | The resource\_group of this CE as registered in Topology.                                                                                         |
-| **sponsor**         | String            | This should be set to the sponsor of the resource. See note.                                                                                 |
-| **site\_policy**    | Url               | This should be a url pointing to the resource's usage policy                                                                                 |
-| **contact**         | String            | This should be the name of the resource's admin contact                                                                                      |
-| **email**           | Email address     | This should be the email address of the admin contact for the resource                                                                       |
-| **city**            | String            | This should be the city that the resource is located in                                                                                      |
-| **country**         | String            | This should be two letter country code for the country that the resource is located in.                                                      |
-| **longitude**       | Number            | This should be the longitude of the resource. It should be a number between -180 and 180.                                                    |
-| **latitude**        | Number            | This should be the latitude of the resource. It should be a number between -90 and 90.                                                       |
-
-**Note for sponsor:**<br>
-If your resource has multiple sponsors, you can separate them using commas or specify the percentage using the following format:
-`osg, atlas, cms` or `osg:10, atlas:45, cms:45`.
-The percentages must add up to 100 if multiple sponsors are used.
-If you have a sponsor that is not an OSG VO, you can indicate this by using 'local' as the VO.

@@ -25,13 +25,10 @@ CONFIG_DIRECTORY = '/etc/osg'
 OUTPUT_DIRECTORY = '/var/lib/osg'
 LOG_FILE = '/var/log/osg/osg-configure.log'
 DEFAULT_JOB_ENVIRONMENT_ATTRIBUTES = ['OSG_SITE_NAME',
-                                      'OSG_HOSTNAME',
                                       'OSG_GRID',
                                       'OSG_APP',
                                       'OSG_DATA',
                                       'OSG_WN_TMP',
-                                      'OSG_STORAGE_ELEMENT',
-                                      'OSG_DEFAULT_SE',
                                       'OSG_SITE_READ',
                                       'OSG_SITE_WRITE',
                                       'OSG_SQUID_LOCATION',
