@@ -276,7 +276,7 @@ class InfoServicesConfiguration(BaseConfiguration):
 
         for name, value in [
             ('OSG_Resource', self.osg_resource),
-            ('OSG_ResourceGroup', self.osg_resource_group or ""),
+            ('OSG_ResourceGroup', self.osg_resource_group),
             ('OSG_BatchSystems', ",".join(self.enabled_batch_systems))
         ]:
             attributes_file_lines.append("%s = %s" % (name, utilities.classad_quote(value)))
