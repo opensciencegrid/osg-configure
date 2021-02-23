@@ -53,7 +53,6 @@ class TestSiteAttributes(unittest.TestCase):
         variables = {'OSG_GROUP': 'OSG-ITB',
                      'OSG_HOSTNAME': 'example.com',
                      'OSG_SITE_NAME': 'MY_SITE',
-                     'OSG_SPONSOR': 'osg:100',
                     }
         for var in variables:
             self.assertTrue(var in attributes,
@@ -82,7 +81,6 @@ class TestSiteAttributes(unittest.TestCase):
         variables = {'OSG_GROUP': 'OSG',
                      'OSG_HOSTNAME': 'example.com',
                      'OSG_SITE_NAME': 'MY_SITE',
-                     'OSG_SPONSOR': 'osg:50 usatlas:50',
                     }
         for var in variables:
             self.assertTrue(var in attributes,
@@ -111,7 +109,6 @@ class TestSiteAttributes(unittest.TestCase):
         variables = {'OSG_GROUP': 'OSG',
                      'OSG_HOSTNAME': 'example.com',
                      'OSG_SITE_NAME': 'MY_SITE',
-                     'OSG_SPONSOR': 'osg:50 usatlas:50',
                     }
         for var in variables:
             self.assertTrue(var in attributes,
@@ -174,48 +171,6 @@ class TestSiteAttributes(unittest.TestCase):
         attributes = settings.get_attributes()
         self.assertFalse(settings.check_attributes(attributes),
                          "Invalid hostname ignored")
-
-    def testInvalidSponsor1(self):
-        """
-        Test the check_attributes where the sponsor percentages
-        add up to more than 100
-        """
-
-        config_file = get_test_config("siteattributes/" \
-                                      "invalid_sponsor1.ini")
-        configuration = configparser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = siteinformation.SiteInformation(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception as e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        attributes = settings.get_attributes()
-        self.assertFalse(settings.check_attributes(attributes),
-                         "Invalid sponsor ignored")
-
-    def testInvalidSponsor2(self):
-        """
-        Test the check_attributes where the sponsor percentages
-        add up to less than 100
-        """
-
-        config_file = get_test_config("siteattributes/" \
-                                      "invalid_sponsor2.ini")
-        configuration = configparser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = siteinformation.SiteInformation(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception as e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        attributes = settings.get_attributes()
-        self.assertFalse(settings.check_attributes(attributes),
-                         "Invalid sponsor ignored")
 
     def testValidSettings(self):
         """
