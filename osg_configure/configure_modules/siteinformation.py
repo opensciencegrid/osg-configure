@@ -38,11 +38,6 @@ class SiteInformation(BaseConfiguration):
                                               required=OPTIONAL,
                                               default_value='',
                                               mapping='OSG_SPONSOR'),
-                        'site_policy':
-                            configfile.Option(name='site_policy',
-                                              required=OPTIONAL,
-                                              default_value='',
-                                              mapping='OSG_SITE_INFO'),
                         'resource':
                             configfile.Option(name='resource',
                                               required=MANDATORY,
@@ -78,6 +73,7 @@ class SiteInformation(BaseConfiguration):
                              "email",
                              "latitude",
                              "longitude",
+                             "site_policy",
                          ])
         self.log('SiteInformation.parse_configuration completed')
 
