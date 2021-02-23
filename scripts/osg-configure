@@ -6,6 +6,7 @@ import optparse
 import configparser
 import logging
 import traceback
+from typing import Dict
 
 from osg_configure.version import __version__
 from osg_configure.modules import exceptions
@@ -96,31 +97,10 @@ def get_configuration_modules():
     return objects
 
 
-def write_attributes(attributes, local_site_attributes, job_environment_attributes, attribute_to_option_map):
+def write_osg_local_job_environment_conf(local_site_attributes: Dict):
+    """Write osg-local-job-environment.conf, which is a file of job attributes (i.e.
+    environment variables) all coming from the "Local Settings" section.
     """
-    Write out attributes to osg config files in output_directory.
-    :param job_environment_attributes:
-    There are two files: osg-job-environment.conf and
-    osg-local-job-environment.conf. Only local_site_attributes goes in
-    osg-local-job-environment.conf. An error will result if a key in
-    'job_environment_attributes' is missing from 'attributes'.
-    (Exception: OSG_SQUID_LOCATION)
-
-    :param attributes: OSG attributes from all .ini files, including the
-      local site attributes from the "Local Settings" section
-    :type attributes: dict
-    :param local_site_attributes: OSG attributes from just the
-      "Local Settings" section
-    :type job_environment_attributes: list
-    :param job_environment_attributes: The required job attributes to write
-    :type local_site_attributes: dict
-    :param attribute_to_option_map: list of (section, name) tuples of the
-      config option that is mapped to each attribute; gives better error
-      messages if required attributes are missing from 'attributes'
-    :type attribute_to_option_map: dict
-    """
-
-    # write out osg-local-job-environment.conf
     try:
         filename = os.path.join(OUTPUT_DIRECTORY, "osg-local-job-environment.conf")
         utilities.write_attribute_file(filename, local_site_attributes)
@@ -128,13 +108,32 @@ def write_attributes(attributes, local_site_attributes, job_environment_attribut
         error_exit("Error writing attributes to osg-local-job-environment.conf", exception)
 
 
+def write_attributes(all_attributes, job_environment_attributes_list, attribute_to_option_map):
+    """
+    Write out attributes to osg config files in output_directory.
+    :param job_environment_attributes_list:
+    There are two files: osg-job-environment.conf and
+    osg-local-job-environment.conf. Only local_site_attributes goes in
+    osg-local-job-environment.conf. An error will result if a key in
+    'job_environment_attributes' is missing from 'attributes'.
+    (Exception: OSG_SQUID_LOCATION)
+
+    :param all_attributes: OSG attributes from all .ini files, including the
+      local site attributes from the "Local Settings" section
+    :type all_attributes: dict
+    :param job_environment_attributes_list: The required job attributes to write
+    :param attribute_to_option_map: list of (section, name) tuples of the
+      config option that is mapped to each attribute; gives better error
+      messages if required attributes are missing from 'attributes'
+    :type attribute_to_option_map: dict
+    """
     # write out osg-job-environment.conf
     try:
         filename = os.path.join(OUTPUT_DIRECTORY, "osg-job-environment.conf")
         temp = {}
-        for key in job_environment_attributes:
+        for key in job_environment_attributes_list:
             try:
-                temp[key] = attributes[key]
+                temp[key] = all_attributes[key]
             except KeyError as exception:
                 if key == 'OSG_SQUID_LOCATION':
                     continue
@@ -188,14 +187,14 @@ def configure_system(modules, configure_module=None, force=False):
         except configparser.ParsingError as exception:
             error_exit("Error while parsing configuration: %s" % exception)
 
-    attributes = {}
-    local_attributes = {}
+    all_attributes = {}
+    local_site_attributes = {}
     attribute_to_option_map = {}
     for module in modules:
         if module.__class__.__name__ == 'LocalSettings':
-            local_attributes.update(module.get_attributes())
+            local_site_attributes.update(module.get_attributes())
 
-        attributes.update(module.get_attributes())
+        all_attributes.update(module.get_attributes())
 
         section = module.config_section
         for opt in module.options.values():
@@ -203,7 +202,7 @@ def configure_system(modules, configure_module=None, force=False):
             if attribute:
                 attribute_to_option_map[attribute] = attribute_to_option_map.get(attribute, []) + [(section, name)]
 
-    if not check_configuration(modules, attributes, force):
+    if not check_configuration(modules, all_attributes, force):
         if force:
             logging.warning("Invalid attributes found but forcing configuration.")
             sys.stderr.write("Invalid attributes found but forcing configuration.\n")
@@ -222,20 +221,19 @@ def configure_system(modules, configure_module=None, force=False):
                 logging.debug("Skipping %s configuration" % (module.__class__.__name__))
                 continue
         try:
-            module.configure(attributes)
+            module.configure(all_attributes)
         except exceptions.ConfigureError as e:
             logging.debug("Got ConfigureError %s" % e)
             error_exit("Can't configure module, exiting")
 
     if utilities.ce_installed():
-        job_environment_attributes = list(DEFAULT_JOB_ENVIRONMENT_ATTRIBUTES)
+        job_environment_attributes_list = list(DEFAULT_JOB_ENVIRONMENT_ATTRIBUTES)
         gateway_module = condor_module = None
         for module in modules:
             if module.__class__.__name__ == 'GatewayConfiguration':
                 gateway_module = module
             elif module.__class__.__name__ == 'CondorConfiguration':
                 condor_module = module
-
 
         if not configfile.jobmanager_enabled(config):
             logging.warning("CE install detected, but no batch systems are enabled in "
@@ -246,12 +244,14 @@ def configure_system(modules, configure_module=None, force=False):
             if ((gateway_module and not gateway_module.htcondor_gateway_enabled) or
                     (condor_module and not condor_module.enabled)):
                 try:
-                    job_environment_attributes.remove('PATH')
+                    job_environment_attributes_list.remove('PATH')
                     logging.info('Not setting PATH (not HTCondor-CE with Condor).')
                 except ValueError:
                     pass
 
-        write_attributes(attributes, local_attributes, job_environment_attributes, attribute_to_option_map)
+        write_osg_local_job_environment_conf(local_site_attributes)
+
+        write_attributes(all_attributes, job_environment_attributes_list, attribute_to_option_map)
 
         if gateway_module and gateway_module.htcondor_gateway_enabled:
             # Reconfigure htcondor-ce after writing the attributes files
