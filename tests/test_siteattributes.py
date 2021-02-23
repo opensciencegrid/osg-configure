@@ -54,7 +54,6 @@ class TestSiteAttributes(unittest.TestCase):
                      'OSG_HOSTNAME': 'example.com',
                      'OSG_SITE_NAME': 'MY_SITE',
                      'OSG_SPONSOR': 'osg:100',
-                     'OSG_SITE_INFO': 'http://example/com/policy.html',
                     }
         for var in variables:
             self.assertTrue(var in attributes,
@@ -84,7 +83,6 @@ class TestSiteAttributes(unittest.TestCase):
                      'OSG_HOSTNAME': 'example.com',
                      'OSG_SITE_NAME': 'MY_SITE',
                      'OSG_SPONSOR': 'osg:50 usatlas:50',
-                     'OSG_SITE_INFO': 'http://example/com/policy.html',
                     }
         for var in variables:
             self.assertTrue(var in attributes,
@@ -114,7 +112,6 @@ class TestSiteAttributes(unittest.TestCase):
                      'OSG_HOSTNAME': 'example.com',
                      'OSG_SITE_NAME': 'MY_SITE',
                      'OSG_SPONSOR': 'osg:50 usatlas:50',
-                     'OSG_SITE_INFO': 'http://example/com/policy.html',
                     }
         for var in variables:
             self.assertTrue(var in attributes,
