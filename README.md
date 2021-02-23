@@ -470,6 +470,7 @@ We recommend a name that describes the capabilities of the pilots you accept.
 Good names are `singularity_8core`, `gpu`, `bigmem`, `main`.
 
 The following attributes are required:
+
 | Option                   | Values Accepted             | Explanation                                                                                                                        |
 |--------------------------|-----------------------------|------------------------------------------------------------------------------------------------------------------------------------|
 | **allowed\_vos**         | Comma-separated List or `*` | The VOs that are allowed to run jobs on this resource (autodetected if `*`)                                                        |
@@ -480,6 +481,7 @@ The following attributes are required:
 Valid values for the **os** option are: `rhel6`, `rhel7`, `rhel8`, or `ubuntu18`.
 
 The following attributes are optional:
+
 | Option              | Values Accepted      | Explanation                                                                                                                              |
 |---------------------|----------------------|------------------------------------------------------------------------------------------------------------------------------------------|
 | **cpucount**        | Positive Integer     | Number of cores that a job using this type of pilot can get.  Default `1`; ignored if **whole\_node** is `True`                          |
