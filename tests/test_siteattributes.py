@@ -56,7 +56,6 @@ class TestSiteAttributes(unittest.TestCase):
                      'OSG_SPONSOR': 'osg:100',
                      'OSG_SITE_INFO': 'http://example/com/policy.html',
                      'OSG_CONTACT_NAME': 'Admin Name',
-                     'OSG_CONTACT_EMAIL': 'myemail@example.com',
                      'OSG_SITE_CITY': 'Chicago',
                      'OSG_SITE_COUNTRY': 'US',
                      'OSG_SITE_LONGITUDE': '84.23',
@@ -91,7 +90,6 @@ class TestSiteAttributes(unittest.TestCase):
                      'OSG_SPONSOR': 'osg:50 usatlas:50',
                      'OSG_SITE_INFO': 'http://example/com/policy.html',
                      'OSG_CONTACT_NAME': 'Admin Name',
-                     'OSG_CONTACT_EMAIL': 'myemail@example.com',
                      'OSG_SITE_CITY': 'Chicago',
                      'OSG_SITE_COUNTRY': 'US',
                      'OSG_SITE_LONGITUDE': '-84.23',
@@ -126,7 +124,6 @@ class TestSiteAttributes(unittest.TestCase):
                      'OSG_SPONSOR': 'osg:50 usatlas:50',
                      'OSG_SITE_INFO': 'http://example/com/policy.html',
                      'OSG_CONTACT_NAME': 'Admin Name',
-                     'OSG_CONTACT_EMAIL': 'myemail@example.com',
                      'OSG_SITE_CITY': 'Chicago',
                      'OSG_SITE_COUNTRY': 'US',
                      'OSG_SITE_LONGITUDE': '-84.23',
@@ -160,7 +157,6 @@ class TestSiteAttributes(unittest.TestCase):
         # ^ TODO OSG 3.5: add "resource" to this list
         mandatory_on_ce = ['host_name',
                            'contact',
-                           'email',
                            'city',
                            'country',
                            'longitude',
@@ -266,26 +262,6 @@ class TestSiteAttributes(unittest.TestCase):
         attributes = settings.get_attributes()
         self.assertFalse(settings.check_attributes(attributes),
                          "Invalid hostname ignored")
-
-    def testInvalidEmail(self):
-        """
-        Test the check_attributes with invalid email
-        """
-
-        config_file = get_test_config("siteattributes/" \
-                                      "invalid_email.ini")
-        configuration = configparser.SafeConfigParser()
-        configuration.read(config_file)
-
-        settings = siteinformation.SiteInformation(logger=global_logger)
-        try:
-            settings.parse_configuration(configuration)
-        except Exception as e:
-            self.fail("Received exception while parsing configuration: %s" % e)
-
-        attributes = settings.get_attributes()
-        self.assertFalse(settings.check_attributes(attributes),
-                         "Invalid email ignored")
 
     def testInvalidSponsor1(self):
         """

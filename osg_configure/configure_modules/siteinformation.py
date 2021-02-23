@@ -47,10 +47,6 @@ class SiteInformation(BaseConfiguration):
                             configfile.Option(name='contact',
                                               required=MANDATORY_ON_CE,
                                               mapping='OSG_CONTACT_NAME'),
-                        'email':
-                            configfile.Option(name='email',
-                                              required=MANDATORY_ON_CE,
-                                              mapping='OSG_CONTACT_EMAIL'),
                         'city':
                             configfile.Option(name='city',
                                               required=MANDATORY_ON_CE,
@@ -96,7 +92,10 @@ class SiteInformation(BaseConfiguration):
             self.log('SiteInformation.parse_configuration completed')
             return
 
-        self.get_options(configuration)
+        self.get_options(configuration,
+                         ignore_options=[
+                             "email",
+                         ])
         self.log('SiteInformation.parse_configuration completed')
 
     # pylint: disable-msg=W0613
@@ -149,16 +148,6 @@ class SiteInformation(BaseConfiguration):
                      longitude,
                      section=self.config_section,
                      option='longitude',
-                     level=logging.ERROR)
-            attributes_ok = False
-
-        email = self.opt_val("email")
-        # make sure the email address has the correct format
-        if not utilities.blank(email) and not validation.valid_email(email):
-            self.log("Invalid email address in site information: %s" %
-                     email,
-                     section=self.config_section,
-                     option='email',
                      level=logging.ERROR)
             attributes_ok = False
 
