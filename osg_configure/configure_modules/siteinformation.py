@@ -33,11 +33,6 @@ class SiteInformation(BaseConfiguration):
                             configfile.Option(name='host_name',
                                               required=MANDATORY_ON_CE,
                                               mapping='OSG_HOSTNAME'),
-                        'sponsor':
-                            configfile.Option(name='sponsor',
-                                              required=OPTIONAL,
-                                              default_value='',
-                                              mapping='OSG_SPONSOR'),
                         'resource':
                             configfile.Option(name='resource',
                                               required=MANDATORY,
@@ -74,6 +69,7 @@ class SiteInformation(BaseConfiguration):
                              "latitude",
                              "longitude",
                              "site_policy",
+                             "sponsor",
                          ])
         self.log('SiteInformation.parse_configuration completed')
 
@@ -112,49 +108,7 @@ class SiteInformation(BaseConfiguration):
                          section=self.config_section,
                          level=logging.WARNING)
 
-        sponsor = self.opt_val("sponsor")
-        if not utilities.blank(sponsor):
-            attributes_ok &= self.check_sponsor(sponsor)
-
         self.log('SiteInformation.check_attributes completed')
-        return attributes_ok
-
-    def check_sponsor(self, sponsor):
-        attributes_ok = True
-        percentage = 0
-        for vo in re.split(r'\s*,?\s*', sponsor):
-            vo_split = vo.split(':')
-            if len(vo_split) == 1:
-                percentage += 100
-            elif len(vo_split) == 2:
-                vo_percentage = vo_split[1]
-                try:
-                    percentage += int(vo_percentage)
-                except ValueError:
-                    self.log("VO percentage (%s) in sponsor field (%s) not an integer"
-                             % (vo_percentage, vo),
-                             section=self.config_section,
-                             option='sponsor',
-                             level=logging.ERROR,
-                             exception=True)
-                    attributes_ok = False
-            else:
-                self.log("VO sponsor field is not formated correctly: %s" % vo,
-                         section=self.config_section,
-                         option='sponsor',
-                         level=logging.ERROR)
-                self.log("Sponsors should be given as sponsor:percentage "
-                         "separated by a space or comma")
-                attributes_ok = False
-
-        if percentage != 100:
-            self.log("VO percentages in sponsor field do not add up to 100, got %s"
-                     % percentage,
-                     section=self.config_section,
-                     option='sponsor',
-                     level=logging.ERROR)
-            attributes_ok = False
-
         return attributes_ok
 
     def module_name(self):
