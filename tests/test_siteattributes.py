@@ -55,7 +55,6 @@ class TestSiteAttributes(unittest.TestCase):
                      'OSG_SITE_NAME': 'MY_SITE',
                      'OSG_SPONSOR': 'osg:100',
                      'OSG_SITE_INFO': 'http://example/com/policy.html',
-                     'OSG_CONTACT_NAME': 'Admin Name',
                      'OSG_SITE_CITY': 'Chicago',
                      'OSG_SITE_COUNTRY': 'US',
                      'OSG_SITE_LONGITUDE': '84.23',
@@ -89,7 +88,6 @@ class TestSiteAttributes(unittest.TestCase):
                      'OSG_SITE_NAME': 'MY_SITE',
                      'OSG_SPONSOR': 'osg:50 usatlas:50',
                      'OSG_SITE_INFO': 'http://example/com/policy.html',
-                     'OSG_CONTACT_NAME': 'Admin Name',
                      'OSG_SITE_CITY': 'Chicago',
                      'OSG_SITE_COUNTRY': 'US',
                      'OSG_SITE_LONGITUDE': '-84.23',
@@ -123,7 +121,6 @@ class TestSiteAttributes(unittest.TestCase):
                      'OSG_SITE_NAME': 'MY_SITE',
                      'OSG_SPONSOR': 'osg:50 usatlas:50',
                      'OSG_SITE_INFO': 'http://example/com/policy.html',
-                     'OSG_CONTACT_NAME': 'Admin Name',
                      'OSG_SITE_CITY': 'Chicago',
                      'OSG_SITE_COUNTRY': 'US',
                      'OSG_SITE_LONGITUDE': '-84.23',
@@ -156,7 +153,6 @@ class TestSiteAttributes(unittest.TestCase):
         mandatory_on_all = ['group']
         # ^ TODO OSG 3.5: add "resource" to this list
         mandatory_on_ce = ['host_name',
-                           'contact',
                            'city',
                            'country',
                            'longitude',
