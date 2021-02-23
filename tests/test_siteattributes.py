@@ -51,7 +51,6 @@ class TestSiteAttributes(unittest.TestCase):
 
         attributes = settings.get_attributes()
         variables = {'OSG_GROUP': 'OSG-ITB',
-                     'OSG_HOSTNAME': 'example.com',
                      'OSG_SITE_NAME': 'MY_SITE',
                     }
         for var in variables:
@@ -79,7 +78,6 @@ class TestSiteAttributes(unittest.TestCase):
 
         attributes = settings.get_attributes()
         variables = {'OSG_GROUP': 'OSG',
-                     'OSG_HOSTNAME': 'example.com',
                      'OSG_SITE_NAME': 'MY_SITE',
                     }
         for var in variables:
@@ -107,7 +105,6 @@ class TestSiteAttributes(unittest.TestCase):
 
         attributes = settings.get_attributes()
         variables = {'OSG_GROUP': 'OSG',
-                     'OSG_HOSTNAME': 'example.com',
                      'OSG_SITE_NAME': 'MY_SITE',
                     }
         for var in variables:

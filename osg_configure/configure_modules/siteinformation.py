@@ -31,8 +31,7 @@ class SiteInformation(BaseConfiguration):
                                               mapping='OSG_GROUP'),
                         'host_name':
                             configfile.Option(name='host_name',
-                                              required=MANDATORY_ON_CE,
-                                              mapping='OSG_HOSTNAME'),
+                                              required=MANDATORY_ON_CE),
                         'resource':
                             configfile.Option(name='resource',
                                               required=MANDATORY,
