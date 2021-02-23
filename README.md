@@ -507,17 +507,3 @@ This section is contained in `/etc/osg/config.d/40-siteinfo.ini` which is provid
 | **host\_name**      | String            | This should be set to be hostname of the CE that is being configured                                                                         |
 | **resource**        | String            | The resource name of this CE endpoint as registered in Topology.                                                                                  |
 | **resource\_group** | String            | The resource\_group of this CE as registered in Topology.                                                                                         |
-| **sponsor**         | String            | This should be set to the sponsor of the resource. See note.                                                                                 |
-| **site\_policy**    | Url               | This should be a url pointing to the resource's usage policy                                                                                 |
-| **contact**         | String            | This should be the name of the resource's admin contact                                                                                      |
-| **email**           | Email address     | This should be the email address of the admin contact for the resource                                                                       |
-| **city**            | String            | This should be the city that the resource is located in                                                                                      |
-| **country**         | String            | This should be two letter country code for the country that the resource is located in.                                                      |
-| **longitude**       | Number            | This should be the longitude of the resource. It should be a number between -180 and 180.                                                    |
-| **latitude**        | Number            | This should be the latitude of the resource. It should be a number between -90 and 90.                                                       |
-
-**Note for sponsor:**<br>
-If your resource has multiple sponsors, you can separate them using commas or specify the percentage using the following format:
-`osg, atlas, cms` or `osg:10, atlas:45, cms:45`.
-The percentages must add up to 100 if multiple sponsors are used.
-If you have a sponsor that is not an OSG VO, you can indicate this by using 'local' as the VO.
