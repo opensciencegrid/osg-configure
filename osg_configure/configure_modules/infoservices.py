@@ -177,7 +177,8 @@ class InfoServicesConfiguration(BaseConfiguration):
             else:
                 try:
                     self.resource_catalog = subcluster.resource_catalog_from_config(
-                        self.subcluster_sections,                                                                                             default_allowed_vos=["*"])
+                        self.subcluster_sections,
+                        default_allowed_vos=["*"])
                 except exceptions.SettingError as err:
                     self.log("Error in info services configuration: %s" % err, level=logging.ERROR)
                     return False
