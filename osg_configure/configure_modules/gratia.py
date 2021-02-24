@@ -4,6 +4,8 @@ import os
 import re
 import sys
 import logging
+import subprocess
+import textwrap
 from xml.sax import saxutils
 
 from osg_configure.modules import exceptions
@@ -19,6 +21,8 @@ GRATIA_CONFIG_FILES = {
 }
 
 CE_PROBE_RPMS = ['gratia-probe-htcondor-ce']
+
+CONDOR_CE_CONFIG_VAL = "/usr/bin/condor_ce_config_val"
 
 
 def requirements_are_installed():
@@ -237,6 +241,8 @@ in your config.ini file."""
             self.log("GratiaConfiguration.check_attributes completed")
             return True
         status = self._check_servers()
+        if 'htcondor-ce' in self._probe_config:
+            status &= self._verify_gratia_dirs_for_htcondor_ce_probe()
         self.log("GratiaConfiguration.check_attributes completed")
         return status
 
@@ -419,6 +425,80 @@ in your config.ini file."""
         if not utilities.atomic_write(config_location, buf):
             return False
         return True
+        
+    def _verify_gratia_dirs_for_htcondor_ce_probe(self):
+        """
+        Verify that the condor per_job_history directory and the DataFolder
+        directory are the same and warn if admin if the two don't match
+        """
+
+        if not os.path.exists(CONDOR_CE_CONFIG_VAL):
+            raise exceptions.ConfigureError(f"{CONDOR_CE_CONFIG_VAL} missing")
+
+        config_location = GRATIA_CONFIG_FILES['htcondor-ce']
+        contents = open(config_location, "r", encoding="latin-1").read()
+        re_obj = re.compile(r'(?m)^\s*DataFolder\s*=(.*)\s*$')
+        match = re_obj.search(contents)
+        if not match:
+            return True
+
+        valid = True
+        data_folder = match.group(1)
+        data_folder = data_folder.strip('" \t')
+        # Per Gratia-126 DataFolder must end in / otherwise gratia won't find certinfo files
+        if not data_folder.endswith('/'):
+            self.logger.error("DataFolder setting in %s must end in a /", config_location)
+            valid = False
+
+        # PER_JOB_HISTORY_DIR comes from the schedd, so if condor's not
+        # running, we can't get a value (SOFTWARE-1564)
+        history_dir = self._get_condor_ce_history_dir()
+        if not history_dir:
+            self.logger.warning(textwrap.fill(
+                """Could not verify DataFolder correctness: unable to get PER_JOB_HISTORY_DIR
+                from the running schedd. This may be caused by the condor-ce schedd not running
+                or by PER_JOB_HISTORY_DIR not being defined."""
+            ))
+            return valid
+
+        # os.path.samefile will die if the paths don't exist so check that explicitly (SOFTWARE-1735)
+        if not os.path.exists(data_folder):
+            self.logger.error("DataFolder setting in %s (%s) points to a nonexistent location",
+                              config_location, data_folder)
+            return False
+        elif not os.path.exists(history_dir):
+            self.logger.error("condor-ce PER_JOB_HISTORY_DIR (%s) points to a nonexistent location", history_dir)
+            return False
+        else:
+            try:
+                if not os.path.samefile(data_folder, history_dir):
+                    self.logger.error("DataFolder setting in %s (%s) and condor-ce PER_JOB_HISTORY_DIR (%s) "
+                                      "do not match, these settings must match!",
+                                      config_location, data_folder, history_dir)
+                    return False
+            except OSError as e:
+                self.logger.error(
+                    "Error comparing DataFolder setting in %s (%s) and condor PER_JOB_HISTORY_DIR %s:\n%s",
+                    config_location, data_folder, history_dir, e)
+                return False
+
+    def _get_condor_ce_history_dir(self):
+        cmd = [CONDOR_CE_CONFIG_VAL, '-schedd', 'PER_JOB_HISTORY_DIR']
+        try:
+            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="latin-1")
+            history_dir, errtext = process.communicate()
+            if process.returncode != 0:
+                self.logger.info("While checking gratia parameters: %s failed. Output follows:\n%s",
+                                 CONDOR_CE_CONFIG_VAL, errtext)
+                return None
+        except OSError as err:
+            self.logger.info("While checking gratia parameters: Error running %s: %s",
+                             CONDOR_CE_CONFIG_VAL, err)
+            return None
+        history_dir = history_dir.strip()
+        if history_dir.startswith('Not defined'):
+            return None
+        return history_dir
 
     @staticmethod
     def replace_setting(buf, setting, value, xml_file=True):
