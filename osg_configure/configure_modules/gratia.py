@@ -107,10 +107,8 @@ in your config.ini file."""
                     self._itb_defaults['probes']
 
             # grab configuration information for various jobmanagers
-            probes_iter = self.get_installed_probe_config_files().keys()
-            for probe in probes_iter:
-                if probe == 'htcondor-ce':
-                    self._probe_config['htcondor-ce'] = {}
+            if "htcondor-ce" in self.get_installed_probe_config_files_by_probe():
+                self._probe_config['htcondor-ce'] = {}
 
         self.get_options(configuration,
                         ignore_options=['itb-jobmanager-gratia',
@@ -165,9 +163,8 @@ in your config.ini file."""
             return False
 
         hostname = attributes['OSG_HOSTNAME']
-        probe_config_files = self.get_installed_probe_config_files()
-        probes_iter = probe_config_files.keys()
-        for probe in probes_iter:
+        probe_config_files_by_probe = self.get_installed_probe_config_files_by_probe()
+        for probe in probe_config_files_by_probe:
             if probe in self._job_managers:
                 if probe not in self._probe_config:
                     # Probe is installed but we don't have configuration for it
@@ -189,20 +186,20 @@ in your config.ini file."""
 
             self._subscribe_probe_to_remote_host(
                 probe,
-                probe_config_files[probe],
+                probe_config_files_by_probe[probe],
                 remote_host=probe_host,
                 local_resource=self.options['resource'].value,
                 local_host=hostname
             )
-            if probe == 'htcondor-ce':
-                self._configure_htcondor_ce_probe()
+        if "htcondor-ce" in probe_config_files_by_probe:
+            self._configure_htcondor_ce_probe()
 
         self.log("GratiaConfiguration.configure completed")
         return True
 
     # pylint: disable-msg=R0201
     @staticmethod
-    def get_installed_probe_config_files():
+    def get_installed_probe_config_files_by_probe():
         """Return a mapping of probe name -> ProbeConfig file.
         Note that "pbs" and "lsf" have the same probe.
         """
