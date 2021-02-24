@@ -33,50 +33,14 @@ class SiteInformation(BaseConfiguration):
                             configfile.Option(name='host_name',
                                               required=MANDATORY_ON_CE,
                                               mapping='OSG_HOSTNAME'),
-                        'sponsor':
-                            configfile.Option(name='sponsor',
-                                              required=OPTIONAL,
-                                              default_value='',
-                                              mapping='OSG_SPONSOR'),
-                        'site_policy':
-                            configfile.Option(name='site_policy',
-                                              required=OPTIONAL,
-                                              default_value='',
-                                              mapping='OSG_SITE_INFO'),
-                        'contact':
-                            configfile.Option(name='contact',
-                                              required=MANDATORY_ON_CE,
-                                              mapping='OSG_CONTACT_NAME'),
-                        'email':
-                            configfile.Option(name='email',
-                                              required=MANDATORY_ON_CE,
-                                              mapping='OSG_CONTACT_EMAIL'),
-                        'city':
-                            configfile.Option(name='city',
-                                              required=MANDATORY_ON_CE,
-                                              mapping='OSG_SITE_CITY'),
-                        'country':
-                            configfile.Option(name='country',
-                                              required=MANDATORY_ON_CE,
-                                              mapping='OSG_SITE_COUNTRY'),
-                        'longitude':
-                            configfile.Option(name='longitude',
-                                              opt_type=float,
-                                              required=MANDATORY_ON_CE,
-                                              mapping='OSG_SITE_LONGITUDE'),
-                        'latitude':
-                            configfile.Option(name='latitude',
-                                              opt_type=float,
-                                              required=MANDATORY_ON_CE,
-                                              mapping='OSG_SITE_LATITUDE'),
+                        # ^^ the OSG_HOSTNAME mapping is used by the gratia module, though not sure why.
                         'resource':
                             configfile.Option(name='resource',
                                               required=MANDATORY,
                                               mapping='OSG_SITE_NAME'),
                         'resource_group':
                             configfile.Option(name='resource_group',
-                                              default_value='',
-                                              required=OPTIONAL)}
+                                              required=MANDATORY_ON_CE)}
 
         self.config_section = "Site Information"
         self.enabled = True
@@ -96,7 +60,17 @@ class SiteInformation(BaseConfiguration):
             self.log('SiteInformation.parse_configuration completed')
             return
 
-        self.get_options(configuration)
+        self.get_options(configuration,
+                         ignore_options=[
+                             "city",
+                             "contact",
+                             "country",
+                             "email",
+                             "latitude",
+                             "longitude",
+                             "site_policy",
+                             "sponsor",
+                         ])
         self.log('SiteInformation.parse_configuration completed')
 
     # pylint: disable-msg=W0613
@@ -134,77 +108,7 @@ class SiteInformation(BaseConfiguration):
                          section=self.config_section,
                          level=logging.WARNING)
 
-        latitude = self.opt_val("latitude")
-        if not utilities.blank(latitude) and not -90 <= latitude <= 90:
-            self.log("Latitude must be between -90 and 90, got %s" %
-                     latitude,
-                     section=self.config_section,
-                     option='latitude',
-                     level=logging.ERROR)
-            attributes_ok = False
-
-        longitude = self.opt_val("longitude")
-        if not utilities.blank(longitude) and not -180 <= longitude <= 180:
-            self.log("Longitude must be between -180 and 180, got %s" %
-                     longitude,
-                     section=self.config_section,
-                     option='longitude',
-                     level=logging.ERROR)
-            attributes_ok = False
-
-        email = self.opt_val("email")
-        # make sure the email address has the correct format
-        if not utilities.blank(email) and not validation.valid_email(email):
-            self.log("Invalid email address in site information: %s" %
-                     email,
-                     section=self.config_section,
-                     option='email',
-                     level=logging.ERROR)
-            attributes_ok = False
-
-        sponsor = self.opt_val("sponsor")
-        if not utilities.blank(sponsor):
-            attributes_ok &= self.check_sponsor(sponsor)
-
         self.log('SiteInformation.check_attributes completed')
-        return attributes_ok
-
-    def check_sponsor(self, sponsor):
-        attributes_ok = True
-        percentage = 0
-        for vo in re.split(r'\s*,?\s*', sponsor):
-            vo_split = vo.split(':')
-            if len(vo_split) == 1:
-                percentage += 100
-            elif len(vo_split) == 2:
-                vo_percentage = vo_split[1]
-                try:
-                    percentage += int(vo_percentage)
-                except ValueError:
-                    self.log("VO percentage (%s) in sponsor field (%s) not an integer"
-                             % (vo_percentage, vo),
-                             section=self.config_section,
-                             option='sponsor',
-                             level=logging.ERROR,
-                             exception=True)
-                    attributes_ok = False
-            else:
-                self.log("VO sponsor field is not formated correctly: %s" % vo,
-                         section=self.config_section,
-                         option='sponsor',
-                         level=logging.ERROR)
-                self.log("Sponsors should be given as sponsor:percentage "
-                         "separated by a space or comma")
-                attributes_ok = False
-
-        if percentage != 100:
-            self.log("VO percentages in sponsor field do not add up to 100, got %s"
-                     % percentage,
-                     section=self.config_section,
-                     option='sponsor',
-                     level=logging.ERROR)
-            attributes_ok = False
-
         return attributes_ok
 
     def module_name(self):
