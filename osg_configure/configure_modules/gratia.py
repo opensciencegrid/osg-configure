@@ -168,9 +168,7 @@ in your config.ini file."""
         probe_config_files = self.get_installed_probe_config_files()
         probes_iter = probe_config_files.keys()
         for probe in probes_iter:
-            if probe in self._old_job_managers:
-                continue
-            elif probe in self._job_managers:
+            if probe in self._job_managers:
                 if probe not in self._probe_config:
                     # Probe is installed but we don't have configuration for it
                     # might be due to pbs-lsf probe sharing or relevant job
@@ -181,6 +179,8 @@ in your config.ini file."""
                     probe_host = self.enabled_probe_hosts['jobmanager']
                 else:
                     continue
+            elif probe in self._old_job_managers:
+                continue
             else:
                 if probe in self.enabled_probe_hosts:
                     probe_host = self.enabled_probe_hosts[probe]
