@@ -48,7 +48,6 @@ def real_error_exit(message="Critical error occurred, exiting", exception=None):
     logging.critical(message)
     if exception is not None:
         logging.critical("Exception: %s" % (exception))
-    sys.stderr.write("%s\n" % message)
     sys.stderr.write("You may be able to get more details rerunning %s with the -d " \
                      "option and/or by examining %s\n" % (sys.argv[0], LOG_FILE))
     sys.exit(1)
@@ -57,7 +56,6 @@ def real_error_exit(message="Critical error occurred, exiting", exception=None):
 def real_normal_exit(message="Configuration completed, exiting..."):
     """Function to do all the cleanup and exit"""
     logging.info(message)
-    sys.stdout.write("%s\n" % message)
     sys.exit(0)
 
 
