@@ -450,14 +450,11 @@ in your config.ini file."""
             self.logger.error("DataFolder setting in %s must end in a /", config_location)
             valid = False
 
-        # PER_JOB_HISTORY_DIR comes from the schedd, so if condor's not
-        # running, we can't get a value (SOFTWARE-1564)
         history_dir = self._get_condor_ce_history_dir()
         if not history_dir:
             self.logger.warning(textwrap.fill(
                 """Could not verify DataFolder correctness: unable to get PER_JOB_HISTORY_DIR
-                from the running schedd. This may be caused by the condor-ce schedd not running
-                or by PER_JOB_HISTORY_DIR not being defined."""
+                for the schedd. This may be caused by PER_JOB_HISTORY_DIR not being defined."""
             ))
             return valid
 
@@ -467,7 +464,7 @@ in your config.ini file."""
                               config_location, data_folder)
             return False
         elif not os.path.exists(history_dir):
-            self.logger.error("condor-ce PER_JOB_HISTORY_DIR (%s) points to a nonexistent location", history_dir)
+            self.logger.error("condor-ce schedd's PER_JOB_HISTORY_DIR (%s) points to a nonexistent location", history_dir)
             return False
         else:
             try:
@@ -478,12 +475,12 @@ in your config.ini file."""
                     return False
             except OSError as e:
                 self.logger.error(
-                    "Error comparing DataFolder setting in %s (%s) and condor PER_JOB_HISTORY_DIR %s:\n%s",
+                    "Error comparing DataFolder setting in %s (%s) and condor-ce PER_JOB_HISTORY_DIR %s:\n%s",
                     config_location, data_folder, history_dir, e)
                 return False
 
     def _get_condor_ce_history_dir(self):
-        cmd = [CONDOR_CE_CONFIG_VAL, '-schedd', 'PER_JOB_HISTORY_DIR']
+        cmd = [CONDOR_CE_CONFIG_VAL, '-subsystem', 'SCHEDD', 'PER_JOB_HISTORY_DIR']
         try:
             process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="latin-1")
             history_dir, errtext = process.communicate()
