@@ -1,6 +1,7 @@
 import logging
 import re
-from typing import Optional
+import textwrap
+from typing import List, Optional
 from configparser import NoSectionError, NoOptionError, InterpolationError, ConfigParser
 
 from osg_configure.modules import exceptions
@@ -228,7 +229,7 @@ class ResourceCatalog:  # forward declaration for type checking
         pass
 
 
-def resource_catalog_from_config(config: ConfigParser, default_allowed_vos: str = None) -> ResourceCatalog:
+def resource_catalog_from_config(config: ConfigParser, default_allowed_vos: List[str] = None) -> ResourceCatalog:
     """
     Create a ResourceCatalog from the subcluster entries in a config
     :param default_allowed_vos: The allowed_vos to use if the user specified "*"
@@ -275,10 +276,13 @@ def resource_catalog_from_config(config: ConfigParser, default_allowed_vos: str 
 
         rcentry.allowed_vos = utilities.split_comma_separated_list(safeget("allowed_vos", default="").strip())
         if not rcentry.allowed_vos or not rcentry.allowed_vos[0]:
-            logger.error("No allowed_vos specified for section '%s'."
-                         "\nThe factory will not send jobs to these subclusters/resources. Specify the allowed_vos"
-                         "\nattribute as either a list of VOs, or a '*' to use an autodetected VO list based on"
-                         "\nthe user accounts available on your CE." % section)
+            # TODO #1 Is this really where the error should be?
+            # TODO #2 The autodetected bit is not currently true...
+            logger.error(
+                textwrap.fill(
+                    """No allowed_vos specified for section '%s'. Specify the allowed_vos 
+                    attribute as either a list of VOs, or a '*' to use an autodetected VO list based on
+                    the user accounts available on your CE.""" % section))
             raise exceptions.SettingError("No allowed_vos for %s" % section)
         if rcentry.allowed_vos == ["*"]:
             if default_allowed_vos:

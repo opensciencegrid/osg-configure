@@ -159,21 +159,6 @@ This section is contained in `/etc/osg/config.d/10-gateway.ini` which is provide
 | **job\_envvar\_path**          | String          | The value of the PATH environment variable to put into HTCondor jobs running with HTCondor-CE. This value is ignored if not using that batch system/gateway combination.                 |
 
 
-### 10-misc.ini / [Misc Services] section ###
-
-This section handles the configuration of services that do not have a dedicated section for their configuration.
-
-This section is contained in `/etc/osg/config.d/10-misc.ini` which is provided by the `osg-configure-misc` RPM.
-
-This section primarily deals with authentication/authorization. For information on suggested settings for your CE, see the [authentication section of the HTCondor-CE install documents](../compute-element/install-htcondor-ce#configuring-authentication).
-
-| Option                                | Values Accepted                       | Explanation                                                                                                                                                                                                                                                                                                                                                                          |
-|---------------------------------------|---------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **authorization\_method**             | `gridmap`, `local-gridmap`, `vomsmap` | This indicates which authorization method your site uses.                                                                                                                                                                                                                                                                                    |
-| edit\_lcmaps\_db                      | `True`, `False`                       | (Optional, default True) If true, osg-configure will overwrite `/etc/lcmaps.db` to set your authorization method. The previous version will be backed up to `/etc/lcmaps.db.pre-configure`                                                                                                                                                                                           |
-| all\_fqans                            | `True`, `False`                       | (Optional, default False) If true, vomsmap auth will use all VOMS FQANs of a proxy for mapping -- see [documentation](../security/lcmaps-voms-authentication#mapping-using-all-fqans)                                                                                                                                                                                                |
-
-
 ### 10-storage.ini / [Storage] section ###
 
 This section gives information about the options in the Storage section of the configuration file.

@@ -2,15 +2,10 @@
  for CE collector info services"""
 
 import re
-import os
-try:
-    import ConfigParser
-except ImportError:
-    import configparser as ConfigParser
+import configparser as ConfigParser
 import subprocess
 import logging
 
-from osg_configure.configure_modules.misc import MiscConfiguration
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile
@@ -67,7 +62,6 @@ class InfoServicesConfiguration(BaseConfiguration):
         self.resource_catalog = None
         self.authorization_method = None
         self.subcluster_sections = None
-        self.misc_module = MiscConfiguration(*args, **kwargs)
 
         self.log("InfoServicesConfiguration.__init__ completed")
 
@@ -119,8 +113,6 @@ class InfoServicesConfiguration(BaseConfiguration):
 
         self.ce_collectors = self._parse_ce_collectors(self.options['ce_collectors'].value)
 
-        self.misc_module.parse_configuration(configuration)
-
         def csg(section, option):
             return utilities.config_safe_get(configuration, section, option, None)
 
@@ -135,7 +127,6 @@ class InfoServicesConfiguration(BaseConfiguration):
 
         self.htcondor_gateway_enabled = csgbool('Gateway', 'htcondor_gateway_enabled')
 
-        self.authorization_method = csg('Misc Services', 'authorization_method')
         self.subcluster_sections = ConfigParser.SafeConfigParser()
 
         for section in configuration.sections():
@@ -156,7 +147,7 @@ class InfoServicesConfiguration(BaseConfiguration):
         # configure(), but at this point we don't have a way of knowing what
         # default_allowed_vos should be.
         if self.ce_collector_required_rpms_installed and self.htcondor_gateway_enabled and classad is not None:
-            subcluster.resource_catalog_from_config(self.subcluster_sections, default_allowed_vos=None)
+            subcluster.resource_catalog_from_config(self.subcluster_sections, default_allowed_vos=["*"])
 
         self.log('InfoServicesConfiguration.parse_configuration completed')
 
@@ -184,44 +175,12 @@ class InfoServicesConfiguration(BaseConfiguration):
                          "\nIf not, you may need to add the directory containing the Python bindings to PYTHONPATH."
                          "\nHTCondor version must be at least 8.2.0.", level=logging.WARNING)
             else:
-                if self.authorization_method == 'vomsmap':
-                    error = False
-                    for requiredfile in [BAN_MAPFILE, BAN_VOMS_MAPFILE]:
-                        if not os.path.exists(requiredfile):
-                            self.log("%s authorization requested but %s was not found."
-                                     "\nThis will cause all mappings to fail."
-                                     "\nPlease reinstall lcmaps >= 1.6.6-1.3 or create a blank %s yourself." %
-                                     (self.authorization_method, requiredfile, requiredfile),
-                                     level=logging.ERROR)
-                            error = True
-                    if error:
-                        return False
-
-                    default_allowed_vos = list(reversevomap.get_allowed_vos())
-                else:
-                    default_allowed_vos = []
-                if not default_allowed_vos:
-                    # UGLY: only issue the warning if the admin has requested autodetection for some of their SCs/REs
-                    raise_warning = False
-                    for section in self.subcluster_sections.sections():
-                        if utilities.config_safe_get(self.subcluster_sections, section, 'allowed_vos', '').strip() == "*":
-                            raise_warning = True
-                    if raise_warning:
-                        self.log("Could not determine default allowed VOs for subclusters/resource entries.",
-                                 level=logging.WARNING)
-                        if self.authorization_method == 'vomsmap':
-                            self.log("Install vo-client-lcmaps-voms to obtain default mappings for VOs, and/or create"
-                                     " your own mapfile at /etc/grid-security/voms-mapfile.",
-                                     level=logging.WARNING)
-                        else:
-                            self.log("Ensure %s exists and is non-empty, or fill out allowed_vos in all your"
-                                     " Subcluster and Resource Entry sections." % USER_VO_MAP_LOCATION,
-                                     level=logging.WARNING)
                 try:
-                    self.resource_catalog = subcluster.resource_catalog_from_config(self.subcluster_sections,
-                                                                                    default_allowed_vos=default_allowed_vos)
+                    self.resource_catalog = subcluster.resource_catalog_from_config(
+                        self.subcluster_sections,
+                        default_allowed_vos=["*"])
                 except exceptions.SettingError as err:
-                    self.log("Error in info services configuration: %s" % str(err), level=logging.ERROR)
+                    self.log("Error in info services configuration: %s" % err, level=logging.ERROR)
                     return False
                 self._configure_ce_collector()
 
