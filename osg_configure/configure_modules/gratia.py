@@ -426,7 +426,7 @@ in your config.ini file."""
             return False
         return True
         
-    def _verify_gratia_dirs_for_htcondor_ce_probe(self):
+    def _verify_gratia_dirs_for_htcondor_ce_probe(self) -> bool:
         """
         Verify that the condor per_job_history directory and the DataFolder
         directory are the same and warn if admin if the two don't match
@@ -442,21 +442,20 @@ in your config.ini file."""
         if not match:
             return True
 
-        valid = True
         data_folder = match.group(1)
         data_folder = data_folder.strip('" \t')
         # Per Gratia-126 DataFolder must end in / otherwise gratia won't find certinfo files
         if not data_folder.endswith('/'):
             self.logger.error("DataFolder setting in %s must end in a /", config_location)
-            valid = False
+            return False
 
         history_dir = self._get_condor_ce_history_dir()
         if not history_dir:
-            self.logger.warning(textwrap.fill(
+            self.logger.error(textwrap.fill(
                 """Could not verify DataFolder correctness: unable to get PER_JOB_HISTORY_DIR
                 for the schedd. This may be caused by PER_JOB_HISTORY_DIR not being defined."""
             ))
-            return valid
+            return False
 
         # os.path.samefile will die if the paths don't exist so check that explicitly (SOFTWARE-1735)
         if not os.path.exists(data_folder):
@@ -468,7 +467,9 @@ in your config.ini file."""
             return False
         else:
             try:
-                if not os.path.samefile(data_folder, history_dir):
+                if os.path.samefile(data_folder, history_dir):
+                    return True
+                else:
                     self.logger.error("DataFolder setting in %s (%s) and condor-ce PER_JOB_HISTORY_DIR (%s) "
                                       "do not match, these settings must match!",
                                       config_location, data_folder, history_dir)
