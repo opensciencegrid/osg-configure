@@ -343,13 +343,13 @@ This section is contained in `/etc/osg/config.d/30-infoservices.ini`, which is p
 -   Otherwise, set this to the `hostname:port` of a host running a `condor-ce-collector` daemon
 
 
-### 30-gip.ini / [Subcluster] and [Resource Entry] sections ###
+### 31-cluster.ini / [Subcluster] and [Resource Entry] sections ###
 
 Subcluster and Resource Entry configuration is for reporting about the worker resources on your site. A **subcluster** is a homogeneous set of worker node hardware; a **resource** is a set of subcluster(s) with common capabilities that will be reported to the ATLAS AGIS system.
 
 **At least one Subcluster or Resource Entry section** is required on a CE; please populate the information for all your subclusters. This information will be reported to a central collector and will be used to send GlideIns / pilot jobs to your site; having accurate information is necessary for OSG jobs to effectively use your resources.
 
-This section is contained in `/etc/osg/config.d/30-gip.ini` which is provided by the `osg-configure-gip` RPM. (This is for historical reasons.)
+This section is contained in `/etc/osg/config.d/31-cluster.ini` which is provided by the `osg-configure-cluster` RPM.
 
 This configuration uses multiple sections of the OSG configuration files:
 
