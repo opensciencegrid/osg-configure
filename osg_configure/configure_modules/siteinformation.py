@@ -33,6 +33,7 @@ class SiteInformation(BaseConfiguration):
                             configfile.Option(name='host_name',
                                               required=MANDATORY_ON_CE,
                                               mapping='OSG_HOSTNAME'),
+                        # ^^ the OSG_HOSTNAME mapping is used by the gratia module, though not sure why.
                         'resource':
                             configfile.Option(name='resource',
                                               required=MANDATORY,

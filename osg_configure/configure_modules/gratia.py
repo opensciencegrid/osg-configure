@@ -227,6 +227,9 @@ in your config.ini file."""
             else:
                 self.options['resource'].value = attributes['OSG_SITE_NAME']
 
+        # TODO Why is gratia looking at attributes instead of just using the options
+        # directly?  If it's not necessary, drop the OSG_HOSTNAME attribute from
+        # siteinformation.py.
         if 'OSG_HOSTNAME' not in attributes:
             self.log('Hostname of this machine not specified. Please give this '
                      'in the host_name option in the Site Information section',
