@@ -221,6 +221,9 @@ class RsvConfiguration(BaseConfiguration):
             self.log('RsvConfiguration.check_attributes completed')
             return attributes_ok
 
+        self.logger.warning("*** RsvConfiguration is deprecated and will be removed in the near future, "
+                            "within the v4 series. ***")
+
         try:
             (self.uid, self.gid) = pwd.getpwnam(self._rsv_user)[2:4]
         except KeyError:  # no such user

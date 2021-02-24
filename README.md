@@ -343,40 +343,6 @@ This section is contained in `/etc/osg/config.d/30-infoservices.ini`, which is p
 -   Otherwise, set this to the `hostname:port` of a host running a `condor-ce-collector` daemon
 
 
-### 30-rsv.ini / [RSV] section ###
-
-This section handles the configuration and setup of the RSV services.
-
-This section is contained in `/etc/osg/config.d/30-rsv.ini` which is provided by the `osg-configure-rsv` RPM.
-
-| Option               | Values Accepted           | Explanation                                                                                                                                                                                                                                                            |
-|----------------------|---------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **enabled**          | `True`, `False`, `Ignore` | This indicates whether the rsv  service is being used or not.                                                                                                                                                                                                          |
-| **rsv_user**         | String                    | This gives username that rsv will run under.  If this is blank or set to `UNAVAILABLE`, it will default to rsv.                                                                                                                                                        |
-| **gratia_probes**    | String                    | This settings indicates which rsv gratia probes should be used.  It is a list of probes separated by a comma.  Valid probes are metric, condor, pbs, lsf, sge, managedfork, hadoop-transfer, and gridftp-transfer                                                      |
-| ce_hosts             | String                    | This option lists the serviceURI of the CEs that generic RSV CE probes should check.  This should be a list of serviceURIs (`hostname[:port/service]`) separated by a comma (e.g. `my.host,my.host2,my.host3:2812`).                                                   |
-| htcondor_ce_hosts    | String                    | This option lists the serviceURI of the HTCondor-CE-based CEs that the RSV HTCondor-CE probes should check. This should be a list of serviceURIs (`hostname[:port/service]`) separated by a comma (e.g. `my.host,my.host2,my.host3:2812`). |                           |
-| gridftp_hosts        | String                    | This option lists the serviceURI of the GridFTP servers that the RSV GridFTP probes should check.  This should be a list of serviceURIs (`hostname[:port/service]`) separated by a comma (e.g. `my.host.iu.edu:2812,my.host2,my.host3`).                               |
-| gridftp_dir          | String                    | This should be the directory that the GridFTP probes should use during testing.  This defaults to `/tmp` if left blank or set to `UNAVAILABLE`.                                                                                                                        |
-| **srm_hosts**        | String                    | This option lists the serviceURI of the srm servers that the RSV srm probes should check.  This should be a list of serviceURIs (`hostname[:port/service]`) separated by a comma (e.g. `my.host,my.host2,my.host3:8444`).                                              |
-| srm_dir              | String                    | This should be the directory that the srm probes should use during testing.                                                                                                                                                                                            |
-| srm_webservice_path  | String                    | This option gives the webservice path that SRM probes need to use along with the host:port. See note.                                                                                                                                                                  |
-| service_cert         | String                    | This option should point to the public key file (pem) for your service  certificate. If this is left blank or set to `UNAVAILABLE` and the `user_proxy` setting is set, it will default to `/etc/grid-security/rsvcert.pem`                                            |
-| service_key          | String                    | This option should point to the private key file (pem) for your service  certificate. If this is left blank or set to `UNAVAILABLE` and the `service_cert` setting is enabled, it will default to `/etc/grid-security/rsvkey.pem` .                                    |
-| service_proxy        | String                    | This should point to the location of the rsv proxy file. If this is left blank or set to `UNAVAILABLE` and the use_service_cert  setting is enabled, it will default to `/tmp/rsvproxy`.                                                                               |
-| user_proxy           | String                    | If you don't use a service certificate for rsv, you will need to specify a  proxy file that RSV should use in the proxy_file setting.  If this is set, then  service_cert, service_key, and service_proxy should be left blank, or set to `UNAVAILABE` or `DEFAULT`.   |
-| **setup_rsv_nagios** | `True`, `False`           | This option indicates whether rsv should upload results to a local  nagios server instance. This should be set to True or False.<br> This plugin is provided as an experimental component, and admins are recommend *not to enable* it on production resources.        |
-| rsv_nagios_conf_file | String                    | This option indicates the location of the rsv nagios  file to use for configuration details. This file *needs to be configured locally for RSV-Nagios forwarding to work* -- see inline comments in file for more information.                                         |
-| condor_location      | String                    | If you installed Condor in a non-standard location (somewhere other than /usr, which is where the RPM puts it)  you must specify the path to the install dir here.                                                                                                     |
-
-**Note for srm_webservice_path:**<br>
-For dcache installations, this should work if left blank. However
-Bestman-xrootd SEs normally use `srm/v2/server` as web service path, and so
-Bestman-xrootd admins will have to pass this option with the appropriate
-value (for example: `srm/v2/server`) for the SRM probes to pass on their
-SE.
-
-
 ### 30-gip.ini / [Subcluster] and [Resource Entry] sections ###
 
 Subcluster and Resource Entry configuration is for reporting about the worker resources on your site. A **subcluster** is a homogeneous set of worker node hardware; a **resource** is a set of subcluster(s) with common capabilities that will be reported to the ATLAS AGIS system.
