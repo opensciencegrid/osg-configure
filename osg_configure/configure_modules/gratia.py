@@ -428,57 +428,57 @@ in your config.ini file."""
         
     def _verify_gratia_dirs_for_htcondor_ce_probe(self) -> bool:
         """
-        Verify that the condor per_job_history directory and the DataFolder
-        directory are the same and warn if admin if the two don't match
+        Verify that the HTCondor-CE PER_JOB_HISTORY_DIR and the DataFolder
+        directory are the same and warn the admin if the two don't match
         """
 
         if not os.path.exists(CONDOR_CE_CONFIG_VAL):
             raise exceptions.ConfigureError(f"{CONDOR_CE_CONFIG_VAL} missing")
 
+        history_dir = self._get_condor_ce_history_dir()
+
         config_location = GRATIA_CONFIG_FILES['htcondor-ce']
-        contents = open(config_location, "r", encoding="latin-1").read()
+        contents = utilities.read_file(config_location, default="")
         re_obj = re.compile(r'(?m)^\s*DataFolder\s*=(.*)\s*$')
         match = re_obj.search(contents)
-        if not match:
-            return True
+        data_folder = match.group(1).strip('" \t') if match else None
 
-        data_folder = match.group(1)
-        data_folder = data_folder.strip('" \t')
-        # Per Gratia-126 DataFolder must end in / otherwise gratia won't find certinfo files
-        if not data_folder.endswith('/'):
-            self.logger.error("DataFolder setting in %s must end in a /", config_location)
-            return False
+        advice_on_error = (
+            f"Make sure DataFolder in {config_location} ({data_folder or 'missing'})"
+            f" and PER_JOB_HISTORY_DIR in the HTCondor-CE config ({history_dir or 'missing'})"
+            f" exist and are the same, accessible directory."
+        )
 
-        history_dir = self._get_condor_ce_history_dir()
-        if not history_dir:
-            self.logger.error(textwrap.fill(
-                """Could not verify DataFolder correctness: unable to get PER_JOB_HISTORY_DIR
-                for the schedd. This may be caused by PER_JOB_HISTORY_DIR not being defined."""
-            ))
-            return False
+        try:
+            ok = True
+            if not history_dir:
+                self.logger.error("PER_JOB_HISTORY_DIR is not defined")
+                ok = False
+            elif not os.path.isdir(history_dir):
+                self.logger.error("PER_JOB_HISTORY_DIR does not point to a valid directory")
+                ok = False
 
-        # os.path.samefile will die if the paths don't exist so check that explicitly (SOFTWARE-1735)
-        if not os.path.exists(data_folder):
-            self.logger.error("DataFolder setting in %s (%s) points to a nonexistent location",
-                              config_location, data_folder)
-            return False
-        elif not os.path.exists(history_dir):
-            self.logger.error("condor-ce schedd's PER_JOB_HISTORY_DIR (%s) points to a nonexistent location", history_dir)
-            return False
-        else:
-            try:
-                if os.path.samefile(data_folder, history_dir):
-                    return True
-                else:
-                    self.logger.error("DataFolder setting in %s (%s) and condor-ce PER_JOB_HISTORY_DIR (%s) "
-                                      "do not match, these settings must match!",
-                                      config_location, data_folder, history_dir)
-                    return False
-            except OSError as e:
-                self.logger.error(
-                    "Error comparing DataFolder setting in %s (%s) and condor-ce PER_JOB_HISTORY_DIR %s:\n%s",
-                    config_location, data_folder, history_dir, e)
+            if not data_folder:
+                self.logger.error(f"DataFolder is not defined")
+                ok = False
+            elif not os.path.isdir(data_folder):
+                self.logger.error(f"DataFolder does not point to a valid directory")
+                ok = False
+
+            if not ok:  # can't do any more checking
+                self.logger.error(advice_on_error)
                 return False
+
+            if os.path.samefile(data_folder, history_dir):
+                return True
+            else:
+                self.logger.error("DataFolder and PER_JOB_HISTORY_DIR do not point to the same directory")
+                self.logger.error(advice_on_error)
+                return False
+        except OSError as e:
+            self.logger.error("Unexpected error checking DataFolder and PER_JOB_HISTORY_DIR: %s", e)
+            self.logger.error(advice_on_error)
+            return False
 
     def _get_condor_ce_history_dir(self):
         cmd = [CONDOR_CE_CONFIG_VAL, '-subsystem', 'SCHEDD', 'PER_JOB_HISTORY_DIR']
