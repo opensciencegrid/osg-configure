@@ -21,3 +21,4 @@ Installation is performed by the Makefile
 ```
 $ make install
 ```
+
