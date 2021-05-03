@@ -586,10 +586,7 @@ def split_host_port(host_port):
     colon_count = host_port.count(':')
     if colon_count == 0:
         # hostname or ipv4 address without port
-        try:
-            return host_port, None
-        except ValueError:
-            return False
+        return host_port, None
     elif colon_count == 1:
         # hostname or ipv4 address with port
         return host_port.split(':', 1)
