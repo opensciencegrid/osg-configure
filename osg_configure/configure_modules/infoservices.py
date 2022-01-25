@@ -9,7 +9,7 @@ import logging
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile
-from osg_configure.modules.baseconfiguration import BaseConfiguration
+from osg_configure.modules.baseconfiguration import BaseConfiguration, BATCH_SYSTEMS
 from osg_configure.modules import subcluster
 from osg_configure.modules import reversevomap
 
@@ -22,10 +22,6 @@ USER_VO_MAP_LOCATION = '/var/lib/osg/user-vo-map'
 BAN_VOMS_MAPFILE = reversevomap.BAN_MAPFILE
 BAN_MAPFILE = '/etc/grid-security/ban-mapfile'
 
-# BATCH_SYSTEMS here is both the config sections for the batch systems
-# and the values in the OSG_BatchSystems attribute since they are
-# coincidentally the same. If they ever change, make a mapping.
-BATCH_SYSTEMS = ['Condor', 'LSF', 'PBS', 'SGE', 'SLURM']
 
 try:
     import classad

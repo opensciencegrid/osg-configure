@@ -1,0 +1,138 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+osg-resource-catalog-generator
+
+Standalone script to generate a condor config file for advertising a resource
+to the CE Collector.
+"""
+
+from argparse import ArgumentParser
+from configparser import ConfigParser
+import glob
+import os
+import sys
+from typing import Dict, List
+
+if __name__ == "__main__" and __package__ is None:
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# local imports here
+from osg_configure.modules.baseconfiguration import BATCH_SYSTEMS
+from osg_configure.modules.exceptions import Error
+from osg_configure.modules import subcluster
+
+
+def warn(*args, **kwargs):
+    kwargs['file'] = sys.stderr
+    print("***", *args, **kwargs)
+
+
+def load_configs(config_locations: List[str]) -> ConfigParser:
+    config_file_list = []
+    for config_location in config_locations:
+        if os.path.isdir(config_location):
+            config_file_list.extend(sorted(glob.glob(os.path.join(config_location, "[!.]*.ini"))))
+        else:
+            config_file_list.append(config_location)
+
+    config = ConfigParser()
+
+    read_files = config.read(config_file_list)
+
+    if not read_files:
+        raise Error(f"No valid config files found in {', '.join(config_locations)}")
+
+    return config
+
+
+def get_attributes(config: ConfigParser) -> Dict[str, str]:
+    attributes = {}
+
+    enabled_batch_systems = []
+    for batch_system in BATCH_SYSTEMS:
+        if batch_system in config:
+            if config.getboolean(section=batch_system, option="enabled", fallback=None):
+                enabled_batch_systems.append(batch_system)
+    if enabled_batch_systems:
+        attributes["OSG_BatchSystems"] = '"' + ",".join(enabled_batch_systems) + '"'
+    else:
+        warn("No enabled batch systems.")
+        warn("There must be a section named after one of the following batch systems: " +
+             ", ".join(BATCH_SYSTEMS))
+        warn('with "Enabled = True"')
+        raise Error("No enabled batch systems.")
+
+    resource = ""
+    resource_group = ""
+
+    if "Site Information" in config:
+        resource = config.get("Site Information", "resource", fallback="").strip()
+        if resource.upper() == "UNAVAILABLE":
+            resource = ""
+        resource_group = config.get("Site Information", "resource_group", fallback="").strip()
+        if resource_group.upper() == "UNAVAILABLE":
+            resource_group = ""
+
+    if resource:
+        attributes["OSG_Resource"] = f'"{resource}"'
+    else:
+        raise Error("Site Information.resource not specified or empty")
+
+    if resource_group:
+        attributes["OSG_ResourceGroup"] = f'"{resource_group}"'
+    else:
+        raise Error("Site Information.resource_group not specified or empty")
+
+    return attributes
+
+
+def get_options(args):
+    "Parse, validate, and transform command-line options."
+    parser = ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "-c",
+        "--config",
+        action="append",
+        metavar="FILE_OR_DIRECTORY",
+        help="Where to load configuration from; can be specified multiple times. "
+        "If not specified, /etc/osg/config.d is used.",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        metavar="FILE",
+        help="Write output to this file instead of stdout.",
+    )
+
+    return parser.parse_args(args)
+
+
+def main(argv):
+    options = get_options(argv[1:])
+
+    try:
+        if not options.config:
+            options.config = ["/etc/osg/config.d"]
+        config = load_configs(options.config)
+        attributes = get_attributes(config)
+        attributes_str = "\n".join(f"{key} = {value}" for key, value in attributes.items())
+        resource_catalog_str = subcluster.resource_catalog_from_config(config, default_allowed_vos=[]).compose_text()
+        schedd_attrs_str = "SCHEDD_ATTRS = OSG_ResourceCatalog, " + ", ".join(attributes.keys())
+
+        output_str = "\n".join([attributes_str, resource_catalog_str, schedd_attrs_str])
+
+        if options.output:
+            with open(options.output, "w") as outfh:
+                print(output_str, file=outfh)
+        else:
+            print(output_str)
+    except Error as e:
+        print(e, file=sys.stderr)
+        return 1
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))

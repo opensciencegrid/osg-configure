@@ -10,10 +10,15 @@ from osg_configure.modules import configfile
 from osg_configure.modules import utilities
 from osg_configure.modules import exceptions
 
-__all__ = ['BaseConfiguration']
+__all__ = ['BaseConfiguration', 'BATCH_SYSTEMS']
 
 HOSTCERT_PATH = "/etc/grid-security/hostcert.pem"
 HOSTKEY_PATH = "/etc/grid-security/hostkey.pem"
+
+# BATCH_SYSTEMS here is both the config sections for the batch systems
+# and the values in the OSG_BatchSystems attribute since they are
+# coincidentally the same. If they ever change, make a mapping.
+BATCH_SYSTEMS = ['Condor', 'LSF', 'PBS', 'SGE', 'SLURM']
 
 
 class BaseConfiguration:
