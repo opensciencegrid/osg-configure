@@ -475,3 +475,83 @@ This section is contained in `/etc/osg/config.d/40-siteinfo.ini` which is provid
 | **host\_name**      | String            | This should be set to be hostname of the CE that is being configured                                                                         |
 | **resource**        | String            | The resource name of this CE endpoint as registered in Topology.                                                                                  |
 | **resource\_group** | String            | The resource\_group of this CE as registered in Topology.                                                                                         |
+
+
+OSG Resource Catalog Generator
+==============================
+
+The Resource Catalog Generator is a standalone tool to create resource catalog attributes for a CE, that will be uploaded to the CE collector.
+It is a lightweight alternative to OSG-Configure, and it prints the attributes instead of modifying your CE's config files.
+
+It uses `*.ini` files from osg-configure as the source of the data.
+
+Installation
+------------
+
+The Resource Catalog Generator is typically installed via RPMs from the OSG repositories.
+See [OSG documentation for how to enable the repositories](https://opensciencegrid.org/docs/common/yum/);
+once the repos are enabled, install by running
+
+    yum install osg-resource-catalog-generator
+
+Note: osg-resource-catalog-generator is not available in the OSG 3.5 series.
+
+
+Configuration
+-------------
+
+The Resource Catalog Generator uses the same config files that OSG-Configure uses.
+See the [31-cluster.ini](#31-clusterini--subcluster-and-resource-entry-sections),
+[35-pilot.ini](#35-pilotini--pilot) for attributes.
+
+You will also need `resource` and `resource_group` from the `Site Information` section
+([40-siteinfo.ini](#40-siteinfoini--site-information-section)).
+You can also use `--resource` and `--resource-group` on the command line to specify these.
+
+In addition, you should also have at least one batch system section with the attribute `enabled=True`, e.g.
+```
+[Condor]
+enabled=True
+```
+The recognized batch systems are "Condor", "LSF", "PBS", "SGE", and "Slurm".
+
+Alternatively, you can specify a comma-separated list with `--batch-systems` on the command line.
+
+
+Invocation
+----------
+
+    osg-resource-catalog-generator [options]
+
+If invoked without any options, will read config from `/etc/osg/config.d/*.ini` and output to STDOUT.
+
+### Options
+
+- `-c FILE_OR_DIRECTORY`, `--config FILE_OR_DIRECTORY`
+
+  Where to load configuration from; can be specified multiple times.
+
+  If this is a directory, will load every `*.ini` file in that directory. 
+
+  If not specified, `/etc/osg/config.d` is used.
+
+  If `-`, will read from STDIN. STDIN will always be read last.
+
+- `-o FILE`, `--output FILE`
+
+  Write output to this file instead of STDOUT.
+
+- `--resource RESOURCE_NAME`
+
+  The Resource name to use, which should match your Topology registration.
+  This is an alternative to specifying `Site Information.resource` in the config files.
+
+- `--resource-group RESOURCE_GROUP_NAME`
+
+  The Resource Group name to use, which should match your Topology registration.
+  This is an alternative to specifying `Site Information.resource_group` in the config files.
+
+- `--batch-systems BATCH_SYSTEMS_LIST`
+
+  A comma-separated list of batch systems used by the resource.
+  Recognized batch systems are: "Condor", "LSF", "PBS", "SGE", "SLURM".
