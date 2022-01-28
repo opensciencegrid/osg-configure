@@ -63,6 +63,7 @@ class BoscoConfiguration(JobManagerConfiguration):
 
 
         self.config_section = "BOSCO"
+        self.bosco_cluster = None
         self.log("BoscoConfiguration.__init__ completed")
         
         
@@ -181,7 +182,13 @@ class BoscoConfiguration(JobManagerConfiguration):
             return True
         
         # Do all the things here!
-        
+        self.bosco_cluster = shutil.which("condor_remote_cluster") or shutil.which("bosco_cluster")
+
+        if not self.bosco_cluster and self.opt_val("install_cluster") != "never":
+            self.log("Cannot install remote cluster: neither condor_remote_cluster nor bosco_cluster were found",
+                     level=logging.ERROR)
+            return False
+
         # For each user, install bosco.
         for username in self.options['users'].value.split(","):
             username = username.strip()
@@ -273,7 +280,7 @@ class BoscoConfiguration(JobManagerConfiguration):
 
             if self.opt_val("install_cluster") == "if_needed":
                 # Only install if it's not in the clusterlist
-                cmd = ["bosco_cluster", "-l"]
+                cmd = [self.bosco_cluster, "-l"]
                 process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                            preexec_fn=demote(user_uid, user_gid), env=env,
                                            encoding="latin-1")
@@ -290,13 +297,13 @@ class BoscoConfiguration(JobManagerConfiguration):
                         self.log("Entry found in clusterlist", level=logging.DEBUG)
                         return True
                 else:
-                    self.log("bosco_cluster -l failed with unexpected exit code %d" % returncode, level=logging.ERROR)
+                    self.log("%s failed with unexpected exit code %d", " ".join(cmd), returncode, level=logging.ERROR)
                     self.log("stdout:\n%s" % stdout, level=logging.ERROR)
                     self.log("stderr:\n%s" % stderr, level=logging.ERROR)
                     return False
 
             # Run bosco cluster to install the remote cluster
-            install_cmd = ["bosco_cluster"]
+            install_cmd = [self.bosco_cluster]
             override_dir = self.opt_val('override_dir')
             if override_dir:
                 install_cmd += ['-o', override_dir]
