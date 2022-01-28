@@ -31,8 +31,11 @@ def warn(*args, **kwargs):
 
 def load_configs(config_locations: List[str]) -> ConfigParser:
     config_file_list = []
+    read_stdin = False
     for config_location in config_locations:
-        if os.path.isdir(config_location):
+        if config_location == "-":
+            read_stdin = True
+        elif os.path.isdir(config_location):
             config_file_list.extend(sorted(glob.glob(os.path.join(config_location, "[!.]*.ini"))))
         else:
             config_file_list.append(config_location)
@@ -40,9 +43,10 @@ def load_configs(config_locations: List[str]) -> ConfigParser:
     config = ConfigParser()
 
     read_files = config.read(config_file_list)
-
-    if not read_files:
+    if not read_files and not read_stdin:
         raise Error(f"No valid config files found in {', '.join(config_locations)}")
+    if read_stdin:
+        config.read_string(sys.stdin.read(), "<stdin>")
 
     return config
 
@@ -98,7 +102,8 @@ def get_options(args):
         action="append",
         metavar="FILE_OR_DIRECTORY",
         help="Where to load configuration from; can be specified multiple times. "
-        "If not specified, /etc/osg/config.d is used.",
+        "If not specified, /etc/osg/config.d is used. "
+        "If '-', will read from stdin. stdin will always be read last.",
     )
     parser.add_argument(
         "-o",
