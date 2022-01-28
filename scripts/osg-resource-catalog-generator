@@ -21,6 +21,7 @@ if __name__ == "__main__" and __package__ is None:
 from osg_configure.modules.baseconfiguration import BATCH_SYSTEMS
 from osg_configure.modules.exceptions import Error
 from osg_configure.modules import subcluster
+from osg_configure.modules import utilities
 from osg_configure.version import __version__
 
 
@@ -52,6 +53,11 @@ def load_configs(config_locations: List[str]) -> ConfigParser:
 
 
 def get_attributes(config: ConfigParser) -> Dict[str, str]:
+    """Turn config from .ini files into a dict of condor settings.
+
+    Takes care of OSG_BatchSystems, OSG_Resource, and OSG_ResourceGroup.
+    OSG_ResourceCatalog is handled in the osg_configure.modules.subcluster module.
+    """
     attributes = {}
 
     enabled_batch_systems = []
@@ -73,19 +79,19 @@ def get_attributes(config: ConfigParser) -> Dict[str, str]:
 
     if "Site Information" in config:
         resource = config.get("Site Information", "resource", fallback="").strip()
-        if resource.upper() == "UNAVAILABLE":
+        if utilities.blank(resource):
             resource = ""
         resource_group = config.get("Site Information", "resource_group", fallback="").strip()
-        if resource_group.upper() == "UNAVAILABLE":
+        if utilities.blank(resource_group):
             resource_group = ""
 
     if resource:
-        attributes["OSG_Resource"] = f'"{resource}"'
+        attributes["OSG_Resource"] = utilities.classad_quote(resource)
     else:
         raise Error("Site Information.resource not specified or empty")
 
     if resource_group:
-        attributes["OSG_ResourceGroup"] = f'"{resource_group}"'
+        attributes["OSG_ResourceGroup"] = utilities.classad_quote(resource_group)
     else:
         raise Error("Site Information.resource_group not specified or empty")
 
@@ -102,6 +108,7 @@ def get_options(args):
         action="append",
         metavar="FILE_OR_DIRECTORY",
         help="Where to load configuration from; can be specified multiple times. "
+        "If this is a directory, will load every *.ini file in that directory. "
         "If not specified, /etc/osg/config.d is used. "
         "If '-', will read from stdin. stdin will always be read last.",
     )
