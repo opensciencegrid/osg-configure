@@ -21,6 +21,7 @@ if __name__ == "__main__" and __package__ is None:
 from osg_configure.modules.baseconfiguration import BATCH_SYSTEMS
 from osg_configure.modules.exceptions import Error
 from osg_configure.modules import subcluster
+from osg_configure.version import __version__
 
 
 def warn(*args, **kwargs):
@@ -89,7 +90,8 @@ def get_attributes(config: ConfigParser) -> Dict[str, str]:
 
 def get_options(args):
     "Parse, validate, and transform command-line options."
-    parser = ArgumentParser(description=__doc__)
+    parser = ArgumentParser(prog="osg-resource-catalog-generator", description=__doc__)
+    parser.add_argument('--version', action='version', version='%(prog)s ' + __version__)
     parser.add_argument(
         "-c",
         "--config",
