@@ -41,7 +41,7 @@ dist:
 
 upstream: dist
 	mkdir -p  $(UPSTREAM_SOFTWARE_DIR)/$(VERSION)
-	sha1sum  dist/$(NAME)-$(VERSION).tar.gz
 	cp -ip  dist/$(NAME)-$(VERSION).tar.gz  $(UPSTREAM_SOFTWARE_DIR)/$(VERSION)
+	cd /p/vdt/public/html/upstream && sha1sum $(NAME)/$(VERSION)/$(NAME)-$(VERSION).tar.gz | awk '{print $$2 " sha1sum="$$1}'
 
 .PHONY: help  install  install-noconfig  dist  upstream
