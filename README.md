@@ -513,7 +513,7 @@ In addition, you should also have at least one batch system section with the att
 [Condor]
 enabled=True
 ```
-The recognized batch systems are "Condor", "LSF", "PBS", "SGE", and "Slurm".
+The recognized batch systems are "Condor", "LSF", "PBS", "SGE", and "SLURM".
 
 Alternatively, you can specify a comma-separated list with `--batch-systems` on the command line.
 

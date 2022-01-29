@@ -19,7 +19,13 @@ HOSTKEY_PATH = "/etc/grid-security/hostkey.pem"
 # and the values in the OSG_BatchSystems attribute since they are
 # coincidentally the same. If they ever change, make a mapping.
 BATCH_SYSTEMS = ['Condor', 'LSF', 'PBS', 'SGE', 'SLURM']
-
+BOSCO_BATCH_SYSTEMS_MAP = {
+    'condor': 'Condor',
+    'lsf': 'LSF',
+    'pbs': 'PBS',
+    'sge': 'SGE',
+    'slurm': 'SLURM',
+}
 
 class BaseConfiguration:
     """Base class for inheritance by configuration"""

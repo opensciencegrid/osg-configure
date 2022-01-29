@@ -18,7 +18,7 @@ if __name__ == "__main__" and __package__ is None:
     sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # local imports here
-from osg_configure.modules.baseconfiguration import BATCH_SYSTEMS
+from osg_configure.modules.baseconfiguration import BATCH_SYSTEMS, BOSCO_BATCH_SYSTEMS_MAP
 from osg_configure.modules.exceptions import Error
 from osg_configure.modules import subcluster
 from osg_configure.modules import utilities
@@ -72,6 +72,14 @@ def get_attributes(config: ConfigParser, options: Namespace) -> Dict[str, str]:
             if batch_system in config:
                 if config.getboolean(section=batch_system, option="enabled", fallback=None):
                     batch_systems.append(batch_system)
+        # Special case: Bosco (see SOFTWARE-3720).  The Bosco.batch option specifies a batch system but is in
+        # lowercase so has to be translated first.
+        if "Bosco" in config and config.getboolean("Bosco", "enabled", fallback=False):
+            bosco_batch = config.get("Bosco", "batch")
+            if bosco_batch in BOSCO_BATCH_SYSTEMS_MAP:
+                batch_systems.append(BOSCO_BATCH_SYSTEMS_MAP[bosco_batch])
+            else:
+                warn("Bosco section enabled but with invalid batch system %s" % bosco_batch)
 
     if batch_systems:
         attributes["OSG_BatchSystems"] = utilities.classad_quote(",".join(batch_systems))

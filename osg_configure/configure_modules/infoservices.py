@@ -9,7 +9,7 @@ import logging
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile
-from osg_configure.modules.baseconfiguration import BaseConfiguration, BATCH_SYSTEMS
+from osg_configure.modules.baseconfiguration import BaseConfiguration, BATCH_SYSTEMS, BOSCO_BATCH_SYSTEMS_MAP
 from osg_configure.modules import subcluster
 from osg_configure.modules import reversevomap
 
@@ -120,6 +120,17 @@ class InfoServicesConfiguration(BaseConfiguration):
         self.osg_resource_group = csg('Site Information', 'resource_group')
         # and the enabled batch systems from their respective sections
         self.enabled_batch_systems = [bs for bs in BATCH_SYSTEMS if csgbool(bs, 'enabled')]
+
+        if csgbool("Bosco", "enabled"):
+            try:
+                bosco_batch = BOSCO_BATCH_SYSTEMS_MAP[csg("Bosco", "batch").lower()]
+                if bosco_batch not in self.enabled_batch_systems:
+                    self.enabled_batch_systems.append(bosco_batch)
+            except (KeyError, AttributeError):
+                # This is a warning; the bosco module raises the error.
+                self.log("Bosco.batch does not have a recognized value -- should be one of %s" %
+                         list(BOSCO_BATCH_SYSTEMS_MAP.keys()),
+                         level=logging.WARNING)
 
         self.htcondor_gateway_enabled = csgbool('Gateway', 'htcondor_gateway_enabled')
 
