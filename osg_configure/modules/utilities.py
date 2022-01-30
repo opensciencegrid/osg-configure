@@ -626,4 +626,4 @@ def split_comma_separated_list(a_str: str) -> List[str]:
     a_str = a_str.strip()
     if not a_str:
         return []
-    return re.split(r"\s*,\s*", a_str)
+    return list(filter(None, re.split(r"\s*,\s*", a_str)))

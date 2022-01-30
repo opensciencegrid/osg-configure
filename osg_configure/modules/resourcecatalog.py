@@ -21,10 +21,6 @@ def _to_classad_list(a_list):
     return "{ " + ", ".join([utilities.classad_quote(it) for it in a_list if it]) + " }"
 
 
-def _str_to_classad_list(a_str):
-    return _to_classad_list(utilities.split_comma_separated_list(a_str))
-
-
 class RCAttribute(namedtuple("RCAttribute", "rce_field classad_attr format_fn")):
     """The mapping of an RCEntry field to a classad attribute, with a format function"""
 
