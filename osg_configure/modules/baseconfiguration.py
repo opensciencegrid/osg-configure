@@ -10,22 +10,11 @@ from osg_configure.modules import configfile
 from osg_configure.modules import utilities
 from osg_configure.modules import exceptions
 
-__all__ = ['BaseConfiguration', 'BATCH_SYSTEMS']
+__all__ = ['BaseConfiguration']
 
 HOSTCERT_PATH = "/etc/grid-security/hostcert.pem"
 HOSTKEY_PATH = "/etc/grid-security/hostkey.pem"
 
-# BATCH_SYSTEMS here is both the config sections for the batch systems
-# and the values in the OSG_BatchSystems attribute since they are
-# coincidentally the same. If they ever change, make a mapping.
-BATCH_SYSTEMS = ['Condor', 'LSF', 'PBS', 'SGE', 'SLURM']
-BOSCO_BATCH_SYSTEMS_MAP = {
-    'condor': 'Condor',
-    'lsf': 'LSF',
-    'pbs': 'PBS',
-    'sge': 'SGE',
-    'slurm': 'SLURM',
-}
 
 class BaseConfiguration:
     """Base class for inheritance by configuration"""
