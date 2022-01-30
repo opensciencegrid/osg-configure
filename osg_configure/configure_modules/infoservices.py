@@ -54,7 +54,7 @@ class InfoServicesConfiguration(BaseConfiguration):
         self.ce_collector_required_rpms_installed = utilities.rpm_installed('htcondor-ce')
         self.htcondor_gateway_enabled = None
         self.authorization_method = None
-        self.ce_attributes_config = None
+        self.configuration = None
         self.ce_attributes_str = ""
 
         self.log("InfoServicesConfiguration.__init__ completed")
@@ -109,10 +109,7 @@ class InfoServicesConfiguration(BaseConfiguration):
 
         self.htcondor_gateway_enabled = configuration.get('Gateway', 'htcondor_gateway_enabled', fallback=False)
 
-        self.ce_attributes_config = ConfigParser()
-        for section in configuration.sections():
-            if subcluster.is_subcluster_like(section) or section.lower() == "site information":
-                self.ce_attributes_config[section] = configuration[section]
+        self.configuration = configuration  # save for later: the ce_attributes module reads the whole config.
 
         if utilities.ce_installed() and not subcluster.check_config(configuration):
             self.log("On a CE but no valid 'Subcluster', 'Resource Entry', or 'Pilot' sections defined."
@@ -126,7 +123,7 @@ class InfoServicesConfiguration(BaseConfiguration):
         # configure(), but at this point we don't have a way of knowing what
         # default_allowed_vos should be.
         if self.ce_collector_required_rpms_installed and self.htcondor_gateway_enabled and classad is not None:
-            subcluster.resource_catalog_from_config(self.ce_attributes_config, default_allowed_vos=["*"])
+            subcluster.resource_catalog_from_config(configuration, default_allowed_vos=["*"])
 
         self.log('InfoServicesConfiguration.parse_configuration completed')
 
@@ -155,7 +152,7 @@ class InfoServicesConfiguration(BaseConfiguration):
                          "\nHTCondor version must be at least 8.2.0.", level=logging.WARNING)
             else:
                 try:
-                    self.ce_attributes_str = ce_attributes.get_ce_attributes_str(self.ce_attributes_config)
+                    self.ce_attributes_str = ce_attributes.get_ce_attributes_str(self.configuration)
                 except exceptions.SettingError as err:
                     self.log("Error in info services configuration: %s" % err, level=logging.ERROR)
                     return False
