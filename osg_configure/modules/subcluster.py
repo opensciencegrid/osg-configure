@@ -279,10 +279,10 @@ def resource_catalog_from_config(config: ConfigParser, default_allowed_vos: List
             # TODO #1 Is this really where the error should be?
             # TODO #2 The autodetected bit is not currently true...
             logger.error(
-                textwrap.fill(
-                    """No allowed_vos specified for section '%s'. Specify the allowed_vos 
+                textwrap.fill(textwrap.dedent("""
+                    No allowed_vos specified for section '%s'. Specify the allowed_vos 
                     attribute as either a list of VOs, or a '*' to use an autodetected VO list based on
-                    the user accounts available on your CE.""" % section))
+                    the user accounts available on your CE.""" % section)))
             raise exceptions.SettingError("No allowed_vos for %s" % section)
         if rcentry.allowed_vos == ["*"]:
             if default_allowed_vos:
