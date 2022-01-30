@@ -228,6 +228,9 @@ class ResourceCatalog:  # forward declaration for type checking
     def compose_text(self) -> str:
         pass
 
+    def format_value(self) -> str:
+        pass
+
 
 def resource_catalog_from_config(config: ConfigParser, default_allowed_vos: List[str] = None) -> ResourceCatalog:
     """

@@ -136,7 +136,6 @@ class RCEntry(object):
         return attributes
 
 
-
 class ResourceCatalog(object):
     """Class for building an OSG_ResourceCatalog attribute in condor-ce configs for the ce-collector"""
 
@@ -148,7 +147,7 @@ class ResourceCatalog(object):
 
         return self
 
-    def compose_text(self):
+    def format_value(self) -> str:
         """Return the OSG_ResourceCatalog classad attribute made of all the entries in this object"""
         if not self.entries:
             catalog = '{}'
@@ -164,5 +163,8 @@ class ResourceCatalog(object):
             catalog = ('{ \\\n'
                        + ', \\\n'.join(entry_texts)
                        + ' \\\n}')
+        return catalog
 
+    def compose_text(self):
+        catalog = self.format_value()
         return 'OSG_ResourceCatalog = ' + catalog
