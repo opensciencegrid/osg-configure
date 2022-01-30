@@ -203,7 +203,7 @@ def check_config(config: ConfigParser) -> bool:
     """
     has_sc = False
     for section in config.sections():
-        if is_pilot(section) or is_subcluster(section) or is_resource_entry(section):
+        if is_subcluster_like(section):
             has_sc = True
             check_section(config, section)
     return has_sc
@@ -255,7 +255,7 @@ def resource_catalog_from_config(config: ConfigParser, default_allowed_vos: List
 
     sections_without_max_wall_time = []
     for section in config.sections():
-        if not (is_subcluster(section) or is_resource_entry(section) or is_pilot(section)):
+        if not is_subcluster_like(section):
             continue
 
         check_section(config, section)
@@ -335,6 +335,6 @@ def resource_catalog_from_config(config: ConfigParser, default_allowed_vos: List
     if sections_without_max_wall_time:
         logger.warning("No max_wall_time specified for some sections; defaulting to 1440."
                        "\nAdd 'max_wall_time=1440' to the following section(s) to clear this warning:"
-                       "\n'%s'" % "', '".join(sections_without_max_wall_time))
+                       " '%s'" % "', '".join(sections_without_max_wall_time))
 
     return rc

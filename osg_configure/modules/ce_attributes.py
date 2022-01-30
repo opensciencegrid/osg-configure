@@ -95,3 +95,11 @@ def get_attributes(config: ConfigParser) -> Dict[str, str]:
         attributes["OSG_ResourceCatalog"] = resource_catalog
 
     return attributes
+
+
+def get_ce_attributes_str(
+        config: ConfigParser,
+) -> str:
+    attributes = get_attributes(config)
+    attributes["SCHEDD_ATTRS"] = "$(SCHEDD_ATTRS), " + ", ".join(attributes.keys())
+    return "\n".join(f"{key} = {value}" for key, value in attributes.items())

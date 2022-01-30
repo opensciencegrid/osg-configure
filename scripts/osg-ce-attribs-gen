@@ -18,7 +18,7 @@ if __name__ == "__main__" and __package__ is None:
     sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # local imports here
-from osg_configure.modules.ce_attributes import BATCH_SYSTEMS, get_attributes
+from osg_configure.modules.ce_attributes import BATCH_SYSTEMS, get_ce_attributes_str
 from osg_configure.modules.exceptions import Error
 from osg_configure.version import __version__
 
@@ -94,14 +94,6 @@ def get_options(args):
     )
 
     return parser.parse_args(args)
-
-
-def get_ce_attributes_str(
-        config: ConfigParser,
-) -> str:
-    attributes = get_attributes(config)
-    attributes["SCHEDD_ATTRS"] = "$(SCHEDD_ATTRS), " + ", ".join(attributes.keys())
-    return "\n".join(f"{key} = {value}" for key, value in attributes.items())
 
 
 def main(argv):
