@@ -40,7 +40,11 @@ class SiteInformation(BaseConfiguration):
                                               mapping='OSG_SITE_NAME'),
                         'resource_group':
                             configfile.Option(name='resource_group',
-                                              required=MANDATORY_ON_CE)}
+                                              required=MANDATORY_ON_CE),
+                        'batch_systems':
+                            configfile.Option(name='batch_systems',
+                                              required=OPTIONAL,
+                                              default_value=None)}
 
         self.config_section = "Site Information"
         self.enabled = True
