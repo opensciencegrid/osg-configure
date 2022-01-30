@@ -477,30 +477,30 @@ This section is contained in `/etc/osg/config.d/40-siteinfo.ini` which is provid
 | **resource\_group** | String            | The resource\_group of this CE as registered in Topology.                                                                                         |
 
 
-OSG Resource Catalog Generator
-==============================
+OSG CE Attributes Generator
+===========================
 
-The Resource Catalog Generator is a standalone tool to create resource catalog attributes for a CE, that will be uploaded to the CE collector.
+The CE Attributes Generator is a standalone tool to create resource catalog attributes for a CE, that will be uploaded to the CE collector.
 It is a lightweight alternative to OSG-Configure, and it prints the attributes instead of modifying your CE's config files.
 
-It uses `*.ini` files from osg-configure as the source of the data.
+It uses `*.ini` files from OSG-Configure as the source of the data.
 
 Installation
 ------------
 
-The Resource Catalog Generator is typically installed via RPMs from the OSG repositories.
+The CE Attributes Generator is typically installed via RPMs from the OSG repositories.
 See [OSG documentation for how to enable the repositories](https://opensciencegrid.org/docs/common/yum/);
 once the repos are enabled, install by running
 
-    yum install osg-resource-catalog-generator
+    yum install osg-ce-attributes-generator
 
-Note: osg-resource-catalog-generator is not available in the OSG 3.5 series.
+Note: `osg-ce-attributes-generator` is not available in the OSG 3.5 series.
 
 
 Configuration
 -------------
 
-The Resource Catalog Generator uses the same config files that OSG-Configure uses.
+The CE Attributes Generator uses the same config files that OSG-Configure uses.
 See the [31-cluster.ini](#31-clusterini--subcluster-and-resource-entry-sections),
 [35-pilot.ini](#35-pilotini--pilot) for attributes.
 
@@ -509,11 +509,12 @@ You will also need `resource` and `resource_group` from the `Site Information` s
 You can also use `--resource` and `--resource-group` on the command line to specify these.
 
 In addition, you should also have at least one batch system section with the attribute `enabled=True`, e.g.
-```
+```ini
 [Condor]
 enabled=True
 ```
 The recognized batch systems are "Condor", "LSF", "PBS", "SGE", and "SLURM".
+If you are using BOSCO, specify your batch system in `20-bosco.ini`.
 
 Alternatively, you can specify a comma-separated list with `--batch-systems` on the command line.
 
@@ -521,37 +522,32 @@ Alternatively, you can specify a comma-separated list with `--batch-systems` on 
 Invocation
 ----------
 
-    osg-resource-catalog-generator [options]
+    osg-ce-attributes-generator [<options>] [<config_location>] [<output>]
 
-If invoked without any options, will read config from `/etc/osg/config.d/*.ini` and output to STDOUT.
+- `config_location` is a file or directory to load configuration from.
+  If this is a directory, load every `*.ini` file in that directory.
+  If `-`, read from STDIN. The default is to read `/etc/osg/config.d`,
+  same as `osg-configure`.
+
+- `output` is a file to write attributes to.
+  If `-` or unspecified, write to STDOUT.
+
 
 ### Options
-
-- `-c FILE_OR_DIRECTORY`, `--config FILE_OR_DIRECTORY`
-
-  Where to load configuration from; can be specified multiple times.
-
-  If this is a directory, will load every `*.ini` file in that directory. 
-
-  If not specified, `/etc/osg/config.d` is used.
-
-  If `-`, will read from STDIN. STDIN will always be read last.
-
-- `-o FILE`, `--output FILE`
-
-  Write output to this file instead of STDOUT.
 
 - `--resource RESOURCE_NAME`
 
   The Resource name to use, which should match your Topology registration.
-  This is an alternative to specifying `Site Information.resource` in the config files.
+  Equivalent to `resource` in the `Site Information` section.
 
 - `--resource-group RESOURCE_GROUP_NAME`
 
   The Resource Group name to use, which should match your Topology registration.
-  This is an alternative to specifying `Site Information.resource_group` in the config files.
-
+  Equivalent to `resource_group` in the `Site Information` section.
+  
 - `--batch-systems BATCH_SYSTEMS_LIST`
 
   A comma-separated list of batch systems used by the resource.
-  Recognized batch systems are: "Condor", "LSF", "PBS", "SGE", "SLURM".
+  Recognized batch systems are: `Condor`, `LSF`, `PBS`, `SGE`, and `SLURM`.
+  Equivalent to enabling the batch system sections in the
+  `20-*.ini` files, or, if using BOSCO, setting `batch` in the `BOSCO` section.

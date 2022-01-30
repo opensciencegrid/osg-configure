@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-osg-ce-attribs-gen
-
-OSG CA Attributes File Generator
-
-Standalone script to generate a condor config file for advertising a CE resource to the CE Collector.
+OSG CE Attributes Generator:
+a standalone script to generate a condor config file for advertising
+a CE resource to the CE Collector.
 """
 
 from argparse import ArgumentParser
@@ -50,24 +48,22 @@ def load_configs(config_location: str) -> ConfigParser:
 
 def get_options(args):
     """Parse, validate, and transform command-line options."""
-    parser = ArgumentParser(prog="osg-ca-attrib-gen", description=__doc__)
+    parser = ArgumentParser(prog="osg-ce-attributes-generator", description=__doc__)
     parser.add_argument("--version", action="version", version="%(prog)s " + __version__)
     parser.add_argument(
         "config_location",
         nargs="?",
         default="/etc/osg/config.d",
-        metavar="FILE_OR_DIRECTORY",
-        help="Where to load configuration from. "
-             "If this is a directory, will load every *.ini file in that directory. "
-             "Default: %(default)s. "
-             "If '-', will read from STDIN.",
+        help="A file or directory to load configuration from. "
+             "If this is a directory, load every *.ini file in that directory. "
+             "If '-', read from STDIN. "
+             "Default: %(default)s.",
     )
     parser.add_argument(
         "output",
         nargs="?",
         default="-",
-        metavar="FILE",
-        help="Write output to this file.  If '-' or unspecified, will write to STDOUT.",
+        help="A file to write attributes to. If '-' or unspecified, write to STDOUT.",
     )
     parser.add_argument(
         "--resource",
@@ -90,7 +86,7 @@ def get_options(args):
         help="A comma-separated list of batch systems used by the resource. "
         f'Recognized batch systems are: {", ".join(BATCH_SYSTEMS)}. '
         "Equivalent to enabling the batch system sections in the 20-*.ini files, "
-        "or, if using Bosco, setting 'batch_system' in the 'Bosco' section."
+        "or, if using BOSCO, setting 'batch' in the 'BOSCO' section."
     )
 
     return parser.parse_args(args)
@@ -103,11 +99,14 @@ def main(argv):
         config = load_configs(options.config_location)
         if "Site Information" not in config:
             config.add_section("Site Information")
+        # Override config values with values from the command line
         if options.resource is not None:
             config["Site Information"]["resource"] = options.resource
         if options.resource_group is not None:
             config["Site Information"]["resource_group"] = options.resource_group
         if options.batch_systems is not None:
+            # hack since there's no (documented) Site Information.batch_systems option
+            # but I can still use it for passing a parameter
             config["Site Information"]["batch_systems"] = options.batch_systems
         output_str = get_ce_attributes_str(config)
         if options.output and options.output != "-":

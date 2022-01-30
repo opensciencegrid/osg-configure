@@ -44,7 +44,7 @@ setup(name='osg-configure',
       maintainer_email='matyas@cs.wisc.edu',
       url='http://www.opensciencegrid.org',
       packages=['osg_configure', 'osg_configure.modules', 'osg_configure.configure_modules'],
-      scripts=['scripts/osg-configure', 'scripts/osg-ce-attribs-gen'],
+      scripts=['scripts/osg-configure', 'scripts/osg-ce-attributes-generator'],
       data_files=get_data_files(),
       classifiers=[
           "Development Status :: 6 - Mature",
