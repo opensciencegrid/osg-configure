@@ -56,9 +56,9 @@ def get_batch_systems_from_config(config: ConfigParser) -> str:
                 if config.getboolean(section=batch_system, option="enabled", fallback=None):
                     batch_systems.append(batch_system)
 
-        # Special case: Bosco (see SOFTWARE-3720); use the Bosco.batch argument.
-        if config.getboolean("Bosco", "enabled", fallback=False):
-            bosco_batch = config.get("Bosco", "batch", fallback=None)
+        # Special case: BOSCO (see SOFTWARE-3720); use the BOSCO.batch argument.
+        if config.getboolean("BOSCO", "enabled", fallback=False):
+            bosco_batch = config.get("BOSCO", "batch", fallback=None)
             if bosco_batch:
                 try:
                     batch_systems.append(BATCH_SYSTEMS_CASE_MAP[bosco_batch.lower()])
