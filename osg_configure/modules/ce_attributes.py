@@ -38,7 +38,7 @@ def get_resource_group_from_config(config: ConfigParser) -> str:
 
 
 def get_batch_systems_from_config(config: ConfigParser) -> str:
-    batch_systems = []
+    batch_systems = set()
 
     siteinfo_batch_systems = config.get("Site Information", "batch_systems", fallback=None)
     if siteinfo_batch_systems is not None:
@@ -46,7 +46,7 @@ def get_batch_systems_from_config(config: ConfigParser) -> str:
         split_batch_systems = utilities.split_comma_separated_list(siteinfo_batch_systems)
         for batch_system in split_batch_systems:
             try:
-                batch_systems.append(BATCH_SYSTEMS_CASE_MAP[batch_system.lower()])
+                batch_systems.add(BATCH_SYSTEMS_CASE_MAP[batch_system.lower()])
             except KeyError:
                 raise SettingError("Unrecognized batch system %s" % batch_system)
     else:
@@ -54,18 +54,18 @@ def get_batch_systems_from_config(config: ConfigParser) -> str:
         for batch_system in BATCH_SYSTEMS:
             if batch_system in config:
                 if config.getboolean(section=batch_system, option="enabled", fallback=None):
-                    batch_systems.append(batch_system)
+                    batch_systems.add(batch_system)
 
         # Special case: BOSCO (see SOFTWARE-3720); use the BOSCO.batch argument.
         if config.getboolean("BOSCO", "enabled", fallback=False):
             bosco_batch = config.get("BOSCO", "batch", fallback=None)
             if bosco_batch:
                 try:
-                    batch_systems.append(BATCH_SYSTEMS_CASE_MAP[bosco_batch.lower()])
+                    batch_systems.add(BATCH_SYSTEMS_CASE_MAP[bosco_batch.lower()])
                 except KeyError:
                     raise SettingError("Unrecognized batch system %s in Bosco section" % bosco_batch)
 
-    return utilities.classad_quote(",".join(batch_systems))
+    return utilities.classad_quote(",".join(sorted(batch_systems)))
 
 
 def get_resource_catalog_from_config(config: ConfigParser) -> str:
