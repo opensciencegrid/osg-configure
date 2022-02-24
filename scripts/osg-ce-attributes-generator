@@ -1,0 +1,125 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+OSG CE Attributes Generator:
+a standalone script to generate a condor config file for advertising
+a CE resource to the CE Collector.
+"""
+
+from argparse import ArgumentParser
+from configparser import ConfigParser
+import glob
+import os
+import sys
+
+if __name__ == "__main__" and __package__ is None:
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# local imports here
+from osg_configure.modules.ce_attributes import BATCH_SYSTEMS, get_ce_attributes_str
+from osg_configure.modules.exceptions import Error
+from osg_configure.version import __version__
+
+
+def warn(*args, **kwargs):
+    kwargs['file'] = sys.stderr
+    print("***", *args, **kwargs)
+
+
+def load_configs(config_location: str) -> ConfigParser:
+    config = ConfigParser()
+
+    if config_location == "-":
+        config.read_string(sys.stdin.read(), "<stdin>")
+        return config
+
+    config_file_list = []
+    if os.path.isdir(config_location):
+        config_file_list.extend(sorted(glob.glob(os.path.join(config_location, "[!.]*.ini"))))
+    else:
+        config_file_list.append(config_location)
+
+    read_files = config.read(config_file_list)
+    if not read_files:
+        raise Error(f"No valid config files found in {config_location}")
+
+    return config
+
+
+def get_options(args):
+    """Parse, validate, and transform command-line options."""
+    parser = ArgumentParser(prog="osg-ce-attributes-generator", description=__doc__)
+    parser.add_argument("--version", action="version", version="%(prog)s " + __version__)
+    parser.add_argument(
+        "config_location",
+        nargs="?",
+        default="/etc/osg/config.d",
+        help="A file or directory to load configuration from. "
+             "If this is a directory, load every *.ini file in that directory. "
+             "If '-', read from STDIN. "
+             "Default: %(default)s.",
+    )
+    parser.add_argument(
+        "output",
+        nargs="?",
+        default="-",
+        help="A file to write attributes to. If '-' or unspecified, write to STDOUT.",
+    )
+    parser.add_argument(
+        "--resource",
+        metavar="RESOURCE_NAME",
+        default=None,
+        help="The Resource name to use, which should match your Topology registration. "
+        "Equivalent to 'resource' in the 'Site Information' section."
+    )
+    parser.add_argument(
+        "--resource-group",
+        metavar="RESOURCE_GROUP_NAME",
+        default=None,
+        help="The Resource Group name to use, which should match your Topology registration. "
+        "Equivalent to 'resource_group' in the 'Site Information' section."
+    )
+    parser.add_argument(
+        "--batch-systems",
+        metavar="BATCH_SYSTEMS_LIST",
+        default=None,
+        help="A comma-separated list of batch systems used by the resource. "
+        f'Recognized batch systems are: {", ".join(BATCH_SYSTEMS)}. '
+        "Equivalent to enabling the batch system sections in the 20-*.ini files, "
+        "or, if using BOSCO, setting 'batch' in the 'BOSCO' section."
+    )
+
+    return parser.parse_args(args)
+
+
+def main(argv):
+    options = get_options(argv[1:])
+
+    try:
+        config = load_configs(options.config_location)
+        if "Site Information" not in config:
+            config.add_section("Site Information")
+        # Override config values with values from the command line
+        if options.resource is not None:
+            config["Site Information"]["resource"] = options.resource
+        if options.resource_group is not None:
+            config["Site Information"]["resource_group"] = options.resource_group
+        if options.batch_systems is not None:
+            # hack since there's no (documented) Site Information.batch_systems option
+            # but I can still use it for passing a parameter
+            config["Site Information"]["batch_systems"] = options.batch_systems
+        output_str = get_ce_attributes_str(config)
+        if options.output and options.output != "-":
+            with open(options.output, "w") as outfh:
+                print(output_str, file=outfh)
+        else:
+            print(output_str)
+    except Error as e:
+        print(e, file=sys.stderr)
+        return 1
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))

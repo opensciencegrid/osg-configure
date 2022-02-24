@@ -2,7 +2,7 @@
  for CE collector info services"""
 
 import re
-import configparser as ConfigParser
+from configparser import ConfigParser
 import subprocess
 import logging
 
@@ -10,6 +10,7 @@ from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
 from osg_configure.modules import configfile
 from osg_configure.modules.baseconfiguration import BaseConfiguration
+from osg_configure.modules import ce_attributes
 from osg_configure.modules import subcluster
 from osg_configure.modules import reversevomap
 
@@ -22,10 +23,6 @@ USER_VO_MAP_LOCATION = '/var/lib/osg/user-vo-map'
 BAN_VOMS_MAPFILE = reversevomap.BAN_MAPFILE
 BAN_MAPFILE = '/etc/grid-security/ban-mapfile'
 
-# BATCH_SYSTEMS here is both the config sections for the batch systems
-# and the values in the OSG_BatchSystems attribute since they are
-# coincidentally the same. If they ever change, make a mapping.
-BATCH_SYSTEMS = ['Condor', 'LSF', 'PBS', 'SGE', 'SLURM']
 
 try:
     import classad
@@ -55,13 +52,10 @@ class InfoServicesConfiguration(BaseConfiguration):
 
         self.ce_collectors = []
         self.ce_collector_required_rpms_installed = utilities.rpm_installed('htcondor-ce')
-        self.osg_resource = ""
-        self.osg_resource_group = ""
-        self.enabled_batch_systems = []
         self.htcondor_gateway_enabled = None
-        self.resource_catalog = None
         self.authorization_method = None
-        self.subcluster_sections = None
+        self.configuration = None
+        self.ce_attributes_str = ""
 
         self.log("InfoServicesConfiguration.__init__ completed")
 
@@ -80,7 +74,7 @@ class InfoServicesConfiguration(BaseConfiguration):
         else:
             return val.split(',')
 
-    def parse_configuration(self, configuration):
+    def parse_configuration(self, configuration: ConfigParser):
         """
         Try to get configuration information from ConfigParser or SafeConfigParser object given
         by configuration and write recognized settings to attributes dict
@@ -113,27 +107,9 @@ class InfoServicesConfiguration(BaseConfiguration):
 
         self.ce_collectors = self._parse_ce_collectors(self.options['ce_collectors'].value)
 
-        def csg(section, option):
-            return utilities.config_safe_get(configuration, section, option, None)
+        self.htcondor_gateway_enabled = configuration.get('Gateway', 'htcondor_gateway_enabled', fallback=False)
 
-        def csgbool(section, option):
-            return utilities.config_safe_getboolean(configuration, section, option, False)
-
-        # We get some values for HTCondor-CE from the Site Information section
-        self.osg_resource = csg('Site Information', 'resource')
-        self.osg_resource_group = csg('Site Information', 'resource_group')
-        # and the enabled batch systems from their respective sections
-        self.enabled_batch_systems = [bs for bs in BATCH_SYSTEMS if csgbool(bs, 'enabled')]
-
-        self.htcondor_gateway_enabled = csgbool('Gateway', 'htcondor_gateway_enabled')
-
-        self.subcluster_sections = ConfigParser.SafeConfigParser()
-
-        for section in configuration.sections():
-            if subcluster.is_subcluster_like(section):
-                self.subcluster_sections.add_section(section)
-                for key, value in configuration.items(section):
-                    self.subcluster_sections.set(section, key, value)
+        self.configuration = configuration  # save for later: the ce_attributes module reads the whole config.
 
         if utilities.ce_installed() and not subcluster.check_config(configuration):
             self.log("On a CE but no valid 'Subcluster', 'Resource Entry', or 'Pilot' sections defined."
@@ -147,7 +123,7 @@ class InfoServicesConfiguration(BaseConfiguration):
         # configure(), but at this point we don't have a way of knowing what
         # default_allowed_vos should be.
         if self.ce_collector_required_rpms_installed and self.htcondor_gateway_enabled and classad is not None:
-            subcluster.resource_catalog_from_config(self.subcluster_sections, default_allowed_vos=["*"])
+            subcluster.resource_catalog_from_config(configuration, default_allowed_vos=["*"])
 
         self.log('InfoServicesConfiguration.parse_configuration completed')
 
@@ -171,14 +147,12 @@ class InfoServicesConfiguration(BaseConfiguration):
             if classad is None:
                 self.log("Cannot configure HTCondor CE info services: unable to import HTCondor Python bindings."
                          "\nEnsure the 'classad' Python module is installed and accessible to Python scripts."
-                         "\nIf using HTCondor from RPMs, install the 'condor-python' RPM."
+                         "\nIf using HTCondor from RPMs, install the 'python3-condor' RPM."
                          "\nIf not, you may need to add the directory containing the Python bindings to PYTHONPATH."
                          "\nHTCondor version must be at least 8.2.0.", level=logging.WARNING)
             else:
                 try:
-                    self.resource_catalog = subcluster.resource_catalog_from_config(
-                        self.subcluster_sections,
-                        default_allowed_vos=["*"])
+                    self.ce_attributes_str = ce_attributes.get_ce_attributes_str(self.configuration)
                 except exceptions.SettingError as err:
                     self.log("Error in info services configuration: %s" % err, level=logging.ERROR)
                     return False
@@ -230,27 +204,10 @@ class InfoServicesConfiguration(BaseConfiguration):
         CE-Collector to advertise
 
         """
-        schedd_attrs_list = ["$(SCHEDD_ATTRS)"]
-        attributes_file_lines = []
-
-        for name, value in [
-            ('OSG_Resource', self.osg_resource),
-            ('OSG_ResourceGroup', self.osg_resource_group),
-            ('OSG_BatchSystems', ",".join(self.enabled_batch_systems))
-        ]:
-            attributes_file_lines.append("%s = %s" % (name, utilities.classad_quote(value)))
-            schedd_attrs_list.append(name)
-
-        if self.resource_catalog:
-            attributes_file_lines.append(self.resource_catalog.compose_text())
-            schedd_attrs_list.append('OSG_ResourceCatalog')
-
         attributes_file_contents = (
             "# Do not edit - file generated by osg-configure\n"
-            + "\n".join(attributes_file_lines) + "\n"
-            + "SCHEDD_ATTRS = " + " ".join(schedd_attrs_list) + "\n"
+            + self.ce_attributes_str + "\n"
         )
-
         return utilities.atomic_write(attributes_file, attributes_file_contents)
 
     def _write_ce_collector_file(self, info_services_file):
