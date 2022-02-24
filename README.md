@@ -509,15 +509,22 @@ You will also need `resource` and `resource_group` from the `Site Information` s
 You can also use `--resource` and `--resource-group` on the command line to specify these
 instead.
 
-In addition, you should also have at least one batch system section with the attribute `enabled=True`, e.g.
+In addition, you need to specify at least one batch system.
+The recognized batch systems are "Condor", "LSF", "PBS", "SGE", and "SLURM".
+You can specify available batch systems in one of three ways:
+
+1.  Have a batch system section (one of the `20-*.ini` files) with the attribute `enabled=True`, e.g.
 ```ini
 [Condor]
 enabled=True
 ```
-The recognized batch systems are "Condor", "LSF", "PBS", "SGE", and "SLURM".
-If you are using BOSCO, specify your batch system in `20-bosco.ini`.
+2.  If you are using BOSCO, specify your batch system in the `batch` attribute in `20-bosco.ini`.
 
-Alternatively, you can specify a comma-separated list with `--batch-systems` on the command line.
+3.  Specify a comma-separated list with `--batch-systems` on the command line.
+
+
+Batch systems specified on the command line take precedence.  If you have both a BOSCO section
+and an enabled batch system section, all of them will be listed in the attributes file.
 
 
 Invocation
