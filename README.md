@@ -506,7 +506,8 @@ See the [31-cluster.ini](#31-clusterini--subcluster-and-resource-entry-sections)
 
 You will also need `resource` and `resource_group` from the `Site Information` section
 ([40-siteinfo.ini](#40-siteinfoini--site-information-section)).
-You can also use `--resource` and `--resource-group` on the command line to specify these.
+You can also use `--resource` and `--resource-group` on the command line to specify these
+instead.
 
 In addition, you should also have at least one batch system section with the attribute `enabled=True`, e.g.
 ```ini
