@@ -22,8 +22,6 @@ GRATIA_CONFIG_FILES = {
 
 CE_PROBE_RPMS = ['gratia-probe-htcondor-ce']
 
-CONDOR_CE_CONFIG_VAL = "/usr/bin/condor_ce_config_val"
-
 
 def requirements_are_installed():
     return (utilities.gateway_installed() and
@@ -246,7 +244,7 @@ in your config.ini file."""
             self.log("GratiaConfiguration.check_attributes completed")
             return True
         status = self._check_servers()
-        if 'htcondor-ce' in self._probe_config:
+        if 'htcondor-ce' in self._probe_config and requirements_are_installed():
             status &= self._verify_gratia_dirs_for_htcondor_ce_probe()
         self.log("GratiaConfiguration.check_attributes completed")
         return status
@@ -441,9 +439,6 @@ in your config.ini file."""
 
         """
 
-        if not os.path.exists(CONDOR_CE_CONFIG_VAL):
-            raise exceptions.ConfigureError(f"{CONDOR_CE_CONFIG_VAL} missing")
-
         if self.condor_enabled:
             history_dir = self._get_condor_history_dir()
             condor_name = "Condor"
@@ -494,27 +489,14 @@ in your config.ini file."""
             self.logger.error(advice_on_error)
             return False
 
-    def _get_condor_history_dir(self):
+    @staticmethod
+    def _get_condor_history_dir():
         history_dir = utilities.get_condor_config_val("PER_JOB_HISTORY_DIR", subsystem="SCHEDD", quiet_undefined=True)
         return history_dir
 
-    def _get_condor_ce_history_dir(self):
-        cmd = [CONDOR_CE_CONFIG_VAL, '-subsystem', 'SCHEDD', 'PER_JOB_HISTORY_DIR']
-        try:
-            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="latin-1")
-            history_dir, errtext = process.communicate()
-            if process.returncode != 0:
-                self.logger.info("While checking gratia parameters: %s failed. Output follows:\n%s",
-                                 CONDOR_CE_CONFIG_VAL, errtext)
-                return None
-        except OSError as err:
-            self.logger.info("While checking gratia parameters: Error running %s: %s",
-                             CONDOR_CE_CONFIG_VAL, err)
-            return None
-        history_dir = history_dir.strip()
-        if history_dir.startswith('Not defined'):
-            return None
-        return history_dir
+    @staticmethod
+    def _get_condor_ce_history_dir():
+        return utilities.get_condor_ce_config_val("PER_JOB_HISTORY_DIR", subsystem="SCHEDD", quiet_undefined=True)
 
     @staticmethod
     def replace_setting(buf, setting, value, xml_file=True):
