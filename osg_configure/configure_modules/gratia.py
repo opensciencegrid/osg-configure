@@ -69,6 +69,7 @@ in your config.ini file."""
         self._old_job_managers = ['pbs', 'sge', 'lsf', 'condor', 'slurm']
         self._probe_config = {}
         self.grid_group = 'OSG'
+        self.condor_enabled = False
 
         self.log("GratiaConfiguration.__init__ completed")
 
@@ -126,6 +127,10 @@ in your config.ini file."""
             return
 
         self._set_enabled_probe_host(self.options['probes'].value)
+
+        if utilities.config_safe_getboolean(configuration, "Condor", "enabled"):
+            self.condor_enabled = True
+
         self.log('GratiaConfiguration.parse_configuration completed')
 
     def configure(self, attributes):
@@ -429,13 +434,22 @@ in your config.ini file."""
     def _verify_gratia_dirs_for_htcondor_ce_probe(self) -> bool:
         """
         Verify that the HTCondor-CE PER_JOB_HISTORY_DIR and the DataFolder
-        directory are the same and warn the admin if the two don't match
+        directory are the same and warn the admin if the two don't match.
+
+        If the batch system is condor, look at its PER_JOB_HISTORY_DIR instead;
+        we want the routed jobs, but those are moved to the batch system schedd.
+
         """
 
         if not os.path.exists(CONDOR_CE_CONFIG_VAL):
             raise exceptions.ConfigureError(f"{CONDOR_CE_CONFIG_VAL} missing")
 
-        history_dir = self._get_condor_ce_history_dir()
+        if self.condor_enabled:
+            history_dir = self._get_condor_history_dir()
+            condor_name = "Condor"
+        else:
+            history_dir = self._get_condor_ce_history_dir()
+            condor_name = "HTCondor-CE"
 
         config_location = GRATIA_CONFIG_FILES['htcondor-ce']
         contents = utilities.read_file(config_location, default="")
@@ -445,7 +459,7 @@ in your config.ini file."""
 
         advice_on_error = (
             f"Make sure DataFolder in {config_location} ({data_folder or 'missing'})"
-            f" and PER_JOB_HISTORY_DIR in the HTCondor-CE config ({history_dir or 'missing'})"
+            f" and PER_JOB_HISTORY_DIR in the {condor_name} config ({history_dir or 'missing'})"
             f" exist and are the same, accessible directory."
         )
 
@@ -479,6 +493,10 @@ in your config.ini file."""
             self.logger.error("Unexpected error checking DataFolder and PER_JOB_HISTORY_DIR: %s", e)
             self.logger.error(advice_on_error)
             return False
+
+    def _get_condor_history_dir(self):
+        history_dir = utilities.get_condor_config_val("PER_JOB_HISTORY_DIR", subsystem="SCHEDD", quiet_undefined=True)
+        return history_dir
 
     def _get_condor_ce_history_dir(self):
         cmd = [CONDOR_CE_CONFIG_VAL, '-subsystem', 'SCHEDD', 'PER_JOB_HISTORY_DIR']
