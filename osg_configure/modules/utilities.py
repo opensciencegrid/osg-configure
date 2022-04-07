@@ -296,7 +296,7 @@ def get_condor_config(default_config='/etc/condor/condor_config'):
         return os.path.join(get_condor_location(), 'etc/condor_config')
 
 
-def get_condor_config_val(variable, executable='condor_config_val', quiet_undefined=False):
+def get_condor_config_val(variable, executable=None, quiet_undefined=False, subsystem=None):
     """
     Use condor_config_val to return the expanded value of a variable.
 
@@ -306,12 +306,24 @@ def get_condor_config_val(variable, executable='condor_config_val', quiet_undefi
                  poll condor_ce_config_val or condor_cron_config_val)
     quiet_undefined - set to True if messages from condor_config_val
                  claiming the variable is undefined should be silenced
+    subsystem - if passed, query a specific subsystem (SCHEDD, COLLECTOR, etc.)
     Returns:
     The stripped output of condor_config_val, or None if
     condor_config_val reports an error.
     """
+    if not executable:
+        condor_location = get_condor_location()
+        if condor_location:
+            executable = os.path.join(condor_location, "bin/condor_config_val")
+        else:
+            executable = "condor_config_val"
+
     try:
-        process = subprocess.Popen([executable, variable],
+        cmd = [executable]
+        if subsystem:
+            cmd.extend(["-subsystem", subsystem])
+        cmd.append(variable)
+        process = subprocess.Popen(cmd,
                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                    encoding="latin-1")
         output, error = process.communicate()
@@ -322,6 +334,11 @@ def get_condor_config_val(variable, executable='condor_config_val', quiet_undefi
         return output.strip()
     except OSError:
         return None
+
+
+def get_condor_ce_config_val(variable, *args, **kwargs):
+    kwargs["executable"] = "/usr/bin/condor_ce_config_val"
+    return get_condor_config_val(variable, *args, **kwargs)
 
 
 def read_file(filename, default=None):
