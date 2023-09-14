@@ -31,15 +31,6 @@ def requirements_are_installed():
 class GratiaConfiguration(BaseConfiguration):
     """Class to handle attributes and configuration related to gratia services"""
 
-    metric_probe_deprecation = """WARNING:
-The metric probe should no longer be configured using 'probes' option in the 
-[Gratia] section. All OSG installations will automatically report to the GOC 
-RSV collector.  If you want to send to a different collector use the 
-'gratia_collector' option in the [RSV] section and specify the 
-hostname:port of the desired collector.  If you do not understand what to 
-do then just remove the metric probe specification in the 'probes' option 
-in your config.ini file."""
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(__name__)
@@ -336,9 +327,6 @@ in your config.ini file."""
         """
         valid = True
         for probe in self.enabled_probe_hosts:
-            if probe == 'metric':
-                sys.stdout.write(self.metric_probe_deprecation + "\n")
-                self.log(self.metric_probe_deprecation, level=logging.WARNING)
             server = self.enabled_probe_hosts[probe].split(':')[0]
             if not validation.valid_domain(server, False):
                 err_mesg = "The server specified for probe %s is not " % probe
@@ -374,6 +362,10 @@ in your config.ini file."""
             probe_name = tmp[0].strip()
             if probe_name == 'gridftp':
                 probe_name = 'gridftp-transfer'
+            if probe_name == 'metric':
+                self.log("The 'metric' probe is not supported",
+                         level=logging.WARNING)
+                continue
             if len(tmp[1:]) == 1:
                 self.enabled_probe_hosts[probe_name] = tmp[1]
             else:
