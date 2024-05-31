@@ -31,7 +31,7 @@ ATTRIBUTE_MAPPINGS = [
     RCAttribute("memory", "Memory", int),
     RCAttribute("allowed_vos", "AllowedVOs", _to_classad_list),
     RCAttribute("max_wall_time", "MaxWallTime", int),
-    # queue is special
+    RCAttribute("queue", "Queue", utilities.classad_quote),
     RCAttribute("subclusters", "Subclusters", _to_classad_list),
     RCAttribute("vo_tag", "VOTag", utilities.classad_quote),
     # extra_requirements is special
