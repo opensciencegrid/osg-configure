@@ -155,7 +155,7 @@ This section is contained in `/etc/osg/config.d/10-gateway.ini` which is provide
 
 | Option                         | Values Accepted | Explanation                                                                                                                                                                              |
 |--------------------------------|-----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **htcondor\_gateway\_enabled** | `True`, `False` | (default True). True if the CE is using HTCondor-CE, False otherwise. HTCondor-CE will be configured to support enabled batch systems. RSV will use HTCondor-CE to launch remote probes. |
+| **htcondor\_gateway\_enabled** | `True`, `False` | (default True). True if the CE is using HTCondor-CE, False otherwise. HTCondor-CE will be configured to support enabled batch systems. |
 | **job\_envvar\_path**          | String          | The value of the PATH environment variable to put into HTCondor jobs running with HTCondor-CE. This value is ignored if not using that batch system/gateway combination.                 |
 
 
@@ -320,7 +320,6 @@ This section is contained in `/etc/osg/config.d/30-gratia.ini` which is provided
 **Note for probes:**<br>
 Legal values for the `probe_type` part are:
 
--   `metric` (for RSV)
 -   `jobmanager` (for the appropriate jobmanager probe)
 -   `gridftp` (for the GridFTP transfer probe)
 
