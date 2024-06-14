@@ -53,7 +53,7 @@ class RCEntry(object):
         self.memory = kwargs.get('memory', 0)
         self.allowed_vos = kwargs.get('allowed_vos', None)
         self.max_wall_time = kwargs.get('max_wall_time', None)
-        self.queue = kwargs.get('queue', '')
+        self.queue = kwargs.get('queue', None)
         self.subclusters = kwargs.get('subclusters', None)
         self.vo_tag = kwargs.get('vo_tag', None)
         self.extra_requirements = kwargs.get('extra_requirements', '')
