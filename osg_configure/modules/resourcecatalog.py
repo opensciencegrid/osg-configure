@@ -31,7 +31,7 @@ ATTRIBUTE_MAPPINGS = [
     RCAttribute("memory", "Memory", int),
     RCAttribute("allowed_vos", "AllowedVOs", _to_classad_list),
     RCAttribute("max_wall_time", "MaxWallTime", int),
-    # queue is special
+    RCAttribute("queue", "Queue", utilities.classad_quote),
     RCAttribute("subclusters", "Subclusters", _to_classad_list),
     RCAttribute("vo_tag", "VOTag", utilities.classad_quote),
     # extra_requirements is special
@@ -53,7 +53,7 @@ class RCEntry(object):
         self.memory = kwargs.get('memory', 0)
         self.allowed_vos = kwargs.get('allowed_vos', None)
         self.max_wall_time = kwargs.get('max_wall_time', None)
-        self.queue = kwargs.get('queue', '')
+        self.queue = kwargs.get('queue', None)
         self.subclusters = kwargs.get('subclusters', None)
         self.vo_tag = kwargs.get('vo_tag', None)
         self.extra_requirements = kwargs.get('extra_requirements', '')

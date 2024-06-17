@@ -158,6 +158,7 @@ allowed_vos = osg, atlas
     MaxWallTime = 1440; \
     Memory = 4000; \
     Name = "red.unl.edu"; \
+    Queue = "red"; \
     Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory && member(TARGET.VO, AllowedVOs) && TARGET.VOTag == "ANALYSIS"; \
     Transform = [ set_MaxMemory = RequestMemory; set_VOTag = "ANALYSIS"; set_remote_queue = "red"; set_xcount = RequestCPUs; ]; \
     VOTag = "ANALYSIS"; \
@@ -217,6 +218,7 @@ allowed_vos = osg, atlas
     MaxWallTime = 1440; \
     Memory = 4000; \
     Name = "glow.chtc.wisc.edu"; \
+    Queue = "blue"; \
     Requirements = TARGET.RequestCPUs <= CPUs && TARGET.RequestMemory <= Memory && member(TARGET.VO, AllowedVOs); \
     Transform = [ set_MaxMemory = RequestMemory; set_WantRHEL6 = 1; set_remote_queue = "blue"; set_xcount = RequestCPUs; ]; \
   ] \
@@ -247,6 +249,7 @@ allowed_vos = osg, atlas
     Memory = 2500; \
     Name = "glow.chtc.wisc.edu"; \
     OS = "rhel8"; \
+    Queue = ""; \
     RequireSingularity = True; \
     SendTests = True; \
     WholeNode = False; \
@@ -308,6 +311,7 @@ os = rhel8
     MaxWallTime = 2880; \
     Memory = 8192; \
     Name = "GPU"; \
+    Queue = "gpu_queue_name"; \
     RequireSingularity = True; \
     SendTests = True; \
     WholeNode = False; \
