@@ -327,6 +327,17 @@ os = rhel8
     WholeNode = True; \
   ], \
   [ \
+    AllowedVOs = { "atlas" }; \
+    EstimatedCPUs = 32; \
+    IsPilotEntry = True; \
+    MaxPilots = 1000; \
+    MaxWallTime = 1440; \
+    Name = "WholeNode_with_estimated_cpucount"; \
+    RequireSingularity = True; \
+    SendTests = True; \
+    WholeNode = True; \
+  ], \
+  [ \
     AllowedVOs = { "osg", "cms" }; \
     CPUs = 8; \
     IsPilotEntry = True; \
