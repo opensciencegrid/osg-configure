@@ -29,6 +29,7 @@ ATTRIBUTE_MAPPINGS = [
     RCAttribute("name", "Name", utilities.classad_quote),
     RCAttribute("cpus", "CPUs", int),
     RCAttribute("memory", "Memory", int),
+    RCAttribute("estimated_cpucount", "EstimatedCPUs", int),
     RCAttribute("allowed_vos", "AllowedVOs", _to_classad_list),
     RCAttribute("max_wall_time", "MaxWallTime", int),
     RCAttribute("queue", "Queue", utilities.classad_quote),
@@ -65,6 +66,7 @@ class RCEntry(object):
         self.os = kwargs.get('os', None)
         self.send_tests = kwargs.get('send_tests', None)
         self.is_pilot = kwargs.get('is_pilot', None)
+        self.estimated_cpucount = kwargs.get('estimated_cpucount', None)
 
     def get_requirements(self, attributes):
         if self.is_pilot:

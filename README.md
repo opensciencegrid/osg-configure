@@ -432,15 +432,16 @@ Valid values for the **os** option are: `rhel6`, `rhel7`, `rhel8`, or `ubuntu18`
 
 The following attributes are optional:
 
-| Option              | Values Accepted      | Explanation                                                                                                                              |
-|---------------------|----------------------|------------------------------------------------------------------------------------------------------------------------------------------|
-| **cpucount**        | Positive Integer     | Number of cores that a job using this type of pilot can get.  Default `1`; ignored if **whole\_node** is `True`                          |
-| **ram\_mb**         | Positive Integer     | Maximum amount of memory (in MB) that a job using this type of pilot can get.  Default `2500`; ignored if **whole\_node** is `True`      |
-| **whole\_node**     | `True`, `False`      | Whether this type of pilot can use all the resources on a node.  Default `False`; **cpucount** and **ram\_mb** are ignored if this is `True` |
-| **gpucount**        | Non-negative Integer | The number of GPUs to request.  Default `0`                                                                                              |
-| **max\_wall\_time** | Positive Integer     | Maximum wall-clock time, in minutes, that a job is allowed to run on this resource.  Default `1440`, i.e. 24 hours                       |
-| **queue**           | String               | The queue or partition which jobs should be submitted to in order to run on this resource (see note).  Not set by default                |
-| **send\_tests**     | `True`, `False`      | Send test pilots.  Default `False`; set it to `True` for testing job routes or pilot types                                               |
+| Option              | Values Accepted      | Explanation                                                                                                                                                                                        |
+|---------------------|----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **cpucount**        | Positive Integer     | Number of cores that a job using this type of pilot can get.  Default `1`; ignored if **whole\_node** is `True`                                                                                    |
+| **ram\_mb**         | Positive Integer     | Maximum amount of memory (in MB) that a job using this type of pilot can get.  Default `2500`; ignored if **whole\_node** is `True`                                                                |
+| **whole\_node**     | `True`, `False`      | Whether this type of pilot can use all the resources on a node.  Default `False`; **cpucount** and **ram\_mb** are ignored if this is `True`; **estimated\_cpucount** is ignored if this is `False` |
+| **estimated\_cpucount** | Positive Integer | The number of CPUs we expect on average when requesting a whole node.  Ignored if **whole\_node** is `False`                                                                                       |
+| **gpucount**        | Non-negative Integer | The number of GPUs to request.  Default `0`                                                                                                                                                        |
+| **max\_wall\_time** | Positive Integer     | Maximum wall-clock time, in minutes, that a job is allowed to run on this resource.  Default `1440`, i.e. 24 hours                                                                                 |
+| **queue**           | String               | The queue or partition which jobs should be submitted to in order to run on this resource (see note).  Not set by default                                                                          |
+| **send\_tests**     | `True`, `False`      | Send test pilots.  Default `False`; set it to `True` for testing job routes or pilot types                                                                                                         |
 
 **Note:** **queue** is equivalent to the HTCondor grid universe classad attribute **remote\_queue**.
 

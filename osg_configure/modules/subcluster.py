@@ -33,6 +33,7 @@ ENTRIES = {
     "subclusters":         (OPTIONAL, LIST),
     "vo_tag":              (OPTIONAL, STRING),
     # added for Pilots
+    "estimated_cpucount":  (OPTIONAL, POSITIVE_INT),
     "gpucount":            (OPTIONAL, POSITIVE_INT),
     "max_pilots":          (REQUIRED_FOR_PILOT, POSITIVE_INT),
     "os":                  (OPTIONAL, STRING),
@@ -72,6 +73,7 @@ ENTRY_RANGES = {
     'maxmemory': (512, 8388608),
     'cores_per_node': (1, 8192),
     'cpucount': (1, 8192),
+    'estimated_cpucount': (1, 8192),
 }
 
 CPUCOUNT_DEFAULT = 1
@@ -219,7 +221,7 @@ def rce_section_get_name(config: ConfigParser, section: str) -> Optional[str]:
     """
     m = re.search(r"(?i:subcluster|resource entry|pilot)\s+(.+)", section)
     if not m:
-        return
+        return None
     default_name = m.group(1)
     return config[section].get("name", default_name).strip()
 
@@ -235,6 +237,7 @@ class ResourceCatalog:  # forward declaration for type checking
 def resource_catalog_from_config(config: ConfigParser, default_allowed_vos: List[str] = None) -> ResourceCatalog:
     """
     Create a ResourceCatalog from the subcluster entries in a config
+    :param config: The config to pull the subcluster information from
     :param default_allowed_vos: The allowed_vos to use if the user specified "*"
     """
     logger = logging.getLogger(__name__)
@@ -321,9 +324,12 @@ def resource_catalog_from_config(config: ConfigParser, default_allowed_vos: List
         if is_pilot(section):
             rcentry.max_pilots = safeget("max_pilots")
             rcentry.whole_node = safegetbool("whole_node", False)
+            rcentry.estimated_cpucount = safeget("estimated_cpucount")
             if rcentry.whole_node:
                 rcentry.cpus = None
                 rcentry.memory = None
+            else:
+                rcentry.estimated_cpucount = None
             rcentry.require_singularity = safegetbool("require_singularity", True)
             rcentry.os = safeget("os")
             rcentry.send_tests = safegetbool("send_tests", True)
