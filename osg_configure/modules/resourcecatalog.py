@@ -1,4 +1,7 @@
-import classad
+try:
+    import classad2 as classad
+except ImportError:
+    import classad
 import logging
 from collections import namedtuple
 from . import utilities

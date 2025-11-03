@@ -25,9 +25,9 @@ BAN_MAPFILE = '/etc/grid-security/ban-mapfile'
 
 
 try:
-    import classad
+    import classad2 as classad
 except ImportError:
-    classad = None
+    import classad
 
 
 class InfoServicesConfiguration(BaseConfiguration):
@@ -144,19 +144,12 @@ class InfoServicesConfiguration(BaseConfiguration):
             return True
 
         if self.ce_collector_required_rpms_installed and self.htcondor_gateway_enabled:
-            if classad is None:
-                self.log("Cannot configure HTCondor CE info services: unable to import HTCondor Python bindings."
-                         "\nEnsure the 'classad' Python module is installed and accessible to Python scripts."
-                         "\nIf using HTCondor from RPMs, install the 'python3-condor' RPM."
-                         "\nIf not, you may need to add the directory containing the Python bindings to PYTHONPATH."
-                         "\nHTCondor version must be at least 8.2.0.", level=logging.WARNING)
-            else:
-                try:
-                    self.ce_attributes_str = ce_attributes.get_ce_attributes_str(self.configuration)
-                except exceptions.SettingError as err:
-                    self.log("Error in info services configuration: %s" % err, level=logging.ERROR)
-                    return False
-                self._configure_ce_collector()
+            try:
+                self.ce_attributes_str = ce_attributes.get_ce_attributes_str(self.configuration)
+            except exceptions.SettingError as err:
+                self.log("Error in info services configuration: %s" % err, level=logging.ERROR)
+                return False
+            self._configure_ce_collector()
 
         self.log("InfoServicesConfiguration.configure completed")
         return True

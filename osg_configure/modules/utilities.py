@@ -563,7 +563,10 @@ def config_safe_getboolean(configuration: ConfigParser, section: str, option: st
 
 # Import classad here because it might not be available for e.g. SEs
 def classad_quote(input_value):
-    import classad
+    try:
+        import classad2 as classad
+    except ImportError:
+        import classad
     return classad.quote(str(input_value))
 
 
