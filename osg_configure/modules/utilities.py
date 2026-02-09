@@ -3,7 +3,6 @@ import errno
 import glob
 import logging
 import os
-import platform
 import re
 import socket
 import stat
@@ -524,15 +523,6 @@ def make_directory(dir_name, perms=0o755, uid=None, gid=None):
         return True
     except IOError:
         return False
-
-
-def get_os_version():
-    """
-    Get and return OS major version
-    """
-    version = platform.dist()[1]
-    version_list = [int(x) for x in version.split('.')]
-    return version_list
 
 
 def config_safe_get(configuration: ConfigParser, section: str, option: str, default=None) -> str:

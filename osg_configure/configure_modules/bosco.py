@@ -182,6 +182,7 @@ class BoscoConfiguration(JobManagerConfiguration):
             return True
         
         # Do all the things here!
+        # noinspection PyDeprecation
         self.bosco_cluster = shutil.which("condor_remote_cluster") or shutil.which("bosco_cluster")
 
         if not self.bosco_cluster and self.opt_val("install_cluster") != "never":
@@ -390,8 +391,8 @@ Host %(endpoint_host)s
         
         if not os.path.exists(config_path):
             return False
-        
-        host_re = re.compile("^\s*Host\s+%s\s*$" % host)
+
+        host_re = re.compile(r"^\s*Host\s+%s\s*$" % host)
 
         with open(config_path, "r", encoding="latin-1") as f:
             for line in f:
