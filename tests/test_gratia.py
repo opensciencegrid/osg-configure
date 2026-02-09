@@ -41,7 +41,7 @@ class TestGratia(unittest.TestCase):
         """
 
         config_file = get_test_config("gratia/gratia.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
@@ -71,7 +71,7 @@ class TestGratia(unittest.TestCase):
             return
 
         config_file = get_test_config("gratia/itb_default.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
@@ -100,7 +100,7 @@ class TestGratia(unittest.TestCase):
             return
 
         config_file = get_test_config("gratia/prod_default.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
@@ -129,7 +129,7 @@ class TestGratia(unittest.TestCase):
         if not gratia.requirements_are_installed():
             return
         config_file = get_test_config("gratia/itb_default2.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
@@ -149,7 +149,7 @@ class TestGratia(unittest.TestCase):
                              "expected %s" % (var, options[var].value, variables[var]))
 
         config_file = get_test_config("gratia/itb_default3.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
@@ -178,7 +178,7 @@ class TestGratia(unittest.TestCase):
         if not gratia.requirements_are_installed():
             return
         config_file = get_test_config("gratia/prod_default2.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
@@ -203,7 +203,7 @@ class TestGratia(unittest.TestCase):
         """
 
         config_file = get_test_config("gratia/disabled.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
@@ -222,7 +222,7 @@ class TestGratia(unittest.TestCase):
         """
 
         config_file = get_test_config("gratia/ignored.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
@@ -242,7 +242,7 @@ class TestGratia(unittest.TestCase):
         """
 
         config_file = get_test_config("gratia/invalid_probe2.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
@@ -261,7 +261,7 @@ class TestGratia(unittest.TestCase):
         """
 
         config_file = get_test_config("gratia/check_ok.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
@@ -282,7 +282,7 @@ class TestGratia(unittest.TestCase):
         """
 
         config_file = get_test_config("gratia/disabled.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
@@ -300,7 +300,7 @@ class TestGratia(unittest.TestCase):
         Test the ITB defaults and make sure that they are valid
         """
         config_file = get_test_config("gratia/itb_default.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
@@ -323,7 +323,7 @@ class TestGratia(unittest.TestCase):
         Test the production defaults and make sure that they are valid
         """
         config_file = get_test_config("gratia/prod_default.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
@@ -344,7 +344,7 @@ class TestGratia(unittest.TestCase):
         gratia section is missing
         """
         config_file = get_test_config("gratia/itb_default2.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
@@ -363,7 +363,7 @@ class TestGratia(unittest.TestCase):
         gratia section is missing
         """
         config_file = get_test_config("gratia/prod_default2.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
@@ -382,7 +382,7 @@ class TestGratia(unittest.TestCase):
         """
 
         config_file = get_test_config("gratia/check_ok.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = gratia.GratiaConfiguration(logger=global_logger)
@@ -397,7 +397,7 @@ class TestGratia(unittest.TestCase):
                          "got %s but expected %s" % (services, expected_services))
 
         config_file = get_test_config("gratia/disabled.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = gratia.GratiaConfiguration(logger=global_logger)

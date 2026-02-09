@@ -40,7 +40,7 @@ class TestLSF(unittest.TestCase):
         """
 
         config_file = get_test_config("lsf/lsf1.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = lsf.LSFConfiguration(logger=global_logger)
@@ -67,7 +67,7 @@ class TestLSF(unittest.TestCase):
         """
 
         config_file = get_test_config("lsf/lsf_disabled.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = lsf.LSFConfiguration(logger=global_logger)
@@ -87,7 +87,7 @@ class TestLSF(unittest.TestCase):
         """
 
         config_file = get_test_config("lsf/ignored.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = lsf.LSFConfiguration(logger=global_logger)
@@ -106,7 +106,7 @@ class TestLSF(unittest.TestCase):
         Test the check_attributes function to see if it catches missing LSF location
         """
         config_file = get_test_config("lsf/missing_location.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = lsf.LSFConfiguration(logger=global_logger)
@@ -124,7 +124,7 @@ class TestLSF(unittest.TestCase):
         Test the check_attributes function to see if it catches missing LSF profile
         """
         config_file = get_test_config("lsf/missing_profile.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = lsf.LSFConfiguration(logger=global_logger)
@@ -137,7 +137,7 @@ class TestLSF(unittest.TestCase):
         Test the check_attributes function to see if it works on valid settings
         """
         config_file = get_test_config("lsf/check_ok.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = lsf.LSFConfiguration(logger=global_logger)
@@ -155,7 +155,7 @@ class TestLSF(unittest.TestCase):
         Test the check_attributes function to see if it works on valid settings
         """
         config_file = get_test_config("lsf/check_ok2.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = lsf.LSFConfiguration(logger=global_logger)
@@ -174,7 +174,7 @@ class TestLSF(unittest.TestCase):
         """
 
         config_file = get_test_config("lsf/check_ok.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = lsf.LSFConfiguration(logger=global_logger)
@@ -189,7 +189,7 @@ class TestLSF(unittest.TestCase):
                          "got %s but expected %s" % (services, expected_services))
 
         config_file = get_test_config("lsf/lsf_disabled.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = lsf.LSFConfiguration(logger=global_logger)

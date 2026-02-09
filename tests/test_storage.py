@@ -38,7 +38,7 @@ class TestStorage(unittest.TestCase):
             return
 
         config_file = get_test_config("storage/storage1.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = storage.StorageConfiguration(logger=global_logger)
@@ -79,7 +79,7 @@ class TestStorage(unittest.TestCase):
         if not utilities.ce_installed():
             return
         config_file = get_test_config("storage/storage2.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = storage.StorageConfiguration(logger=global_logger)
@@ -120,7 +120,7 @@ class TestStorage(unittest.TestCase):
         if not utilities.ce_installed():
             return
         config_file = get_test_config("storage/storage3.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = storage.StorageConfiguration(logger=global_logger)
@@ -160,7 +160,7 @@ class TestStorage(unittest.TestCase):
         if not utilities.ce_installed():
             return
         config_file = get_test_config("storage/oasis.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = storage.StorageConfiguration(logger=global_logger)

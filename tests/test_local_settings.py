@@ -40,7 +40,7 @@ class TestLocalSettings(unittest.TestCase):
         """
 
         config_file = get_test_config("localsettings/local_settings1.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.optionxform = str
         configuration.read(config_file)
 
@@ -64,7 +64,7 @@ class TestLocalSettings(unittest.TestCase):
 
     def testBogusVarName(self):
         config_file = get_test_config("localsettings/bogusvarname.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.optionxform = str
         configuration.read(config_file)
 
@@ -76,7 +76,7 @@ class TestLocalSettings(unittest.TestCase):
 
     def testBogusQuote(self):
         config_file = get_test_config("localsettings/bogusquote.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.optionxform = str
         configuration.read(config_file)
 

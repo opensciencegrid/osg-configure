@@ -17,16 +17,8 @@ from osg_configure.modules import exceptions
 from osg_configure.configure_modules import sge
 from osg_configure.modules.utilities import get_test_config
 
-# NullHandler is only available in Python 2.7+
-try:
-    NullHandler = logging.NullHandler
-except AttributeError:
-    class NullHandler(logging.Handler):
-        def emit(self, record):
-            pass
-
 global_logger = logging.getLogger(__name__)
-global_logger.addHandler(NullHandler())
+global_logger.addHandler(logging.NullHandler())
 
 
 class TestSGE(unittest.TestCase):
@@ -40,7 +32,7 @@ class TestSGE(unittest.TestCase):
         """
 
         config_file = get_test_config("sge/sge1.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = sge.SGEConfiguration(logger=global_logger)
@@ -69,7 +61,7 @@ class TestSGE(unittest.TestCase):
         """
 
         config_file = get_test_config("sge/sge_disabled.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = sge.SGEConfiguration(logger=global_logger)
@@ -88,7 +80,7 @@ class TestSGE(unittest.TestCase):
         """
 
         config_file = get_test_config("sge/ignored.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = sge.SGEConfiguration(logger=global_logger)
@@ -111,7 +103,7 @@ class TestSGE(unittest.TestCase):
                      'sge_bin_location']
         for option in mandatory:
             config_file = get_test_config("sge/sge1.ini")
-            configuration = configparser.SafeConfigParser()
+            configuration = configparser.ConfigParser()
             configuration.read(config_file)
             configuration.remove_option('SGE', option)
 
@@ -126,7 +118,7 @@ class TestSGE(unittest.TestCase):
         """
 
         config_file = get_test_config("sge/missing_root.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = sge.SGEConfiguration(logger=global_logger)
@@ -145,7 +137,7 @@ class TestSGE(unittest.TestCase):
         """
 
         config_file = get_test_config("sge/missing_cell.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = sge.SGEConfiguration(logger=global_logger)
@@ -164,7 +156,7 @@ class TestSGE(unittest.TestCase):
         """
 
         config_file = get_test_config("sge/missing_config.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = sge.SGEConfiguration(logger=global_logger)
@@ -183,7 +175,7 @@ class TestSGE(unittest.TestCase):
         """
 
         config_file = get_test_config("sge/check_ok.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
         root = os.path.join(config_file[:-16], 'test_files')
         configuration.set('SGE', 'sge_root', root)
@@ -204,7 +196,7 @@ class TestSGE(unittest.TestCase):
         """
 
         config_file = get_test_config("sge/check_ok2.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
         root = os.path.join(config_file[:-17], 'test_files')
         configuration.set('SGE', 'sge_root', root)
@@ -225,7 +217,7 @@ class TestSGE(unittest.TestCase):
         """
 
         config_file = get_test_config("sge/check_ok.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = sge.SGEConfiguration(logger=global_logger)
@@ -240,7 +232,7 @@ class TestSGE(unittest.TestCase):
                          "got %s but expected %s" % (services, expected_services))
 
         config_file = get_test_config("sge/sge_disabled.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = sge.SGEConfiguration(logger=global_logger)
@@ -255,7 +247,7 @@ class TestSGE(unittest.TestCase):
                          "got %s but expected %s" % (services, expected_services))
 
         config_file = get_test_config("sge/ignored.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = sge.SGEConfiguration(logger=global_logger)

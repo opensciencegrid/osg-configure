@@ -40,7 +40,7 @@ class TestCondor(unittest.TestCase):
         """
 
         config_file = get_test_config("condor/condor1.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = condor.CondorConfiguration(logger=global_logger)
@@ -68,7 +68,7 @@ class TestCondor(unittest.TestCase):
         """
 
         config_file = get_test_config("condor/condor_disabled.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = condor.CondorConfiguration(logger=global_logger)
@@ -87,7 +87,7 @@ class TestCondor(unittest.TestCase):
         """
 
         config_file = get_test_config("condor/ignored.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = condor.CondorConfiguration(logger=global_logger)
@@ -106,7 +106,7 @@ class TestCondor(unittest.TestCase):
         """
 
         config_file = get_test_config("condor/condor_defaults1.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
 
@@ -155,7 +155,7 @@ class TestCondor(unittest.TestCase):
         # check to make sure that config values take precedence over
         # environment variables
         config_file = get_test_config("condor/condor1.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
         os.environ['CONDOR_LOCATION'] = '/my/condor1'
         settings = condor.CondorConfiguration(logger=global_logger)
@@ -178,7 +178,7 @@ class TestCondor(unittest.TestCase):
 
         # check to see if jobmanager home values get used in preference to other values
         config_file = get_test_config("condor/condor_defaults2.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
         os.environ['CONDOR_LOCATION'] = '/my/condor1'
         settings = condor.CondorConfiguration(logger=global_logger)
@@ -205,7 +205,7 @@ class TestCondor(unittest.TestCase):
         """
 
         config_file = get_test_config("condor/missing_location.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = condor.CondorConfiguration(logger=global_logger)
@@ -227,7 +227,7 @@ class TestCondor(unittest.TestCase):
         for filename in [get_test_config("condor/missing_config1.ini"),
                          get_test_config("condor/missing_config2.ini")]:
             config_file = os.path.abspath(filename)
-            configuration = configparser.SafeConfigParser()
+            configuration = configparser.ConfigParser()
             configuration.read(config_file)
 
             settings = condor.CondorConfiguration(logger=global_logger)
@@ -247,7 +247,7 @@ class TestCondor(unittest.TestCase):
         """
 
         config_file = get_test_config("condor/check_ok.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = condor.CondorConfiguration(logger=global_logger)
@@ -266,7 +266,7 @@ class TestCondor(unittest.TestCase):
         """
 
         config_file = get_test_config("condor/check_ok2.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = condor.CondorConfiguration(logger=global_logger)
@@ -285,7 +285,7 @@ class TestCondor(unittest.TestCase):
         """
 
         config_file = get_test_config("condor/check_ok.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = condor.CondorConfiguration(logger=global_logger)
@@ -300,7 +300,7 @@ class TestCondor(unittest.TestCase):
                          "got %s but expected %s" % (services, expected_services))
 
         config_file = get_test_config("condor/condor_disabled.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = condor.CondorConfiguration(logger=global_logger)

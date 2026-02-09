@@ -5,6 +5,8 @@ import configparser
 import os
 import sys
 
+from typing import Union
+
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
 from osg_configure.modules import validation
@@ -176,6 +178,8 @@ class Option:
     MANDATORY = 1
     OPTIONAL = 2
     MANDATORY_ON_CE = 3
+
+    value: Union[str, int, float, None]
 
     def __init__(self, **kwargs):
         """

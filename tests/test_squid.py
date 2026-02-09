@@ -33,7 +33,7 @@ class TestSquid(unittest.TestCase):
         """
 
         config_file = get_test_config("squid/squid1.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = squid.SquidConfiguration(logger=global_logger)
@@ -58,7 +58,7 @@ class TestSquid(unittest.TestCase):
         """
 
         config_file = get_test_config("squid/squid2.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = squid.SquidConfiguration(logger=global_logger)
@@ -83,7 +83,7 @@ class TestSquid(unittest.TestCase):
         """
 
         config_file = get_test_config("squid/squid_disabled.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = squid.SquidConfiguration(logger=global_logger)
@@ -107,7 +107,7 @@ class TestSquid(unittest.TestCase):
         """
 
         config_file = get_test_config("squid/ignored.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = squid.SquidConfiguration(logger=global_logger)
@@ -137,7 +137,7 @@ class TestSquid(unittest.TestCase):
         mandatory = ['location']
         for option in mandatory:
             config_file = get_test_config("squid/squid1.ini")
-            configuration = configparser.SafeConfigParser()
+            configuration = configparser.ConfigParser()
             configuration.read(config_file)
             configuration.remove_option('Squid', option)
 
@@ -155,7 +155,7 @@ class TestSquid(unittest.TestCase):
         if not ce_installed():
             return True
         config_file = get_test_config("squid/squid_bad_host.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = squid.SquidConfiguration(logger=global_logger)
@@ -169,7 +169,7 @@ class TestSquid(unittest.TestCase):
                          "Did not notice invalid host")
 
         config_file = get_test_config("squid/squid_bad_host2.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = squid.SquidConfiguration(logger=global_logger)
@@ -191,7 +191,7 @@ class TestSquid(unittest.TestCase):
         if not ce_installed():
             return True
         config_file = get_test_config("squid/squid_bad_port.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = squid.SquidConfiguration(logger=global_logger)
@@ -212,7 +212,7 @@ class TestSquid(unittest.TestCase):
         if not ce_installed():
             return True
         config_file = get_test_config("squid/valid_settings.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = squid.SquidConfiguration(logger=global_logger)
@@ -232,7 +232,7 @@ class TestSquid(unittest.TestCase):
         """
 
         config_file = get_test_config("squid/squid_disabled.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = squid.SquidConfiguration(logger=global_logger)
@@ -254,7 +254,7 @@ class TestSquid(unittest.TestCase):
         if not ce_installed():
             return True
         config_file = get_test_config("squid/squid_blank_location.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = squid.SquidConfiguration(logger=global_logger)
@@ -274,7 +274,7 @@ class TestSquid(unittest.TestCase):
         """
 
         config_file = get_test_config("squid/squid_unavailable.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = squid.SquidConfiguration(logger=global_logger)
