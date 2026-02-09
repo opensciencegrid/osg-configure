@@ -17,13 +17,11 @@ import logging
 pathname = os.path.realpath('../')
 sys.path.insert(0, pathname)
 
-from osg_configure.modules import exceptions
 try:
     from osg_configure.configure_modules import infoservices
 except ImportError:
     infoservices = None
     print("infoservices not found -- skipping infoservices tests")
-from osg_configure.modules import utilities
 from osg_configure.modules.utilities import get_test_config
 
 global_logger = logging.getLogger(__name__)
@@ -48,7 +46,7 @@ class TestInfoServices(unittest.TestCase):
 
         if not infoservices: return
         config_file = get_test_config("infoservices/disabled.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
@@ -64,7 +62,7 @@ class TestInfoServices(unittest.TestCase):
 
         if not infoservices: return
         config_file = get_test_config("infoservices/ignored.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
@@ -80,7 +78,7 @@ class TestInfoServices(unittest.TestCase):
 
         if not infoservices: return
         config_file = get_test_config("infoservices/disabled.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
@@ -101,7 +99,7 @@ class TestInfoServices(unittest.TestCase):
 
         if not infoservices: return
         config_file = get_test_config("infoservices/itb_defaults2.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
@@ -122,7 +120,7 @@ class TestInfoServices(unittest.TestCase):
 
         if not infoservices: return
         config_file = get_test_config("infoservices/prod_defaults2.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)
@@ -142,7 +140,7 @@ class TestInfoServices(unittest.TestCase):
 
         if not infoservices: return
         config_file = get_test_config("infoservices/infoservices.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = infoservices.InfoServicesConfiguration(logger=global_logger)

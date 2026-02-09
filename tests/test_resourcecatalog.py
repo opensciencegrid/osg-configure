@@ -105,7 +105,7 @@ class TestResourceCatalog(unittest.TestCase):
 }""")
 
     def testFull(self):
-        config = configparser.SafeConfigParser()
+        config = configparser.ConfigParser()
         config_string = r"""
 [Subcluster Valid]
 name = red.unl.edu
@@ -139,7 +139,7 @@ allowed_vos = osg, atlas
     def testResourceEntry(self):
         # Test using the "Resource Entry" section name instead of "Subcluster"
         # and also using some of the attributes ATLAS requested
-        config = configparser.SafeConfigParser()
+        config = configparser.ConfigParser()
         config_string = r"""
 [Resource Entry Valid]
 name = red.unl.edu
@@ -166,7 +166,7 @@ allowed_vos = osg, atlas
 }""")
 
     def testResourceEntryWithSubclusters(self):
-        config = configparser.SafeConfigParser()
+        config = configparser.ConfigParser()
         config_file = get_test_config("subcluster/resourceentry_and_sc.ini")
         config.read(config_file)
         self.assertDoesNotRaise(exceptions.SettingError, subcluster.resource_catalog_from_config, config)
@@ -179,7 +179,7 @@ allowed_vos = osg, atlas
                                 "subcluster/resourceentry_missing_memory.ini",
                                 "subcluster/resourceentry_missing_queue.ini",
                                 "subcluster/resourceentry_missing_sc.ini"]:
-            config = configparser.SafeConfigParser()
+            config = configparser.ConfigParser()
             config_file = get_test_config(config_filename)
             config.read(config_file)
             try:
@@ -189,7 +189,7 @@ allowed_vos = osg, atlas
                 raise
 
     def testFullWithExtraTransforms(self):
-        config = configparser.SafeConfigParser()
+        config = configparser.ConfigParser()
         config_string = r"""
 [Subcluster Test]
 name = glow.chtc.wisc.edu
@@ -261,7 +261,7 @@ allowed_vos = osg, atlas
         self.assertLongStringEqual(actual_string, expected_string)
 
     def testPilot(self):
-        config = configparser.SafeConfigParser()
+        config = configparser.ConfigParser()
         config_string = r"""
 [Pilot glow.chtc.wisc.edu]
 name = glow.chtc.wisc.edu
@@ -298,7 +298,7 @@ os = rhel8
         self.assertLongStringEqual(actual_string, expected_string)
 
     def testPilotExample(self):
-        config_parser = configparser.SafeConfigParser()
+        config_parser = configparser.ConfigParser()
         config_file = get_test_config("subcluster/pilots_example.ini")
         config_parser.read(config_file)
         expected_string = r"""OSG_ResourceCatalog = { \

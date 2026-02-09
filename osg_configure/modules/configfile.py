@@ -5,6 +5,8 @@ import configparser
 import os
 import sys
 
+from typing import Union
+
 from osg_configure.modules import exceptions
 from osg_configure.modules import utilities
 from osg_configure.modules import validation
@@ -44,7 +46,7 @@ def read_config_files(**kwargs):
             sys.stderr.write("Error found in %s\n" % filename)
             sys.exit(1)
     try:
-        config = configparser.SafeConfigParser()
+        config = configparser.ConfigParser()
         if case_sensitive:
             config.optionxform = str
     except configparser.Error as e:
@@ -80,8 +82,8 @@ def get_option_location(option, section, **kwargs):
     file_list.reverse()
     for fn in file_list:
         try:
-            config = configparser.SafeConfigParser()
-            config.readfp(open(fn, "r", encoding="latin-1"))
+            config = configparser.RawConfigParser()
+            config.read_file(open(fn, "r", encoding="latin-1"), source=fn)
             if config.has_option(section, option):
                 return fn
         except configparser.Error as e:
@@ -176,6 +178,8 @@ class Option:
     MANDATORY = 1
     OPTIONAL = 2
     MANDATORY_ON_CE = 3
+
+    value: Union[str, int, float, None]
 
     def __init__(self, **kwargs):
         """

@@ -117,7 +117,7 @@ class TestValidation(unittest.TestCase):
         Test functionality of valid_boolean function
         """
         config_file = get_test_config('utilities/valid_boolean.ini')
-        config = configparser.SafeConfigParser()
+        config = configparser.ConfigParser()
         config.read(config_file)
         self.assertFalse(validation.valid_boolean(config, 'Test', 'invalid_bool'),
                          'invalid_bool flagged as valid')

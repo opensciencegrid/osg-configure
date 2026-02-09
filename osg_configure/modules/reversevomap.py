@@ -107,7 +107,7 @@ def get_vos(mappings):
 
     :return: Set of VOs
     """
-    regex = re.compile("^/(\w+)/")
+    regex = re.compile(r"^/(\w+)/")
     patterns = (m.pattern for m in mappings)
     matches = filter(None, (regex.match(p) for p in patterns))
     vo_groups = set(m.group(1).lower() for m in matches)

@@ -16,16 +16,8 @@ sys.path.insert(0, pathname)
 from osg_configure.configure_modules import slurm
 from osg_configure.modules.utilities import get_test_config
 
-# NullHandler is only available in Python 2.7+
-try:
-    NullHandler = logging.NullHandler
-except AttributeError:
-    class NullHandler(logging.Handler):
-        def emit(self, record):
-            pass
-
 global_logger = logging.getLogger(__name__)
-global_logger.addHandler(NullHandler())
+global_logger.addHandler(logging.NullHandler())
 
 
 class TestSlurm(unittest.TestCase):
@@ -39,7 +31,7 @@ class TestSlurm(unittest.TestCase):
         """
 
         config_file = get_test_config("slurm/slurm1.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = slurm.SlurmConfiguration(logger=global_logger)
@@ -66,7 +58,7 @@ class TestSlurm(unittest.TestCase):
         """
 
         config_file = get_test_config("slurm/slurm_disabled.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = slurm.SlurmConfiguration(logger=global_logger)
@@ -85,7 +77,7 @@ class TestSlurm(unittest.TestCase):
         """
 
         config_file = get_test_config("slurm/ignored.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = slurm.SlurmConfiguration(logger=global_logger)
@@ -103,7 +95,7 @@ class TestSlurm(unittest.TestCase):
         Test the check_attributes function to see if it catches missing pbs location
         """
         config_file = get_test_config("slurm/missing_location.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = slurm.SlurmConfiguration(logger=global_logger)
@@ -121,7 +113,7 @@ class TestSlurm(unittest.TestCase):
         Test the check_attributes function to see if it works on valid settings
         """
         config_file = get_test_config("slurm/check_ok.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = slurm.SlurmConfiguration(logger=global_logger)
@@ -139,7 +131,7 @@ class TestSlurm(unittest.TestCase):
         Test the check_attributes function to see if it works on valid settings
         """
         config_file = get_test_config("slurm/check_ok2.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = slurm.SlurmConfiguration(logger=global_logger)
@@ -158,7 +150,7 @@ class TestSlurm(unittest.TestCase):
         """
 
         config_file = get_test_config("slurm/check_ok.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = slurm.SlurmConfiguration(logger=global_logger)
@@ -174,7 +166,7 @@ class TestSlurm(unittest.TestCase):
                          "got %s but expected %s" % (services, expected_services))
 
         config_file = get_test_config("slurm/slurm_disabled.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = slurm.SlurmConfiguration(logger=global_logger)
@@ -189,7 +181,7 @@ class TestSlurm(unittest.TestCase):
                          "got %s but expected %s" % (services, expected_services))
 
         config_file = get_test_config("slurm/ignored.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = slurm.SlurmConfiguration(logger=global_logger)

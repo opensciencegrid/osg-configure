@@ -17,16 +17,8 @@ from osg_configure.modules import exceptions
 from osg_configure.configure_modules import siteinformation
 from osg_configure.modules.utilities import get_test_config, ce_installed
 
-# NullHandler is only available in Python 2.7+
-try:
-    NullHandler = logging.NullHandler
-except AttributeError:
-    class NullHandler(logging.Handler):
-        def emit(self, record):
-            pass
-
 global_logger = logging.getLogger(__name__)
-global_logger.addHandler(NullHandler())
+global_logger.addHandler(logging.NullHandler())
 
 
 class TestSiteAttributes(unittest.TestCase):
@@ -40,7 +32,7 @@ class TestSiteAttributes(unittest.TestCase):
         """
 
         config_file = get_test_config("siteattributes/siteattributes1.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = siteinformation.SiteInformation(logger=global_logger)
@@ -68,7 +60,7 @@ class TestSiteAttributes(unittest.TestCase):
         """
 
         config_file = get_test_config("siteattributes/siteattributes2.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = siteinformation.SiteInformation(logger=global_logger)
@@ -96,7 +88,7 @@ class TestSiteAttributes(unittest.TestCase):
         """
 
         config_file = get_test_config("siteattributes/siteattributes3.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = siteinformation.SiteInformation(logger=global_logger)
@@ -126,7 +118,7 @@ class TestSiteAttributes(unittest.TestCase):
         Test the parsing when attributes are missing, should get exceptions
         """
         config_file = get_test_config("siteattributes/siteattributes2.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = siteinformation.SiteInformation(logger=global_logger)
@@ -143,7 +135,7 @@ class TestSiteAttributes(unittest.TestCase):
             mandatory += mandatory_on_ce
         for option in mandatory:
             config_file = get_test_config("siteattributes/siteattributes1.ini")
-            configuration = configparser.SafeConfigParser()
+            configuration = configparser.ConfigParser()
             configuration.read(config_file)
             configuration.remove_option('Site Information', option)
 
@@ -159,7 +151,7 @@ class TestSiteAttributes(unittest.TestCase):
 
         config_file = get_test_config("siteattributes/" \
                                       "invalid_hostname.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = siteinformation.SiteInformation(logger=global_logger)
@@ -178,7 +170,7 @@ class TestSiteAttributes(unittest.TestCase):
         """
 
         config_file = get_test_config("siteattributes/valid_settings.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = siteinformation.SiteInformation(logger=global_logger)
@@ -197,7 +189,7 @@ class TestSiteAttributes(unittest.TestCase):
         """
 
         config_file = get_test_config("siteattributes/siteattributes3.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = siteinformation.SiteInformation(logger=global_logger)

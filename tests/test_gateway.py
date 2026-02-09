@@ -32,7 +32,7 @@ class TestGateway(unittest.TestCase):
         """
 
         config_file = get_test_config("gateway/gateway_default.ini")
-        configuration = configparser.SafeConfigParser()
+        configuration = configparser.ConfigParser()
         configuration.read(config_file)
 
         settings = gateway.GatewayConfiguration(logger=global_logger)
