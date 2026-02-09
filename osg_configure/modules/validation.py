@@ -265,7 +265,7 @@ def valid_ini_file(filename):
     file_buffer.write(temp)
     file_buffer.seek(0)
     try:
-        configuration.readfp(file_buffer)  # TODO readfp is deprecated
+        configuration.read_file(file_buffer)
     except ParsingError as e:
         print("Error while parsing: %s\n%s" % (filename, e), file=sys.stderr)
         print("Lines with options should not start with a space", file=sys.stderr)
