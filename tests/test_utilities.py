@@ -30,8 +30,12 @@ class TestUtilities(unittest.TestCase):
                               'test_attr': 'abc-234#$',
                               'my-Attribute': 'test_attribute'}
                 utilities.write_attribute_file(attribute_file, attributes)
-                self.assertEqual(open(attribute_file).read(),
-                                 open(attribute_standard).read(),
+                # Compare the written file with what should have been written.
+                # Skip the shebang line: RPM may have munged it (e.g. changed /bin/sh -> /usr/bin/sh)
+                attribute_lines = open(attribute_file).readlines()[1:]
+                attribute_standard_lines = open(attribute_standard).readlines()[1:]
+                self.assertEqual(attribute_lines,
+                                 attribute_standard_lines,
                                  'Attribute files are not equal')
             except Exception as ex:
                 self.fail('Got exception while testing write_attribute_file' \
