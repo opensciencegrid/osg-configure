@@ -15,7 +15,7 @@ sys.path.insert(0, pathname)
 
 from osg_configure.modules import exceptions
 from osg_configure.configure_modules import squid
-from osg_configure.modules.utilities import get_test_config
+from osg_configure.modules.utilities import get_test_config, rpm_installed
 from osg_configure.modules.utilities import ce_installed
 
 global_logger = logging.getLogger(__name__)
@@ -152,7 +152,7 @@ class TestSquid(unittest.TestCase):
         not valie
         """
 
-        if not ce_installed():
+        if not ce_installed() or not rpm_installed("frontier-squid"):
             return True
         config_file = get_test_config("squid/squid_bad_host.ini")
         configuration = configparser.ConfigParser()
@@ -188,7 +188,7 @@ class TestSquid(unittest.TestCase):
         not an integer
         """
 
-        if not ce_installed():
+        if not ce_installed() or not rpm_installed("frontier-squid"):
             return True
         config_file = get_test_config("squid/squid_bad_port.ini")
         configuration = configparser.ConfigParser()
@@ -209,7 +209,7 @@ class TestSquid(unittest.TestCase):
         Test the check_attributes function to see if it oks good attributes
         """
 
-        if not ce_installed():
+        if not ce_installed() or not rpm_installed("frontier-squid"):
             return True
         config_file = get_test_config("squid/valid_settings.ini")
         configuration = configparser.ConfigParser()
@@ -251,7 +251,7 @@ class TestSquid(unittest.TestCase):
         location is left blank
         """
 
-        if not ce_installed():
+        if not ce_installed() or not rpm_installed("frontier-squid"):
             return True
         config_file = get_test_config("squid/squid_blank_location.ini")
         configuration = configparser.ConfigParser()
