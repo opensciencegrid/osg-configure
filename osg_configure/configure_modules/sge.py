@@ -34,20 +34,7 @@ class SGEConfiguration(JobManagerConfiguration):
                                               default_value='/etc/sysconfig/gridengine'),
                         'sge_bin_location':
                             configfile.Option(name='sge_bin_location',
-                                              default_value='default'),
-                        'default_queue':
-                            configfile.Option(name='default_queue',
-                                              required=configfile.Option.OPTIONAL,
-                                              default_value=''),
-                        'validate_queues':
-                            configfile.Option(name='validate_queues',
-                                              required=configfile.Option.OPTIONAL,
-                                              opt_type=bool,
-                                              default_value=False),
-                        'available_queues':
-                            configfile.Option(name='available_queues',
-                                              required=configfile.Option.OPTIONAL,
-                                              default_value='')}
+                                              default_value='default')}
         self.config_section = "SGE"
         self.log('SGEConfiguration.__init__ completed')
 
@@ -70,7 +57,8 @@ class SGEConfiguration(JobManagerConfiguration):
             self.log('SGEConfiguration.parse_configuration completed')
             return True
 
-        self.get_options(configuration, ignore_options=['enabled'])
+        self.get_options(configuration, ignore_options=['enabled', 'default_queue', 'validate_queues',
+                                                        'available_queues'])
 
         # fill in values for sge_location and home
         self.options['job_manager'] = configfile.Option(name='job_manager',
